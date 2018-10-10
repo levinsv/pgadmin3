@@ -10,4 +10,6 @@ This text Russian language.
 Для работы достаточно заменить оригинальный pgAdmin3.exe
 Будет поддерживаться только оригинальная версия PostgreSQL.
 
+Полная версия pgAdmin3 находиться тут https://github.com/postgres/pgadmin3.git
+
 
