@@ -1,5 +1,0 @@
-﻿  "git" не является внутренней или внешней
-  командой, исполняемой программой или пакетным файлом.
-  Not generating svnversion.h, not changed.
-  precomp.cpp
-d:\wxwidgets-2.8.12\include\wx\setup.h(20): fatal error C1083: Cannot open include file: '../../../lib/vc_dll/mswud/wx/setup.h': No such file or directory
