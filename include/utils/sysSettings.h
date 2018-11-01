@@ -784,7 +784,18 @@ public:
 	{
 		WriteBool(wxT("ShowNotices"), newval);
 	}
+	bool GetASUTPstyle() const
+	{
+		bool b;
+		Read(wxT("ASUTPstyle"), &b, false);
+		return b;
+	}
+	void SetASUTPstyle(const bool newval)
+	{
+		WriteBool(wxT("ASUTPstyle"), newval);
+	}
 
+	
 	wxString GetOptionsLastTreeItem() const
 	{
 		wxString s;

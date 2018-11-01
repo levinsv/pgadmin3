@@ -76,7 +76,16 @@ ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	Create(parent, id, pos, size, style);
 }
 
-
+wxColour ctlSQLBox::SetSQLBoxColourBackground(bool transaction) {
+	wxColour bgColor = settings->GetSQLBoxColourBackground();
+	if (settings->GetSQLBoxUseSystemBackground())
+	{
+		bgColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	}
+	if (transaction) bgColor = wxColour(241, 241, 186);
+	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
+	return bgColor;
+}
 void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, long style)
 {
 	wxStyledTextCtrl::Create(parent, id , pos, size, style);
@@ -87,19 +96,19 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	// Font
 	extern sysSettings *settings;
 	wxFont fntSQLBox = settings->GetSQLFont();
-
-	wxColour bgColor = settings->GetSQLBoxColourBackground();
-	if (settings->GetSQLBoxUseSystemBackground())
-	{
-		bgColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
-	}
+	wxColour bgColor=SetSQLBoxColourBackground(false);
+	//wxColour bgColor = settings->GetSQLBoxColourBackground();
+	//if (settings->GetSQLBoxUseSystemBackground())
+	//{
+	//	bgColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	//}
 
 	wxColour frColor = settings->GetSQLBoxColourForeground();
 	if (settings->GetSQLBoxUseSystemForeground())
 	{
 		frColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	}
-	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
+//	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
 	StyleSetForeground(wxSTC_STYLE_DEFAULT, frColor);
 	StyleSetFont(wxSTC_STYLE_DEFAULT, fntSQLBox);
 

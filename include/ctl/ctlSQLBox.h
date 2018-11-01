@@ -79,6 +79,7 @@ public:
 	// Having multiple SQL tabs warrants the following properties to be tracked per tab
 	void SetChanged(bool b);
 	bool IsChanged();
+	wxColor SetSQLBoxColourBackground(bool transaction);
 	void SetOrigin(int origin);
 	int GetOrigin();
 	void SetFilename(wxString &filename);

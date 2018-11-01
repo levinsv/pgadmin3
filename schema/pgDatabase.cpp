@@ -20,6 +20,7 @@
 #include "schema/edbSynonym.h"
 #include "schema/pgCast.h"
 #include "schema/pgExtension.h"
+#include "schema/pgPublication.h"
 #include "schema/pgForeignDataWrapper.h"
 #include "schema/pgLanguage.h"
 #include "schema/pgSchema.h"
@@ -144,6 +145,8 @@ wxMenu *pgDatabase::GetNewMenu()
 			castFactory.AppendMenu(menu);
 		if (settings->GetDisplayOption(_("Extensions")) && GetConnection()->BackendMinimumVersion(9, 1))
 			extensionFactory.AppendMenu(menu);
+		if (settings->GetDisplayOption(_("Publications")) && GetConnection()->BackendMinimumVersion(10, 0))
+			publicationFactory.AppendMenu(menu);
 		if (settings->GetDisplayOption(_("Foreign Data Wrappers")) && GetConnection()->BackendMinimumVersion(8, 4))
 			foreignDataWrapperFactory.AppendMenu(menu);
 		if (settings->GetDisplayOption(_("Languages")))
@@ -622,6 +625,8 @@ void pgDatabase::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *pr
 				browser->AppendCollection(this, eventTriggerFactory);
 			if (settings->GetDisplayOption(_("Extensions")) && GetConnection()->BackendMinimumVersion(9, 1))
 				browser->AppendCollection(this, extensionFactory);
+			if (settings->GetDisplayOption(_("Publications")) && GetConnection()->BackendMinimumVersion(10, 0))
+				browser->AppendCollection(this, publicationFactory);
 			if (settings->GetDisplayOption(_("Foreign Data Wrappers")) && GetConnection()->BackendMinimumVersion(8, 4))
 				browser->AppendCollection(this, foreignDataWrapperFactory);
 			if (settings->GetDisplayOption(_("Languages")))

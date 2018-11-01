@@ -349,8 +349,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	queryMenu->AppendSeparator();
 	queryMenu->Append(MNU_CANCEL, _("&Cancel\tAlt-Break"), _("Cancel query"));
 	queryMenu->AppendSeparator();
-	queryMenu->Append(MNU_DOCOMMIT, _("Commit\tCtrl-Shift-C"), _("Commit"));
-	queryMenu->Append(MNU_DOROLLBACK, _("Rollback\tCtrl-Shift-R"), _("Rollback"));
+	queryMenu->Append(MNU_DOCOMMIT, _("Commit\tF10"), _("Commit"));
+	queryMenu->Append(MNU_DOROLLBACK, _("Rollback\tShift-F10"), _("Rollback"));
 	menuBar->Append(queryMenu, _("&Query"));
 
 	favouritesMenu = new wxMenu();
@@ -2664,6 +2664,7 @@ void frmQuery::setTools(const bool running)
 	fileMenu->Enable(MNU_QUICKREPORT, sqlResult->CanExport());
 	fileMenu->Enable(MNU_RECENT, (recentFileMenu->GetMenuItemCount() > 0));
 	sqlQuery->EnableAutoComp(running);
+	sqlQuery->SetSQLBoxColourBackground(canEndTransaction);
 }
 
 

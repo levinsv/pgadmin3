@@ -127,6 +127,7 @@
 #define pickerSQLColour11           CTRL_COLOURPICKER("pickerSQLColour11")
 #define pickerSQLCaretColour        CTRL_COLOURPICKER("pickerSQLCaretColour")
 #define chkKeywordsInUppercase      CTRL_CHECKBOX("chkKeywordsInUppercase")
+#define chkASUTPstyle		        CTRL_CHECKBOX("chkASUTPstyle")
 #define menus                		CTRL_TREE("menus")
 #define pnlBrowserDisplay           CTRL_PANEL("pnlBrowserDisplay")
 #define pnlBrowserProperties        CTRL_PANEL("pnlBrowserProperties")
@@ -355,7 +356,7 @@ frmOptions::frmOptions(frmMain *parent)
 	pickerSQLColour11->SetColour(settings->GetSQLBoxColour(11));
 
 	chkKeywordsInUppercase->SetValue(settings->GetSQLKeywordsInUppercase());
-
+	chkASUTPstyle->SetValue(settings->GetASUTPstyle());
 	cbLanguage->Append(_("Default"));
 	int sel = 0;
 	wxLanguage langId = settings->GetCanonicalLanguage();
@@ -392,6 +393,7 @@ frmOptions::frmOptions(frmMain *parent)
 	lstDisplay->Append(_("Casts"));
 	lstDisplay->Append(_("Event Triggers"));
 	lstDisplay->Append(_("Extensions"));
+	lstDisplay->Append(_("Publications"));
 	lstDisplay->Append(_("Foreign Data Wrappers"));
 	lstDisplay->Append(_("Foreign Servers"));
 	lstDisplay->Append(_("User Mappings"));
@@ -854,10 +856,10 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 		changed = true;
 	settings->SetSQLBoxColour(11, pickerSQLColour11->GetColourString());
 
-	if (settings->GetSQLKeywordsInUppercase() != chkKeywordsInUppercase->GetValue())
+	if (settings->GetASUTPstyle() != chkASUTPstyle->GetValue())
 	{
 		changed = true;
-		settings->SetSQLKeywordsInUppercase(chkKeywordsInUppercase->GetValue());
+		settings->SetASUTPstyle(chkASUTPstyle->GetValue());
 	}
 
 	// Change the language last, as it will affect our tests for changes

@@ -535,6 +535,21 @@
                     <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
                     <border>4</border>
                   </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="stASUTPstyle">
+                      <label>Enable ASUTP style</label>
+                    </object>
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxCheckBox" name="chkASUTPstyle">
+                      <label></label>
+                      <checked>1</checked>
+                    </object>
+                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
                 </object>
               </object>
               <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
