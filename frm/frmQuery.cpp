@@ -663,15 +663,21 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxString str;
 	wxString filename;
 	
-	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\");
-
+	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
+	
+	if (!wxDirExists(tempDir)) {
+		wxFileName dn = tempDir;
+		dn.Mkdir();
+	}
 	wxString pref=_conn->GetDbname();
 
 	bool modeUnicode = settings->GetUnicodeFile();
+
 	wxString f = wxFindFirstFile(tempDir+wxT("*.a"));
      while ( !f.empty() )
      {
-		 if (f.AfterLast('\\').StartsWith(wxT("Query"))||f.AfterLast('\\').StartsWith(pref)) {
+		 filename=f.AfterLast('\\').BeforeLast('.');
+		 if ((f.AfterLast('\\').StartsWith(pref+wxT("."))||(filename.BeforeLast('.').IsEmpty()))) {
 			wxUtfFile file(f, wxFile::read, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
 			if (file.IsOpened())
 			{ file.Read(str); file.Close(); }
@@ -684,7 +690,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 				//sqlQuery->SetFilename(lastPath);
 				sqlQuery->SetChanged(true);
 				//sqlQuery->SetOrigin(ORIGIN_INITIAL);
-				filename=f.AfterLast('\\').BeforeLast('.');
+				//filename=f.AfterLast('\\').BeforeLast('.');
 				sqlQuery->SetTitle(filename);
 				setExtendedTitle();
 				SqlBookUpdatePageTitle();
@@ -2007,7 +2013,7 @@ void frmQuery::SaveTempFile()
 	wxString pref=conn->GetDbname();
 	//if (filename.StartsWith(pref))
 	filename+=wxT(".a");
-	wxString tempDir=wxStandardPaths::Get().GetTempDir();
+	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3");
 	wxUtfFile file(tempDir+wxT("\\")+filename, wxFile::write, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
 	if (file.IsOpened())
 	{
@@ -3838,13 +3844,13 @@ void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 		wxString pref=conn->GetDbname()+wxT(".nametab");
 		
 		wxTextEntryDialog dialog(this,
-		wxT("Please enter name string with prefix dbname or 'Query'\n")
+		wxT("Please enter name string with prefix dbname\n")
 		,
 		wxT("Name autosave tab window."),
 		pref,
 		wxOK | wxCANCEL);		//setName( dlg.GetValue().wc_str() );
 		if (dialog.ShowModal() == wxID_OK) {
-			wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\");
+			wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
 			wxString filename=sqlQuery->GetTitle(false);
 			wxRemoveFile(tempDir+filename+wxT(".a"));
 			wxString nt=dialog.GetValue();
@@ -3889,7 +3895,7 @@ void frmQuery::OnSqlBookPageClose(wxAuiNotebookEvent &event)
 
 	SqlBookDisconnectPage();
 	//drop temp file
-	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\");
+	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
 	wxString filename=sqlQuery->GetTitle(false)+wxT(".a");
 	if (wxFileName::FileExists(tempDir+filename)) wxRemoveFile(tempDir+filename);
 
@@ -3969,7 +3975,7 @@ bool frmQuery::SqlBookRemovePage()
 
 		SqlBookDisconnectPage();
 		pageidx = sqlQueryBook->GetSelection();
-		wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\");
+		wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
 		ctlSQLBox *box;
 		box = wxDynamicCast(sqlQueryBook->GetPage(pageidx), ctlSQLBox);
 		wxString filename=box->GetTitle(false);

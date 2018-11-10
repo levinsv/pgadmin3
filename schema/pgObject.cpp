@@ -256,13 +256,12 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 
 		// not being implemented:
 		// - pg_index (done by pg_class)
-
-		set = conn->ExecuteSet(query + wxT("\n")
+		wxString q=query + wxT("\n")
 		                       wxT("   AND ") + clsorder + wxT(" IN (\n")
 		                       wxT("   SELECT oid FROM pg_class\n")
 		                       wxT("    WHERE relname IN ('pg_class', 'pg_constraint', 'pg_conversion', 'pg_language', 'pg_proc', 'pg_extension', \n")
-		                       wxT("                      'pg_rewrite', 'pg_namespace', 'pg_trigger', 'pg_type', 'pg_attrdef', 'pg_event_trigger'))\n")
-		                       wxT(" ORDER BY ") + clsorder + wxT(", cl.relkind"));
+		                       wxT(" ORDER BY ") + clsorder + wxT(", cl.relkind");
+		set = conn->ExecuteSet(q);
 
 		if (set)
 		{
@@ -503,10 +502,12 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	               wxT("            WHEN co.oid IS NOT NULL THEN 'C'::text || contype\n")
 	               wxT("            WHEN ad.oid IS NOT NULL THEN 'A'::text\n")
 				   wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
+				   wxT("            WHEN pub.oid IS NOT NULL THEN 'r'::text\n")
 	               wxT("            ELSE '' END AS type,\n")
 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname\n")
 	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname)\n")
+	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text)\n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
 	               wxT("  FROM pg_depend dep\n")
@@ -527,6 +528,7 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	               wxT("  LEFT JOIN pg_language la ON dep.refobjid=la.oid\n")
 	               wxT("  LEFT JOIN pg_namespace ns ON dep.refobjid=ns.oid\n")
 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.adrelid=att.attrelid AND ad.adnum=att.attnum\n")
+				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid\n")
 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.refobjid\n")
 	               + where, wxT("refclassid"));
 
@@ -671,11 +673,12 @@ void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wx
 	               wxT("            WHEN rw.oid IS NOT NULL THEN 'R'::text\n")
 	               wxT("            WHEN co.oid IS NOT NULL THEN 'C'::text || contype\n")
 	               wxT("            WHEN ad.oid IS NOT NULL THEN 'A'::text\n")
+				   wxT("            WHEN pub.oid IS NOT NULL THEN 'r'::text\n")
 				   wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
 	               wxT("            ELSE '' END AS type,\n")
 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname \n")
-	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname) \n")
+	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text) \n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
 	               wxT("  FROM pg_depend dep\n")
@@ -697,6 +700,7 @@ void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wx
 	               wxT("  LEFT JOIN pg_namespace ns ON dep.objid=ns.oid\n")
 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.oid=dep.objid\n")
 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.objid\n")
+				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid\n")
 	               + where, wxT("classid"));
 	
 	/*

@@ -76,6 +76,8 @@ class pgPartitionCollection : public pgTableCollection
 {
 public:
 	pgPartitionCollection(pgaFactory *factory, pgPartition *_table);
+	void ShowStatistics(frmMain *form, ctlListView *statistics);
+
 	virtual bool CanCreate()
 	{
 		return false;

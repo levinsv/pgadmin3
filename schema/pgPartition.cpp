@@ -94,6 +94,102 @@ pgPartitionCollection::pgPartitionCollection(pgaFactory *factory, pgPartition *_
 {
 	iSetOid(_table->GetOid());
 }
+void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
+{
+	wxLogInfo(wxT("Displaying statistics for tables on %s"), GetSchema()->GetIdentifier().c_str());
+
+	bool hasSize = GetConnection()->HasFeature(FEATURE_SIZE);
+
+	// Add the statistics view columns
+	statistics->ClearAll();
+	statistics->AddColumn(_("Table Name"));
+	statistics->AddColumn(_("Tuples inserted"));
+	statistics->AddColumn(_("Tuples updated"));
+	statistics->AddColumn(_("Tuples deleted"));
+	if (GetConnection()->BackendMinimumVersion(8, 3))
+	{
+		statistics->AddColumn(_("Tuples HOT updated"));
+		statistics->AddColumn(_("Live tuples"));
+		statistics->AddColumn(_("Dead tuples"));
+	}
+	if (GetConnection()->BackendMinimumVersion(8, 2))
+	{
+		statistics->AddColumn(_("Last vacuum"));
+		statistics->AddColumn(_("Last autovacuum"));
+		statistics->AddColumn(_("Last analyze"));
+		statistics->AddColumn(_("Last autoanalyze"));
+	}
+	if (GetConnection()->BackendMinimumVersion(9, 1))
+	{
+		statistics->AddColumn(_("Vacuum counter"));
+		statistics->AddColumn(_("Autovacuum counter"));
+		statistics->AddColumn(_("Analyze counter"));
+		statistics->AddColumn(_("Autoanalyze counter"));
+	}
+	if (hasSize)
+		statistics->AddColumn(_("Size"), 50);
+
+	wxString sql = wxT("SELECT st.relname, n_tup_ins, n_tup_upd, n_tup_del");
+	if (GetConnection()->BackendMinimumVersion(8, 3))
+		sql += wxT(", n_tup_hot_upd, n_live_tup, n_dead_tup");
+	if (GetConnection()->BackendMinimumVersion(8, 2))
+		sql += wxT(", last_vacuum, last_autovacuum, last_analyze, last_autoanalyze");
+	if (GetConnection()->BackendMinimumVersion(9, 1))
+		sql += wxT(", vacuum_count, autovacuum_count, analyze_count, autoanalyze_count");
+	if (hasSize)
+		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
+		       wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
+		       wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
+
+	sql += wxT("\n  FROM pg_stat_all_tables st")
+	       wxT("  JOIN pg_class cl on cl.oid=st.relid\n")
+		   wxT("  JOIN pg_inherits i ON (cl.oid = i.inhrelid)")
+		   wxT(" WHERE schemaname = ") + qtDbString(GetSchema()->GetName())+ wxT(" AND i.inhparent = ")+GetOidStr()
+	       +  wxT("\n ORDER BY relname");
+
+	pgSet *stats = GetDatabase()->ExecuteSet(sql);
+
+	if (stats)
+	{
+		long pos = 0;
+		int i;
+		while (!stats->Eof())
+		{
+			i = 4;
+			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
+			statistics->SetItem(pos, 1, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_del")));
+			if (GetConnection()->BackendMinimumVersion(8, 3))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_live_tup")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_dead_tup")));
+			}
+			if (GetConnection()->BackendMinimumVersion(8, 2))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_vacuum")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autovacuum")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_analyze")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autoanalyze")));
+			}
+			if (GetConnection()->BackendMinimumVersion(9, 1))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("vacuum_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("autovacuum_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("analyze_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("autoanalyze_count")));
+			}
+			if (hasSize)
+				statistics->SetItem(pos, i, stats->GetVal(wxT("size")));
+			stats->MoveNext();
+			pos++;
+		}
+
+		delete stats;
+	}
+
+}
 
 
 pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser, const wxString &restriction)
