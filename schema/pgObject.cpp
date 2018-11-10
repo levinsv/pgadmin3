@@ -260,6 +260,7 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 		                       wxT("   AND ") + clsorder + wxT(" IN (\n")
 		                       wxT("   SELECT oid FROM pg_class\n")
 		                       wxT("    WHERE relname IN ('pg_class', 'pg_constraint', 'pg_conversion', 'pg_language', 'pg_proc', 'pg_extension', \n")
+		                       wxT("                      'pg_rewrite', 'pg_namespace', 'pg_trigger', 'pg_type', 'pg_attrdef', 'pg_event_trigger','pg_publication_rel','pg_subscription_rel'))\n")
 		                       wxT(" ORDER BY ") + clsorder + wxT(", cl.relkind");
 		set = conn->ExecuteSet(q);
 
@@ -506,7 +507,6 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	               wxT("            ELSE '' END AS type,\n")
 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname\n")
-	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname)\n")
 	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text)\n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
