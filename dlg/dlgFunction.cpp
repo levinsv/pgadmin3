@@ -155,7 +155,6 @@ dlgFunction::dlgFunction(pgaFactory *f, frmMain *frame, pgFunction *node, pgSche
 		txtSqlBox->SetMarginType(1, wxSTC_MARGIN_NUMBER);
 		txtSqlBox->SetMarginWidth(1, ConvertDialogToPixels(wxPoint(16, 0)).x);
 	}
-
 	btnAdd->Disable();
 	btnRemove->Disable();
 	btnChange->Disable();

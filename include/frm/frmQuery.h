@@ -259,6 +259,7 @@ private:
 	void showMessage(const wxString &msg, const wxString &msgShort = wxT(""));
 	int GetLineEndingStyle();
 	void OnSetEOLMode(wxCommandEvent &event);
+	void OnAutoEditObject(wxCommandEvent &event);
 	void SetEOLModeDisplay(int mode);
 	void OnMacroInvoke(wxCommandEvent &event);
 	void OnMacroManage(wxCommandEvent &event);

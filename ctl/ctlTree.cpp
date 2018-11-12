@@ -25,7 +25,7 @@ BEGIN_EVENT_TABLE(ctlTree, wxTreeCtrl)
 END_EVENT_TABLE()
 
 
-wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &prefixOrig)
+wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &prefixOrig, const bool full )
 {
 	// match is case insensitive as this is more convenient to the user: having
 	// to press Shift-letter to go to the item starting with a capital letter
@@ -37,7 +37,7 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 	// pressing it) but we shouldn't jump to the next one if the user is
 	// continuing to type as otherwise he might easily skip the item he wanted
 	wxTreeItemId id = idParent;
-
+	int le=prefix.length();
 	if ( prefix.length() == 1 )
 	{
 		wxCookieType cookie;
@@ -61,7 +61,11 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 	// look for the item starting with the given prefix after it
 	while ( id.IsOk() &&
 	        ( ( GetItemText(id) == wxT("Dummy") && !GetItemData(id) ) ||
-	          !GetItemText(id).Lower().StartsWith(prefix) ))
+			!( (!full&&GetItemText(id).Lower().StartsWith(prefix)) || 
+			(full && //GetItemText(id).Lower().StartsWith(prefix) && GetItemText(id).length()==le)
+			           GetObject(id)->GetName()==prefix )
+			)
+			))
 	{
 		wxCookieType cookie;
 		if ( HasChildren(id) )
@@ -110,7 +114,11 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 		// and try all the items (stop when we get to the one we started from)
 		while ( id.IsOk() && id != idParent &&
 		        (( GetItemText(id) == wxT("Dummy") && !GetItemData(id) ) ||
-		         !GetItemText(id).Lower().StartsWith(prefix) ))
+		         !((!full&&GetItemText(id).Lower().StartsWith(prefix)) || 
+				   (full && //GetItemText(id).Lower().StartsWith(prefix) && GetItemText(id).length()==le)
+							GetObject(id)->GetName()==prefix )
+				  )
+				))
 		{
 			wxCookieType cookie;
 			if ( HasChildren(id) )

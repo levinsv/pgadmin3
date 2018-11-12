@@ -39,7 +39,7 @@ public:
 	pgCollection *GetParentCollection(wxTreeItemId id);
 	pgObject *FindObject(pgaFactory &factory, wxTreeItemId parent);
 	pgCollection *FindCollection(pgaFactory &factory, wxTreeItemId parent);
-	wxTreeItemId FindItem(const wxTreeItemId &item, const wxString &str);
+	wxTreeItemId FindItem(const wxTreeItemId &item, const wxString &str, bool full = false);
 	void NavigateTree(int keyCode);
 	virtual ~ctlTree();
 

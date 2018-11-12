@@ -39,6 +39,7 @@
 #include "dlg/dlgAddFavourite.h"
 #include "dlg/dlgManageFavourites.h"
 #include "dlg/dlgManageMacros.h"
+#include "dlg/dlgFunction.h"
 #include "frm/frmReport.h"
 #include "gqb/gqbViewController.h"
 #include "gqb/gqbModel.h"
@@ -164,6 +165,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_LF,                frmQuery::OnSetEOLMode)
 	EVT_MENU(MNU_CRLF,              frmQuery::OnSetEOLMode)
 	EVT_MENU(MNU_CR,                frmQuery::OnSetEOLMode)
+	EVT_MENU(MNU_AUTOEDITOBJECT,    frmQuery::OnAutoEditObject)
 	EVT_MENU_RANGE(MNU_FAVOURITES_MANAGE + 1, MNU_FAVOURITES_MANAGE + 999, frmQuery::OnSelectFavourite)
 	EVT_MENU_RANGE(MNU_MACROS_MANAGE + 1, MNU_MACROS_MANAGE + 99, frmQuery::OnMacroInvoke)
 	EVT_ACTIVATE(                   frmQuery::OnActivate)
@@ -320,6 +322,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	editMenu->AppendSubMenu(formatMenu, _("F&ormat"));
 	editMenu->Append(MNU_LINEENDS, _("&Line ends"), lineEndMenu);
 	editMenu->Append(MNU_AUTOREPLACE_MANAGE, _("Manage autoreplace..."), _("Edit and delete autoreplace strings"));
+	editMenu->Append(MNU_AUTOEDITOBJECT, _("Open object\tF4"), _("Open object in brouser tree"));
 	
 	autoreplace = queryMacroFileProvider::LoadAutoReplace(true);
 
@@ -2116,7 +2119,47 @@ int frmQuery::GetLineEndingStyle()
 		return sqlQuery->GetEOLMode();
 }
 
+void frmQuery::OnAutoEditObject(wxCommandEvent &event)
+{
+	//parent->SetCurrentNode(parent->GetBrowser()->GetRootItem(), path);
+	pgObject *obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
+	pgFunction *fun=(pgFunction *)obj;//obj->Show
+	//mainForm.propFactory->StartDialog(mainForm, obj);
+	//showMessage(obj->GetTypeName());
+	//return;
+	if (obj->GetTypeName()==wxT("Servers")||obj->GetTypeName()==wxT("Server")||obj->GetTypeName()==wxT("Databases")
+		||obj->GetTypeName()==wxT("Tablespaces")||obj->GetTypeName()==wxT("Group Roles")
+		||obj->GetTypeName()==wxT("Login Roles")
+		) return;
+	wxString databasePath = mainForm->GetNodePath(obj->GetDatabase()->GetId());
+	//showMessage(databasePath);
+	wxString selText = sqlQuery->GetSelectedText();
+	if (!selText.IsNull()) {
+		databasePath =databasePath +wxT("/")+ _("Schemas");
+		if(!mainForm->SetCurrentNode(mainForm->GetBrowser()->GetRootItem(), databasePath))
+			{
+					wxMessageBox(_("The specified object couldn't be found in the tree.") + databasePath);
+				}
+		//int n=mainForm->GetBrowser()->GetChildrenCount(mainForm->GetBrowser()->GetSelection(),false);
+		wxTreeItemId matchItem = mainForm->GetBrowser()->FindItem(obj->GetId(),selText,true);
+		
+		if (matchItem.IsOk()) {
+			wxString findtext= mainForm->GetBrowser()->GetItemText(matchItem);
+			pgObject *o=mainForm->GetBrowser()->GetObject(matchItem);
+			//mainForm->GetBrowser()->SelectItem(o->GetId());
+			//showMessage(o->GetName().Lower());
+			if (o->GetName().Lower()==selText.Lower()) {
+				
+				//obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
+				obj=o;
+				if (!dlgProperty::EditObjectDialog(mainForm, 0, obj))
+						mainForm->CheckAlive();
 
+			}
+		}
+	}
+
+}
 // User-set the current EOL mode for the form
 void frmQuery::OnSetEOLMode(wxCommandEvent &event)
 {
@@ -3360,7 +3403,7 @@ void frmQuery::completeQuery(bool done, bool explain, bool verbose)
 	setTools(false);
 	fileMenu->Enable(MNU_EXPORT, sqlResult->CanExport());
 
-	if (!IsActive() || IsIconized())
+	if ((!IsActive() || IsIconized())|| (elapsedQuery>120*1000))
 		RequestUserAttention();
 
 	if (!viewMenu->IsChecked(MNU_OUTPUTPANE))
@@ -3403,6 +3446,7 @@ void frmQuery::completeQuery(bool done, bool explain, bool verbose)
 
 	sqlQueryExec = NULL;
 	sqlQuery->SetFocus();
+	
 }
 
 
