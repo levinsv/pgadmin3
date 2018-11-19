@@ -179,6 +179,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_PGQUERYRESULT(QUERY_COMPLETE, frmQuery::OnQueryComplete)
 	EVT_MENU(PGSCRIPT_COMPLETE,     frmQuery::OnScriptComplete)
 	EVT_AUINOTEBOOK_PAGE_CHANGED(CTL_NTBKCENTER, frmQuery::OnChangeNotebook)
+	EVT_AUINOTEBOOK_PAGE_CHANGED(CTL_NTBKGQB, frmQuery::OnChangeNotebookOutpane)
 	EVT_AUINOTEBOOK_PAGE_CHANGED(CTL_SQLQUERYBOOK, frmQuery::OnSqlBookPageChanged)
 	EVT_AUINOTEBOOK_PAGE_CHANGING(CTL_SQLQUERYBOOK, frmQuery::OnSqlBookPageChanging)
 	EVT_AUINOTEBOOK_PAGE_CLOSE(CTL_SQLQUERYBOOK, frmQuery::OnSqlBookPageClose)
@@ -542,7 +543,6 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	msgResult->SetFont(settings->GetSQLFont());
 	msgHistory = new wxTextCtrl(outputPane, CTL_MSGHISTORY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
 	msgHistory->SetFont(settings->GetSQLFont());
-
 	// Graphical Canvas
 	// initialize values
 	model = new gqbModel();
@@ -1284,7 +1284,27 @@ void frmQuery::OnSaveHistory(wxCommandEvent &event)
 	delete dlg;
 
 }
+void frmQuery::OnChangeNotebookOutpane(wxAuiNotebookEvent &event)
+{
+	if (outputPane->GetPageCount() > 0)
+	{
+		size_t curpage = outputPane->GetSelection();
+		if (wxDynamicCast(outputPane->GetPage(curpage), wxTextCtrl))
+		{
+			
+			wxTextCtrl *hist = wxDynamicCast(outputPane->GetPage(curpage), wxTextCtrl);
+			//hist->SetInsertionPointEnd();
+			//outputPane->Get
+			if (outputPane->GetPageText(curpage)==_("History")) {
+				///showMessage(hist->GetName());
+				hist->ShowPosition(99999999);
+			}
+			//showMessage();
+		}
+		//hist->CmdKeyExecute(wxSTC_CMD_TAB);
+	}
 
+}
 void frmQuery::OnChangeNotebook(wxAuiNotebookEvent &event)
 {
 	// A bug in wxGTK prevents us to show a modal dialog within a
@@ -1923,7 +1943,7 @@ void frmQuery::OnPositionStc(wxStyledTextEvent &event)
 	int selFrom, selTo, selCount;
 	sqlQuery->GetSelection(&selFrom, &selTo);
 	selCount = selTo - selFrom;
-
+	editMenu->Enable(MNU_AUTOEDITOBJECT, selCount > 0);
 	wxString pos;
 	pos.Printf(_("Ln %d, Col %d, Ch %d"), sqlQuery->LineFromPosition(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetColumn(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetCurrentPos() + 1);
 	SetStatusText(pos, STATUSPOS_POS);

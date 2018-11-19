@@ -339,7 +339,7 @@ int dlgProperty::Go(bool modal)
 
 		wxString typeName = factory->GetTypeName();
 		SetTitle(wxString(wxGetTranslation(typeName)) + wxT(" ") + GetObject()->GetFullIdentifier());
-		if (typeName==wxT("Function")) {
+		if (typeName==wxT("Function")||typeName==wxT("Procedure")) {
 			if (nbNotebook)
 			   nbNotebook->SetSelection(4);
 		}

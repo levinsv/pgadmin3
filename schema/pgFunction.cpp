@@ -390,7 +390,7 @@ void pgFunction::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *pr
 		if (!GetIsProcedure())
 			properties->AppendItem(_("Return type"), GetReturnType());
 		properties->AppendItem(_("Language"), GetLanguage());
-		properties->AppendYesNoItem(_("Returns a set?"), GetReturnAsSet());
+		if (!GetIsProcedure()) properties->AppendYesNoItem(_("Returns a set?"), GetReturnAsSet());
 		if (GetLanguage().IsSameAs(wxT("C"), false))
 		{
 			properties->AppendItem(_("Object file"), GetBin());
@@ -399,20 +399,20 @@ void pgFunction::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *pr
 		else
 			properties->AppendItem(_("Source"), firstLineOnly(GetSource()));
 
-		if (GetConnection()->BackendMinimumVersion(8, 3))
+		if (GetConnection()->BackendMinimumVersion(8, 3)&&!GetIsProcedure())
 		{
 			properties->AppendItem(_("Estimated cost"), GetCost());
 			if (GetReturnAsSet())
 				properties->AppendItem(_("Estimated rows"), GetRows());
 		}
 
-		properties->AppendItem(_("Volatility"), GetVolatility());
-		properties->AppendItem(_("Parallel"), GetParallel());
-		if (GetConnection()->BackendMinimumVersion(9, 2))
+		if (!GetIsProcedure()) properties->AppendItem(_("Volatility"), GetVolatility());
+		if (!GetIsProcedure()) properties->AppendItem(_("Parallel"), GetParallel());
+		if (GetConnection()->BackendMinimumVersion(9, 2)&&(!GetIsProcedure()))
 			properties->AppendYesNoItem(_("Leak proof?"), GetIsLeakProof());
 		properties->AppendYesNoItem(_("Security of definer?"), GetSecureDefiner());
-		properties->AppendYesNoItem(_("Strict?"), GetIsStrict());
-		if (GetConnection()->BackendMinimumVersion(8, 4))
+		if (!GetIsProcedure()) properties->AppendYesNoItem(_("Strict?"), GetIsStrict());
+		if (GetConnection()->BackendMinimumVersion(8, 4)&&!GetIsProcedure())
 			properties->AppendYesNoItem(_("Window?"), GetIsWindow());
 
 		size_t i;
@@ -489,6 +489,8 @@ wxString pgProcedure::GetSql(ctlTree *browser)
 		}
 
 
+		sql += wxT("\n")
+		       +  GetOwnerSql(11, 0, wxT("PROCEDURE ") + qtSig);
 		sql += GetGrant(wxT("X"), wxT("PROCEDURE ") + qtSig);
 
 		if (!GetComment().IsNull())

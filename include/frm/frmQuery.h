@@ -154,6 +154,7 @@ private:
 	wxString *querys;
 	//GQB related
 	void OnChangeNotebook(wxAuiNotebookEvent &event);
+	void OnChangeNotebookOutpane(wxAuiNotebookEvent &event);
 	void OnAdjustSizesTimer(wxTimerEvent &event);
 	void OnResizeHorizontally(wxSplitterEvent &event);
 	void adjustGQBSizes();

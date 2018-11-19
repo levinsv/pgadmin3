@@ -134,7 +134,6 @@ dlgFunction::dlgFunction(pgaFactory *f, frmMain *frame, pgFunction *node, pgSche
 	schema = sch;
 	function = node;
 	isProcedure = false;
-
 	seclabelPage = new ctlSeclabelPanel(nbNotebook);
 
 	txtArguments->Disable();
@@ -167,7 +166,9 @@ dlgFunction::dlgFunction(pgaFactory *f, frmMain *frame, pgFunction *node, pgSche
 
 dlgProperty *pgProcedureFactory::CreateDialog(frmMain *frame, pgObject *node, pgObject *parent)
 {
-	return new dlgProcedure(this, frame, (pgFunction *)node, (pgSchema *)parent);
+	dlgProcedure *p= new dlgProcedure(this, frame, (pgFunction *)node, (pgSchema *)parent);
+	//p->isProcedure=true;
+	return p;
 }
 
 dlgProcedure::dlgProcedure(pgaFactory *f, frmMain *frame, pgFunction *node, pgSchema *sch)
@@ -233,12 +234,12 @@ int dlgFunction::Go(bool modal)
 	if (isProcedure)
 	{
 		if (function && !connection->EdbMinimumVersion(8, 2))
-			txtName->Disable();
-		cbOwner->Disable();
+		//	txtName->Disable();
+		//cbOwner->Disable();
 		//cbLanguage->Disable();
 		chkStrict->Disable();
 		chkWindow->Disable();
-		chkSecureDefiner->Disable();
+		//chkSecureDefiner->Disable();
 		chkSetof->Disable();
 		cbVolatility->Disable();
 		cbParallel->Disable();
@@ -604,7 +605,12 @@ void dlgFunction::CheckChange()
 	{
 		if (seclabelPage && connection->BackendMinimumVersion(9, 1))
 			enable = enable || !(seclabelPage->GetSqlForSecLabels().IsEmpty());
-		EnableOK(enable && !GetSql().IsEmpty());
+		wxString s=GetSql();
+		bool noempty=true;
+		if (s.IsEmpty()) {
+			noempty=false;
+		}
+		EnableOK(enable && noempty);
 	}
 	else
 	{
@@ -870,21 +876,21 @@ wxString dlgFunction::GetSql()
 
 	bool isC = cbLanguage->GetValue().IsSameAs(wxT("C"), false);
 	bool didChange = !function
-	                 || cbLanguage->GetValue() != function->GetLanguage()
-	                 || cbVolatility->GetValue() != function->GetVolatility()
-					 || cbParallel->GetValue() != function->GetParallel()
+	                 || cbLanguage->GetValue() != function->GetLanguage() && !isProcedure
+	                 || cbVolatility->GetValue() != function->GetVolatility() && !isProcedure
+					 || cbParallel->GetValue() != function->GetParallel() && !isProcedure
 	                 || chkSecureDefiner->GetValue() != function->GetSecureDefiner()
-	                 || chkStrict->GetValue() != function->GetIsStrict()
-	                 || GetArgs() != function->GetArgListWithNames()
-	                 || chkLeakProof->GetValue() != function->GetIsLeakProof()
-	                 || (isC && (txtObjectFile->GetValue() != function->GetBin() || txtLinkSymbol->GetValue() != function->GetSource()))
+	                 || chkStrict->GetValue() != function->GetIsStrict() && !isProcedure
+	                 || GetArgs() != function->GetArgListWithNames() && !isProcedure
+	                 || chkLeakProof->GetValue() != function->GetIsLeakProof() && !isProcedure
+	                 || (isC && (txtObjectFile->GetValue() != function->GetBin()&& !isProcedure || txtLinkSymbol->GetValue() != function->GetSource()))
 	                 || (!isC && txtSqlBox->GetText() != function->GetSource());
 
 	if (connection->BackendMinimumVersion(8, 3))
 	{
 		didChange = (didChange ||
-		             txtCost->GetValue() != NumToStr(function->GetCost()) ||
-		             (chkSetof->GetValue() && txtRows->GetValue() != NumToStr(function->GetRows())));
+		             txtCost->GetValue() != NumToStr(function->GetCost())&& !isProcedure ||
+		             (chkSetof->GetValue()&& !isProcedure && txtRows->GetValue() != NumToStr(function->GetRows())));
 	}
 
 	if (function)
