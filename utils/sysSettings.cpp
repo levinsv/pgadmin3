@@ -125,6 +125,8 @@ bool sysSettings::GetDisplayOption(const wxString &objtype, bool GetDefault)
 		engtype = wxT("Extensions");
 	else if (objtype == _("Publications"))
 		engtype = wxT("Publications");
+	else if (objtype == _("Subscriptions"))
+		engtype = wxT("Subscriptions");
 	else if (objtype == _("Synonyms"))
 		engtype = wxT("Synonyms");
 	else if (objtype == _("Schemas"))
@@ -220,6 +222,7 @@ void sysSettings::SetDisplayOption(const wxString &objtype, bool display)
 	else if (objtype == _("Event Triggers")) engtype = wxT("Event Triggers");
 	else if (objtype == _("Extensions")) engtype = wxT("Extensions");
 	else if (objtype == _("Publications")) engtype = wxT("Publications");
+	else if (objtype == _("Subscriptions")) engtype = wxT("Subscriptions");
 	else if (objtype == _("Synonyms")) engtype = wxT("Synonyms");
 	else if (objtype == _("Schemas")) engtype = wxT("Schemas");
 	else if (objtype == _("Slony-I Clusters")) engtype = wxT("Slony-I Clusters");

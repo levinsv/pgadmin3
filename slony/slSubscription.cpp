@@ -23,16 +23,16 @@
 
 
 slSubscription::slSubscription(slSet *s, const wxString &newName)
-	: slSetObject(s, subscriptionFactory, newName)
+	: slSetObject(s, slsubscriptionFactory, newName)
 {
 }
 
 int slSubscription::GetIconId()
 {
 	if (GetReceiverId() == GetCluster()->GetLocalNodeID())
-		return subscriptionFactory.GetIconId();
+		return slsubscriptionFactory.GetIconId();
 	else
-		return subscriptionFactory.GetExportedIconId();
+		return slsubscriptionFactory.GetExportedIconId();
 }
 
 
@@ -194,7 +194,7 @@ pgObject *slSubscription::Refresh(ctlTree *browser, const wxTreeItemId item)
 	pgObject *subscription = 0;
 	pgCollection *coll = browser->GetParentCollection(item);
 	if (coll)
-		subscription = subscriptionFactory.CreateObjects(coll, 0, wxT(" WHERE sub_set=") + NumToStr(GetSet()->GetSlId())
+		subscription = slsubscriptionFactory.CreateObjects(coll, 0, wxT(" WHERE sub_set=") + NumToStr(GetSet()->GetSlId())
 		               + wxT(" AND sub_receiver = ") + NumToStr(GetReceiverId()) + wxT("\n"));
 	return subscription;
 }
@@ -290,5 +290,5 @@ pgCollection *slSubscriptionFactory::CreateCollection(pgObject *obj)
 }
 
 
-slSubscriptionFactory subscriptionFactory;
-static pgaCollectionFactory cf(&subscriptionFactory, __("Subscriptions"), slsubscriptions_png_img);
+slSubscriptionFactory slsubscriptionFactory;
+static pgaCollectionFactory cf(&slsubscriptionFactory, __("Subscriptions"), slsubscriptions_png_img);

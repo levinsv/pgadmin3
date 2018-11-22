@@ -30,7 +30,7 @@ public:
 protected:
 	int exportedIconId;
 };
-extern slSubscriptionFactory subscriptionFactory;
+extern slSubscriptionFactory slsubscriptionFactory;
 
 
 class slSubscription : public slSetObject

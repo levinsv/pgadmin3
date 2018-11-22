@@ -394,6 +394,7 @@ frmOptions::frmOptions(frmMain *parent)
 	lstDisplay->Append(_("Event Triggers"));
 	lstDisplay->Append(_("Extensions"));
 	lstDisplay->Append(_("Publications"));
+	lstDisplay->Append(_("Subscriptions"));
 	lstDisplay->Append(_("Foreign Data Wrappers"));
 	lstDisplay->Append(_("Foreign Servers"));
 	lstDisplay->Append(_("User Mappings"));
