@@ -1725,6 +1725,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				}
 				if (connection->BackendMinimumVersion(9, 6))
 				{
+					wait_event_type_col=colpos;
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("wait_event_type")));
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("wait_event")));
 				}
@@ -2029,7 +2030,8 @@ void frmStatus::OnRefreshQuerystateTimer(wxTimerEvent &event)
 		return;
 	wxString pid=statusList->GetText(row, 0);
 	wxString dbname=statusList->GetText(row, 2); // dbname 
-	if (dbname.IsEmpty()) return;
+	wxString wait_event_type= statusList->GetText(row, wait_event_type_col);
+	if (dbname.IsEmpty()||wait_event_type==wxT("Extension")) return;
 
 	wxString flags=wxT("");
 	if (viewMenu->IsChecked(MNU_QUERYSTATEVERBOSE)) 

@@ -81,6 +81,8 @@ bool sysSettings::GetDisplayOption(const wxString &objtype, bool GetDefault)
 		engtype = wxT("Tablespaces");
 	else if (objtype == _("pgAgent Jobs"))
 		engtype = wxT("pgAgent Jobs");
+	else if (objtype == _("pgpro_scheduler"))
+		engtype = wxT("pgpro_scheduler");
 	else if (objtype == _("Groups/group Roles"))
 		engtype = wxT("Groups-login Roles");
 	else if (objtype == _("Users/login Roles"))
@@ -208,6 +210,7 @@ void sysSettings::SetDisplayOption(const wxString &objtype, bool display)
 	if (objtype == _("Databases")) engtype = wxT("Databases");
 	else if (objtype == _("Tablespaces")) engtype = wxT("Tablespaces");
 	else if (objtype == _("pgAgent Jobs")) engtype = wxT("pgAgent Jobs");
+	else if (objtype == _("pgpro_scheduler")) engtype = wxT("pgpro_scheduler");
 	else if (objtype == _("Groups/group Roles")) engtype = wxT("Groups-login Roles");
 	else if (objtype == _("Users/login Roles")) engtype = wxT("Users-login Roles");
 	else if (objtype == _("Resource Queues")) engtype = wxT("Resource Queues");

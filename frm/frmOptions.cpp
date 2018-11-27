@@ -385,6 +385,7 @@ frmOptions::frmOptions(frmMain *parent)
 	lstDisplay->Append(_("Databases"));
 	lstDisplay->Append(_("Tablespaces"));
 	lstDisplay->Append(_("pgAgent Jobs"));
+	lstDisplay->Append(_("pgpro_scheduler"));
 	lstDisplay->Append(_("Groups/group Roles"));
 	lstDisplay->Append(_("Users/login Roles"));
 	lstDisplay->Append(_("Resource Queues"));

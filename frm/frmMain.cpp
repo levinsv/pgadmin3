@@ -78,6 +78,7 @@
 #include "schema/pgFunction.h"
 #include "schema/pgIndex.h"
 #include "schema/pgTrigger.h"
+#include "pro_scheduler/pgproJob.h"
 #include "schema/pgRole.h"
 #include "schema/pgRule.h"
 #include "schema/pgServer.h"
@@ -317,6 +318,7 @@ void frmMain::CreateMenus()
 	new enabledisableRuleFactory(menuFactories, toolsMenu, 0);
 	new enabledisableTriggerFactory(menuFactories, toolsMenu, 0);
 	new enabledisableEventTriggerFactory(menuFactories, toolsMenu, 0);
+	new enabledisableJobFactory(menuFactories, toolsMenu, 0);
 	new disableAllTriggersFactory(menuFactories, toolsMenu, 0);
 	new enableAllTriggersFactory(menuFactories, toolsMenu, 0);
 	new validateForeignKeyFactory(menuFactories, toolsMenu, 0);
