@@ -1041,13 +1041,13 @@ CharacterRange ctlSQLBox::RegexFindText(int minPos, int maxPos, const wxString &
 	ft.chrg.cpMax = maxPos;
 	wxWX2MBbuf buf = text.mb_str(wxConvUTF8);
 	ft.lpstrText = (char *)(const char *)buf;
-/*
-не компилировалась с wx 2.8.12
-	if (SendMsg(2150, wxSTC_FIND_REGEXP, (long)&ft) == -1)
-	{
-		ft.chrgText.cpMin = -1;
-		ft.chrgText.cpMax = -1;
-	}
-*/
+
+//не компилировалась с wx 2.8.12
+	//if (SendMsg(2150, wxSTC_FIND_REGEXP, (long)&ft) == -1)
+	//{
+	//	ft.chrgText.cpMin = -1;
+	//	ft.chrgText.cpMax = -1;
+	//}
+
 	return ft.chrgText;
 }

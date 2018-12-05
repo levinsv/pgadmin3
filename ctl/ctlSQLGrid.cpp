@@ -14,7 +14,7 @@
 // wxWindows headers
 #include <wx/wx.h>
 #include <wx/clipbrd.h>
-
+#include <wx/generic/gridctrl.h>
 #include "db/pgConn.h"
 #include "ctl/ctlSQLGrid.h"
 #include "utils/sysSettings.h"
@@ -28,6 +28,7 @@ BEGIN_EVENT_TABLE(ctlSQLGrid, wxGrid)
 	EVT_MOUSEWHEEL(ctlSQLGrid::OnMouseWheel)
 	EVT_GRID_COL_SIZE(ctlSQLGrid::OnGridColSize)
 	EVT_GRID_LABEL_LEFT_CLICK(ctlSQLGrid::OnLabelClick)
+	EVT_GRID_CELL_RIGHT_CLICK(  ctlSQLGrid::OnCellRightClick)
 END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(ctlSQLGrid, wxGrid)
@@ -51,6 +52,9 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetDefaultRowSize(fntCells.GetPointSize() * 2 + 2);
 	SetColLabelSize(fntLabel.GetPointSize() * 4);
 	SetDefaultCellOverflow(false);
+	//SetDefaultRenderer(new  wxGridCellAutoWrapStringRenderer);
+	SetDefaultRenderer(new  CursorCellRenderer);
+	
 
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
 }
@@ -392,6 +396,11 @@ void ctlSQLGrid::OnLabelDoubleClick(wxGridEvent &event)
 	}
 }
 
+	void ctlSQLGrid::OnCellRightClick(wxGridEvent &event)
+{
+	int row = event.GetRow();
+	int col = event.GetCol();
+}
 void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 {
 	int row = event.GetRow();

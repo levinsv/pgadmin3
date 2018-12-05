@@ -370,7 +370,9 @@ bool CSSHTunnelThread::resolveDNS(const char *host, wxArrayString &arrIPAddress)
 	struct addrinfo hints, *res, *p;
 	int status;
 	char ipstr[INET6_ADDRSTRLEN];
-
+#ifndef AI_ADDRCONFIG
+#define AI_ADDRCONFIG 0
+#endif
 	memset(&hints, 0, sizeof hints);
 	memset(&ipstr, 0, sizeof ipstr);
 	hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version

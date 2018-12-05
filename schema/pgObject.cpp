@@ -459,7 +459,7 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 		return;
 
 	// Bail out if this is a pgAgent object, as they use the OID for IDs
-	if (GetMetaType() == PGM_JOB || GetMetaType() == PGM_SCHEDULE || GetMetaType() == PGM_STEP)
+	if (GetMetaType() == PGM_JOB || GetMetaType() == PGM_SCHEDULE || GetMetaType() == PGM_STEP || GetMetaType() == PGM_PROJOB)
 		return;
 
 	wxString where;
@@ -635,7 +635,7 @@ void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wx
 		return;
 
 	// Bail out if this is a pgAgent object, as they use the OID for IDs
-	if (GetMetaType() == PGM_JOB || GetMetaType() == PGM_SCHEDULE || GetMetaType() == PGM_STEP)
+	if (GetMetaType() == PGM_JOB || GetMetaType() == PGM_SCHEDULE || GetMetaType() == PGM_STEP || GetMetaType() == PGM_PROJOB)
 		return;
 
 	wxString where;

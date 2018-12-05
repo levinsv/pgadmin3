@@ -121,6 +121,16 @@ public:
 	{
 		runas = s;
 	}
+	
+	wxString GetTryName() const
+	{
+		return tryname;
+	}
+	void iSetTryName(const wxString &s)
+	{
+		tryname = s;
+	}
+
 	wxString GetRule() const
 	{
 		return rule;
@@ -177,7 +187,7 @@ public:
 private:
 	bool enabled;
 	wxDateTime finished, changed, nextrun, lastrun;
-	wxString message, crontab, runas, commands,status,rule;
+	wxString message, crontab, runas, commands,status,rule,tryname;
 	long recId;
 };
 

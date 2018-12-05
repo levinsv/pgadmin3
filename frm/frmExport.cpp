@@ -339,9 +339,13 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 					case PGTYPCLASS_DATE:
 						//type=wxT("ÃÃÃÃ-ÌÌ-ÄÄ ÷÷:ìì:ññ");
 						xmltext=xmltext.BeforeFirst('+');
-						xmltext.Replace(wxT(" "),wxT("T"));
-						style=wxT("dt");
-						xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"DateTime\">")+xmltext+wxT("</Data></Cell>");
+						if (xmltext.Replace(wxT(" "),wxT("T"))==0) {
+							xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"String\">")+xmltext+wxT("</Data></Cell>");
+						} else 
+						{
+							style=wxT("dt");
+							xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"DateTime\">")+xmltext+wxT("</Data></Cell>");
+						}
 						break;
 					case PGTYPCLASS_BOOL:
 					default:
