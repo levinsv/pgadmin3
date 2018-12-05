@@ -630,6 +630,7 @@ void pgDatabase::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *pr
 				browser->AppendCollection(this, extensionFactory);
 			if (settings->GetDisplayOption(_("Publications")) && GetConnection()->BackendMinimumVersion(10, 0))
 				browser->AppendCollection(this, publicationFactory);
+			if (settings->GetDisplayOption(_("Subscriptions")) && GetConnection()->BackendMinimumVersion(10, 0))
 				browser->AppendCollection(this, subscriptionFactory);
 			if (settings->GetDisplayOption(_("Foreign Data Wrappers")) && GetConnection()->BackendMinimumVersion(8, 4))
 				browser->AppendCollection(this, foreignDataWrapperFactory);
