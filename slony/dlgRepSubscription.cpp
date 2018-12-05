@@ -121,7 +121,7 @@ int dlgRepSubscription::Go(bool modal)
 
 pgObject *dlgRepSubscription::CreateObject(pgCollection *collection)
 {
-	pgObject *obj = subscriptionFactory.CreateObjects(collection, 0,
+	pgObject *obj = slsubscriptionFactory.CreateObjects(collection, 0,
 	                wxT(" WHERE set_id = ") + NumToStr(set->GetSlId()) +
 	                wxT("   AND sub_receiver = ") + NumToStr(cluster->GetLocalNodeID()));
 

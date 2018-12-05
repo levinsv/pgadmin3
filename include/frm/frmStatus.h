@@ -120,6 +120,7 @@ private:
 	bool showCurrent, isCurrent;
 
 	long backend_pid;
+	int wait_event_type_col;
 
 	bool loaded;
 	long logfileLength;

@@ -38,7 +38,8 @@ public:
 	wxSize GetBestSize(int row, int col);
 	void OnLabelDoubleClick(wxGridEvent &event);
 	void OnLabelClick(wxGridEvent &event);
-
+	void OnCellRightClick(wxGridEvent &event);
+	
 	void AutoSizeColumn(int col, bool setAsMin = false, bool doLimit = true);
 	void AutoSizeColumns(bool setAsMin);
 
@@ -61,5 +62,55 @@ private:
 	// Max size for each column
 	wxArrayInt colMaxSizes;
 };
+
+class CursorCellRenderer : public wxGridCellStringRenderer
+      {
+      public:
+         virtual void Draw(wxGrid& grid, wxGridCellAttr& attr, wxDC& dc,
+               const wxRect& rect, int row, int col, bool isSelected)
+         {
+			int hAlign, vAlign;
+			attr.GetAlignment(&hAlign, &vAlign);
+            //////////////////////////////////////////////////////////////////////////////
+            //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
+    dc.SetBackgroundMode( wxSOLID );
+	wxString text=grid.GetCellValue(row, col);
+    // grey out fields if the grid is disabled
+    if ( grid.IsEnabled() )
+    {
+        if ( isSelected )
+        {
+            wxColour clr;
+            if ( wxWindow::FindFocus() == grid.GetGridWindow() )
+                clr = grid.GetSelectionBackground();
+            else
+                clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
+            dc.SetBrush( wxBrush(clr, wxSOLID) );
+        }
+        else
+        {
+			wxColor color;
+			color.Set(239, 228, 176);
+			if (text.Find(wxT('\n'))!=wxNOT_FOUND ) 
+				dc.SetBrush( wxBrush(color, wxSOLID) );
+			else
+				dc.SetBrush( wxBrush(attr.GetBackgroundColour(), wxSOLID) );
+        }
+    }
+    else
+    {
+        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE), wxSOLID));
+    }
+
+    dc.SetPen( *wxTRANSPARENT_PEN );
+    dc.DrawRectangle(rect);
+
+            //////////////////////////////////////////////////////////////////////////////
+			SetTextColoursAndFont(grid, attr, dc, isSelected);
+			grid.DrawTextRectangle(dc, text,
+                           rect, hAlign, vAlign);
+         }
+
+      };
 
 #endif

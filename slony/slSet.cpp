@@ -50,7 +50,7 @@ wxMenu *slSet::GetNewMenu()
 		slTableFactory.AppendMenu(menu);
 	}
 
-	subscriptionFactory.AppendMenu(menu);
+	slsubscriptionFactory.AppendMenu(menu);
 
 	return menu;
 }
@@ -246,7 +246,7 @@ void slSet::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *propert
 			browser->AppendCollection(this, slSequenceFactory);
 			browser->AppendCollection(this, slTableFactory);
 		}
-		browser->AppendCollection(this, subscriptionFactory);
+		browser->AppendCollection(this, slsubscriptionFactory);
 	}
 
 
