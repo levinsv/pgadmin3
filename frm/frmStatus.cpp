@@ -2059,7 +2059,7 @@ void frmStatus::OnRefreshQuerystateTimer(wxTimerEvent &event)
 		sql = wxT("select pid,frame_number,query_text,unnest(string_to_array(plan, E'\n')) pln,leader_pid from pg_query_state(")
 			  +pid+flags+wxT(") s");
 
-	pgSet *dataSet3 = connection->ExecuteSet(sql);
+	pgSet *dataSet3 = connection->ExecuteSet(sql,false);
 	if (dataSet3)
 	{
 		statusBar->SetStatusText(_("Refreshing query state list."));

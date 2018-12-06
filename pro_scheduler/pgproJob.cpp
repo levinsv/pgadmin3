@@ -278,9 +278,9 @@ void pgproJob::ShowStatistics(frmMain *form, ctlListView *statistics)
 		statistics->AddColumn(_("Critical"), 30);
 		statistics->AddColumn(_("Message"), 300);
 		statistics->AddColumn(_("Stage"), 40);
-		if ((bu==wxT("f"))||(!settings->GetASUTPstyle())||(DateToStr(GetStarted()).IsEmpty())) return ;
+		if ((bu==wxT("f"))||(!settings->GetASUTPstyle())||(DateToAnsiStr(GetStarted()).IsEmpty())) return ;
 
-		wxString wxDTend = DateToStr(GetFinished());
+		wxString wxDTend = DateToAnsiStr(GetFinished());
 		if (wxDTend.IsEmpty()) wxDTend=DateToStr(wxDateTime::Now());
 		sql=wxT("select log_time,detail critical,message,application_name from pg_log l where l.log_time>'") + DateToStr(GetStarted())+
 			wxT("'::timestamp - interval '1min' and l.log_time<'")+ wxDTend +
