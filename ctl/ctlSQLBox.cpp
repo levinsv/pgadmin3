@@ -455,13 +455,106 @@ bool ctlSQLBox::DoFind(const wxString &find, const wxString &replace, bool doRep
 void ctlSQLBox::SetAutoReplaceList(queryMacroList *autorep) {
 	autoreplace=autorep;
 }
+void ctlSQLBox::SetDefFunction(wxArrayString &name, wxArrayString &def) {
+	m_name=&name;
+	m_def=&def;
+}
+
 void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 {
 	//wxString autoreplace[]={wxT("se"),wxT("select * from"),wxT("sc"),wxT("select count(*) from"),wxT("si"),wxT("select * from info_oper where"),wxT("sh"),wxT("select * from info_history where")};
 #ifdef __WXGTK__
 	event.m_metaDown = false;
 #endif
+	if (m_name) 
+	{
+		if (((event.GetKeyCode() == '0')&&(event.GetModifiers() == (wxMOD_SHIFT)))
+			||event.GetKeyCode() == WXK_UP
+			||event.GetKeyCode() == WXK_DOWN)
+		{
 
+				if (CallTipActive()) CallTipCancel();
+			event.Skip();
+			return;
+
+		}
+		
+		if ((event.GetKeyCode() == '9')&&(event.GetModifiers() == (wxMOD_SHIFT)))
+		{
+			int pos = GetCurrentPos() ;
+			//CallTipSetBackground(*wxYELLOW);
+			wxString line = GetLine(GetCurrentLine());
+			//int max = line.Length() - (GetLineEndPosition(GetCurrentLine()) - GetCurrentPos()) - offset;
+			int max= PositionFromLine(LineFromPosition(pos));
+			int l=0;
+			wxCharBuffer myStringChars = line.mb_str();
+			for (int kk=pos-max-1;kk>=0;kk--) {
+				//char c=myStringChars.data[kk];
+				if ( line[kk]<'0') break;
+				l++;
+			}
+			wxString f_name=GetTextRange(pos-l, pos);
+			int idx=m_name->Index(f_name,false,false);
+			if (idx!=wxNOT_FOUND) {
+						calltip=f_name +wxT("(")+m_def->Item(idx)+wxT(")");
+						ct_hl=calltip.Find(wxT(","));
+						if (ct_hl==wxNOT_FOUND) ct_hl=l;
+						for (int jj=idx+1;jj<m_name->Count();jj++) {
+							if (m_name->Item(jj)== f_name) {
+								calltip+=wxT("\n")+f_name +wxT("(")+m_def->Item(jj)+wxT(")");
+							} else break;
+						}
+
+						CallTipShow(pos-l,calltip);
+					    CallTipSetHighlight(0,ct_hl);
+
+
+			}
+			//t = GetTextRange(pos-rpl.Length(), pos);
+
+			event.Skip();
+			return;
+		}
+	}
+	if (CallTipActive()&&(event.GetKeyCode() == ','
+					||event.GetKeyCode() == WXK_RIGHT
+					||event.GetKeyCode() == WXK_LEFT
+	)) {
+		//int ptip=CallTipPosAtStart();
+						int direction=1;
+					    if (event.GetKeyCode() == WXK_LEFT) 
+							direction=-1;
+						char c=GetCharAt(GetCurrentPos());
+						if (event.GetKeyCode() != ','&&c!=',' ) {
+							//direction=ct_hl;
+						} else 
+						{
+							int pos=ct_hl+direction;
+							int a=0;
+							while ( (pos<calltip.Len())&&(pos>0)) {
+								c=calltip[pos];
+								if ((c==',')||(c=='\n')) {
+									if (direction==1) break;
+									if (a==1) break;
+									a++;
+									ct_hl=pos;
+								}
+								pos=pos+direction;
+							}
+							//int l=calltip.find(wxT(","),ct_hl+1);
+							int prev=ct_hl;
+							if (direction==-1) {
+								prev=pos;
+								pos=ct_hl;
+							} else
+							{
+							if (pos==wxNOT_FOUND||(pos==calltip.length())) pos=ct_hl;
+							}
+							CallTipSetHighlight(prev,pos);
+							
+							ct_hl=pos;
+						}
+	}
 	// Get the line ending type
 	wxString lineEnd;
 	switch (GetEOLMode())
@@ -485,7 +578,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		//wxString line = GetLine(GetCurrentLine());
 		wxString t;
 		wxString wc;
-		char c;
+		//char c;
 		bool f;
 		wxString rpl = wxT("");
 		wxString rpl2 = wxT("");
@@ -887,7 +980,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 	if ((ch == '{' || ch == '}' ||
 	        ch == '[' || ch == ']' ||
 	        ch == '(' || ch == ')') &&
-	        st != 2 && st != 6 && st != 7)
+	        st != 1 && st != 2 && st != 6 && st != 7)
 	{
 		match = BraceMatch(pos - 1);
 		if (match != wxSTC_INVALID_POSITION)
@@ -896,32 +989,134 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 	else if ((nextch == '{' || nextch == '}' ||
 	          nextch == '[' || nextch == ']' ||
 	          nextch == '(' || nextch == ')') &&
-	         st != 2 && st != 6 && st != 7)
+	         st != 1 &&st != 2 && st != 6 && st != 7)
 	{
 		match = BraceMatch(pos);
 		if (match != wxSTC_INVALID_POSITION)
 			BraceHighlight(pos, match);
 	}
-
+	int startsql=0;
 	// Roll back through the doc and highlight any unmatched braces
+	int tmp=pos;
 	while ((pos--) >= 0)
 	{
 		ch = GetCharAt(pos);
 		st = GetStyleAt(pos);
-
+		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')&&startsql==0) startsql=pos+1;
 		if ((ch == '{' || ch == '}' ||
 		        ch == '[' || ch == ']' ||
 		        ch == '(' || ch == ')') &&
-		        st != 2 && st != 6 && st != 7)
+		        st != 1 &&st != 2 && st != 6 && st != 7)
 		{
 			match = BraceMatch(pos);
 			if (match == wxSTC_INVALID_POSITION)
 			{
 				BraceBadLight(pos);
 				break;
+			} else
+			{
+
 			}
 		}
 	}
+	// получение  позици select
+	pos=tmp;
+	wxString keyword;
+	wxString ident;
+	while ((pos--) >= 0)
+	{
+		ch = GetCharAt(pos);
+		st = GetStyleAt(pos);
+		if (st==5) {ident.append(ch);} else
+		{
+			if ((!ident.IsEmpty())) {
+
+			if (ident.CmpNoCase(wxT("tceles"))==0) {
+				startsql=pos+1;
+				break;
+			}
+			ident.Clear();
+			}
+			
+		}
+		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')&&startsql==0) startsql=pos+1;
+		if (( ch == '}' ||
+		         ch == ']' ||
+		         ch == ')') &&
+		        st != 1 &&st != 2 && st != 6 && st != 7)
+		{
+			match = BraceMatch(pos);
+			if (match == wxSTC_INVALID_POSITION)
+			{
+				break;
+			} else
+			{
+				pos=match-1;
+			}
+		}
+	}
+
+	int endtext= GetLength();
+	bool isfrom=false;
+	pos=startsql;
+	list_table.Clear();
+	ident.Clear();
+	while (pos<endtext) {
+		ch = GetCharAt(pos);
+		st = GetStyleAt(pos);
+		if (st != 1 &&st != 2 && st != 6 && st != 7 &&((ch=='\r')||(ch=='\n'))) {pos++; continue;};
+		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')) break;
+		if (st==11||st==6) {ident.append(ch);}
+		if (st==5) {keyword.append(ch);
+		} else {
+			if ((keyword.CmpNoCase(wxT("from"))==0)) {
+				ident.Clear();
+				isfrom=true;
+			} else if (keyword.CmpNoCase(wxT("join"))==0) {
+				list_table.Append(wxT(","));
+				ident.Clear();
+				isfrom=true;
+			} else if (keyword.CmpNoCase(wxT("on"))==0) {
+				list_table.Append(wxT(","));
+				isfrom=false;
+			}else if (keyword.CmpNoCase(wxT("where"))==0) {
+				//list_table.Append(ident);
+				isfrom=false;
+				break;
+			}
+			if (!keyword.IsEmpty()) keyword.Clear();
+		}
+		if ((ch == '{' || ch == '}' ||
+		        ch == '[' || ch == ']' ||
+		        ch == '(' || ch == ')') &&
+		        st != 1 &&st != 2 && st != 6 && st != 7)
+		{
+			match = BraceMatch(pos);
+			if (match == wxSTC_INVALID_POSITION)
+			{
+				BraceBadLight(pos);
+				break;
+			} else
+			{
+				pos=match;
+				ident.Clear();
+			}
+		}
+		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')) break;
+		if ((st==10||st==0)&&(!ident.IsEmpty())) {
+			if (isfrom) {
+				list_table.Append(wxT(" "));
+				list_table.Append(ident);
+				if (ch==',') list_table.Append(ch);
+				//if (!name.IsEmpty()) alias=ident; else name=ident;
+			}
+			ident.Clear();
+		}
+		pos++;
+
+	}
+	if (isfrom&&(!ident.IsEmpty())) {list_table.Append(wxT(" "));list_table.Append(ident);};
+
 
 	event.Skip();
 }
@@ -954,13 +1149,95 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), 0, what.Len() + 1, m_database);
 	else
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), spaceidx + 1, what.Len() + 1, m_database);
-
-	if (tab_ret == NULL || tab_ret[0] == '\0')
-		return; /* No autocomplete available for this string */
-
-	wxString wxRet = wxString(tab_ret, wxConvUTF8);
-	free(tab_ret);
-
+	wxString wxRet;
+	if (tab_ret == NULL || tab_ret[0] == '\0'){
+			int l=0;
+			for (int kk=what.Len()-2;kk>=0;kk--) {
+				//char c=myStringChars.data[kk];
+				if ( what[kk]<'0') break;
+				l++;
+			}
+			wxString f_name;
+			if (l>0) {
+				wxString alias=what.substr(what.Len()-1-l,l);
+				wxString lst=list_table;
+				wxString table;
+				//alias.Replace(wxT("."), wxT(""));
+				lst.Replace(wxT("\""), wxT(""));
+				wxStringTokenizer tokenizer(lst, wxT(" ,"));
+				wxString prev;
+				bool found=false;
+				int p=0;
+				while ( tokenizer.HasMoreTokens() )
+				{
+					wxString token = tokenizer.GetNextToken();
+					if (token.IsEmpty()) {p=0; continue;}
+					found=token.CmpNoCase(alias)==0;
+					if (tokenizer.GetLastDelimiter()==' '&&found) {
+						table=token;
+						break;
+					}
+					if ((tokenizer.GetLastDelimiter()==',')&&found) {
+						if (p==1) table=prev; else table=token;
+						break;
+					}
+					if (found) {if (p==1) table=prev; else table=token; break;}
+					prev=token;
+					p++;
+				}
+				if (found) {
+				wxString sql=wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") +qtConnString(table)
+						+wxT(") and a.attisdropped IS FALSE and a.attnum>=0 order by 1");
+				//pgSet *res = m_database->ExecuteSet(sql);
+				prev= m_database->ExecuteScalar(sql);
+				AutoCompShow(0, prev);
+				return;
+				}
+				//list_table.Find(alias	
+			}
+			l=0;
+			for (int kk=what.Len()-1;kk>=0;kk--) {
+				//char c=myStringChars.data[kk];
+				if ( what[kk]<'0') break;
+				l++;
+			}
+			if (l==0) return;
+			f_name=what.Right(l);
+			what=f_name;
+			size_t i,
+				   lo = 0,
+				   hi = m_name->Count();
+			int res;
+			while ( lo < hi ) {
+			  i = (lo + hi)/2;
+			  if (m_name->Item(i).StartsWith(f_name)) break;
+			  res= f_name.CmpNoCase(m_name->Item(i));
+			  //res = wxStrcmp(sz, m_pItems[i]);
+			  if ( res < 0 )
+				hi = i;
+			  else if ( res > 0 )
+				lo = i + 1;
+			  else
+			     {  break; }// i ok
+			}
+			if (lo >= hi) return;
+			int k=i;
+			while ( k>=0&&m_name->Item(k).StartsWith(f_name) ) k--;
+			k++;
+			wxString prev;
+			while ( (k<m_name->GetCount())&&m_name->Item(k).StartsWith(f_name) ) 
+				{
+					if (prev!=m_name->Item(k)) wxRet+=m_name->Item(k)+wxT("\t");
+					prev=m_name->Item(k);
+					k++;
+				};
+			spaceidx = what.Len()-1;
+			spaceidx = -1;
+		//return; /* No autocomplete available for this string */
+	} else {
+		wxRet = wxString(tab_ret, wxConvUTF8);
+		free(tab_ret);
+	}
 	// Switch to the generic list control. Native doesn't play well with
 	// autocomplete on Mac.
 #ifdef __WXMAC__
@@ -1043,11 +1320,11 @@ CharacterRange ctlSQLBox::RegexFindText(int minPos, int maxPos, const wxString &
 	ft.lpstrText = (char *)(const char *)buf;
 
 //не компилировалась с wx 2.8.12
-	//if (SendMsg(2150, wxSTC_FIND_REGEXP, (long)&ft) == -1)
-	//{
-	//	ft.chrgText.cpMin = -1;
-	//	ft.chrgText.cpMax = -1;
-	//}
+	if (SendMsg(2150, wxSTC_FIND_REGEXP, (long)&ft) == -1)
+	{
+		ft.chrgText.cpMin = -1;
+		ft.chrgText.cpMax = -1;
+	}
 
 	return ft.chrgText;
 }

@@ -73,7 +73,7 @@ public:
 	void UpdateLineNumber();
 	wxString ExternalFormat();
 	void AbortProcess();
-
+	void SetDefFunction(wxArrayString &name, wxArrayString &def);
 	CharacterRange RegexFindText(int minPos, int maxPos, const wxString &text);
 
 	// Having multiple SQL tabs warrants the following properties to be tracked per tab
@@ -104,6 +104,11 @@ private:
 	void OnPositionStc(wxStyledTextEvent &event);
 	void OnMarginClick(wxStyledTextEvent &event);
 	queryMacroList *autoreplace;
+	wxArrayString *m_name; // field proname
+	wxArrayString *m_def; // finction arguments
+	wxString list_table; //  list table from section
+	wxString calltip;
+	int ct_hl;
 	dlgFindReplace *m_dlgFindReplace;
 	pgConn *m_database;
 	bool m_autoIndent, m_autocompDisabled;

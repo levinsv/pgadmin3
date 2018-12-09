@@ -135,7 +135,8 @@ private:
 	wxButton *btnDeleteCurrent;
 	wxButton *btnDeleteAll;
 	wxArrayString histoQueries;
-
+	wxArrayString def_func;
+	wxArrayString name_func;
 	ctlAuiNotebook *sqlQueryBook;  //container for all SQL tabs
 	size_t sqlQueryCounter;  //for initial tab names
 	ctlSQLBox *sqlQueryExec;  //currently executing SQL tab

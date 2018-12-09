@@ -743,7 +743,25 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	queryMenu->Enable(MNU_CLEARHISTORY, false);
 	setTools(false);
 	lastFileFormat = settings->GetUnicodeFile();
-
+	// Load function name
+	pgSet *functions;
+	wxString def_f;
+	wxString def_name;
+	functions = conn->ExecuteSet(wxT("select pg_get_function_arguments(oid) def,proname,pronargs nargs from pg_proc where pronargs<>0 order by proname,pronargs"));
+	if (functions)
+	{
+		//name_func.Init(true);
+		while (!functions->Eof())
+		{
+			def_f = functions->GetVal(wxT("def"));
+			def_name = functions->GetVal(wxT("proname"));
+			def_func.Add(def_f);
+			name_func.Add(def_name);
+			functions->MoveNext();
+		}
+		name_func.Sort();
+	delete functions;
+	}
 	// Note that under GTK+, SetMaxLength() function may only be used with single line text controls.
 	// (see http://docs.wxwidgets.org/2.8/wx_wxtextctrl.html#wxtextctrlsetmaxlength)
 #ifndef __WXGTK__
@@ -756,7 +774,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 frmQuery::~frmQuery()
 {
 	closing = true;
-
+	if (!name_func.IsEmpty()) name_func.Clear();
+	if (!def_func.IsEmpty()) def_func.Clear();
 	// Save frmQuery Perspective
 	settings->Write(wxT("frmQuery/Perspective-") + wxString(FRMQUERY_PERSPECTIVE_VER), manager.SavePerspective());
 
@@ -1946,6 +1965,8 @@ void frmQuery::OnPositionStc(wxStyledTextEvent &event)
 	editMenu->Enable(MNU_AUTOEDITOBJECT, selCount > 0);
 	wxString pos;
 	pos.Printf(_("Ln %d, Col %d, Ch %d"), sqlQuery->LineFromPosition(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetColumn(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetCurrentPos() + 1);
+	//pos.Printf(_("Ln %d, Col %d, Ch %d, st %d"), sqlQuery->LineFromPosition(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetColumn(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetCurrentPos() + 1,sqlQuery->GetStyleAt(sqlQuery->GetCurrentPos() - 1));
+	
 	SetStatusText(pos, STATUSPOS_POS);
 	if (selCount < 1)
 		pos = wxEmptyString;
@@ -4011,6 +4032,7 @@ void frmQuery::SqlBookAddPage()
 	// Probably not needed, as the line above should trigger the PageChange event
 	sqlQuery = box;
 	sqlQuery->SetAutoReplaceList(autoreplace);
+	sqlQuery->SetDefFunction(name_func, def_func);
 }
 
 void frmQuery::SqlBookDisconnectPage(ctlSQLBox *box)
