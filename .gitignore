@@ -2,7 +2,6 @@ Debug/*
 *.sbr
 *.obj
 *.cod
-*.dll
 *.tlog
 *.7z
 *.bsc

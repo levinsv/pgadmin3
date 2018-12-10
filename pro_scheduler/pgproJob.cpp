@@ -281,9 +281,9 @@ void pgproJob::ShowStatistics(frmMain *form, ctlListView *statistics)
 		if ((bu==wxT("f"))||(!settings->GetASUTPstyle())||(DateToAnsiStr(GetStarted()).IsEmpty())) return ;
 
 		wxString wxDTend = DateToAnsiStr(GetFinished());
-		if (wxDTend.IsEmpty()) wxDTend=DateToStr(wxDateTime::Now());
-		sql=wxT("select log_time,detail critical,message,application_name from pg_log l where l.log_time>'") + DateToStr(GetStarted())+
-			wxT("'::timestamp - interval '1min' and l.log_time<'")+ wxDTend +
+		if (wxDTend.IsEmpty()) wxDTend=DateToAnsiStr(wxDateTime::Now());
+		sql=wxT("select log_time,detail critical,message,application_name from pg_log l where l.log_time>'") + DateToAnsiStr(GetStarted())+
+			wxT("'::timestamp - interval '1min' and l.log_time<='")+ wxDTend +
 			wxT("'::timestamp and hint='")+GetTryName()+wxT("'");
 
 		pgSet *stats = GetConnection()->ExecuteSet(sql);

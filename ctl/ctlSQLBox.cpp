@@ -1172,6 +1172,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 				{
 					wxString token = tokenizer.GetNextToken();
 					if (token.IsEmpty()) {p=0; continue;}
+					token=token.AfterLast('.');
 					found=token.CmpNoCase(alias)==0;
 					if (tokenizer.GetLastDelimiter()==' '&&found) {
 						table=token;
