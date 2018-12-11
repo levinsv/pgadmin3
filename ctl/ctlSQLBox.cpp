@@ -998,6 +998,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 	int startsql=0;
 	// Roll back through the doc and highlight any unmatched braces
 	int tmp=pos;
+	list_table.Clear();
 	while ((pos--) >= 0)
 	{
 		ch = GetCharAt(pos);
@@ -1012,7 +1013,8 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			if (match == wxSTC_INVALID_POSITION)
 			{
 				BraceBadLight(pos);
-				break;
+				event.Skip();
+				return;
 			} else
 			{
 
@@ -1046,9 +1048,10 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 		        st != 1 &&st != 2 && st != 6 && st != 7)
 		{
 			match = BraceMatch(pos);
-			if (match == wxSTC_INVALID_POSITION)
+			if (match == wxSTC_INVALID_POSITION || (match>=pos))
 			{
-				break;
+				event.Skip();
+				return;
 			} else
 			{
 				pos=match-1;
@@ -1059,7 +1062,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 	int endtext= GetLength();
 	bool isfrom=false;
 	pos=startsql;
-	list_table.Clear();
+	
 	ident.Clear();
 	while (pos<endtext) {
 		ch = GetCharAt(pos);
@@ -1079,7 +1082,13 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			} else if (keyword.CmpNoCase(wxT("on"))==0) {
 				list_table.Append(wxT(","));
 				isfrom=false;
-			}else if (keyword.CmpNoCase(wxT("where"))==0) {
+			}else if (keyword.CmpNoCase(wxT("where"))==0
+				    ||keyword.CmpNoCase(wxT("group"))==0
+					||keyword.CmpNoCase(wxT("union"))==0
+					||keyword.CmpNoCase(wxT("limit"))==0
+					||keyword.CmpNoCase(wxT("for"))==0
+					||keyword.CmpNoCase(wxT("window"))==0
+					) {
 				//list_table.Append(ident);
 				isfrom=false;
 				break;
@@ -1094,11 +1103,11 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			match = BraceMatch(pos);
 			if (match == wxSTC_INVALID_POSITION)
 			{
-				BraceBadLight(pos);
+				//BraceBadLight(pos);
 				break;
 			} else
 			{
-				pos=match;
+				if (match>pos) pos=match;
 				ident.Clear();
 			}
 		}
@@ -1175,7 +1184,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 					token=token.AfterLast('.');
 					found=token.CmpNoCase(alias)==0;
 					if (tokenizer.GetLastDelimiter()==' '&&found) {
-						table=token;
+						if (p==1) table=prev; else table=token;
 						break;
 					}
 					if ((tokenizer.GetLastDelimiter()==',')&&found) {

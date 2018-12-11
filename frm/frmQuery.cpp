@@ -747,7 +747,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	pgSet *functions;
 	wxString def_f;
 	wxString def_name;
-	functions = conn->ExecuteSet(wxT("select pg_get_function_arguments(oid) def,proname,pronargs nargs from pg_proc where pronargs<>0 order by proname,pronargs"));
+	functions = conn->ExecuteSet(wxT("select pg_get_function_arguments(oid) def,proname,pronargs nargs from pg_proc where pronargs>=0 order by proname,pronargs"));
 	if (functions)
 	{
 		//name_func.Init(true);
