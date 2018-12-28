@@ -111,6 +111,7 @@ int ctlSQLResult::Execute(const wxString &query, int resultToRetrieve, wxWindow 
 {
 	wxGridTableMessage *msg;
 	sqlResultTable *table = (sqlResultTable *)GetTable();
+
 	msg = new wxGridTableMessage(table, wxGRIDTABLE_NOTIFY_ROWS_DELETED, 0, GetNumberRows());
 	ProcessTableMessage(*msg);
 	delete msg;
@@ -177,6 +178,8 @@ void ctlSQLResult::DisplayData(bool single)
 	 */
 	wxGridTableMessage *msg;
 	sqlResultTable *table = (sqlResultTable *)GetTable();
+
+	
 	msg = new wxGridTableMessage(table, wxGRIDTABLE_NOTIFY_ROWS_DELETED, 0, GetNumberRows());
 	ProcessTableMessage(*msg);
 	delete msg;
@@ -190,10 +193,13 @@ void ctlSQLResult::DisplayData(bool single)
 	ProcessTableMessage(*msg);
 	delete msg;
 	if (NumRows()<1000) {
-    wxGridCellAttr* pAttr = new wxGridCellAttr;
-    pAttr->SetBackgroundColour(wxColour(224,255,224));
 	for(int row = 0; row < NumRows(); ++row) {
-	    if (row%2==0) SetRowAttr(row,pAttr);
+	    if (row%2==0) {
+			    wxGridCellAttr* pAttr = new wxGridCellAttr;
+			    pAttr->SetBackgroundColour(wxColour(224,255,224));
+				SetRowAttr(row,pAttr);
+		}
+		
 	}
 	}
 	if (single)
@@ -201,6 +207,12 @@ void ctlSQLResult::DisplayData(bool single)
 		colNames.Add(thread->DataSet()->ColName(0));
 		colTypes.Add(wxT(""));
 		colTypClasses.Add(0L);
+				wxString c=thread->DataSet()->ColName(0);
+				if (c==wxT("QUERY PLAN")) {
+					//
+					isplan=true;
+					FullArrayCollapseRowsPlan();
+				}
 
 		AutoSizeColumn(0, false, false);
 	}
@@ -215,7 +227,6 @@ void ctlSQLResult::DisplayData(bool single)
 			colNames.Add(thread->DataSet()->ColName(col));
 			colTypes.Add(thread->DataSet()->ColFullType(col));
 			colTypClasses.Add(thread->DataSet()->ColTypClass(col));
-
 			if (thread->DataSet()->ColTypClass(col) == PGTYPCLASS_NUMERIC)
 			{
 				/*

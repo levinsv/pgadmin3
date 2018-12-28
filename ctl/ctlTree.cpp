@@ -63,7 +63,7 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 	        ( ( GetItemText(id) == wxT("Dummy") && !GetItemData(id) ) ||
 			!( (!full&&GetItemText(id).Lower().StartsWith(prefix)) || 
 			(full && //GetItemText(id).Lower().StartsWith(prefix) && GetItemText(id).length()==le)
-			           GetObject(id)->GetName()==prefix )
+			           GetObject(id)!=NULL&&GetObject(id)->GetName()==prefix )
 			)
 			))
 	{
@@ -116,7 +116,7 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 		        (( GetItemText(id) == wxT("Dummy") && !GetItemData(id) ) ||
 		         !((!full&&GetItemText(id).Lower().StartsWith(prefix)) || 
 				   (full && //GetItemText(id).Lower().StartsWith(prefix) && GetItemText(id).length()==le)
-							GetObject(id)->GetName()==prefix )
+							GetObject(id)!=NULL&&GetObject(id)->GetName()==prefix )
 				  )
 				))
 		{

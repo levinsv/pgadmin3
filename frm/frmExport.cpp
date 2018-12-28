@@ -258,7 +258,13 @@ wxString textEscapeXml(wxString &text)
 						wxString xmltext=wxEmptyString;
 					for ( i = text.begin(); i != text.end(); ++i )
 					{
-					switch (*i) {
+#if wxCHECK_VERSION(3, 0, 0)
+					char c=*i;
+					switch (c)
+#else
+					switch (*i)
+#endif
+					{
 						case '&': xmltext+= wxT("&amp;"); break;
 						case '\'': xmltext+= wxT("&apos;"); break;
 						case '"': xmltext+= wxT("&quot;"); break;

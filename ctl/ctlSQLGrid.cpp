@@ -19,6 +19,7 @@
 #include "ctl/ctlSQLGrid.h"
 #include "utils/sysSettings.h"
 #include "frm/frmExport.h"
+#include <wx/regex.h>
 
 
 #define EXTRAEXTENT_HEIGHT 6
@@ -55,6 +56,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	//SetDefaultRenderer(new  wxGridCellAutoWrapStringRenderer);
 	SetDefaultRenderer(new  CursorCellRenderer);
 	
+	grp=NULL;
 
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
 }
@@ -400,12 +402,18 @@ void ctlSQLGrid::OnLabelDoubleClick(wxGridEvent &event)
 {
 	int row = event.GetRow();
 	int col = event.GetCol();
+	
+	//SetRowLabelValue(row-1,);
+	//HideRow(row);
 }
 void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 {
 	int row = event.GetRow();
 	int col = event.GetCol();
-
+	if (row >= 0 && grp) {
+		grp->VisibleGroup(row,GetRowSize(row+1)==0);
+		return;
+	}
 	// add support for (de)selecting multiple rows and cols with Control pressed
 	if ( row >= 0 && (event.ControlDown() || event.CmdDown()) )
 	{
@@ -561,3 +569,87 @@ wxSize ctlSQLGrid::GetBestSize(int row, int col)
 
 	return size;
 }
+
+
+
+int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
+	wxString text;
+	double leveltime=0; //actual time level
+	double lastnode=0;
+	while (row<g->GetNumberRows()) {
+		text = g->GetCellValue(row, 0);
+		int p=0;
+		while (text.at(p)==' ' )
+		{
+			p++;
+		} 
+		if (p==pos) {
+			//
+			lastnode=0;
+			if (text.at(p)=='-') {
+				// посчитаем время работы узла
+					double m=1;
+					// ->  Nested Loop  (cost=205.13..273.44 rows=4 width=188) (actual time=13.157..13.157 rows=0 loops=1)
+					wxRegEx foundstr(wxT("actual time=.*?\\.\\.([0-9.]+).*?loops=([0-9]+)"),wxRE_ADVANCED);
+					if (foundstr.Matches(text)) {
+							wxString v=foundstr.GetMatch(text,1);
+							v.ToCDouble(&lastnode);
+							v=foundstr.GetMatch(text,2);
+							v.ToDouble(&m);
+							lastnode=lastnode*m;
+							leveltime=leveltime+lastnode;
+					} 
+					g->grp->ColoriseRow(row,wxColour(248,240,130));
+
+			} else
+			{
+				g->grp->ColoriseRow(row,wxColour(224,255,224));
+				g->GetTable()->SetRowLabelValue(row,wxEmptyString);
+			}
+			row++;
+			continue;
+		} if (p<pos) {
+			// end level
+			// leveltime содержит время сумаррное время работы узлов этого уровня
+			transfer=leveltime;
+			return row;
+		} if (p>pos) {
+			// nested level
+			//g->SetRowGroup(row-1);
+			wxString s;
+			int newrow=recurse(g,p,row,transfer);
+			// 
+			//leveltime=leveltime+transfer;
+			//GroupRows *u=g->getgroup();
+			g->grp->AddGroup(row-1,newrow-1,lastnode-transfer);
+			s << (lastnode-transfer) ;
+			s=s+wxT("-");
+			g->GetTable()->SetRowLabelValue(row-1,s);
+
+			row=newrow;
+		}
+
+	}
+	return row;
+}
+void ctlSQLGrid::SetRowGroup(int row) { };
+bool ctlSQLGrid::FullArrayCollapseRowsPlan()
+{
+	//wxString colKey = wxString::Format(wxT("%d:"), col) + GetColLabelValue(col);
+	wxString text;
+	//for(int row = 0; row < GetNumberRows(); ++row) 
+	if (grp) { delete grp;}
+    grp = new GroupRows(this);
+	double transfersum=0;
+	int r= recurse(this,0,0,transfersum);
+	grp->CalcTime();
+	//for(int row = 0; row < GetNumberRows(); ++row) {
+	//	text = GetCellValue(row, 0);
+	//    //if (row%2==0) SetRowAttr(row,pAttr);
+
+	//}
+
+	return true;
+}
+
+

@@ -77,9 +77,10 @@ private:
 	pgQueryThread *thread;
 	pgConn *conn;
 	bool rowcountSuppressed;
+	bool isplan;
 };
 
-class sqlResultTable : public wxGridTableBase
+class sqlResultTable : public wxGridStringTable//wxGridTableBase
 {
 public:
 	sqlResultTable();

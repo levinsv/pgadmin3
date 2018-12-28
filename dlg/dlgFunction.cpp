@@ -340,8 +340,12 @@ int dlgFunction::Go(bool modal)
 		}
 
 		txtArguments->SetValue(function->GetArgListWithNames());
+	if (!isProcedure)
+	{
 		cbReturntype->Append(function->GetReturnType());
-		cbReturntype->SetValue(function->GetReturnType());
+		cbReturntype->SetSelection(0);
+		//cbReturntype->SetValue(function->GetReturnType());
+	}
 
 		cbLanguage->SetValue(function->GetLanguage());
 		cbVolatility->SetValue(function->GetVolatility());
