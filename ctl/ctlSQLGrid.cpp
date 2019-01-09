@@ -590,7 +590,7 @@ int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
 				// посчитаем время работы узла
 					double m=1;
 					// ->  Nested Loop  (cost=205.13..273.44 rows=4 width=188) (actual time=13.157..13.157 rows=0 loops=1)
-					wxRegEx foundstr(wxT("actual time=.*?\\.\\.([0-9.]+).*?loops=([0-9]+)"),wxRE_ADVANCED);
+					wxRegEx foundstr(wxT("actual time=.*?\\.\\.([0-9.]+).*?loops=([0-9]+)\\)"),wxRE_ADVANCED);
 					if (foundstr.Matches(text)) {
 							wxString v=foundstr.GetMatch(text,1);
 							v.ToCDouble(&lastnode);
@@ -621,7 +621,7 @@ int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
 			// 
 			//leveltime=leveltime+transfer;
 			//GroupRows *u=g->getgroup();
-			int tt=lastnode-transfer;
+			double tt=lastnode-transfer;
 			text = g->GetCellValue(row-1, 0);
 			if ((text.Find("Append")>0)
 				||(text.Find("Gather")>0)) 

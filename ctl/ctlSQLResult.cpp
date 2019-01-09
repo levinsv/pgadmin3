@@ -94,6 +94,8 @@ bool ctlSQLResult::ToFile(frmExport *frm)
 	return false;
 }
 
+
+
 bool ctlSQLResult::IsColText(int col)
 {
 	switch (colTypClasses.Item(col))
@@ -124,7 +126,6 @@ int ctlSQLResult::Execute(const wxString &query, int resultToRetrieve, wxWindow 
 	colNames.Empty();
 	colTypes.Empty();
 	colTypClasses.Empty();
-
 	thread = new pgQueryThread(conn, query, resultToRetrieve, caller, eventId, data);
 
 	if (thread->Create() != wxTHREAD_NO_ERROR)
@@ -202,17 +203,19 @@ void ctlSQLResult::DisplayData(bool single)
 		
 	}
 	}
+	table->isplan=false;
+	wxString c=thread->DataSet()->ColName(0);
+	if (c==wxT("QUERY PLAN")) {
+		//
+		table->isplan=true;
+		FullArrayCollapseRowsPlan();
+	};
+
 	if (single)
 	{
 		colNames.Add(thread->DataSet()->ColName(0));
 		colTypes.Add(wxT(""));
 		colTypClasses.Add(0L);
-				wxString c=thread->DataSet()->ColName(0);
-				if (c==wxT("QUERY PLAN")) {
-					//
-					isplan=true;
-					FullArrayCollapseRowsPlan();
-				} else isplan=false;
 
 		AutoSizeColumn(0, false, false);
 	}
@@ -473,6 +476,21 @@ int sqlResultTable::GetNumberRows()
 	return 0;
 }
 
+wxString sqlResultTable::GetRowLabelValue( int row )
+{
+    if ( isplan )
+    {
+        // using default label
+        //
+        return wxGridStringTable::GetRowLabelValue(row);
+    }
+    else
+    {
+		    wxString s;
+			s << row + 1;
+		return s;
+    }
+}
 
 wxString sqlResultTable::GetColLabelValue(int col)
 {

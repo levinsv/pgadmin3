@@ -77,7 +77,6 @@ private:
 	pgQueryThread *thread;
 	pgConn *conn;
 	bool rowcountSuppressed;
-	bool isplan;
 };
 
 class sqlResultTable : public wxGridStringTable//wxGridTableBase
@@ -85,8 +84,10 @@ class sqlResultTable : public wxGridStringTable//wxGridTableBase
 public:
 	sqlResultTable();
 	wxString GetValue(int row, int col);
+	wxString GetRowLabelValue( int row ) ;
 	int GetNumberRows();
 	int GetNumberCols();
+	bool isplan;
 	bool IsEmptyCell(int row, int col)
 	{
 		return false;
@@ -108,7 +109,7 @@ public:
 	{
 		return true;
 	}
-
+	
 private:
 	pgQueryThread *thread;
 };
