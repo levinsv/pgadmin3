@@ -1277,7 +1277,7 @@ void frmEditGrid::OnEditorHidden(wxGridEvent &event)
 
 void frmEditGrid::OnGridSelectCells(wxGridRangeSelectEvent &event)
 {
-	if (sqlGrid->GetEditable())
+	if (sqlGrid->IsEditable())
 	{
 		wxArrayInt rows = sqlGrid->GetSelectedRows();
 

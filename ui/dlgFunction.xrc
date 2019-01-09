@@ -396,7 +396,7 @@
                     <hgap>4</hgap>
                     <growablecols>1</growablecols>
                   </object>
-                  <flag>wxALL|wxEXPAND|wxALIGN_BOTTOM|wxALIGN_CENTRE_HORIZONTAL</flag>
+                  <flag>wxALL|wxALIGN_BOTTOM|wxALIGN_CENTRE_HORIZONTAL</flag>
                   <border>5</border>
                 </object>
                 <object class="sizeritem">
@@ -502,7 +502,7 @@
                     <pos>5,6d</pos>
                     <style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
                   </object>
-                  <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+                  <flag>wxALL|wxGROW</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -527,7 +527,7 @@
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+                  <flag>wxALL|wxGROW</flag>
                   <border>3</border>
                 </object>
                 <object class="sizeritem">
@@ -576,7 +576,7 @@
                         </object>
                         <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
                       </object>
-                      <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+                      <flag>wxALL|wxGROW</flag>
                       <border>4</border>
                     </object>
                   </object>
@@ -586,7 +586,7 @@
             </object>
           </object>
         </object>
-        <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+        <flag>wxALL|wxGROW</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -625,7 +625,7 @@
         <object class="wxStatusBar" name="unkStatusBar">
           <style>wxST_SIZEGRIP</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+        <flag>wxEXPAND</flag>
         <border>3</border>
       </object>
     </object>

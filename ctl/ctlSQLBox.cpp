@@ -24,6 +24,9 @@
 #include "utils/sysProcess.h"
 
 wxString ctlSQLBox::sqlKeywords;
+static const wxString s_leftBrace(_T("([{"));
+static const wxString s_rightBrace(_T(")]}"));
+static const int s_indicHighlight(20);
 
 // Additional pl/pgsql keywords we should highlight
 wxString plpgsqlKeywords = wxT(" elsif exception exit loop raise record return text while call");
@@ -462,6 +465,56 @@ void ctlSQLBox::SetDefFunction(wxArrayString &name, wxArrayString &def) {
 
 void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 {
+	int pos = GetCurrentPos();
+	wxChar ch = GetCharAt(pos - 1);
+	wxChar nextch = GetCharAt(pos);
+	int st = GetStyleAt(pos - 1);
+			if (event.GetKeyCode() == WXK_LEFT) nextch=' ';
+			if (event.GetKeyCode() == WXK_RIGHT) ch=' ';
+
+	int match;
+	BraceBadLight(wxSTC_INVALID_POSITION);
+	// BraceHighlight(-1, -1);
+
+	// Check for braces that aren't in comment styles,
+	// double quoted styles or single quoted styles
+	if ((ch == '{' || ch == '}' ||
+	        ch == '[' || ch == ']' ||
+	        ch == '(' || ch == ')') &&
+	        st != 1 && st != 2 && st != 6 && st != 7)
+	{
+		match = BraceMatch(pos - 1);
+		if (match != wxSTC_INVALID_POSITION) {
+			BraceHighlight(pos - 1, match);
+		}
+	}
+	else if ((nextch == '{' || nextch == '}' ||
+	          nextch == '[' || nextch == ']' ||
+	          nextch == '(' || nextch == ')') &&
+	         st != 1 &&st != 2 && st != 6 && st != 7)
+	{
+		match = BraceMatch(pos);
+		if (match != wxSTC_INVALID_POSITION)
+			BraceHighlight(pos, match);
+	}
+	while ((pos--) >= 0)
+	{
+		ch = GetCharAt(pos);
+		st = GetStyleAt(pos);
+		if ((ch == '{' || ch == '}' ||
+		        ch == '[' || ch == ']' ||
+		        ch == '(' || ch == ')') &&
+		        st != 1 &&st != 2 && st != 6 && st != 7)
+		{
+			match = BraceMatch(pos);
+			if (match == wxSTC_INVALID_POSITION)
+			{
+				BraceBadLight(pos);
+			}
+		}
+	}
+
+
 	//wxString autoreplace[]={wxT("se"),wxT("select * from"),wxT("sc"),wxT("select count(*) from"),wxT("si"),wxT("select * from info_oper where"),wxT("sh"),wxT("select * from info_history where")};
 #ifdef __WXGTK__
 	event.m_metaDown = false;
@@ -490,7 +543,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			wxCharBuffer myStringChars = line.mb_str();
 			for (int kk=pos-max-1;kk>=0;kk--) {
 				//char c=myStringChars.data[kk];
-				if ( line[kk]<'0') break;
+				if ( line[kk].GetValue()<'0') break;
 				l++;
 			}
 			wxString f_name=GetTextRange(pos-l, pos);
@@ -532,7 +585,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 							int pos=ct_hl+direction;
 							int a=0;
 							while ( (pos<calltip.Len())&&(pos>0)) {
-								c=calltip[pos];
+								c=calltip[pos].GetValue();
 								if ((c==',')||(c=='\n')) {
 									if (direction==1) break;
 									if (a==1) break;
@@ -661,8 +714,10 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		int max = line.Length() - (GetLineEndPosition(GetCurrentLine()) - GetCurrentPos()) - offset;
 		if(line != wxEmptyString)
 		{
-			while ((line[x] == '\t' || line[x] == ' ') && x < max)
+			while ((line[x].GetValue() == '\t' || line[x].GetValue() == ' ') && x < max) {
+				wxChar ccc=line[x];
 				indent += line[x++];
+			}
 		}
 
 		// Select any indent in front of the cursor to be removed. If
@@ -953,6 +1008,24 @@ long ctlSQLBox::SelectQuery(int startposition)
 		return (pstart <<16)+pend;
 		
 }
+void ctlSQLBox::HighlightBrace(int lb, int rb) {
+	SetIndicatorCurrent(s_indicHighlight);
+            {
+                //SetCaretForeground(wxColour(255, 0, 0));
+                //SetCaretWidth(caretWidth + 1);
+
+                IndicatorSetForeground(s_indicHighlight, wxColour(80, 236, 120));
+                IndicatorSetStyle(s_indicHighlight, wxSTC_INDIC_ROUNDBOX);
+#ifndef wxHAVE_RAW_BITMAP
+                IndicatorSetUnder(s_indicHighlight, true);
+#endif
+                SetIndicatorCurrent(s_indicHighlight);
+                IndicatorFillRange(lb, 1);
+				IndicatorFillRange(rb, 1);
+                return;
+            }
+
+}
 void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 {
 	int pos = GetCurrentPos();
@@ -960,8 +1033,6 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 	wxChar nextch = GetCharAt(pos);
 	int st = GetStyleAt(pos - 1);
 	int match;
-
-
 	// Line numbers
 	// Ensure we don't recurse through any paint handlers on Mac
 #ifdef __WXMAC__
@@ -971,30 +1042,6 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 #ifdef __WXMAC__
 	Thaw();
 #endif
-
-	// Clear all highlighting
-	BraceBadLight(wxSTC_INVALID_POSITION);
-
-	// Check for braces that aren't in comment styles,
-	// double quoted styles or single quoted styles
-	if ((ch == '{' || ch == '}' ||
-	        ch == '[' || ch == ']' ||
-	        ch == '(' || ch == ')') &&
-	        st != 1 && st != 2 && st != 6 && st != 7)
-	{
-		match = BraceMatch(pos - 1);
-		if (match != wxSTC_INVALID_POSITION)
-			BraceHighlight(pos - 1, match);
-	}
-	else if ((nextch == '{' || nextch == '}' ||
-	          nextch == '[' || nextch == ']' ||
-	          nextch == '(' || nextch == ')') &&
-	         st != 1 &&st != 2 && st != 6 && st != 7)
-	{
-		match = BraceMatch(pos);
-		if (match != wxSTC_INVALID_POSITION)
-			BraceHighlight(pos, match);
-	}
 	int startsql=0;
 	// Roll back through the doc and highlight any unmatched braces
 	int tmp=pos;
@@ -1012,12 +1059,8 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			match = BraceMatch(pos);
 			if (match == wxSTC_INVALID_POSITION)
 			{
-				BraceBadLight(pos);
 				event.Skip();
 				return;
-			} else
-			{
-
 			}
 		}
 	}

@@ -331,7 +331,7 @@ void ctlSQLGrid::OnLabelDoubleClick(wxGridEvent &event)
 				SaveEditControlValue();
 			}
 
-			SetRowHeight(row, extentWant);
+			SetRowSize(row, extentWant);
 			EndBatch();
 		}
 	}
@@ -371,7 +371,7 @@ void ctlSQLGrid::OnLabelDoubleClick(wxGridEvent &event)
 			extentWant += EXTRAEXTENT_WIDTH;
 			extentWant = wxMax(extentWant, GetColMinimalAcceptableWidth());
 			extentWant = wxMin(extentWant, maxWidth * 3 / 4);
-			int currentWidth = GetColumnWidth(col);
+			int currentWidth = GetColSize(col);
 
 			if (currentWidth >= maxWidth * 3 / 4 || currentWidth == extentWant)
 				extentWant = GetColMinimalAcceptableWidth();
@@ -390,7 +390,7 @@ void ctlSQLGrid::OnLabelDoubleClick(wxGridEvent &event)
 					HideCellEditControl();
 					SaveEditControlValue();
 				}
-				SetColumnWidth(col, extentWant);
+				SetColSize(col, extentWant);
 				EndBatch();
 				colSizes[GetColKeyValue(col)] = extentWant;
 			}
@@ -621,8 +621,13 @@ int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
 			// 
 			//leveltime=leveltime+transfer;
 			//GroupRows *u=g->getgroup();
-			g->grp->AddGroup(row-1,newrow-1,lastnode-transfer);
-			s << (lastnode-transfer) ;
+			int tt=lastnode-transfer;
+			text = g->GetCellValue(row-1, 0);
+			if ((text.Find("Append")>0)
+				||(text.Find("Gather")>0)) 
+				tt=lastnode;
+			g->grp->AddGroup(row-1,newrow-1,tt);
+			s << (tt) ;
 			s=s+wxT("-");
 			g->GetTable()->SetRowLabelValue(row-1,s);
 

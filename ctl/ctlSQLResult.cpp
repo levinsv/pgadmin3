@@ -212,7 +212,7 @@ void ctlSQLResult::DisplayData(bool single)
 					//
 					isplan=true;
 					FullArrayCollapseRowsPlan();
-				}
+				} else isplan=false;
 
 		AutoSizeColumn(0, false, false);
 	}

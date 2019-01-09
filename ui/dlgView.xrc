@@ -9,6 +9,7 @@
       <growablerows>0</growablerows>
       <growablecols>0</growablecols>
       <object class="sizeritem">
+      <flag>wxEXPAND|wxALL</flag>
         <object class="wxNotebook" name="nbNotebook">
           <size>296,240d</size>
           <selected>0</selected>
@@ -85,6 +86,7 @@
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
+                <flag>wxEXPAND|wxALL</flag>
                   <object class="wxTextCtrl" name="txtComment">
                     <style>wxTE_MULTILINE</style>
                   </object>
@@ -679,7 +681,7 @@
             </object>
           </object>
         </object>
-        <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+        <flag>wxALL|wxGROW</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -718,7 +720,7 @@
         <object class="wxStatusBar" name="unkStatusBar">
           <style>wxST_SIZEGRIP</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+        <flag>wxEXPAND</flag>
         <border>3</border>
       </object>
     </object>
