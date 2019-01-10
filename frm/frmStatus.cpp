@@ -401,8 +401,11 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 		delete set;
 
 	viewMenu->Check(MNU_TOOLBAR, manager.GetPane(wxT("toolBar")).IsShown());
-	
-	viewMenu->Check(MNU_QUERYSTATEPAGE, manager.GetPane(wxT("Querystate")).IsShown());
+	//
+	if (!viewMenu->IsEnabled(MNU_QUERYSTATEPAGE)) {
+		manager.GetPane(wxT("Querystate")).Hide();
+		} else manager.GetPane(wxT("Querystate")).Show();
+	viewMenu->Check(MNU_QUERYSTATEPAGE,manager.GetPane(wxT("Querystate")).IsShown());
 	// Read the highlight status checkbox
 	settings->Read(wxT("frmStatus/HighlightStatus"), &highlight, true);
 	viewMenu->Check(MNU_HIGHLIGHTSTATUS, highlight);
@@ -1763,10 +1766,14 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			dataSet1->MoveNext();
 		}
 		delete dataSet1;
-
-		while (row < statusList->GetItemCount())
+		bool selverify=true;
+		while (row < statusList->GetItemCount()) {
+			statusList->Select(row,false);
+			long item = -1;
+			item = statusList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
+			if (item>=row) statusList->Focus(row-1);
 			statusList->DeleteItem(row);
-
+		}
 		statusList->Thaw();
 		wxListEvent ev;
 		//OnSelStatusItem(ev);
