@@ -2192,6 +2192,7 @@ void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 			if (o->GetName().Lower()==selText.Lower()) {
 				
 				//obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
+				mainForm->execSelChange(matchItem,false);
 				obj=o;
 				if (!dlgProperty::EditObjectDialog(mainForm, 0, obj))
 						mainForm->CheckAlive();
