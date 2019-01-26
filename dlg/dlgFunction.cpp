@@ -418,6 +418,8 @@ int dlgFunction::Go(bool modal)
 			restrict += wxT(" AND nspname NOT LIKE E'pg\\\\_toast%' AND nspname NOT LIKE E'pg\\\\_temp%'");
 
 		DatatypeReader tr(database, restrict);
+		cbDatatype->Freeze();
+		cbReturntype->Freeze();
 		while (tr.HasMore())
 		{
 			pgDatatype dt = tr.GetDatatype();
@@ -430,7 +432,8 @@ int dlgFunction::Go(bool modal)
 				cbReturntype->Append(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
 			tr.MoveNext();
 		}
-
+		cbDatatype->Thaw();
+		cbReturntype->Thaw();
 		long sel;
 		if (factory == &triggerFunctionFactory)
 		{

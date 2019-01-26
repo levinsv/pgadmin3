@@ -492,6 +492,7 @@ int dlgTable::Go(bool modal)
 		                 wxT(" ORDER BY relnamespace, c.relname"));
 		if (set)
 		{
+			cbTables->Freeze();
 			while (!set->Eof())
 			{
 				cbTables->Append(database->GetQuotedSchemaPrefix(set->GetVal(wxT("nspname")))
@@ -500,6 +501,7 @@ int dlgTable::Go(bool modal)
 				tableOids.Add(set->GetVal(wxT("oid")));
 				set->MoveNext();
 			}
+			cbTables->Thaw();
 			delete set;
 		}
 	}

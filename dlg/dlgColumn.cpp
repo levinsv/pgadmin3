@@ -270,12 +270,14 @@ int dlgColumn::Go(bool modal)
 		                 wxT("  ORDER BY nspname, collname"));
 		if (set)
 		{
+			cbCollation->Freeze();
 			while (!set->Eof())
 			{
 				wxString name = qtIdent(set->GetVal(wxT("nspname"))) + wxT(".") + qtIdent(set->GetVal(wxT("collname")));
 				cbCollation->Append(name);
 				set->MoveNext();
 			}
+			cbCollation->Thaw();
 			delete set;
 		}
 		cbCollation->SetSelection(0);

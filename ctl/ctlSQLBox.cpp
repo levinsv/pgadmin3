@@ -95,7 +95,7 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 
 	// Clear all styles
 	StyleClearAll();
-
+	m_name=NULL;
 	// Font
 	extern sysSettings *settings;
 	wxFont fntSQLBox = settings->GetSQLFont();
@@ -456,7 +456,9 @@ bool ctlSQLBox::DoFind(const wxString &find, const wxString &replace, bool doRep
 		return false;
 }
 void ctlSQLBox::SetAutoReplaceList(queryMacroList *autorep) {
-	autoreplace=autorep;
+	if (!autorep) {
+		autoreplace = queryMacroFileProvider::LoadAutoReplace(true);
+	} else autoreplace=autorep;
 }
 void ctlSQLBox::SetDefFunction(wxArrayString &name, wxArrayString &def) {
 	m_name=&name;

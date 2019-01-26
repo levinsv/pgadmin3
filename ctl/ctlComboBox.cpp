@@ -67,6 +67,7 @@ int ctlComboBoxFix::FillOidKey(pgConn *conn, const wxChar *qry)
 {
 	int cnt = 0;
 	pgSetIterator set(conn->ExecuteSet(qry));
+	Freeze();
 	while (set.RowsLeft())
 	{
 		OID oid = set.GetOid(0);
@@ -74,6 +75,7 @@ int ctlComboBoxFix::FillOidKey(pgConn *conn, const wxChar *qry)
 		Append(txt, oid);
 		cnt++;
 	}
+	Thaw();
 	return cnt;
 }
 
