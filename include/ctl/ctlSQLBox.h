@@ -50,7 +50,7 @@ public:
 	void Create(wxWindow *parent, wxWindowID id = -1, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize, long style = 0);
 	void HighlightBrace(int lb, int rb);
 	void SetDatabase(pgConn *db);
-
+	void Copy();
 	void OnKeyDown(wxKeyEvent &event);
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);

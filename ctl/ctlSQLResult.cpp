@@ -208,8 +208,8 @@ void ctlSQLResult::DisplayData(bool single)
 	if (c==wxT("QUERY PLAN")) {
 		//
 		table->isplan=true;
-		FullArrayCollapseRowsPlan();
-	};
+		FullArrayCollapseRowsPlan(false);
+	} else FullArrayCollapseRowsPlan(true);
 
 	if (single)
 	{

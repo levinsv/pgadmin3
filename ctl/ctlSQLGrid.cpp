@@ -638,12 +638,14 @@ int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
 	return row;
 }
 void ctlSQLGrid::SetRowGroup(int row) { };
-bool ctlSQLGrid::FullArrayCollapseRowsPlan()
+bool ctlSQLGrid::FullArrayCollapseRowsPlan(bool clear)
 {
 	//wxString colKey = wxString::Format(wxT("%d:"), col) + GetColLabelValue(col);
 	wxString text;
 	//for(int row = 0; row < GetNumberRows(); ++row) 
+	
 	if (grp) { delete grp;}
+	if (clear) { grp=NULL; return true;}
     grp = new GroupRows(this);
 	double transfersum=0;
 	int r= recurse(this,0,0,transfersum);

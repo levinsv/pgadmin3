@@ -40,7 +40,7 @@ public:
 	void OnLabelDoubleClick(wxGridEvent &event);
 	void OnLabelClick(wxGridEvent &event);
 	void OnCellRightClick(wxGridEvent &event);
-	bool FullArrayCollapseRowsPlan();
+	bool FullArrayCollapseRowsPlan(bool clear);
 	void AutoSizeColumn(int col, bool setAsMin = false, bool doLimit = true);
 	void AutoSizeColumns(bool setAsMin);
 	wxString GetRowLabelValue( int row );

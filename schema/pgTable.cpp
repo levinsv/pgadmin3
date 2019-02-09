@@ -321,7 +321,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 	wxString colDetails, conDetails;
 	wxString prevComment;
 	wxString cols_sql = wxEmptyString;
-
+	wxString cols_type = wxEmptyString;
 	wxString columnPrivileges;
 
 	if (sql.IsNull())
@@ -357,16 +357,17 @@ wxString pgTable::GetSql(ctlTree *browser)
 			int lastRealCol = 0;
 			int currentCol = 0;
 			pgColumn *column;
-
 			// Iterate the columns to find the last 'real' one
 			while ((column = (pgColumn *)colIt1.GetNextObject()) != 0)
 			{
+				if (currentCol==0) {cols_type+=column->GetDisplayName()+wxT(" ")+column->GetQuotedTypename();
+				} else cols_type+=wxT(", ")+column->GetDisplayName()+wxT(" ")+column->GetQuotedTypename();
 				currentCol++;
-
+				//AppendIfFilled(cols_type,wxT(","),cols_type);
 				if (column->GetInheritedCount() == 0)
 					lastRealCol = currentCol;
 			}
-
+			cols_type=wxT("-- (")+cols_type+wxT(")");
 			// Now build the actual column list
 			int colCount = 0;
 			while ((column = (pgColumn *)colIt2.GetNextObject()) != 0)
@@ -725,7 +726,9 @@ wxString pgTable::GetSql(ctlTree *browser)
 		    AppendStuffNoSql(sql, browser, partitionFactory);
 		}
 		 */
+		sql+=cols_type;
 	}
+	
 	return sql;
 }
 
@@ -1260,6 +1263,9 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 	// Add the statistics view columns
 	statistics->ClearAll();
 	statistics->AddColumn(_("Table Name"));
+	if (hasSize)
+		statistics->AddColumn(_("Size"), 50);
+
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
 	statistics->AddColumn(_("Tuples deleted"));
@@ -1283,8 +1289,6 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 		statistics->AddColumn(_("Analyze counter"));
 		statistics->AddColumn(_("Autoanalyze counter"));
 	}
-	if (hasSize)
-		statistics->AddColumn(_("Size"), 50);
 
 	wxString sql = wxT("SELECT st.relname, n_tup_ins, n_tup_upd, n_tup_del");
 	if (GetConnection()->BackendMinimumVersion(8, 3))
@@ -1311,11 +1315,13 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 		int i;
 		while (!stats->Eof())
 		{
-			i = 4;
+			i = 5;
 			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
-			statistics->SetItem(pos, 1, stats->GetVal(wxT("n_tup_ins")));
-			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_upd")));
-			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_del")));
+			if (hasSize)
+				statistics->SetItem(pos, 1, stats->GetVal(wxT("size")));
+			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, 4, stats->GetVal(wxT("n_tup_del")));
 			if (GetConnection()->BackendMinimumVersion(8, 3))
 			{
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
@@ -1336,15 +1342,13 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("analyze_count")));
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("autoanalyze_count")));
 			}
-			if (hasSize)
-				statistics->SetItem(pos, i, stats->GetVal(wxT("size")));
 			stats->MoveNext();
 			pos++;
 		}
 
 		delete stats;
 	}
-
+	statistics->SetColumnWidth(0,wxLIST_AUTOSIZE);
 }
 
 

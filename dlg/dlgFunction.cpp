@@ -1041,7 +1041,8 @@ wxString dlgFunction::GetSql()
 		name = name + wxT("(") + GetArgs(false, true) + wxT(")");
 
 		if (cbOwner->GetCurrentSelection() > 0)
-			AppendOwnerNew(sql, wxT("FUNCTION ") + name);
+			if (!isProcedure) AppendOwnerNew(sql, wxT("FUNCTION ") + name);
+						else AppendOwnerNew(sql, wxT("PROCEDURE ") + name);
 	}
 
 	if (false)

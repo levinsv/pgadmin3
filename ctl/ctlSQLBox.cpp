@@ -22,6 +22,7 @@
 #include "dlg/dlgFindReplace.h"
 #include "frm/menu.h"
 #include "utils/sysProcess.h"
+#include <wx/clipbrd.h>
 
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
@@ -1183,7 +1184,75 @@ void ctlSQLBox::OnMarginClick(wxStyledTextEvent &event)
 
 	event.Skip();
 }
+void ctlSQLBox::Copy() {
+	wxString selText = GetSelectedText();
+	if (!selText.IsEmpty())
+	{
+		wxColor frColor[40];
+		wxString str;
+			wxColour frc = settings->GetSQLBoxColourForeground();
+			if (settings->GetSQLBoxUseSystemForeground())
+			{
+				frc = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+			}
 
+			for (int i = 0; i < 34; ++ i )
+			{
+				frColor[i]=StyleGetForeground(i);
+			if (i > 0 && i < 12)
+				//StyleSetForeground(i, settings->GetSQLBoxColour(i));
+				frColor[i]=StyleGetForeground(i);
+			else
+				frColor[i]=frc;
+
+			//StyleSetBackground(i, bgColor);
+			//StyleSetFont(i, fntSQLBox);
+			}
+			//<h1 style="color:blue;">
+			int endp=GetSelectionEnd();
+			int startp=GetSelectionStart();
+			wxString prevColor=wxEmptyString;
+			wxString tColor;
+			wxFont fntSQLBox = settings->GetSQLFont();
+			wxString fontName = fntSQLBox.GetFaceName();
+			
+			str=wxT("<font face=\"")+fontName+wxT("\">");
+			int k=0;
+			int l=1;
+			while (startp<endp) {
+				int st = GetStyleAt(startp);
+				if (st<34) tColor=frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
+				if (prevColor!=tColor) {
+					str=str+wxT("</font><font color=\"")+tColor+wxT("\">");
+					prevColor=tColor;
+				}
+				//str.append(str[k].GetValue());
+				l=1;
+				if (!selText[k].IsAscii()) l++;
+				str+=selText[k];
+				if (str.EndsWith(wxT("\r\n"))) str+=wxT("<br>"); 
+				startp=startp+l;
+				k++;
+			}
+			str=str+wxT("</font>");
+			
+
+
+		if (wxTheClipboard->Open())
+		{
+			 wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+			dataobj->Add(new wxTextDataObject(selText));
+			dataobj->Add(new wxHTMLDataObject(str));
+			wxTheClipboard->SetData(dataobj);
+			wxTheClipboard->Close();
+		}
+		
+	} else wxStyledTextCtrl::Copy();
+
+
+
+
+   }
 
 extern "C" char *tab_complete(const char *allstr, const int startptr, const int endptr, void *dbptr);
 void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
