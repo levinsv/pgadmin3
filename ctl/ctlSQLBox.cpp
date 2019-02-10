@@ -1215,8 +1215,10 @@ void ctlSQLBox::Copy() {
 			wxString tColor;
 			wxFont fntSQLBox = settings->GetSQLFont();
 			wxString fontName = fntSQLBox.GetFaceName();
+			wxString sz;
+			sz.Printf("%d",fntSQLBox.GetPixelSize().GetHeight() );
 			
-			str=wxT("<font face=\"")+fontName+wxT("\">");
+			str=wxT("<div style=\"font-family: ")+fontName+wxT("; font-size: "+sz+"px\"><font>");
 			int k=0;
 			int l=1;
 			while (startp<endp) {
@@ -1234,7 +1236,7 @@ void ctlSQLBox::Copy() {
 				startp=startp+l;
 				k++;
 			}
-			str=str+wxT("</font>");
+			str=str+wxT("</font></div>");
 			
 
 
