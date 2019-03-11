@@ -2052,7 +2052,7 @@ if (1==0) {
 									pgaFactory *ff=oo->GetFactory();
 									fn=ff->GetTypeName();
 								fn=oo->GetName();
-								if (fn==wxT("history__0102")) {
+								if (fn==wxT("debug*history__0102")) {
 									fn=oo->GetFullName();
 									pgaFactory *ff=oo->GetFactory();
 									fn=ff->GetTypeName();

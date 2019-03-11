@@ -651,6 +651,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	else if (!query.IsNull())
 	{
 		sqlQuery->SetText(query);
+		SetLineEndingStyle();
 		sqlQuery->Colourise(0, query.Length());
 		wxSafeYield();                            // needed to process sqlQuery modify event
 		sqlQuery->SetChanged(false);

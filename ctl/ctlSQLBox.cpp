@@ -1231,7 +1231,12 @@ void ctlSQLBox::Copy() {
 				//str.append(str[k].GetValue());
 				l=1;
 				if (!selText[k].IsAscii()) l++;
-				str+=selText[k];
+				int s=0;
+				if (selText[k].GetValue()==9) s=5;
+				if (selText[k].GetValue()==32) s=1;
+				if (s>0) for (int tt=0;tt<s;tt++) str+=wxT("&nbsp;");
+				         else str+=selText[k];
+
 				if (str.EndsWith(wxT("\r\n"))) str+=wxT("<br>"); 
 				startp=startp+l;
 				k++;
