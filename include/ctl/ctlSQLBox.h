@@ -102,6 +102,7 @@ protected:
 
 private:
 	void OnPositionStc(wxStyledTextEvent &event);
+	void OnDoubleClick(wxStyledTextEvent &event);
 	void OnMarginClick(wxStyledTextEvent &event);
 	queryMacroList *autoreplace;
 	wxArrayString *m_name; // field proname
@@ -119,6 +120,7 @@ private:
 	wxString m_changestr;
 	bool m_changed;
 	int m_origin;
+	int fix_pos;
 
 	friend class QueryPrintout;
 };

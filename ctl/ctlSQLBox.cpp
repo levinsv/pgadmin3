@@ -50,6 +50,7 @@ BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_STC_UPDATEUI(-1, ctlSQLBox::OnPositionStc)
 #endif
 	EVT_STC_MARGINCLICK(-1, ctlSQLBox::OnMarginClick)
+	EVT_STC_DOUBLECLICK(-1,ctlSQLBox::OnDoubleClick)
 	EVT_END_PROCESS(-1,  ctlSQLBox::OnEndProcess)
 END_EVENT_TABLE()
 
@@ -93,7 +94,7 @@ wxColour ctlSQLBox::SetSQLBoxColourBackground(bool transaction) {
 void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, long style)
 {
 	wxStyledTextCtrl::Create(parent, id , pos, size, style);
-
+	fix_pos=-1;
 	// Clear all styles
 	StyleClearAll();
 	m_name=NULL;
@@ -478,6 +479,12 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	int match;
 	BraceBadLight(wxSTC_INVALID_POSITION);
 	// BraceHighlight(-1, -1);
+	if ((fix_pos!=-1)) {
+		//GetIndicatorCurrent()==s_indicHighlight
+		IndicatorClearRange(0,GetTextLength());
+		fix_pos=-1; 
+		
+	}
 
 	// Check for braces that aren't in comment styles,
 	// double quoted styles or single quoted styles
@@ -1029,6 +1036,41 @@ void ctlSQLBox::HighlightBrace(int lb, int rb) {
             }
 
 }
+void ctlSQLBox::OnDoubleClick(wxStyledTextEvent &event)
+{
+	fix_pos = GetCurrentPos();
+	wxString find = GetSelectedText();
+	int flags =0;
+		flags |= wxSTC_FIND_WHOLEWORD;
+		flags |= wxSTC_FIND_MATCHCASE;
+
+	size_t selStart = 0, selEnd = 0;
+	if (!find.IsEmpty())
+	{
+			int startPos = GetSelectionStart();
+			int endPos = GetTextLength();
+
+                IndicatorSetForeground(s_indicHighlight, wxColour(246, 185, 100));
+				IndicatorSetAlpha(s_indicHighlight,50);
+                IndicatorSetStyle(s_indicHighlight, wxSTC_INDIC_ROUNDBOX);
+#ifndef wxHAVE_RAW_BITMAP
+                IndicatorSetUnder(s_indicHighlight, true);
+#endif
+                SetIndicatorCurrent(s_indicHighlight);
+				startPos=0;
+		while ((selStart != (size_t)(-1))) {
+
+		selStart = FindText(startPos, endPos, find, flags);
+		selEnd = selStart + find.Length();
+		if ((selStart != (size_t)(-1))) {
+                IndicatorFillRange(selStart, find.Length());
+				//IndicatorFillRange(rb, 1);
+				startPos=selEnd;
+		}
+
+		}
+	}
+}
 void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 {
 	int pos = GetCurrentPos();
@@ -1105,6 +1147,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 		}
 	}
 
+	
 	int endtext= GetLength();
 	bool isfrom=false;
 	pos=startsql;

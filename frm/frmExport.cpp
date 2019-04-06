@@ -340,7 +340,10 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 				{
 					case PGTYPCLASS_NUMERIC:
 						//type=wxT("0.00");
-						xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"Number\">")+xmltext+wxT("</Data></Cell>");
+						if (xmltext.IsNumber())
+								xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"Number\">")+xmltext+wxT("</Data></Cell>");
+							else
+								xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"String\">")+xmltext+wxT("</Data></Cell>");
 						break;
 					case PGTYPCLASS_DATE:
 						//type=wxT("ÃÃÃÃ-ÌÌ-ÄÄ ÷÷:ìì:ññ");
