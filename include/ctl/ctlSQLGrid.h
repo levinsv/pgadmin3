@@ -30,7 +30,7 @@ public:
 	{
 		return false;
 	}
-	int Copy();
+	int Copy(bool gensql);
 
 	virtual bool CheckRowPresent(int row)
 	{
@@ -46,7 +46,7 @@ public:
 	wxString GetRowLabelValue( int row );
 	void SetRowGroup(int row);
 	GroupRows *grp;
-	
+	bool generatesql;
 	WX_DECLARE_STRING_HASH_MAP( int, ColKeySizeHashMap );
 
 	DECLARE_DYNAMIC_CLASS(ctlSQLGrid)

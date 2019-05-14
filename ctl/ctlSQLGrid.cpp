@@ -69,7 +69,7 @@ void ctlSQLGrid::OnGridColSize(wxGridSizeEvent &event)
 }
 void ctlSQLGrid::OnCopy(wxCommandEvent &ev)
 {
-	Copy();
+	Copy(false);
 }
 
 void ctlSQLGrid::OnMouseWheel(wxMouseEvent &event)
@@ -131,14 +131,18 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 
 	if (GetNumberCols() == 0)
 		return str;
-
+	wxString colsep=settings->GetCopyColSeparator();
+	if (generatesql) colsep=wxT(",");
+	wxString qtsimbol=settings->GetCopyQuoteChar();
+	if (generatesql) qtsimbol=wxT("'");
+	wxString head=wxT("insert into tbl(");
 	for (col = 0 ; col < cols.Count() ; col++)
 	{
 		if (col > 0)
-			str.Append(settings->GetCopyColSeparator());
-
+			str.Append(colsep);
+		if (col > 0) head.Append(colsep);
+		head=head+GetColumnName(cols[col]);
 		wxString text = GetCellValue(row, cols[col]);
-
 		bool needQuote  = false;
 		if (settings->GetCopyQuoting() == 1)
 		{
@@ -147,13 +151,21 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 		else if (settings->GetCopyQuoting() == 2)
 			/* Quote everything */
 			needQuote = true;
-
+		if (text.Length()==0&&generatesql) {needQuote  = false;}
 		if (needQuote)
-			str.Append(settings->GetCopyQuoteChar());
+			str.Append(qtsimbol);
+
+		if (generatesql) {
+			if (text.Length()!=0) {
+				text.Replace(wxT("'"),wxT("''"));
+			} else text=wxT("null");
+			
+		}
 		str.Append(text);
 		if (needQuote)
-			str.Append(settings->GetCopyQuoteChar());
+			str.Append(qtsimbol);
 	}
+	if (generatesql) str=head+wxT(") values (")+str+");";
 	return str;
 }
 
@@ -180,7 +192,7 @@ void ctlSQLGrid::AppendColumnHeader(wxString &str, int start, int end)
 
 void ctlSQLGrid::AppendColumnHeader(wxString &str, wxArrayInt columns)
 {
-	if(settings->GetColumnNames())
+	if(settings->GetColumnNames()&&!generatesql)
 	{
 		bool CopyQuoting = (settings->GetCopyQuoting() == 1 || settings->GetCopyQuoting() == 2);
 		size_t i;
@@ -202,12 +214,12 @@ void ctlSQLGrid::AppendColumnHeader(wxString &str, wxArrayInt columns)
 	}
 }
 
-int ctlSQLGrid::Copy()
+int ctlSQLGrid::Copy(bool gensql)
 {
 	wxString str;
 	int copied = 0;
 	size_t i;
-
+	generatesql=gensql;
 
 
 	if (GetSelectedRows().GetCount())

@@ -772,7 +772,7 @@ void frmEditGrid::OnCopy(wxCommandEvent &ev)
 		else if(sqlGrid->GetNumberRows() > 0)
 		{
 			int copied;
-			copied = sqlGrid->Copy();
+			copied = sqlGrid->Copy(false);
 			SetStatusText(wxString::Format(
 			                  wxPLURAL("Data from %d row copied to clipboard.", "Data from %d rows copied to clipboard.", copied),
 			                  copied));

@@ -205,6 +205,7 @@ private:
 	void OnPaste(wxCommandEvent &event);
 	void OnClear(wxCommandEvent &event);
 	void OnSummary_Column(wxCommandEvent &event);
+	void OnCopy_Insert(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);

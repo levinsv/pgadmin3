@@ -119,6 +119,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_PASTE,             frmQuery::OnPaste)
 	EVT_MENU(MNU_CLEAR,             frmQuery::OnClear)
 	EVT_MENU(MNU_SUMMARY_COL,       frmQuery::OnSummary_Column)
+	EVT_MENU(MNU_COPY_INSERT,       frmQuery::OnCopy_Insert)
 	EVT_MENU(MNU_FIND,              frmQuery::OnSearchReplace)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
 	EVT_MENU(MNU_REDO,              frmQuery::OnRedo)
@@ -667,7 +668,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxString str;
 	wxString filename;
 	
-	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
+	wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
 	
 	if (!wxDirExists(tempDir)) {
 		wxFileName dn = tempDir;
@@ -1472,7 +1473,7 @@ void frmQuery::OnCopy(wxCommandEvent &ev)
 		{
 			if (obj == sqlResult)
 			{
-				sqlResult->Copy();
+				sqlResult->Copy(false);
 				break;
 			}
 			obj = obj->GetParent();
@@ -1933,6 +1934,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_PASTE, _("&Paste"), _("Paste data from the clipboard."));
 	xmenu->Append(MNU_DELETE, _("&Delete"), _("Delete selected rows."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
+	xmenu->Append(MNU_COPY_INSERT, _("Copy Insert format"), _("Copy Insert format."));
 	
 	if ((rows.GetCount()))
 	{
@@ -1947,6 +1949,15 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 		xmenu->Enable(MNU_PASTE, false);
 	}
 	sqlResult->PopupMenu(xmenu);
+}
+void frmQuery::OnCopy_Insert(wxCommandEvent &ev)
+{
+//	if (currentControl() == sqlResult)
+	{
+		wxString s=wxT("Insert into format copy buffer.");
+		sqlResult->Copy(true);
+		SetStatusText(s, STATUSPOS_POS);
+	}
 }
 
 void frmQuery::OnSummary_Column(wxCommandEvent &ev)
@@ -2058,7 +2069,7 @@ void frmQuery::SaveTempFile()
 	wxString pref=conn->GetDbname();
 	//if (filename.StartsWith(pref))
 	filename+=wxT(".a");
-	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3");
+	wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery");
 	wxUtfFile file(tempDir+wxT("\\")+filename, wxFile::write, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
 	if (file.IsOpened())
 	{
@@ -3937,7 +3948,7 @@ void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 		pref,
 		wxOK | wxCANCEL);		//setName( dlg.GetValue().wc_str() );
 		if (dialog.ShowModal() == wxID_OK) {
-			wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
+			wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
 			wxString filename=sqlQuery->GetTitle(false);
 			wxRemoveFile(tempDir+filename+wxT(".a"));
 			wxString nt=dialog.GetValue();
@@ -3982,7 +3993,7 @@ void frmQuery::OnSqlBookPageClose(wxAuiNotebookEvent &event)
 
 	SqlBookDisconnectPage();
 	//drop temp file
-	wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
+	wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
 	wxString filename=sqlQuery->GetTitle(false)+wxT(".a");
 	if (wxFileName::FileExists(tempDir+filename)) wxRemoveFile(tempDir+filename);
 
@@ -4063,7 +4074,7 @@ bool frmQuery::SqlBookRemovePage()
 
 		SqlBookDisconnectPage();
 		pageidx = sqlQueryBook->GetSelection();
-		wxString tempDir=wxStandardPaths::Get().GetTempDir()+wxT("\\pgadmin3\\");
+		wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
 		ctlSQLBox *box;
 		box = wxDynamicCast(sqlQueryBook->GetPage(pageidx), ctlSQLBox);
 		wxString filename=box->GetTitle(false);
