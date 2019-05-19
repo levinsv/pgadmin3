@@ -247,8 +247,12 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			query += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=rel.oid AND sl2.objsubid=0) AS providers");
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_partkeydef(rel.oid) end \n AS partkeydef");
 			query += wxT(",case when lk.relation=rel.oid then 'AccessExclusiveLock' else pg_get_expr(rel.relpartbound, rel.oid) end \n AS partexp");
+			query += wxT(",ii.inhparent is not null AS ispartitioned");
+			
+			
 		query += wxT("  FROM pg_class rel\n")
 	             wxT("  JOIN pg_inherits i ON (rel.oid = i.inhrelid) \n")
+				 wxT("  LEFT OUTER JOIN pg_inherits ii on ii.inhparent=rel.oid\n")
 			     wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
 		         wxT("  LEFT OUTER JOIN pg_tablespace spc on spc.oid=rel.reltablespace\n")
 		         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
@@ -342,10 +346,13 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			wxString cn = tables->GetVal(wxT("conkey"));
 			cn = cn.Mid(1, cn.Length() - 2);
 			table->iSetPrimaryKeyColNumbers(cn);
+			table->iSetPartitionDef(wxT(""));
+			table->iSetIsPartitioned(false);
 			if (collection->GetConnection()->BackendMinimumVersion(10, 0))
 			{
 				table->iSetPartKeyDef(tables->GetVal(wxT("partkeydef")));
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
+				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
 			}
 			if (collection->GetConnection()->GetIsGreenplum())
 			{
@@ -362,8 +369,6 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 				table->iSetBlocksize(tables->GetVal(wxT("blocksize")));
 				table->iSetChecksum(tables->GetVal(wxT("checksum")));
 
-				table->iSetPartitionDef(wxT(""));
-				table->iSetIsPartitioned(false);
 
 				if (collection->GetConnection()->BackendMinimumVersion(8, 2, 9))
 				{

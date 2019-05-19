@@ -161,7 +161,7 @@ int pgTable::GetIconId()
 	if (isReplicated)
 		return tableFactory.GetReplicatedIconId();
 	else 
-		if (!GetPartKeyDef().IsEmpty()) return tableFactory.GetPartitionsIconId();
+		if (!GetPartKeyDef().IsEmpty()||GetIsPartitioned()) return tableFactory.GetPartitionsIconId();
 	    else
 		return tableFactory.GetIconId();
 }
@@ -952,7 +952,7 @@ void pgTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prope
 		if (GetConnection() != 0 && GetConnection()->GetIsGreenplum() && GetIsPartitioned())
 			browser->AppendCollection(this, partitionFactory);
 
-		if (GetConnection() != 0 && !GetPartKeyDef().IsEmpty())
+		if (GetConnection() != 0 && (!GetPartKeyDef().IsEmpty()||GetIsPartitioned()))
 			browser->AppendCollection(this, pg_partitionFactory);
 
 		
@@ -1526,8 +1526,9 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 		{
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_partkeydef(rel.oid) end \n AS partkeydef");
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_expr(rel.relpartbound, rel.oid) end \n AS partexp");
+			query += wxT(",ii.inhparent is not null AS ispartitioned");
 			//pg10=wxT("pg_get_expr(rel.relpartbound, rel.oid) is null and");
-			pg10=wxT("rel.relpartbound is null and");
+			pg10=wxT("(rel.relpartbound is null and i.inhrelid is null) and");
 			//query += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=rel.oid AND sl2.objsubid=0) AS providers");
 		}
 		//select relation from pg_locks where locktype='relation' and granted=true and mode='AccessExclusiveLock'
@@ -1535,6 +1536,8 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				 wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
 		         wxT("  LEFT OUTER JOIN pg_tablespace spc on spc.oid=rel.reltablespace\n")
 		         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
+		         wxT("  LEFT OUTER JOIN pg_inherits i on i.inhrelid=rel.oid\n")
+				 wxT("  LEFT OUTER JOIN pg_inherits ii on ii.inhparent=rel.oid\n")
 		         wxT("  LEFT OUTER JOIN pg_constraint con ON con.conrelid=rel.oid AND con.contype='p'\n");
 
 		// Add the toast table for vacuum parameters.
@@ -1674,10 +1677,14 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 			wxString cn = tables->GetVal(wxT("conkey"));
 			cn = cn.Mid(1, cn.Length() - 2);
 			table->iSetPrimaryKeyColNumbers(cn);
+			table->iSetPartitionDef(wxT(""));
+			table->iSetIsPartitioned(false);
+
 			if (collection->GetConnection()->BackendMinimumVersion(10, 0))
 			{
 				table->iSetPartKeyDef(tables->GetVal(wxT("partkeydef")));
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
+				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
 			}
 			if (collection->GetConnection()->GetIsGreenplum())
 			{
@@ -1694,8 +1701,6 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				table->iSetBlocksize(tables->GetVal(wxT("blocksize")));
 				table->iSetChecksum(tables->GetVal(wxT("checksum")));
 
-				table->iSetPartitionDef(wxT(""));
-				table->iSetIsPartitioned(false);
 
 				if (collection->GetConnection()->BackendMinimumVersion(8, 2, 9))
 				{
