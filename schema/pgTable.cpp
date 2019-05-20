@@ -1526,7 +1526,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 		{
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_partkeydef(rel.oid) end \n AS partkeydef");
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_expr(rel.relpartbound, rel.oid) end \n AS partexp");
-			query += wxT(",ii.inhparent is not null AS ispartitioned");
+			query += wxT(",(select count(*)from pg_inherits ii where ii.inhparent=rel.oid) >0 AS ispartitioned");
 			//pg10=wxT("pg_get_expr(rel.relpartbound, rel.oid) is null and");
 			pg10=wxT("(rel.relpartbound is null and i.inhrelid is null) and");
 			//query += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=rel.oid AND sl2.objsubid=0) AS providers");
@@ -1537,7 +1537,6 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 		         wxT("  LEFT OUTER JOIN pg_tablespace spc on spc.oid=rel.reltablespace\n")
 		         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
 		         wxT("  LEFT OUTER JOIN pg_inherits i on i.inhrelid=rel.oid\n")
-				 wxT("  LEFT OUTER JOIN pg_inherits ii on ii.inhparent=rel.oid\n")
 		         wxT("  LEFT OUTER JOIN pg_constraint con ON con.conrelid=rel.oid AND con.contype='p'\n");
 
 		// Add the toast table for vacuum parameters.
