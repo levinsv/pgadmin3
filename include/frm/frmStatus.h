@@ -50,6 +50,7 @@ enum
 	MNU_COMMIT,
 	MNU_ROLLBACK,
 	MNU_COPY_QUERY,
+	MNU_COPY_QUERY_PLAN,
 	MNU_HIGHLIGHTSTATUS,
 	MNU_QUERYSTATEVERBOSE,
 	MNU_QUERYSTATETIME,
@@ -154,7 +155,7 @@ private:
 	wxMenu        *lockPopupMenu;
 	wxMenu        *xactPopupMenu;
 	wxMenu        *querystatePopupMenu;
-
+	wxString queryplan;
 	wxArrayString queries;
 
 	int statusColWidth[12], lockColWidth[10], xactColWidth[5], querystateColWidth[5];

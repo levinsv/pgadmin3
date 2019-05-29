@@ -151,7 +151,8 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 		else if (settings->GetCopyQuoting() == 2)
 			/* Quote everything */
 			needQuote = true;
-		if (text.Length()==0&&generatesql) {needQuote  = false;}
+		if (text.Length()==0&&generatesql) {needQuote  = false;} else
+			if (generatesql) needQuote = IsColText(cols[col]);
 		if (needQuote)
 			str.Append(qtsimbol);
 

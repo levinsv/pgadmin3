@@ -59,7 +59,6 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
 
 	EVT_MENU(MNU_COPY,                            frmStatus::OnCopy)
 	EVT_MENU(MNU_COPY_QUERY,                      frmStatus::OnCopyQuery)
-
 	EVT_MENU(MNU_HELP,                            frmStatus::OnHelp)
 	EVT_MENU(MNU_CONTENTS,                        frmStatus::OnContents)
 	EVT_MENU(MNU_STATUSPAGE,                      frmStatus::OnToggleStatusPane)
@@ -1147,8 +1146,18 @@ void frmStatus::OnCopy(wxCommandEvent &ev)
 			break;
 	}
 	if (currentPane==PANE_QUERYSTATE) {
+			wxString s;
 			for (row = 0; row < list->GetItemCount(); row++)
 			{
+				s=list->GetText(row, 2);
+				if (s.Length()>0) {
+					text.Append(wxT("SQL QUERY: ")).Append(s);
+					#ifdef __WXMSW__
+							text.Append(wxT("\r\n"));
+					#else
+							text.Append(wxT("\n"));
+					#endif
+				}
 				text.Append(list->GetText(row, 3));
 				#ifdef __WXMSW__
 						text.Append(wxT("\r\n"));
@@ -2065,7 +2074,7 @@ void frmStatus::OnRefreshQuerystateTimer(wxTimerEvent &event)
 	wxString sql;
 		sql = wxT("select pid,frame_number,query_text,unnest(string_to_array(plan, E'\n')) pln,leader_pid from pg_query_state(")
 			  +pid+flags+wxT(") s");
-
+	
 	pgSet *dataSet3 = connection->ExecuteSet(sql,false);
 	if (dataSet3)
 	{
