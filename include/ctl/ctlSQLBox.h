@@ -20,6 +20,7 @@
 
 #include "db/pgConn.h"
 #include "dlg/dlgFindReplace.h"
+#include "ctl/ctlAuiNotebook.h"
 
 // These structs are from Scintilla.h which isn't easily #included :-(
 struct CharacterRange
@@ -55,8 +56,13 @@ public:
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnKillFocus(wxFocusEvent &event);
+	void SetQueryBook(ctlAuiNotebook *query_book);
+	ctlAuiNotebook* GetQueryBook()
+	{
+		return sql_query_book;
+	};
 
-	bool Find(const wxString &find, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse);
+	bool Find(const wxString &find, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse, bool all=false);
 	bool Replace(const wxString &find, const wxString &replace, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse);
 	bool ReplaceAll(const wxString &find, const wxString &replace, bool wholeWord, bool matchCase, bool useRegexps);
 	bool DoFind(const wxString &find, const wxString &replace, bool doReplace, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse);
@@ -104,6 +110,7 @@ private:
 	void OnPositionStc(wxStyledTextEvent &event);
 	void OnDoubleClick(wxStyledTextEvent &event);
 	void OnMarginClick(wxStyledTextEvent &event);
+	ctlAuiNotebook *sql_query_book;
 	queryMacroList *autoreplace;
 	wxArrayString *m_name; // field proname
 	wxArrayString *m_def; // finction arguments

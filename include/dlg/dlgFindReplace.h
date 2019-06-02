@@ -13,6 +13,7 @@
 #define dlgFindReplace_H
 
 #include "dlg/dlgClasses.h"
+#include "ctl/ctlAuiNotebook.h"
 
 class ctlSQLBox;
 
@@ -37,7 +38,7 @@ private:
 	void ResetTabOrder();
 	void SaveSettings();
 
-	ctlSQLBox *sqlbox;
+	ctlSQLBox *sqlbox,*startsqlbox;
 
 	DECLARE_EVENT_TABLE()
 };

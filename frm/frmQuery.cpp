@@ -1906,7 +1906,8 @@ void frmQuery::OnChangeStc(wxStyledTextEvent &event)
 {
 	// The STC seems to fire this event even if it loses focus. Fortunately,
 	// that seems to be m_modificationType == 512.
-	if (event.m_modificationType != 512 &&
+	// 0x4010 - SC_MOD_CHANGEINDICATOR | SC_PERFORMED_USER
+	if ((event.m_modificationType != 512 && event.m_modificationType != 0x4010)&&
 	        // Sometimes there come events 20 and 520 AFTER the initial query was set by constructor.
 	        // Their occurrence is related to query's size and possibly international characters in it (??)
 	        // Filter them out to keep "initial" origin of query text.
@@ -4018,7 +4019,7 @@ void frmQuery::SqlBookAddPage()
 	box->SetDropTarget(new DnDFile(this));
 	box->SetChanged(false);
 	box->SetOrigin(ORIGIN_MANUAL);
-
+	box->SetQueryBook(sqlQueryBook);
 	bVal = editMenu->IsChecked(MNU_AUTOINDENT);
 	box->SetAutoIndent(bVal);
 

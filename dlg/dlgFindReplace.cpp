@@ -40,6 +40,7 @@ END_EVENT_TABLE()
 #define rdDirectionForward   CTRL_RADIOBUTTON("rdDirectionForward")
 #define rdDirectionBackward  CTRL_RADIOBUTTON("rdDirectionBackward")
 #define chkOptionsWholeWord  CTRL_CHECKBOX("chkOptionsWholeWord")
+#define chkOptionsAllFind    CTRL_CHECKBOX("chkOptionsAllFind")
 #define chkOptionsMatchCase  CTRL_CHECKBOX("chkOptionsMatchCase")
 #define chkOptionsUseRegexps CTRL_CHECKBOX("chkOptionsUseRegexps")
 
@@ -47,7 +48,7 @@ dlgFindReplace::dlgFindReplace(ctlSQLBox *parent) :
 	pgDialog()
 {
 	sqlbox = parent;
-
+	startsqlbox = parent;
 	SetFont(settings->GetSystemFont());
 	LoadResource(parent, wxT("dlgFindReplace"));
 	RestorePosition();
@@ -62,7 +63,7 @@ dlgFindReplace::dlgFindReplace(ctlSQLBox *parent) :
 	wxAcceleratorTable accel(2, entries);
 	SetAcceleratorTable(accel);
 
-
+	if (startsqlbox->GetQueryBook()==NULL) chkOptionsAllFind->Disable();
 	// Load up the defaults
 	wxString val;
 	bool bVal;
@@ -196,6 +197,7 @@ void dlgFindReplace::OnFind(wxCommandEvent &ev)
 	     matchCase = false,
 	     useRegexps = false,
 	     startAtTop = false,
+		 all = false,
 	     reverse = false;
 
 	if (rdOriginTop->GetValue() == true)
@@ -215,8 +217,10 @@ void dlgFindReplace::OnFind(wxCommandEvent &ev)
 
 	if (chkOptionsUseRegexps->GetValue() == true)
 		useRegexps = true;
-
-	if (sqlbox->Find(txtFind->GetValue(), wholeWord, matchCase, useRegexps, startAtTop, reverse))
+	if (chkOptionsAllFind->GetValue() == true)
+		all = true;
+	
+	if (sqlbox->Find(txtFind->GetValue(), wholeWord, matchCase, useRegexps, startAtTop, reverse,all))
 	{
 		if (startAtTop)
 		{
@@ -224,7 +228,57 @@ void dlgFindReplace::OnFind(wxCommandEvent &ev)
 			rdOriginCursor->SetValue(true);
 			wxCommandEvent nullEvent;
 			OnChange(nullEvent);
+			return;
+
 		}
+	} else
+	{
+			rdOriginTop->SetValue(true);
+			rdOriginCursor->SetValue(false);
+			wxCommandEvent nullEvent;
+			OnChange(nullEvent);
+			startAtTop=true;
+			reverse=false;
+		// not find in current tabs
+		ctlAuiNotebook *note=startsqlbox->GetQueryBook();
+		if (note!=NULL) {
+			size_t count_pages=note->GetPageCount();
+			ctlSQLBox *sqlQuery;
+			for(int i=0;i<count_pages;i++) {
+				sqlQuery = wxDynamicCast(note->GetPage(i), ctlSQLBox);
+				if (sqlQuery==sqlbox) {
+				while (true) {
+					i++;
+					if (i>=count_pages) i=0;
+					// next tabs
+					sqlQuery = wxDynamicCast(note->GetPage(i), ctlSQLBox);
+					if (sqlQuery==startsqlbox) {
+						note->SetSelection(i);
+						sqlbox=sqlQuery;
+						wxWindow *w = wxWindow::FindFocus();
+						wxMessageBox(_("Reached the end of the document"), _("Replace text"), wxICON_EXCLAMATION | wxOK, w);
+						return ;	
+					}
+					note->SetSelection(i);
+					sqlbox=sqlQuery;
+					if (sqlbox->Find(txtFind->GetValue(), wholeWord, matchCase, useRegexps, startAtTop, reverse,all))
+					{
+						if (startAtTop)
+						{
+							rdOriginTop->SetValue(false);
+							rdOriginCursor->SetValue(true);
+							wxCommandEvent nullEvent;
+							OnChange(nullEvent);
+							return;
+						}
+					}
+				}
+				return;
+				}
+			}
+		}
+		wxWindow *w = wxWindow::FindFocus();
+		wxMessageBox(_("Reached the end of the document"), _("Replace text"), wxICON_EXCLAMATION | wxOK, w);
 	}
 }
 
@@ -254,7 +308,7 @@ void dlgFindReplace::OnReplace(wxCommandEvent &ev)
 	if (chkOptionsUseRegexps->GetValue() == true)
 		useRegexps = true;
 
-	if (sqlbox->Replace(txtFind->GetValue(), txtReplace->GetValue(), wholeWord, matchCase, useRegexps, startAtTop, reverse))
+	if (startsqlbox->Replace(txtFind->GetValue(), txtReplace->GetValue(), wholeWord, matchCase, useRegexps, startAtTop, reverse))
 	{
 		if (startAtTop)
 		{
@@ -265,7 +319,6 @@ void dlgFindReplace::OnReplace(wxCommandEvent &ev)
 		}
 	}
 }
-
 void dlgFindReplace::OnReplaceAll(wxCommandEvent &ev)
 {
 	if (txtFind->GetValue().IsEmpty())
@@ -284,7 +337,7 @@ void dlgFindReplace::OnReplaceAll(wxCommandEvent &ev)
 	if (chkOptionsUseRegexps->GetValue() == true)
 		useRegexps = true;
 
-	sqlbox->ReplaceAll(txtFind->GetValue(), txtReplace->GetValue(), wholeWord, matchCase, useRegexps);
+	startsqlbox->ReplaceAll(txtFind->GetValue(), txtReplace->GetValue(), wholeWord, matchCase, useRegexps);
 }
 
 void dlgFindReplace::FindNext()

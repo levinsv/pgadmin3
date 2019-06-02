@@ -23,6 +23,7 @@
 #include "frm/menu.h"
 #include "utils/sysProcess.h"
 #include <wx/clipbrd.h>
+#include <wx/aui/aui.h>
 
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
@@ -91,10 +92,15 @@ wxColour ctlSQLBox::SetSQLBoxColourBackground(bool transaction) {
 	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
 	return bgColor;
 }
+void ctlSQLBox::SetQueryBook(ctlAuiNotebook *query_book)
+{
+	sql_query_book=query_book;
+}
 void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, long style)
 {
 	wxStyledTextCtrl::Create(parent, id , pos, size, style);
 	fix_pos=-1;
+	sql_query_book =NULL;
 	// Clear all styles
 	StyleClearAll();
 	m_name=NULL;
@@ -301,12 +307,14 @@ void ctlSQLBox::OnSearchReplace(wxCommandEvent &ev)
 	m_dlgFindReplace->FocusSearch();
 }
 
-bool ctlSQLBox::Find(const wxString &find, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse)
+bool ctlSQLBox::Find(const wxString &find, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse, bool all)
 {
 	if (!DoFind(find, wxString(wxEmptyString), false, wholeWord, matchCase, useRegexps, startAtTop, reverse))
 	{
-		wxWindow *w = wxWindow::FindFocus();
-		wxMessageBox(_("Reached the end of the document"), _("Find text"), wxICON_EXCLAMATION | wxOK, w);
+		if (!all) {
+			wxWindow *w = wxWindow::FindFocus();
+			wxMessageBox(_("Reached the end of the document"), _("Find text"), wxICON_EXCLAMATION | wxOK, w);
+		}
 		return false;
 	}
 	return true;
