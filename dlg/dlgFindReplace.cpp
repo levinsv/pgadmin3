@@ -240,6 +240,7 @@ void dlgFindReplace::OnFind(wxCommandEvent &ev)
 			startAtTop=true;
 			reverse=false;
 		// not find in current tabs
+	if (all) {
 		ctlAuiNotebook *note=startsqlbox->GetQueryBook();
 		if (note!=NULL) {
 			size_t count_pages=note->GetPageCount();
@@ -277,8 +278,10 @@ void dlgFindReplace::OnFind(wxCommandEvent &ev)
 				}
 			}
 		}
+	
 		wxWindow *w = wxWindow::FindFocus();
 		wxMessageBox(_("Reached the end of the document"), _("Replace text"), wxICON_EXCLAMATION | wxOK, w);
+	}
 	}
 }
 

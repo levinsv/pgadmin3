@@ -103,6 +103,7 @@
 #define pickerActiveProcessColour   CTRL_COLOURPICKER("pickerActiveProcessColour")
 #define pickerSlowProcessColour     CTRL_COLOURPICKER("pickerSlowProcessColour")
 #define pickerBlockedProcessColour  CTRL_COLOURPICKER("pickerBlockedProcessColour")
+#define pickerBlockedbyProcessColour  CTRL_COLOURPICKER("pickerBlockedbyProcessColour")
 #define pickerFavouritesFile        CTRL_FILEPICKER("pickerFavouritesFile")
 #define pickerMacrosFile            CTRL_FILEPICKER("pickerMacrosFile")
 #define pickerHistoryFile           CTRL_FILEPICKER("pickerHistoryFile")
@@ -332,6 +333,7 @@ frmOptions::frmOptions(frmMain *parent)
 	pickerActiveProcessColour->SetColour(settings->GetActiveProcessColour());
 	pickerSlowProcessColour->SetColour(settings->GetSlowProcessColour());
 	pickerBlockedProcessColour->SetColour(settings->GetBlockedProcessColour());
+	pickerBlockedbyProcessColour->SetColour(settings->GetBlockedbyProcessColour());
 
 	pickerFavouritesFile->SetPath(settings->GetFavouritesFile());
 	pickerMacrosFile->SetPath(settings->GetMacrosFile());

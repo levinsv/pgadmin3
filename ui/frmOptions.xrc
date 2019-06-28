@@ -1165,6 +1165,20 @@
 					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
+					<object class="sizeritem">
+					  <object class="wxStaticText" name="stBlockedbyProcessColour">
+						<label>Blocked by Process Colour</label>
+					  </object>
+					  <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <border>4</border>
+					</object>
+					<object class="sizeritem">
+					  <object class="ctlColourPicker" name="pickerBlockedbyProcessColour">
+						<size>70,12d</size>
+					  </object>
+					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <border>4</border>
+					</object>
                 </object>
               </object>
               <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>

@@ -566,6 +566,16 @@ public:
 	{
 		Write(wxT("BlockedProcessColour"), newval);
 	}
+	wxString GetBlockedbyProcessColour() const
+	{
+		wxString s;
+		Read(wxT("BlockedbyProcessColour"), &s, wxT("#FFF200"));
+		return s;
+	}
+	void SetBlockedbyProcessColour(const wxString &newval)
+	{
+		Write(wxT("BlockedbyProcessColour"), newval);
+	}
 
 	// SQL Editor Colours options
 	bool GetSQLBoxUseSystemBackground() const

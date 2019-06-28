@@ -1660,11 +1660,12 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 		// Clear the queries array content
 		queries.Clear();
-
+		wxString blocked;
+		wxArrayLong pids;
 		while (!dataSet1->Eof())
 		{
 			pid = dataSet1->GetLong(wxT("pid"));
-
+			pids.Add(pid);
 			// Update the UI
 			if (pid != backend_pid)
 			{
@@ -1760,9 +1761,12 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 							                                    wxColour(settings->GetIdleProcessColour()));
 					}
 
-					if (dataSet1->GetVal(wxT("blockedby")).Length() > 0)
+					if (dataSet1->GetVal(wxT("blockedby")).Length() > 0) {
 						statusList->SetItemBackgroundColour(row,
 						                                    wxColour(settings->GetBlockedProcessColour()));
+						blocked += dataSet1->GetVal(wxT("blockedby"));
+						blocked += wxT(",");
+					}
 					if (dataSet1->GetBool(wxT("slowquery")))
 						statusList->SetItemBackgroundColour(row,
 						                                    wxColour(settings->GetSlowProcessColour()));
@@ -1775,6 +1779,25 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			dataSet1->MoveNext();
 		}
 		delete dataSet1;
+				if (viewMenu->IsChecked(MNU_HIGHLIGHTSTATUS))
+				{
+					wxString numstr;
+					wxString *str;
+					numstr=blocked.BeforeFirst(',',str);
+					while (!numstr.IsEmpty()) {
+						int number = wxAtoi(numstr);
+						for(long i = 0; i < pids.size(); i++)
+						{
+							if (pids[i]==number) {
+								statusList->SetItemBackgroundColour(i,
+						                                    wxColour(settings->GetBlockedbyProcessColour()));
+
+							}
+						}
+						blocked=str->Clone();
+						numstr=blocked.BeforeFirst(',',str);
+					}
+				}
 		bool selverify=true;
 		while (row < statusList->GetItemCount()) {
 			statusList->Select(row,false);
