@@ -1660,7 +1660,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 		// Clear the queries array content
 		queries.Clear();
-		wxString blocked;
+		wxString blocked=wxT("");
 		wxArrayLong pids;
 		while (!dataSet1->Eof())
 		{

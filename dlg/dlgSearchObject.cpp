@@ -75,6 +75,7 @@ dlgSearchObject::dlgSearchObject(frmMain *p, pgDatabase *db, pgObject *obj)
 	aMap[_("Rules")] = wxT("Rules");
 	aMap[_("Indexes")] = wxT("Indexes");
 	aMap[_("Functions")] = wxT("Functions");
+	aMap[_("Procedures")] = wxT("Procedures");
 	aMap[_("Aggregates")] = wxT("Aggregates");
 	aMap[_("Trigger Functions")] = wxT("Trigger Functions");
 	aMap[_("Constraints")] = wxT("Constraints");
@@ -143,6 +144,10 @@ dlgSearchObject::dlgSearchObject(frmMain *p, pgDatabase *db, pgObject *obj)
 	{
 		cbType->Append(_("Extensions"));
 		cbType->Append(_("Collations"));
+	}
+	if(currentdb->BackendMinimumVersion(10, 0))
+	{
+		cbType->Append(_("Procedures"));
 	}
 
 	cbSchema->Clear();
@@ -386,8 +391,8 @@ void dlgSearchObject::OnSearch(wxCommandEvent &ev)
 		             wxT("	LEFT OUTER JOIN pg_description desp ON (desp.objoid=con.oid AND desp.objsubid = 0) ")
 		             wxT("	WHERE contype IS NULL ")
 		             wxT("	UNION  ")
-		             wxT("	SELECT CASE WHEN t.typname = 'trigger' THEN 'Trigger Functions' ELSE 'Functions' END AS type, p.proname,  ")
-		             wxT("	':Schemas/' || n.nspname || '/' || case when t.typname = 'trigger' then ':Trigger Functions' else ':Functions' end || '/' || p.proname, n.nspname ")
+		             wxT("	SELECT CASE WHEN t.typname = 'trigger' THEN 'Trigger Functions' ELSE case when p.prokind='p' then 'Procedures' else 'Functions' end END AS type, p.proname,  ")
+		             wxT("	':Schemas/' || n.nspname || '/' || case when t.typname = 'trigger' then ':Trigger Functions' else  case when p.prokind='p' then ':Procedures' else ':Functions' end end || '/' || p.proname, n.nspname ")
 		             wxT("	from pg_proc p  ")
 		             wxT("	left join pg_namespace n on p.pronamespace = n.oid  ")
 		             wxT("	left join pg_type t on p.prorettype = t.oid  ")
@@ -530,8 +535,8 @@ void dlgSearchObject::OnSearch(wxCommandEvent &ev)
 			searchSQL += wxT("UNION \n");
 		nextMode = true;
 		searchSQL += wxT("SELECT * FROM (  ") // Function's source code
-		             wxT("	SELECT CASE WHEN t.typname = 'trigger' THEN 'Trigger Functions' ELSE 'Functions' END AS type, p.proname as objectname,  ")
-		             wxT("	':Schemas/' || n.nspname || '/' || case when t.typname = 'trigger' then ':Trigger Functions' else ':Functions' end || '/' || p.proname as path, n.nspname ")
+		             wxT("	SELECT CASE WHEN t.typname = 'trigger' THEN 'Trigger Functions' ELSE case when p.prokind='p' then 'Procedures' else 'Functions' end END AS type, p.proname as objectname,  ")
+		             wxT("	':Schemas/' || n.nspname || '/' || case when t.typname = 'trigger' then ':Trigger Functions' else  case when p.prokind='p' then ':Procedures' else ':Functions' end end || '/' || p.proname as path, n.nspname ")
 		             wxT("	from pg_proc p  ")
 		             wxT("	left join pg_namespace n on p.pronamespace = n.oid  ")
 		             wxT("	left join pg_type t on p.prorettype = t.oid  ")
@@ -636,10 +641,10 @@ void dlgSearchObject::OnSearch(wxCommandEvent &ev)
 		             wxT("	LEFT OUTER JOIN pg_description desp ON (desp.objoid=con.oid AND desp.objsubid = 0)")
 		             wxT("	WHERE contype IS NULL")
 		             wxT("	UNION")
-		             wxT("  select case when p_t.typname = 'trigger' THEN 'Trigger Functions' ELSE 'Functions' end as type,")
+		             wxT("  select CASE WHEN p_t.typname = 'trigger' THEN 'Trigger Functions' ELSE case when p.prokind='p' then 'Procedures' else 'Functions' end END AS type,")
 		             wxT("       p_.proname AS objectname,")
 		             wxT("       ':Schemas/' || n.nspname || '/' ||")
-		             wxT("         case when p_t.typname = 'trigger' then ':Trigger Functions/' else ':Functions/' end || p_.proname AS path, n.nspname")
+		             wxT("         case when p_t.typname = 'trigger' then ':Trigger Functions/' else case when p.prokind='p' then ':Procedures/' else ':Functions/' end end || p_.proname AS path, n.nspname")
 		             wxT("  from ") + pd +
 		             wxT("  join pg_proc p_  on pd.relname = 'pg_proc' and pd.objoid = p_.oid and p_.prokind <> 'a'")
 		             wxT("	left join pg_type p_t on p_.prorettype = p_t.oid")

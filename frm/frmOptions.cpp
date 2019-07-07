@@ -789,7 +789,10 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 
 	if (pickerBlockedProcessColour->GetColourString() != settings->GetBlockedProcessColour())
 		changed = true;
-	settings->SetBlockedProcessColour(pickerBlockedProcessColour->GetColourString());
+	settings->SetBlockedbyProcessColour(pickerBlockedProcessColour->GetColourString());
+	if (pickerBlockedbyProcessColour->GetColourString() != settings->GetBlockedbyProcessColour())
+		changed = true;
+	settings->SetBlockedbyProcessColour(pickerBlockedbyProcessColour->GetColourString());
 
 	// Change files' location
 	settings->SetFavouritesFile(pickerFavouritesFile->GetPath());
