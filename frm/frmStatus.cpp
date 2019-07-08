@@ -1761,15 +1761,15 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 							                                    wxColour(settings->GetIdleProcessColour()));
 					}
 
+					if (dataSet1->GetBool(wxT("slowquery")))
+						statusList->SetItemBackgroundColour(row,
+						                                    wxColour(settings->GetSlowProcessColour()));
 					if (dataSet1->GetVal(wxT("blockedby")).Length() > 0) {
 						statusList->SetItemBackgroundColour(row,
 						                                    wxColour(settings->GetBlockedProcessColour()));
 						blocked += dataSet1->GetVal(wxT("blockedby"));
 						blocked += wxT(",");
 					}
-					if (dataSet1->GetBool(wxT("slowquery")))
-						statusList->SetItemBackgroundColour(row,
-						                                    wxColour(settings->GetSlowProcessColour()));
 				}
 				else
 					statusList->SetItemBackgroundColour(row, *wxWHITE);
@@ -1782,8 +1782,8 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				if (viewMenu->IsChecked(MNU_HIGHLIGHTSTATUS))
 				{
 					wxString numstr;
-					wxString *str;
-					numstr=blocked.BeforeFirst(',',str);
+					wxString str;
+					numstr=blocked.BeforeFirst(',',&str);
 					while (!numstr.IsEmpty()) {
 						int number = wxAtoi(numstr);
 						for(long i = 0; i < pids.size(); i++)
@@ -1794,8 +1794,8 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 							}
 						}
-						blocked=str->Clone();
-						numstr=blocked.BeforeFirst(',',str);
+						blocked=str.Clone();
+						numstr=blocked.BeforeFirst(',',&str);
 					}
 				}
 		bool selverify=true;
