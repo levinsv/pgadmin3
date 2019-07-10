@@ -1664,10 +1664,10 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 		wxArrayLong pids;
 		while (!dataSet1->Eof())
 		{
+			pid = dataSet1->GetLong(wxT("pid"));
 			// Update the UI
 			if (pid != backend_pid)
 			{
-				pid = dataSet1->GetLong(wxT("pid"));
 				pids.Add(pid);
 				// Add the query content to the queries array
 				queries.Add(dataSet1->GetVal(wxT("query")));
