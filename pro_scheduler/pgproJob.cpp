@@ -167,9 +167,7 @@ pgObject *pgproJob::Refresh(ctlTree *browser, const wxTreeItemId item)
 pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *browser, const wxString &restriction)
 {
 	pgproJob *job = 0;
-
-	pgSet *jobs = collection->GetConnection()->ExecuteSet(
-	                  wxT("with last_job as (select cron,max(started) started from schedule.get_log() b group by cron), a as (select cron,scheduled_at,started,finished,status,message from schedule.get_active_jobs()), lastj as (select b.cron,")
+	wxString sql=    wxT("with last_job as (select cron,max(started) started from schedule.get_log() b group by cron), a as (select cron,scheduled_at,started,finished,status,message from schedule.get_active_jobs()), lastj as (select b.cron,")
 					  wxT("coalesce((select scheduled_at from a where a.cron=b.cron),b.scheduled_at) scheduled_at")
 					  wxT(",coalesce((select started from a where a.cron=b.cron),b.started) started")
 					  wxT(",case when (select status from a where a.cron=b.cron)='working' then null else b.finished end finished")
@@ -180,7 +178,15 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 					  wxT(" join lateral (select crontab from jsonb_to_record(c.rule) as (d int[],h int[],wd int[],m int[],crontab text,mi int[]) ) j on true")
 					  wxT("")
 					  wxT("")
-	                  wxT(" ") + restriction);
+	                  wxT(" ") + restriction;
+
+	if (!collection->GetConnection()->IsSuperuser()) {
+		size_t a=sql.Replace(wxT("get_log()"),wxT("get_user_log()"));
+		a=sql.Replace(wxT("get_cron()"),wxT("get_user_cron()"));
+	}
+
+	pgSet *jobs = collection->GetConnection()->ExecuteSet(sql);
+	
 
 	if (jobs)
 	{
