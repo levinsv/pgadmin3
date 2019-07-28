@@ -289,6 +289,91 @@ wxString pgRole::GetSql(ctlTree *browser)
 			       +  qtDbString(GetComment()) + wxT(";\n");
 		}
 
+	    wxString query;
+		query = wxT("select type,objname,grantee,string_agg(privilege_type,',') priv from (\n")
+wxT("  select type, objname, r1.rolname grantor, r2.rolname grantee, privilege_type\n")
+wxT("    from\n")
+wxT("    (select \n")
+wxT("      'database'::text as type, datname as objname, datistemplate, datallowconn, \n")
+wxT("      (aclexplode(datacl)).grantor as grantorI, \n")
+wxT("      (aclexplode(datacl)).grantee as granteeI,\n")
+wxT("      (aclexplode(datacl)).privilege_type,\n")
+wxT("      (aclexplode(datacl)).is_grantable\n")
+wxT("    from pg_database) as db\n")
+wxT("    join pg_roles r1 on db.grantorI = r1.oid\n")
+wxT("    join pg_roles r2 on db.granteeI = r2.oid\n")
+wxT("    where r2.rolname not in ('postgres')\n")
+wxT("    union all\n")
+wxT("    /* Schemas / Namespaces */\n")
+wxT("    select type, objname, r1.rolname grantor, r2.rolname grantee, privilege_type from \n")
+wxT("    (select\n")
+wxT("      'schema'::text as type, nspname as objname, \n")
+wxT("      (aclexplode(nspacl)).grantor as grantorI, \n")
+wxT("      (aclexplode(nspacl)).grantee as granteeI,\n")
+wxT("      (aclexplode(nspacl)).privilege_type,\n")
+wxT("      (aclexplode(nspacl)).is_grantable\n")
+wxT("    from pg_catalog.pg_namespace) as ns\n")
+wxT("    join pg_roles r1 on ns.grantorI = r1.oid\n")
+wxT("    join pg_roles r2 on ns.granteeI = r2.oid\n")
+wxT("    where r2.rolname not in ('postgres')\n")
+wxT("    union all\n")
+wxT("    /* Tabelas */\n")
+wxT("    select 'tables'::text as type, table_schema||'.'||table_name as objname, grantor, grantee, privilege_type  \n")
+wxT("    from information_schema.role_table_grants \n")
+wxT("    where grantee not in ('postgres')\n")
+wxT("    and table_schema not in ('information_schema', 'pg_catalog')\n")
+wxT("    and grantor <> grantee\n")
+wxT("    union all\n")
+wxT("    /* Colunas (TODO: se o revoke on table from x retirar acesso das colunas, nao precisa desse bloco) */\n")
+wxT("/*    select \n")
+wxT("      'columns'::text as type, column_name||' ('||table_name||')' as objname,\n")
+wxT("      grantor, grantee, privilege_type\n")
+wxT("    from information_schema.role_column_grants\n")
+wxT("    where \n")
+wxT("    table_schema not in ('information_schema', 'pg_catalog')\n")
+wxT("    and grantor <> grantee\n")
+wxT("    union all\n")
+wxT("*/\n")
+wxT("    /* Funcoes / Procedures */\n")
+wxT("    select 'routine'::text as type, routine_schema||'.'||routine_name as objname, grantor, grantee, privilege_type\n")
+wxT("    from information_schema.role_routine_grants\n")
+wxT("    where grantor <> grantee\n")
+wxT("    and routine_schema not in ('information_schema', 'pg_catalog')\n")
+wxT("     union all\n")
+wxT("    /* Outros objetos */\n")
+wxT("    select 'object'::text as type, object_name||'( '||object_type||')' as objname, grantor, grantee, privilege_type\n")
+wxT("    from information_schema.role_usage_grants\n")
+wxT("    where object_type <> 'COLLATION' and object_type <> 'DOMAIN'\n")
+wxT(") aa where aa.grantee='")+GetName()+("' group by type,objname,grantee order by 1,2;\n");
+	pgSet *roles = GetConnection()->ExecuteSet(query);
+
+	if (roles)
+	{
+		//GRANT SELECT ON TABLE public.v_b TO okomgr;
+		wxString prev=wxEmptyString;
+		wxString addgrant=wxEmptyString;
+		while (!roles->Eof())
+		{
+			if (wxT("tables")==roles->GetVal(wxT("type")) ) {
+				addgrant += wxT("\nGRANT ") + roles->GetVal(wxT("priv")) + wxT(" ON TABLE ") + qtIdent(roles->GetVal(wxT("objname")))
+			       +  wxT(" TO ") + qtIdent(GetName());
+			}
+			if (wxT("routine")==roles->GetVal(wxT("type")) ) {
+				addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")))
+			       +  wxT(" TO ") + qtIdent(GetName());
+			}
+			if (wxT("schema")==roles->GetVal(wxT("type")) ) {
+				addgrant += wxT("\nGRANT USAGE ON SCHEMA ") + qtIdent(roles->GetVal(wxT("objname")))
+			       +  wxT(" TO ") + qtIdent(GetName());
+			}
+			addgrant += wxT(";");
+			roles->MoveNext();
+		}
+		sql += wxT("\n")+ addgrant + wxT("\n");
+		delete roles;
+	}
+
+
 		if (GetConnection()->BackendMinimumVersion(9, 2))
 			sql += GetSeqLabelsSql();
 	}
