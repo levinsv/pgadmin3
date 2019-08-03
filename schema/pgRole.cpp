@@ -355,11 +355,11 @@ wxT(") aa where aa.grantee='")+GetName()+("' group by type,objname,grantee order
 		while (!roles->Eof())
 		{
 			if (wxT("tables")==roles->GetVal(wxT("type")) ) {
-				addgrant += wxT("\nGRANT ") + roles->GetVal(wxT("priv")) + wxT(" ON TABLE ") + qtIdent(roles->GetVal(wxT("objname")))
+				addgrant += wxT("\nGRANT ") + roles->GetVal(wxT("priv")) + wxT(" ON TABLE ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
 			       +  wxT(" TO ") + qtIdent(GetName());
 			}
 			if (wxT("routine")==roles->GetVal(wxT("type")) ) {
-				addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")))
+				addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
 			       +  wxT(" TO ") + qtIdent(GetName());
 			}
 			if (wxT("schema")==roles->GetVal(wxT("type")) ) {

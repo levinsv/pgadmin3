@@ -2005,7 +2005,7 @@ if (1==0) {
 }
 	wxString findobj=wxT(",");
 	wxString dropblock=wxT("-- Удаление зависимых объектов\n");
-	wxString createblock=wxT("-- Создание зависимых объектов\n");
+	wxString createblock=wxEmptyString;
         while (set.RowsLeft())
         {
 			wxString refname = set.GetVal(wxT("objname"));
@@ -2127,12 +2127,13 @@ if (1==0) {
 						wxStringTokenizer rowslist(tmpsql, wxT("\n"),wxTOKEN_RET_EMPTY );
 						wxString cn;
 						wxString distributionColumns;
+						wxString createblocktmp=wxEmptyString;
 						int i=1;
 						while (rowslist.HasMoreTokens())
 						{
 							cn = rowslist.GetNextToken();
 							if (i==1) {
-								createblock+=cn+wxT("\n");
+								createblocktmp+=cn+wxT("\n");
 								dropblock+=cn+wxT("\n");
 								i++;
 								continue;
@@ -2142,9 +2143,10 @@ if (1==0) {
 								i++;
 								continue;
 							}
-							createblock+=cn+wxT("\n");
+							createblocktmp+=cn+wxT("\n");
 							i++;
 						}
+						createblock=createblocktmp+createblock;
 //								if (node->IsCollection())
 //									owneritem = browser->GetParentObject(node->GetId())->GetId();
 //								else
@@ -2157,6 +2159,6 @@ if (1==0) {
 
         }
 
-		sql+=dropblock+wxT("\n\n\n")+createblock;
+		sql+=dropblock+wxT("\n\n\n")+wxT("-- Создание зависимых объектов(в обратном порядке)\n")+createblock;
 	return sql;
 }
