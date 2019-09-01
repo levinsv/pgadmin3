@@ -991,6 +991,7 @@ long ctlSQLBox::SelectQuery(int startposition)
 	int match;
 	int pend=endPos;
 	int pstart=0;
+
 	if ((ch == ';')) {
 		pend=pos;
 		pos=pos-1;
@@ -998,21 +999,23 @@ long ctlSQLBox::SelectQuery(int startposition)
 	{
 		while (pos<endPos) {
 		ch = GetCharAt(pos);
-		st = GetStyleAt(pos);
+		st = GetStyleAt(pos) & 0x1F;
 		if ((ch == ';') &&
 	        st != 2 && st != 6 && st != 7)
 		{
 			pend=pos;
 			break;
 		}
-		pos++;
+		int i=IsDBCSLeadByte(ch)? 2 : 1;
+		pos=pos+i;
 		}
 		
 	}
-		while ((pos--) >= 0)
+		pos--;
+		while ((pos) >= 0)
 	{
 		ch = GetCharAt(pos);
-		st = GetStyleAt(pos);
+		st = GetStyleAt(pos) & 0x1F;
 		if ((ch == ';') &&
 	        st != 2 && st != 6 && st != 7)
 		{
@@ -1020,6 +1023,8 @@ long ctlSQLBox::SelectQuery(int startposition)
 			break;
 		}
 		if (ch>' ') pstart=pos;
+		int i=IsDBCSLeadByte(ch)? 2 : 1;
+		pos=pos-i;
 
 	}
 		if (startposition<0) SetSelection(pstart,pend);

@@ -395,8 +395,9 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	viewMenu->Check(MNU_LOCKPAGE, manager.GetPane(wxT("Locks")).IsShown());
 	viewMenu->Check(MNU_XACTPAGE, manager.GetPane(wxT("Transactions")).IsShown());
 	viewMenu->Check(MNU_LOGPAGE, manager.GetPane(wxT("Logfile")).IsShown());
- 		pgSet *set = connection->ExecuteSet(wxT("SELECT 1 FROM pg_available_extensions WHERE name='pg_query_state'"));
+ 		pgSet *set = connection->ExecuteSet(wxT("SELECT 1 FROM pg_available_extensions WHERE installed_version is not null and name='pg_query_state'"));
      	viewMenu->Enable(MNU_QUERYSTATEPAGE,set->NumRows() == 1);
+		//viewMenu->Check(MNU_QUERYSTATEPAGE,set->NumRows() == 1);
 		delete set;
 
 	viewMenu->Check(MNU_TOOLBAR, manager.GetPane(wxT("toolBar")).IsShown());
@@ -974,7 +975,7 @@ void frmStatus::AddQuerystatePane()
 	// Create the timer
 	querystateTimer = new wxTimer(this, TIMER_QUERYSTATE_ID);
 	
-  		 pgSet *set = connection->ExecuteSet(wxT("SELECT 1 FROM pg_available_extensions WHERE name='pg_query_state'"));
+  		 pgSet *set = connection->ExecuteSet(wxT("SELECT 1 FROM pg_available_extensions WHERE installed_version is not null and name='pg_query_state'"));
 			if (set->NumRows() == 1)
 				viewMenu->Check(MNU_QUERYSTATEPAGE,true);
 			else
