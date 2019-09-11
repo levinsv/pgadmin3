@@ -2310,25 +2310,28 @@ void frmStatus::OnRefresh(wxCommandEvent &event)
 
 void frmStatus::checkConnection()
 {
-	if (!locks_connection->IsAlive())
-	{
-		locks_connection = connection;
-	}
-	if (!connection->IsAlive())
-	{
-		delete connection;
-		connection = 0;
-		statusTimer->Stop();
-		locksTimer->Stop();
-		if (xactTimer)
-			xactTimer->Stop();
-		if (logTimer)
-			logTimer->Stop();
-		if (querystateTimer)
-			querystateTimer->Stop();
-		actionMenu->Enable(MNU_REFRESH, false);
-		toolBar->EnableTool(MNU_REFRESH, false);
-		statusBar->SetStatusText(_("Connection broken."));
+	if (connection) {
+		if (!locks_connection->IsAlive())
+		{
+			locks_connection = connection;
+		}
+		if (!connection->IsAlive())
+		{
+			if (locks_connection==connection) locks_connection = 0;
+			delete connection;
+			connection = 0;
+			statusTimer->Stop();
+			locksTimer->Stop();
+			if (xactTimer)
+				xactTimer->Stop();
+			if (logTimer)
+				logTimer->Stop();
+			if (querystateTimer)
+				querystateTimer->Stop();
+			actionMenu->Enable(MNU_REFRESH, false);
+			toolBar->EnableTool(MNU_REFRESH, false);
+			statusBar->SetStatusText(_("Connection broken."));
+		}
 	}
 }
 
