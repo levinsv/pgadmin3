@@ -1923,9 +1923,15 @@ void frmStatus::OnRefreshLocksTimer(wxTimerEvent &event)
 				lockList->SetItem(row, colpos++, dataSet2->GetVal(wxT("mode")));
 
 				if (dataSet2->GetVal(wxT("granted")) == wxT("t"))
+				{
 					lockList->SetItem(row, colpos++, _("Yes"));
-				else
-					lockList->SetItem(row, colpos++, _("No"));
+					lockList->SetItemBackgroundColour(row,lockList->GetBackgroundColour());
+				}
+				else {
+					    lockList->SetItem(row, colpos++, _("No"));
+						lockList->SetItemBackgroundColour(row, wxColour(settings->GetBlockedProcessColour()));
+						
+					}
 
 				wxString qry = dataSet2->GetVal(wxT("query"));
 

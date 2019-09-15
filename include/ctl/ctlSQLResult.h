@@ -34,7 +34,7 @@ public:
 	long NumRows() const;
 	long InsertedCount() const;
 	OID  InsertedOid() const;
-
+	wxColor cg;
 	int Abort();
 
 	bool Export();
@@ -47,6 +47,7 @@ public:
 
 	wxString OnGetItemText(long item, long col) const;
 	wxString SummaryColumn();
+	void ClearFilter();
 	bool IsColText(int col);
 	bool hasRowNumber()
 	{
@@ -68,6 +69,7 @@ public:
 	void SetMaxRows(int rows);
 	void ResultsFinished();
 	void OnGridSelect(wxGridRangeSelectEvent &event);
+	wxString SetFilter(int row,int col,bool reverse);
 
 	wxArrayString colNames;
 	wxArrayString colTypes;

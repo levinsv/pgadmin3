@@ -30,6 +30,7 @@ BEGIN_EVENT_TABLE(ctlSQLGrid, wxGrid)
 	EVT_GRID_COL_SIZE(ctlSQLGrid::OnGridColSize)
 	EVT_GRID_LABEL_LEFT_CLICK(ctlSQLGrid::OnLabelClick)
 	EVT_GRID_CELL_RIGHT_CLICK(  ctlSQLGrid::OnCellRightClick)
+	EVT_PAINT( ctlSQLGrid::OnPaint )
 END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(ctlSQLGrid, wxGrid)
@@ -60,7 +61,6 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
 }
-
 void ctlSQLGrid::OnGridColSize(wxGridSizeEvent &event)
 {
 	// Save key="index:label", value=size
@@ -128,8 +128,8 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 {
 	wxString str;
 	unsigned int col;
-
-	if (GetNumberCols() == 0)
+	
+	if (GetNumberCols() == 0 || GetRowSize(row)==0)
 		return str;
 	wxString colsep=settings->GetCopyColSeparator();
 	if (generatesql) colsep=wxT(",");
@@ -217,7 +217,7 @@ void ctlSQLGrid::AppendColumnHeader(wxString &str, wxArrayInt columns)
 
 int ctlSQLGrid::Copy(bool gensql)
 {
-	wxString str;
+	wxString str,tmp;
 	int copied = 0;
 	size_t i;
 	generatesql=gensql;
@@ -231,7 +231,9 @@ int ctlSQLGrid::Copy(bool gensql)
 
 		for (i = 0 ; i < rows.GetCount() ; i++)
 		{
-			str.Append(GetExportLine(rows.Item(i)));
+			tmp=GetExportLine(rows.Item(i));
+			if (tmp.IsEmpty()) continue;
+			str.Append(tmp);
 			if (rows.GetCount() > 1)
 				str.Append(END_OF_LINE);
 		}

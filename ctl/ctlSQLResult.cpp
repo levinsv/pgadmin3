@@ -33,7 +33,7 @@ ctlSQLResult::ctlSQLResult(wxWindow *parent, pgConn *_conn, wxWindowID id, const
 
 	EnableEditing(false);
 	SetSizer(new wxBoxSizer(wxVERTICAL));
-
+	cg=GetGridLineColour();
 	Connect(wxID_ANY, wxEVT_GRID_RANGE_SELECT, wxGridRangeSelectEventHandler(ctlSQLResult::OnGridSelect));
 }
 
@@ -358,7 +358,7 @@ wxString ctlSQLResult::SummaryColumn()
 				for (size_t col = 0 ; col < cols.Count() ; col++)
 			    {
 				wxString text = GetCellValue(i, cols[col]);
-				sum=sum+wxAtof(text);
+				if (GetRowSize(i)>0) sum=sum+wxAtof(text);
 				}
 		
 		}
@@ -381,7 +381,7 @@ wxString ctlSQLResult::SummaryColumn()
 	{
 //			str.Append(GetExportLine(i, x1, x2));
 				wxString text = GetCellValue(i, x1);
-				sum=sum+wxAtof(text);
+				if (GetRowSize(i)>0) sum=sum+wxAtof(text);
 
 		//copied = y2 - y1 + 1;
 		}
@@ -408,6 +408,47 @@ wxString ctlSQLResult::SummaryColumn()
 void ctlSQLResult::OnGridSelect(wxGridRangeSelectEvent &event)
 {
 	SetFocus();
+}
+void ctlSQLResult::ClearFilter()
+{
+	size_t numRows = GetNumberRows();
+	int sizerow=GetDefaultRowSize();
+		for (int i = 0 ; i <  numRows; i++)
+		{
+				if (GetRowSize(i)>0) continue;
+				//SetRowSize(i,sizerow);
+				ShowRow(i);
+		
+		}
+	SetGridLineColour(cg);
+}
+wxString ctlSQLResult::SetFilter(int row,int col,bool reverse)
+{
+	wxString fltval=GetCellValue(row,col);
+	wxString text;
+	
+	bool eq;
+	size_t numRows = GetNumberRows();
+	int all=0,show=0,hide=0;
+		for (int i = 0 ; i <  numRows; i++)
+		{
+			//str.Append(GetExportLine(i, cols));
+			//SetRowSize(i,sizerow);
+				if (GetRowSize(i)==0) continue;
+				eq=(fltval==GetCellValue(i, col));
+				if (reverse) eq=!eq;
+				if (!eq) { 
+					HideRow(i);
+					hide++;
+				} else show++;
+				all++;
+		
+		}
+	SetGridLineColour(wxColor(0,0,255));
+	wxString result;
+	result.Printf(wxT("Show rows:%d hide:%d all:%d"), show,hide,all);
+	return result;
+
 }
 
 wxString sqlResultTable::GetValue(int row, int col)

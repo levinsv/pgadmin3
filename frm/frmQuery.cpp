@@ -120,6 +120,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_CLEAR,             frmQuery::OnClear)
 	EVT_MENU(MNU_SUMMARY_COL,       frmQuery::OnSummary_Column)
 	EVT_MENU(MNU_COPY_INSERT,       frmQuery::OnCopy_Insert)
+	EVT_MENU(MNU_CLEAR_FILTER,      frmQuery::OnClear_Filter)
 	EVT_MENU(MNU_FIND,              frmQuery::OnSearchReplace)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
 	EVT_MENU(MNU_REDO,              frmQuery::OnRedo)
@@ -173,6 +174,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_STC_MODIFIED(CTL_SQLQUERY,  frmQuery::OnChangeStc)
 	EVT_STC_UPDATEUI(CTL_SQLQUERY,  frmQuery::OnPositionStc)
 	EVT_GRID_LABEL_RIGHT_CLICK(     frmQuery::OnLabelRightClick)
+	EVT_GRID_CELL_LEFT_DCLICK(      frmQuery::OnCellLeftDClick)
 	EVT_AUI_PANE_CLOSE(             frmQuery::OnAuiUpdate)
 	EVT_TIMER(CTL_TIMERSIZES,       frmQuery::OnAdjustSizesTimer)
 	EVT_TIMER(CTL_TIMERFRM,         frmQuery::OnTimer)
@@ -1936,6 +1938,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_DELETE, _("&Delete"), _("Delete selected rows."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
 	xmenu->Append(MNU_COPY_INSERT, _("Copy Insert format"), _("Copy Insert format."));
+	xmenu->Append(MNU_CLEAR_FILTER, _("Clear filter"), _("Clear filter"));
 	
 	if ((rows.GetCount()))
 	{
@@ -1949,6 +1952,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 		xmenu->Enable(MNU_DELETE, false);
 		xmenu->Enable(MNU_PASTE, false);
 	}
+	xmenu->Enable(MNU_CLEAR_FILTER, isfilterresult);
 	sqlResult->PopupMenu(xmenu);
 }
 void frmQuery::OnCopy_Insert(wxCommandEvent &ev)
@@ -1958,6 +1962,28 @@ void frmQuery::OnCopy_Insert(wxCommandEvent &ev)
 		wxString s=wxT("Insert into format copy buffer.");
 		sqlResult->Copy(true);
 		SetStatusText(s, STATUSPOS_POS);
+	}
+}
+void frmQuery::OnCellLeftDClick(wxGridEvent &event) 
+{
+		int row=event.GetRow();
+		int col=event.GetCol();
+		bool reverse=event.AltDown();
+		wxString s=wxEmptyString;
+		s.Printf("wait ...",row,col);
+		SetStatusText(s, STATUSPOS_MSGS);
+		s=sqlResult->SetFilter(row,col,reverse);
+		isfilterresult=true;
+		SetStatusText(s, STATUSPOS_MSGS);
+}
+void frmQuery::OnClear_Filter(wxCommandEvent &ev)
+{
+//	if (currentControl() == sqlResult)
+	{
+		wxString s=wxT("Clear filter");
+		sqlResult->ClearFilter();
+		SetStatusText(s, STATUSPOS_MSGS);
+		isfilterresult=false;
 	}
 }
 
@@ -2803,7 +2829,7 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 		setExtendedTitle();
 
 	aborted = false;
-
+	isfilterresult=false;
 	QueryExecInfo *qi = new QueryExecInfo();
 	qi->queryOffset = queryOffset;
 	qi->toFileExportForm = NULL;

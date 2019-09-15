@@ -320,7 +320,7 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 	wxString xmltext=wxEmptyString;
 	for (row = 0 ; row < rowCount ; row++)
 	{
-		
+		if (grid->GetRowSize(row)==0) continue;
 		line = wxT("<Row>\n");
 		for (col = 0 ; col < colCount ; col++)
 		{

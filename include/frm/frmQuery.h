@@ -180,6 +180,7 @@ private:
 	void OnChangeStc(wxStyledTextEvent &event);
 	void OnPositionStc(wxStyledTextEvent &event);
 	void OnLabelRightClick(wxGridEvent &event);
+	void OnCellLeftDClick(wxGridEvent &event);
 	void OnClose(wxCloseEvent &event);
 	void OnSetFocus(wxFocusEvent &event);
 	void OnContents(wxCommandEvent &event);
@@ -206,6 +207,7 @@ private:
 	void OnClear(wxCommandEvent &event);
 	void OnSummary_Column(wxCommandEvent &event);
 	void OnCopy_Insert(wxCommandEvent &event);
+	void OnClear_Filter(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);
@@ -315,7 +317,7 @@ private:
 	queryFavouriteFolder *favourites;
 	queryMacroList *macros;
 	queryMacroList *autoreplace;
-
+	bool isfilterresult;
 	bool aborted;
 	bool lastFileFormat;
 	bool m_loadingfile;

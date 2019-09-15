@@ -60,7 +60,6 @@ private:
 	wxString GetColKeyValue(int col);
 	void AppendColumnHeader(wxString &str, int start, int end);
 	void AppendColumnHeader(wxString &str, wxArrayInt columns);
-
 	// Stores sizes of colums explicitly resized by user
 	ColKeySizeHashMap colSizes;
 	// Max size for each column
