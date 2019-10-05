@@ -141,6 +141,14 @@ public:
 	{
 		idxTable = s;
 	}
+	wxString GetRelOptions() const
+	{
+		return reloptions;
+	}
+	void iSetRelOptions(const wxString &s)
+	{
+		reloptions = s;
+	}
 	wxString GetIdxSchema() const
 	{
 		return idxSchema;
@@ -284,7 +292,7 @@ protected:
 	void ReadColumnDetails();
 
 private:
-	wxString columnNumbers, columns, quotedColumns, indexType, idxTable, idxSchema, constraint, tablespace;
+	wxString columnNumbers, columns, quotedColumns, indexType, idxTable, reloptions, idxSchema, constraint, tablespace;
 	wxString procName, procNamespace, procArgs, procArgTypeList, typedColumns, quotedTypedColumns, operatorClasses, operatorClassList;
 	long columnCount;
 	wxArrayString columnList, ordersArray, nullsArray, opclassesArray, collationsArray;

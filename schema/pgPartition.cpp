@@ -210,7 +210,7 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 
 	pgSet *tables;
 
-		query = wxT("SELECT rel.oid, rel.relname, rel.reltablespace AS spcoid, spc.spcname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, rel.relhasoids, ")
+		query = wxT("SELECT rel.oid, rel.relname, rel.reltablespace AS spcoid, spc.spcname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, ")
 		        wxT("rel.relhassubclass, rel.reltuples, des.description, con.conname, con.conkey,\n")
 		        wxT("       EXISTS(select 1 FROM pg_trigger\n")
 		        wxT("                       JOIN pg_proc pt ON pt.oid=tgfoid AND pt.proname='logtrigger'\n")
@@ -290,7 +290,7 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			table->iSetOfType(tables->GetVal(wxT("typname")));
 			table->iSetComment(tables->GetVal(wxT("description")));
 				table->iSetUnlogged(tables->GetVal(wxT("relpersistence")) == wxT("u"));
-			table->iSetHasOids(tables->GetBool(wxT("relhasoids")));
+			table->iSetHasOids(false);
 			table->iSetEstimatedRows(tables->GetDouble(wxT("reltuples")) * gp_segments);
 				table->iSetFillFactor(tables->GetVal(wxT("fillfactor")));
 			if (collection->GetConnection()->BackendMinimumVersion(8, 4))

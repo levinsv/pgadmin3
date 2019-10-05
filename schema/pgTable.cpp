@@ -1455,7 +1455,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 	pgSet *tables;
 	if (collection->GetConnection()->BackendMinimumVersion(8, 0))
 	{
-		query = wxT("SELECT rel.oid, rel.relname, rel.reltablespace AS spcoid, spc.spcname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, rel.relhasoids, ")
+		query = wxT("SELECT rel.oid, rel.relname, rel.reltablespace AS spcoid, spc.spcname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, ")
 		        wxT("rel.relhassubclass, rel.reltuples, des.description, con.conname, con.conkey,\n")
 		        wxT("       EXISTS(select 1 FROM pg_trigger\n")
 		        wxT("                       JOIN pg_proc pt ON pt.oid=tgfoid AND pt.proname='logtrigger'\n")
@@ -1566,7 +1566,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 	}
 	else
 	{
-		query = wxT("SELECT rel.oid, rel.relname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, rel.relhasoids, ")
+		query = wxT("SELECT rel.oid, rel.relname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, ")
 		        wxT("rel.relhassubclass, rel.reltuples, des.description, con.conname, con.conkey,\n")
 		        wxT("       (select count(*) FROM pg_trigger\n")
 		        wxT("                     WHERE tgrelid=rel.oid AND tgisconstraint = FALSE) AS triggercount,\n")
@@ -1618,7 +1618,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				table->iSetUnlogged(tables->GetVal(wxT("relpersistence")) == wxT("u"));
 			else
 				table->iSetUnlogged(false);
-			table->iSetHasOids(tables->GetBool(wxT("relhasoids")));
+			table->iSetHasOids(false);
 			table->iSetEstimatedRows(tables->GetDouble(wxT("reltuples")) * gp_segments);
 			if (collection->GetConnection()->BackendMinimumVersion(8, 2))
 			{

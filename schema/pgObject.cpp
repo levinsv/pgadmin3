@@ -492,7 +492,7 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	*     END
 	*/
 	ShowDependency(GetDatabase(), Dependencies,
-	               wxT("SELECT DISTINCT dep.deptype, dep.refclassid, cl.relkind, ad.adbin, ad.adsrc, \n")
+	               wxT("SELECT DISTINCT dep.deptype, dep.refclassid, cl.relkind, ad.adbin, pg_get_expr(ad.adbin,0) adsrc, \n")
 	               wxT("       CASE WHEN cl.relkind IS NOT NULL THEN cl.relkind || COALESCE(dep.refobjsubid::text, '')\n")
 	               wxT("            WHEN tg.oid IS NOT NULL THEN 'T'::text\n")
 	               wxT("            WHEN ty.oid IS NOT NULL THEN 'y'::text\n")
@@ -663,7 +663,7 @@ void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wx
 	*     END
 	*/
 	ShowDependency(GetDatabase(), referencedBy,
-	               wxT("SELECT DISTINCT dep.deptype, dep.classid, cl.relkind, ad.adbin, ad.adsrc, \n")
+	               wxT("SELECT DISTINCT dep.deptype, dep.classid, cl.relkind, ad.adbin, pg_get_expr(ad.adbin,0) adsrc, \n")
 	               wxT("       CASE WHEN cl.relkind IS NOT NULL THEN cl.relkind || COALESCE(dep.objsubid::text, '')\n")
 	               wxT("            WHEN tg.oid IS NOT NULL THEN 'T'::text\n")
 	               wxT("            WHEN ty.oid IS NOT NULL THEN 'y'::text\n")

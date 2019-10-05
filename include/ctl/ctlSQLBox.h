@@ -56,6 +56,7 @@ public:
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnKillFocus(wxFocusEvent &event);
+//	void OnBackGround(wxEraseEvent &event);
 	void SetQueryBook(ctlAuiNotebook *query_book);
 	ctlAuiNotebook* GetQueryBook()
 	{

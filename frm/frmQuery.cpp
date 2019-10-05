@@ -87,6 +87,7 @@
 #define CTRLID_CONNECTION       4200
 #define CTRLID_DATABASELABEL    4201
 #define CTL_SQLQUERYBOOK        4202
+#define CTL_BUTTONTRANSACTION   4203
 
 #define XML_FROM_WXSTRING(s) ((const xmlChar *)(const char *)s.mb_str(wxConvUTF8))
 #define WXSTRING_FROM_XML(s) wxString((char *)s, wxConvUTF8)
@@ -191,6 +192,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_SPLITTER_SASH_POS_CHANGED(GQB_HORZ_SASH, frmQuery::OnResizeHorizontally)
 	EVT_BUTTON(CTL_DELETECURRENTBTN, frmQuery::OnDeleteCurrent)
 	EVT_BUTTON(CTL_DELETEALLBTN,     frmQuery::OnDeleteAll)
+	EVT_BUTTON(CTL_BUTTONTRANSACTION,frmQuery::OnModeTransaction)
 END_EVENT_TABLE()
 
 class DnDFile : public wxFileDropTarget
@@ -482,6 +484,24 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	cbConnection = new wxBitmapComboBox(this, CTRLID_CONNECTION, wxEmptyString, wxDefaultPosition, wxSize(-1, -1), wxArrayString(), wxCB_READONLY | wxCB_DROPDOWN);
 	cbConnection->Append(conn->GetName(), CreateBitmap(GetServerColour(conn)), (void *)conn);
 	cbConnection->Append(_("<new connection>"), wxNullBitmap, (void *) NULL);
+	//CTL_BUTTONTRANSACTION
+	btnModeTransaction = new wxButton(this, CTL_BUTTONTRANSACTION, "A",wxDefaultPosition,wxSize(-1, -1),wxMINIMIZE_BOX);
+	btnModeTransaction->SetMaxSize(wxSize(22,22));
+//	btnModeTransaction->Enable(true);
+	wxFont stdFont = settings->GetSystemFont();
+	wxFont boldFont = stdFont;
+	boldFont.SetWeight(wxBOLD);
+	btnModeTransaction->SetFont(boldFont);
+	if (settings->GetAutoCommit())
+		btnModeTransaction->SetLabel("A");
+	else 
+		btnModeTransaction->SetLabel("T");
+	
+
+//	btnModeTransaction->Fit();
+	
+	
+	
 
 	//Create SQL editor notebook
 	sqlNotebook = new ctlAuiNotebook(this, CTL_NTBKCENTER, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_WINDOWLIST_BUTTON);
@@ -574,6 +594,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	// Kickstart wxAUI
 	manager.AddPane(toolBar, wxAuiPaneInfo().Name(wxT("toolBar")).Caption(_("Tool bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
 	manager.AddPane(cbConnection, wxAuiPaneInfo().Name(wxT("databaseBar")).Caption(_("Connection bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
+	manager.AddPane(btnModeTransaction, wxAuiPaneInfo().Name(wxT("ModeTransaction")).Caption(_("Mode transaction")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
+
 	manager.AddPane(outputPane, wxAuiPaneInfo().Name(wxT("outputPane")).Caption(_("Output pane")).Bottom().MinSize(wxSize(200, 100)).BestSize(wxSize(550, 300)));
 	manager.AddPane(scratchPad, wxAuiPaneInfo().Name(wxT("scratchPad")).Caption(_("Scratch pad")).Right().MinSize(wxSize(100, 100)).BestSize(wxSize(250, 200)));
 	manager.AddPane(sqlNotebook, wxAuiPaneInfo().Name(wxT("sqlQuery")).Caption(_("SQL query")).Center().CaptionVisible(false).CloseButton(false).MinSize(wxSize(200, 100)).BestSize(wxSize(350, 200)));
@@ -586,6 +608,13 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	// and reset the captions for the current language
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
 	manager.GetPane(wxT("databaseBar")).Caption(_("Connection bar"));
+	//manager.GetPane(wxT("ModeTransaction")).Caption(_("Mode transaction"));
+	if (!manager.GetPane(wxT("ModeTransaction")).IsShown()) {
+		manager.GetPane(wxT("ModeTransaction")).MaxSize(wxSize(22, 22));
+		manager.GetPane(wxT("ModeTransaction")).BestSize(wxSize(22, 22));
+		manager.GetPane(wxT("ModeTransaction")).Show(true);
+		
+	}
 	manager.GetPane(wxT("sqlQuery")).Caption(_("SQL query"));
 	manager.GetPane(wxT("outputPane")).Caption(_("Output pane"));
 	manager.GetPane(wxT("scratchPad")).Caption(_("Scratch pad"));
@@ -971,8 +1000,14 @@ void frmQuery::OnAutoRollback(wxCommandEvent &event)
 
 void frmQuery::OnAutoCommit(wxCommandEvent &event)
 {
-	queryMenu->Check(MNU_AUTOCOMMIT, event.IsChecked());
-	if(event.IsChecked() && conn->GetTxStatus() != PQTRANS_IDLE)
+	bool chk=queryMenu->IsChecked(MNU_AUTOCOMMIT);
+	queryMenu->Check(MNU_AUTOCOMMIT, chk);
+	if (chk)
+		btnModeTransaction->SetLabel("A");
+	else 
+		btnModeTransaction->SetLabel("T");
+
+	if(chk && conn->GetTxStatus() != PQTRANS_IDLE)
 		wxMessageBox(
 		    _("The current transaction is still in progess.\n\nIn order to take the effect of AUTOCOMMIT mode, please complete the transaction by executing COMMIT, or ROLLBACK statement."),
 		    _("Warning - Transaction in progress"), wxICON_INFORMATION | wxOK, this);
@@ -2629,7 +2664,6 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 
 	if (query.IsNull())
 		return;
-
 	execQuery(query);
 	sqlQuery->SetFocus();
 }
@@ -2830,6 +2864,7 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 
 	aborted = false;
 	isfilterresult=false;
+	sqlResult->ClearFilter();
 	QueryExecInfo *qi = new QueryExecInfo();
 	qi->queryOffset = queryOffset;
 	qi->toFileExportForm = NULL;
@@ -3861,8 +3896,11 @@ void frmQuery::OnDeleteCurrent(wxCommandEvent &event)
 		SaveQueries();
 	}
 }
-
-
+void frmQuery::OnModeTransaction(wxCommandEvent &event)
+{
+	queryMenu->Check(MNU_AUTOCOMMIT, !queryMenu->IsChecked(MNU_AUTOCOMMIT));
+	OnAutoCommit(event);
+}
 void frmQuery::OnDeleteAll(wxCommandEvent &event)
 {
 

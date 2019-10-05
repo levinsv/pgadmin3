@@ -114,7 +114,7 @@ pgObject *gpPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 
 	pgSet *tables;
 
-	query = wxT("SELECT rel.oid, relname, rel.reltablespace AS spcoid, spcname, pg_get_userbyid(relowner) AS relowner, relacl, relhasoids, ")
+	query = wxT("SELECT rel.oid, relname, rel.reltablespace AS spcoid, spcname, pg_get_userbyid(relowner) AS relowner, relacl, ")
 	        wxT("relhassubclass, reltuples, description, conname, conkey, parname, \n")
 	        wxT("       EXISTS(select 1 FROM pg_trigger\n")
 	        wxT("                       JOIN pg_proc pt ON pt.oid=tgfoid AND pt.proname='logtrigger'\n")
@@ -169,7 +169,7 @@ pgObject *gpPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 				table->iSetTablespace(tables->GetVal(wxT("spcname")));
 
 			table->iSetComment(tables->GetVal(wxT("description")));
-			table->iSetHasOids(tables->GetBool(wxT("relhasoids")));
+			table->iSetHasOids(false);
 			table->iSetEstimatedRows(tables->GetDouble(wxT("reltuples")) * gp_segments);
 
 			table->iSetFillFactor(tables->GetVal(wxT("fillfactor")));

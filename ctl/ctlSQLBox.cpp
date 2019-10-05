@@ -45,6 +45,7 @@ BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_MENU(MNU_FIND, ctlSQLBox::OnSearchReplace)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
+//	EVT_ERASE_BACKGROUND(ctlSQLBox::OnBackGround)
 #ifdef __WXMAC__
 	EVT_STC_PAINTED(-1,  ctlSQLBox::OnPositionStc)
 #else
@@ -81,7 +82,12 @@ ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 
 	Create(parent, id, pos, size, style);
 }
-
+//void ctlSQLBox::OnBackGround(wxEraseEvent &event) {
+//	wxDC *dc=event.GetDC();
+//	dc->SetBackground(wxBrush(GetBackgroundColour(), wxSOLID));
+//	dc->Clear();
+//
+//}
 wxColour ctlSQLBox::SetSQLBoxColourBackground(bool transaction) {
 	wxColour bgColor = settings->GetSQLBoxColourBackground();
 	if (settings->GetSQLBoxUseSystemBackground())
@@ -90,6 +96,7 @@ wxColour ctlSQLBox::SetSQLBoxColourBackground(bool transaction) {
 	}
 	if (transaction) bgColor = wxColour(241, 241, 186);
 	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
+//	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	return bgColor;
 }
 void ctlSQLBox::SetQueryBook(ctlAuiNotebook *query_book)

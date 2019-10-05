@@ -130,6 +130,7 @@ private:
 	ExplainCanvas *explainCanvas;
 	wxTextCtrl *msgResult, *msgHistory;
 	wxBitmapComboBox *cbConnection;
+	wxButton *btnModeTransaction;
 	wxTextCtrl *scratchPad;
 	wxComboBox *sqlQueries;
 	wxButton *btnDeleteCurrent;
@@ -249,6 +250,7 @@ private:
 
 	void OnDeleteCurrent(wxCommandEvent &event);
 	void OnDeleteAll(wxCommandEvent &event);
+	void OnModeTransaction(wxCommandEvent &event);
 
 	void OnTimer(wxTimerEvent &event);
 
