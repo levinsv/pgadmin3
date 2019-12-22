@@ -23,6 +23,7 @@ class pgSchema;
 class pgForeignDataWrapper;
 class pgForeignServer;
 class pgUserMapping;
+class pgproJob;
 
 // Class declarations
 class pgCollection : public pgObject
@@ -65,6 +66,10 @@ public:
 	{
 		return job;
 	}
+		pgproJob *GetproJob() const
+	{
+		return projob;
+	}
 
 	int GetIconId();
 	pgaFactory *GetItemFactory()
@@ -99,6 +104,7 @@ protected:
 	pgForeignDataWrapper *fdw;
 	pgForeignServer *fsrv;
 	pgUserMapping *um;
+	pgproJob *projob;
 };
 
 

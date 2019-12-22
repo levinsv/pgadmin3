@@ -431,7 +431,8 @@ void frmMain::CreateMenus()
 	new reportObjectDependenciesFactory(menuFactories, reportMenu, 0);
 	new reportObjectDependentsFactory(menuFactories, reportMenu, 0);
 	new reportObjectListFactory(menuFactories, reportMenu, 0);
-
+	new reportCompareFactory(menuFactories, reportMenu, 0);
+	
 
 	toolsMenu->AppendSeparator();
 

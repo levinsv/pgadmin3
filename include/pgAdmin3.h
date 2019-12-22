@@ -11,6 +11,8 @@
 
 #ifndef PGADMIN3_H
 #define PGADMIN3_H
+#include "../utils/diff_match_patch.h"
+
 
 // wxWindows headers
 #include <wx/wx.h>

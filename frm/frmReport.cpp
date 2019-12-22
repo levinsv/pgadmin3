@@ -32,6 +32,8 @@
 #include "schema/pgForeignKey.h"
 #include "schema/pgIndexConstraint.h"
 #include "schema/pgCheck.h"
+#include "utils/utffile.h"
+#include <wx/stdpaths.h>
 
 // XML2/XSLT headers
 #include <libxslt/transform.h>
@@ -1157,6 +1159,698 @@ cleanup:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // END XML FUNCTIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+SQL::SQL(const wxString &_sql, const wxString &_pathtree) {
+  // Construct a SQL with the specified operation and text.
+	sql=wxString(_sql);
+	pathtree=wxString(_pathtree) ;
+	countchild=0;
+	mode=0;
+}
+
+SQL::SQL() {
+}
+
+/**
+ * Display a human-readable version of this SQL.
+ * @return text version
+ */
+wxString SQL::toString() const {
+  wxString prettyText = sql;
+  // Replace linebreaks with Pilcrow signs.
+  //prettyText.replace('\n', L'\u00b6');
+  	wxString c=wxEmptyString;
+	wxString cmp=wxEmptyString;
+	if (countchild>0) c.Printf(wxT("(%d)"), countchild);
+	bool r=false;
+	if (sql.Cmp(sql2)!=0) {
+		cmp="ne EQ ";
+		cmp.Printf(wxT("(ne EQ (%d, %d))"), sql.Len(),sql2.Len());
+	}
+	if (mode==__Remove) cmp=cmp+" - ";
+	if (mode==__Insert) cmp=cmp+" + ";
+	if (mode==__Equal) cmp=cmp+" = ";
+  return wxString(pathtree+c+"\n"+cmp+"SQL(" + wxString("\""))
+      + prettyText + wxString("\")");
+}
+
+/**
+ * Is this SQL equivalent to another SQL?
+ * @param d Another SQL to compare against
+ * @return true or false
+ */
+bool SQL::operator==(const SQL &d) const {
+  return (d.sql == this->sql);
+}
+
+bool SQL::operator!=(const SQL &d) const {
+  return !(operator == (d));
+}
+	#include <wx/listimpl.cpp>
+	WX_DEFINE_LIST(MyListSql);
+#include "wx/arrimpl.cpp"
+WX_DEFINE_OBJARRAY(ArraySQL)
+wxString reportCompareFactory::GetNodePath(wxTreeItemId node) {
+	wxString path;
+	path = parent->GetBrowser()->GetItemText(node).Trim();
+
+	wxTreeItemId parent_id = parent->GetBrowser()->GetItemParent(node);
+	while (parent_id.IsOk())
+	{
+		path = parent->GetBrowser()->GetItemText(parent_id).BeforeFirst('(').Trim() + wxT("/") + path;
+		parent_id = parent->GetBrowser()->GetItemParent(parent_id);
+	}
+
+	return path;
+
+}
+void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayString &expandedNodes, ArraySQL &list, time_t *t, wxBusyInfo *w, MyHashSQL &h_path,int lvl)
+{
+	wxTreeItemIdValue cookie;
+	ctlTree *browser=parent->GetBrowser();
+	wxTreeItemId child;
+	if (lvl==0) child = node;
+		else child = browser->GetFirstChild(node, cookie);
+	pgObject *obj;
+	wxString path;
+	time_t tmp;
+	int size=expandedNodes.Count();
+	while (child.IsOk())
+	{
+		obj=browser->GetObject(child);
+		if (obj && obj->GetMetaType()==PGM_FUNCTION && !browser->HasChildren(child))
+			path=GetNodePath(child);
+		else
+											  		path=parent->GetNodePath(child);
+		
+	//	tmp=wxDateTime::GetTimeNow();
+	//	if (difftime(tmp,*t)>2.0) {
+			//w->~wxBusyInfo();
+			//wxSafeYield();
+			//wxMilliSleep(50);
+			//wxSafeYield();
+			//w = new wxBusyInfo(wxString::Format("Path = %s ,GetName() = %s, isCollection = %d",
+			//                                    path.c_str(), obj->GetName().c_str(), obj->IsCollection()),parent);
+			//wxSafeYield();
+			//wxMilliSleep(50);
+			//wxSafeYield();
+	//		*t=tmp;
+	//	}
+		if (obj) {
+//		  OutputDebugString(wxString::Format("Path = %s ,GetName() = %s, isCollection = %d\n",
+//			                                    path.c_str(), obj->GetTypeName().c_str(), obj->IsCollection()));
+		  if (obj->GetMetaType()==PGM_CATALOG
+			  ||obj->GetMetaType()==PGM_COLUMN
+			  ||obj->GetMetaType()==PGM_RULE
+			  ||obj->GetMetaType()==PGM_CATALOG
+			  ) {
+				  child = browser->GetNextChild(node, cookie);
+				  continue;
+		  }
+		  //obj->ShowTreeDetail(browser);
+		  //obj->ShowTree(parent,browser);
+		  // если надо объекто сложный и сас состоит из коллекций
+		if ((obj->GetMetaType()==PGM_SCHEMA
+			||obj->GetMetaType()==PGM_DATABASE
+			||obj->GetMetaType()==PGM_TABLE
+			||obj->GetMetaType()==PGM_FOREIGNTABLE
+			)&&!obj->IsCollection()) {
+						obj->ShowTreeDetail(browser);
+						//obj->ShowTree(parent,browser);
+		} else
+		{
+			if (obj->GetMetaType()==PGM_VIEW) obj->ShowTreeDetail(browser); // только для того чтобы получить инфу о триггерах
+			if (obj->GetMetaType()==PGM_EVENTTRIGGER)  // получаем инфу о тригеррах по событиям
+				obj->ShowTreeDetail(browser);
+		}
+		}
+		
+		//if (browser->IsExpanded(child))
+		if (browser->HasChildren(child))
+		{
+			bool rec=true;
+		  if (obj && (obj->GetMetaType()==PGM_TABLE
+			  //||obj->GetMetaType()==PGM_VIEW
+			  )) {
+				  wxTreeItemId Item = browser->GetItemParent(child);
+				  obj=browser->GetObject(Item); // Tables
+				  wxTreeItemId Item2 = browser->GetItemParent(obj->GetId());
+				  obj=browser->GetObject(Item2); // Schemes
+				  if (obj && obj->GetMetaType()==PGM_SCHEMA&& !obj->IsCollection()) {
+					  rec=false; // не собираем инфу по сек. таблицам и секциям, и во внутрь не заходим
+					  obj=browser->GetObject(child);
+					  obj->ShowTreeDetail(browser);
+				  } else obj=browser->GetObject(child);
+		   }
+		  if (obj && (obj->GetMetaType()==PGM_VIEW && !obj->IsCollection())) rec=false;
+		  if (rec) {
+			GetExpandedChildNodes(child, expandedNodes,list,t,w,h_path,lvl+1);
+			//expandedNodes.Add(parent->GetNodePath(child));
+		    obj=browser->GetObject(child);
+		  }
+		  
+		}
+		if (obj ) {
+				wxString s=obj->GetSql(browser);
+				if (obj->GetMetaType()==PGM_SEQUENCE) s="";
+				int c=browser->GetChildrenCount(child,false);
+				if (size>0) {
+					wxString srcpath(path);
+					SQL *sq;
+					srcpath.Replace(expandedNodes[0],expandedNodes[2],false);
+					srcpath.Replace(expandedNodes[1],expandedNodes[3],false);
+					MyHashSQL::iterator it=h_path.find(srcpath);
+					if (h_path.end()==it) {
+						// не найдено в первой БД
+
+						if (s!=wxEmptyString) {
+							sq =new SQL(wxEmptyString,srcpath);
+							sq->sql2=s;
+							sq->mode=__Remove;
+							list.Add(sq);
+
+						} else
+						{
+							sq =new SQL(wxEmptyString,srcpath);
+							sq->sql2=wxEmptyString;
+							sq->countchild=c;
+							sq->mode=__Remove;
+							list.Add(sq);
+							
+						}
+						
+						h_path[srcpath]=list.GetCount()-1;
+					}
+					else {
+						int i=it->second;
+						SQL& sql=list.Item(i);
+						sql.mode=__Equal;
+						sql.sql2=s;
+					}
+				} else {
+					if (s!=wxEmptyString) {
+						SQL *sq =new SQL(s,path);
+						sq->mode=__Insert;
+						list.Add(sq);
+					} else
+					{
+						SQL *sq =new SQL(s,path);
+						sq->countchild=c;
+						sq->mode=__Insert;
+						list.Add(sq);
+					}
+					h_path[path]=list.GetCount()-1;
+				}
+		}
+		
+		child = browser->GetNextChild(node, cookie);
+	}
+
+}
+
+wxWindow *reportCompareFactory::StartDialog(frmMain *form, pgObject *obj)
+{
+	parent = form;
+//	std::wstring r;
+//	std::wstring str1=L"";
+//	std::wstring str2=L"line#\nline2\nADD line 3\nline4\n";
+//	r=printdiff(str1,str2);
+//	return 0;
+
+//	wxBeginBusyCursor();
+	//frmReport *report = new frmReport(GetFrmMain());
+	//wxBusyInfo *waiting;
+	wxString msg;
+	// Generate the report header
+	wxDateTime now = wxDateTime::Now();
+	
+		ctlTree *browser=form->GetBrowser();
+	wxTreeItemIdValue foldercookie;
+	wxTreeItemId folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
+	wxString path(form->GetNodePath(obj->GetId()));
+	// группы серверов/Серверы/serverN/Datebases/dbname
+	//                p1      p2      p3
+	wxString p_db;
+	int p1=path.Find('/');
+	if (p1<0) return 0;
+	int p2=path.find('/',p1+1);
+	if (p2<0) return 0;
+	startpathpos=p2;
+	int p3=path.find('/',p2+1);
+	wxString p_pref=path.substr(0,p2);
+	wxString p_server_obj;
+	if (!obj->GetConnection()) return 0;
+	if (obj && obj->GetDatabase() && obj->GetDatabase()->GetConnected()) 
+			p_db=obj->GetDatabase()->GetName();
+	else
+			p_db=obj->GetServer()->GetDatabaseName();
+
+	if (p3<0) {
+		// выбран сервер
+		//if (wxMessageBox(wxString::Format("Path = %s ,GetName() = %s, isCollection = %d",
+		//	                                    path.c_str(), obj->GetTypeName().c_str(), obj->IsCollection()), _("Close"), wxYES_NO | wxICON_QUESTION) != wxYES)
+		//{
+		//	return 0;
+		//}
+//Группы серверов/Серверы/PostgreSQL 9.6
+// используем первую попавшуюся открытую БД
+		p_server_obj=path.substr(p2); // с /серверN/
+
+	} else
+	{
+//	Группы серверов/Серверы/PostgreSQL 9.6/Базы данных/postgres
+	p_server_obj=path.substr(p2,p3-p2); // с /серверN/
+	}
+	wxString p_db_replace=_("Databases")+"/"+p_db+"/";
+	wxString p_server_replace=_("Servers")+p_server_obj;
+	pgServer *server;
+	pgDatabase *db=NULL,*lastdb=NULL;
+wxString trg_db_replace;
+wxString trg_server_replace;
+
+	wxTreeItemId srvitem = obj->GetServer()->GetId();
+
+	while (folderitem)
+	{
+		if (browser->ItemHasChildren(folderitem))
+		{
+			wxTreeItemIdValue servercookie;
+			wxTreeItemId serveritem = browser->GetFirstChild(folderitem, servercookie);
+			while (serveritem)
+			{
+				server = (pgServer *)browser->GetItemData(serveritem);
+				if (server != NULL && server->IsCreatedBy(serverFactory))
+				{
+					trg_server_replace=browser->GetItemText(server->GetId()).BeforeFirst('(').Trim();
+					if (srvitem!=server->GetId() && server->GetConnected()) {
+						// наше соединение не нужно нужно другое и активное
+						pgCollection *coll = browser->FindCollection(databaseFactory, server->GetId());
+						if (coll)
+						{
+							treeObjectIterator dbs(browser, coll);
+							while ((db = (pgDatabase *)dbs.GetNextObject()) != 0)
+							{
+								// есть открытая БД
+								lastdb=db;
+								if (db->GetConnected()) {
+
+									//if (db->GetName()!=wxT("postgres")) 	goto ex_out;
+									goto ex_out;
+								}
+							}
+							
+						}
+					}
+				}
+				serveritem = browser->GetNextChild(folderitem, servercookie);
+			}
+		}
+		folderitem = browser->GetNextChild(browser->GetRootItem(), foldercookie);
+	}
+ex_out:
+pgObject *trgobj;
+wxString newpath;
+if (lastdb!=NULL) {
+			p_db=browser->GetItemText(lastdb->GetId()).BeforeFirst('(').Trim();
+			trg_db_replace=_("Databases")+"/"+p_db+"/";
+			trg_server_replace=_("Servers")+"/"+trg_server_replace;
+
+			newpath=path;
+			
+			//if (newpath.Replace(p_server_replace,trg_server_replace,false)==0) 
+			newpath.Replace(p_server_replace,trg_server_replace,false);
+			newpath.Replace(p_db_replace,trg_db_replace,false);
+			if (!parent->SetCurrentNode(parent->GetBrowser()->GetRootItem(),newpath)) {
+				msg.Printf("Не удалось найти объект %s в другой БД.",newpath);
+				wxMessageBox(msg, _("Error"), wxOK | wxICON_INFORMATION);
+				return 0;
+			}
+			trgobj=browser->GetObject(browser->GetSelection());
+} else
+{
+		msg="Нет других установленных соединении , сравнение не возможно.";
+//		msg.Printf("В установленном соединении %s, нет подходящих БД.",browser->GetItemText(lastdb->GetServer()->GetId()).BeforeFirst('(').Trim());
+	wxMessageBox(msg, _("Error"), wxOK | wxICON_INFORMATION);
+	return 0;
+}
+time_t timer=wxDateTime::GetTimeNow();
+	wxArrayString expandedNodes;
+	ArraySQL list;
+	MyHashSQL h_path;
+
+wxWindowDisabler disableAll;
+{
+			wxBusyInfo waiting(wxString::Format(" Обход исходной БД Path = %s ,Стартовый объект = %s",
+			                                    browser->GetItemText(obj->GetServer()->GetId()).c_str(), obj->GetName().c_str(),parent));
+			// Give the UI a chance to redraw
+			wxSafeYield();
+			wxMilliSleep(50);
+			wxSafeYield();
+//			waiting->~wxBusyInfo();
+	GetExpandedChildNodes(obj->GetId(),expandedNodes,list,&timer, NULL,h_path,0);
+}
+//waiting->~wxBusyInfo();
+
+	wxFileName fn("");
+	fn.MakeAbsolute();
+wxSafeYield();
+wxMilliSleep(50);
+wxSafeYield();
+//	return 0;
+
+{
+			wxBusyInfo waiting(wxString::Format(" Обход другой БД Path = %s\nСтартовый объект = %s",
+			                                    browser->GetItemText(trgobj->GetId()).c_str(), trgobj->GetName().c_str(),parent));
+			// Give the UI a chance to redraw
+			wxSafeYield();
+			wxMilliSleep(50);
+			wxSafeYield();
+timer=wxDateTime::GetTimeNow();
+	wxArrayString expandedNodes2;
+	expandedNodes2.Add(trg_server_replace);
+	expandedNodes2.Add(trg_db_replace);
+	expandedNodes2.Add(p_server_replace);
+	expandedNodes2.Add(p_db_replace);
+	GetExpandedChildNodes(trgobj->GetId(),expandedNodes2,list,&timer, NULL,h_path,0);
+}
+//waiting->~wxBusyInfo();
+
+int e_count=list.GetCount();
+int linecount=0;
+int nstart=0,lastpos=0;
+int c,minlen=100000,root=0;
+wxArrayInt* child;
+wxArrayPtrVoid level(15);
+wxHashTable htab(wxKEY_STRING);
+wxString key;
+int npos=p2;
+    for (int i = 0; i < e_count; ++i)
+    {
+        SQL& sq = list.Item(i);
+		c=0;
+		nstart=0;
+		if ((nstart=sq.pathtree.rfind('/'))!=wxNOT_FOUND ) { 
+			key=sq.pathtree.SubString(npos,nstart-1);
+			if (minlen>key.Len()) {minlen=key.Len(); root=i;}
+		}
+		child=(wxArrayInt *)htab.Get(key);
+		if (child==NULL) {
+			child=new wxArrayInt;
+			htab.Put(key,(wxObject *)child);
+		}
+		child->Add(i);
+	
+		linecount++;
+	}
+	
+MyListSql::iterator iter2;
+//e_count=list.GetCount();
+//for (int i = 0; i < e_count; ++i)
+//{
+//		SQL& sq = list.Item(i);
+//}
+//	file2.Write(report, wxConvUTF8);
+//	file2.Close();
+
+
+	//return 0;
+	titleline=wxEmptyString;
+	list_head=wxEmptyString;
+	rowlist=wxEmptyString;
+	list_end=wxEmptyString;
+	tableheader=wxEmptyString;
+	head=wxEmptyString;
+	tableheader2=wxEmptyString;
+	tableshtml=wxEmptyString;
+
+// Загрузка шаблона
+#ifndef _DEBUG
+	wxString fDir=wxStandardPaths::Get().GetExecutablePath().BeforeLast('\\')+wxT("\\");
+#else
+	wxString fDir=wxStandardPaths::Get().GetExecutablePath().BeforeLast('\\')+wxT("\\");
+#endif
+	wxString f=fDir+"textcompare_report.template";
+	wxString buffer;
+	
+	wxUtfFile file3(f, wxFile::read, wxFONTENCODING_UTF8);
+	if (file3.IsOpened())
+	{
+		file3.Read(buffer);
+		file3.Close();
+	} else
+	{
+		wxLogError(_("Failed to open file %s."), f.c_str());
+		return 0;
+	}
+	wxStringTokenizer lines(buffer, wxT("\n"));
+	
+	bool mline=false;
+	while (lines.HasMoreTokens())
+	{
+		wxString tmp = lines.GetNextToken();
+		wxString line = tmp.Strip(wxString::both);
+		if (tmp.StartsWith("@end@")) break;
+		int l=wxString("@titleline").Len();
+		if (tmp.StartsWith("@titleline")) {titleline=tmp.Mid(l)+"\n"; continue;}
+		l=wxString("@[list").Len();
+		if (tmp.StartsWith("@[list")) {list_head=tmp.Mid(l)+"\n"; continue;}
+		l=wxString("@]list").Len();
+		if (tmp.StartsWith("@]list")) {list_end=tmp.Mid(l)+"\n"; continue;}
+		l=wxString("@rowlist").Len();
+		if (tmp.StartsWith("@rowlist")) {rowlist=tmp.Mid(l)+"\n"; continue;}
+		l=wxString("@tableheader2").Len();
+		if (tmp.StartsWith("@tableheader2")) {tableheader2=tmp.Mid(l)+"\n"; continue;}
+		
+		if (tmp==wxString("@tableheader@")) {mline=!mline; continue;}
+		if (mline) { tableheader+=tmp+"\n";continue;}
+		head+=tmp+"\n";
+	}
+	//
+{
+			wxBusyInfo waiting(wxString::Format(" Поиск различий ...",0));
+			// Give the UI a chance to redraw
+			wxSafeYield();
+			wxMilliSleep(50);
+			wxSafeYield();
+
+	wxString content=printlvl(root,0,list,htab);
+	wxString tmp(titleline);
+	tmp.Replace("$titleline$","Left  : "+path);
+	wxString tmp2(titleline);
+	tmp2.Replace("$titleline$","Right: "+newpath);
+	head.Replace("$titleline$",tmp+tmp2);
+
+	head.Replace("$list$",content);
+	head.Replace("$tables$",tableshtml);
+	tableshtml=wxEmptyString;
+	content=wxEmptyString;
+}
+
+	//head+="</div></body></html>";
+    fDir=wxStandardPaths::Get().GetTempDir()+wxT("\\cmp.html");
+	//fn="D:\\PostgreSQL\\cmp.html";
+	fn=fDir;
+	fn.MakeAbsolute();
+
+	wxString html(head);
+	wxFile file4(fn.GetFullPath(), wxFile::write);
+	if (!file4.IsOpened())
+	{
+		wxLogError(_("Failed to open file %s."), fn.GetFullPath().c_str());
+		return 0;
+	}
+	file4.Write(html, wxConvUTF8);
+	file4.Close();
+	head=wxEmptyString;
+
+list.RemoveAt(0,list.GetCount());
+e_count=list.GetCount();
+for (int i = 0; i < e_count; ++i)
+{
+		//SQL *p=&sq;
+	//list.RemoveAt(0,list.GetCount());
+//		SQL *p = list.Detach(i);
+//		delete p;
+}
+//htab.DeleteContents(true);
+h_path.clear();
+//MyHashSQL::iterator it, en;
+//for( it = h_path.begin(), en = h_path.end(); it != en; ++it ) 
+//{
+//    h_path.erase(it);
+//}
+//htab.Clear();
+//list.Empty();
+
+#ifdef __WXMSW__
+		wxLaunchDefaultBrowser(fn.GetFullPath());
+#else
+		wxLaunchDefaultBrowser(wxT("file://") + fn.GetFullPath());
+#endif
+
+	return 0;
+}
+#if defined(DELETE)
+#undef DELETE
+#endif // DUMMYSTRUCTNAME
+
+std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str2 )
+{
+	  diff_match_patch dmp;
+	  std::list<Diff> diffs;
+	  if (str1==str2) {
+		  return L"";
+	  }
+	  diffs=dmp.diff_main(str1,str2);
+	  int nstart=0;
+	  int pos=0;
+	  countdiffline=0;
+	  std::wstring cur_l;
+	  std::wstring ncur_l; std::wstring p_ncur_l;std::wstring p_ncur_r;
+	  std::wstring cur_r;
+	  std::wstring ncur_r;
+	  std::wstring tex;
+	  std::wstring t;
+	  std::wstring tableline;
+	  int rline=1,lline=1;
+	  std::list<Diff>::const_iterator it; // объявляем итератор
+	  it = diffs.begin(); // присваиваем ему начало списка
+	  Diff aDiff;
+	  bool modify=false;
+	  bool oneline=false;
+	  nstart=0;
+    while (it != diffs.end()) // пока итератор не достигнет конца
+    {
+		aDiff=*it;
+	    tex=aDiff.text;
+		nstart=0;
+	    while (nstart<tex.length()) {
+			pos=tex.find('\n',nstart);
+			if (pos==-1) {t.assign(tex,nstart,tex.length());nstart=tex.length();} else {t.assign(tex,nstart,pos-nstart);nstart=pos;}
+			if (t.length()>0) {
+				// это всё ещё одна строка
+				if (aDiff.operation==Operation::INSERT) cur_r+=L"<span class=\"difference\">"+t+L"</span>";
+				if (aDiff.operation==Operation::DELETE) cur_l+=L"<span class=\"difference\">"+t+L"</span>";
+				if (aDiff.operation==Operation::EQUAL) {
+					cur_r+=t;
+					cur_l+=t;
+				} else modify=true;
+				// пока не встретим перевод строки считаем что это всё одна строка
+				oneline=true;
+			} else
+			{
+				// дошли до перевода \n
+				nstart=pos+1;
+				ncur_l=std::to_wstring(lline);
+				ncur_r=std::to_wstring(rline);
+				if (p_ncur_r==ncur_r) { ncur_r=L""; modify=true;}
+				if (p_ncur_l==ncur_l) { ncur_l=L""; modify=true;}
+				if (modify) countdiffline++;
+				// формируем колонки
+				//left
+				tableline+=L"<tr><td class=\"diff_next\"></td>";
+				 tableline+= modify ? L"<td class=\"has_difference\">"+ncur_l+"</td>" : L"<td class=\"diff_header\">"+ncur_l+"</td>";
+				tableline+=L"<td class=\"lineContent\"><pre>"+cur_l+"</pre></td>";
+				// right
+				tableline+=L"<td class=\"diff_next\"></td>";
+				tableline+= modify ? L"<td class=\"has_difference\">"+ncur_r+"</td>" : L"<td class=\"diff_header\">"+ncur_r+"</td>";
+				tableline+=L"<td class=\"lineContent\"><pre>"+cur_r+"</pre></td>";
+				tableline+=L"</tr>";
+				if (aDiff.operation==Operation::INSERT) {
+					rline++;
+				} else if (aDiff.operation==Operation::DELETE)  {
+					lline++;
+				} else if (aDiff.operation==Operation::EQUAL) {
+					rline++; lline++;
+				}
+				if (ncur_r.length()>0) p_ncur_r=ncur_r;
+				if (ncur_l.length()>0) p_ncur_l=ncur_l;
+				cur_r=L"";cur_l=L""; ncur_l=L""; ncur_r=L"";
+				modify=false;
+				oneline=false;
+			}
+		} // цикл по строкам внутри одного Diff
+	  ++it;
+	  }
+#ifdef _DEBUG
+	wxFileName fn("D:\\PostgreSQL\\cmp.txt");
+	fn.MakeAbsolute();
+
+	wxFile file(fn.GetFullPath(), wxFile::write);
+	if (!file.IsOpened())
+	{
+		wxLogError(_("Failed to open file %s."), fn.GetFullPath().c_str());
+	}
+
+wxString report;
+	report.Append(wxString::Format(" Таблица\n%s\n",tableline));
+	file.Write(report, wxConvUTF8);
+	file.Close();
+
+#endif
+
+return tableline;
+}
+wxString reportCompareFactory::printlvl(int element,int lvl,ArraySQL &list, wxHashTable &htab)
+{
+	wxString l(list_head);
+
+	wxString r=wxEmptyString;
+	wxArrayInt* child;
+	wxString key,name;
+	int e=element;
+	int nstart;
+		SQL& sq=list.Item(e);
+		if ((nstart=sq.pathtree.rfind('/'))!=wxNOT_FOUND ) { 
+			name=sq.pathtree.AfterLast('/');
+			key=sq.pathtree.Mid(startpathpos);
+			
+		}
+		wxString tid=wxString::Format("id%d",e);
+		wxString rlist=HtmlEntities(name);
+		wxString cdiff=wxEmptyString;
+		// таблица различий
+		countdiffline=0;
+		if (sq.sql.length()+sq.sql2.length()>0) {
+			// для одинаковых небудкм таблицу формировать
+			std::wstring t1=sq.sql.wc_str();
+			std::wstring t2(sq.sql2.wc_str());
+			std::wstring rez=printdiff(t1,t2);
+			if (rez.length()>0) {
+				//L"</tbody></table>"
+				//tableshtml
+				wxString tmp(tableheader);
+				tmp.Replace("@idtablecmp@",tid);
+				tmp.Replace("$rowlist$",rlist);
+				tableshtml+=tmp+"\n";
+				tmp=tableheader2;
+				tmp.Replace("@idtablecmp@",tid);
+				tmp.Replace("$rowlist$",rlist);
+				tableshtml+=tmp;
+				tableshtml+=rez;
+				tableshtml+="</tbody></table>\n";
+				cdiff=wxString::Format(" ( %d )",countdiffline);
+			}
+		}
+
+		// список объектов
+		child=(wxArrayInt *)htab.Get(key);
+		r=rowlist;
+		r.Replace("$rowlist$",rlist+cdiff);
+		if (sq.mode==__Insert) r.Replace("@color@","insert");
+				else if (sq.mode==__Remove) r.Replace("@color@","remove");
+				else if (countdiffline>0) r.Replace("@color@","ne"); else {
+					if (child!=NULL) r.Replace("@color@","eq"); else r.Replace("@color@","eqhidden");
+				}
+		r.Replace("@idtablecmp@",tid);	
+		l+=r;
+		if (child!=NULL) {
+			for (int j=0;j<child->GetCount();j++) {
+				l+=printlvl(child->Item(j),lvl+1,list,htab);
+			}
+		}
+	l+=list_end;
+	return l;
+}
 
 ///////////////////////////////////////////////////////
 // Report base

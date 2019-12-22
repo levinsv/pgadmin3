@@ -15,6 +15,8 @@
 #include "dlg/dlgClasses.h"
 #include "ctl/ctlListView.h"
 #include "ctl/ctlSQLResult.h"
+#include "schema/pgDatabase.h"
+#include <wx/busyinfo.h>
 
 // Class declarations
 class frmReport : public pgDialog
@@ -86,7 +88,74 @@ public:
 		return false;
 	};
 };
+class SQL;
 
+WX_DECLARE_LIST(SQL, MyListSql);
+WX_DECLARE_OBJARRAY(SQL, ArraySQL);
+
+class SQL {
+ public:
+  // One of: INSERT, DELETE or EQUAL.
+  wxString sql;
+  wxString sql2;
+  wxString pathtree;
+  int countchild,mode;
+  // The text associated with this diff operation.
+
+  /**
+   * Constructor.  Initializes the diff with the provided values.
+   * @param operation One of INSERT, DELETE or EQUAL.
+   * @param text The text being applied.
+   */
+  SQL(const wxString &_sql, const wxString &_pathtree);
+  SQL();
+//  inline bool isNull() const;
+  wxString toString() const;
+  bool operator==(const SQL &d) const;
+  bool operator!=(const SQL &d) const;
+
+  //static wxString strOperation(Operation op);
+};
+
+WX_DECLARE_STRING_HASH_MAP( int, MyHashSQL );
+	
+#define __Remove 1
+#define __Equal  0
+#define __Insert 2
+
+class reportCompareFactory : public actionFactory
+{
+private:
+	wxString titleline;
+	wxString list_head;
+	wxString rowlist;
+	wxString list_end;
+	 wxString tableheader;
+	wxString head;
+	wxString tableheader2;
+	wxString tableshtml;
+	int startpathpos,countdiffline;
+protected:
+	//reportCompareFactory(menuFactoryList *list) : actionFactory(list) {}
+	wxString reportCompareFactory::GetNodePath(wxTreeItemId node);
+	wxWindow *StartDialog(frmMain *form, pgObject *obj);
+	void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayString &expandedNodes, ArraySQL &list,time_t *t,wxBusyInfo *w, MyHashSQL &h_path,int lvl);
+	std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str2 );
+	wxString printlvl(int element,int lvl,ArraySQL &list, wxHashTable &htab);
+	frmMain *GetFrmMain()
+	{
+		return parent;
+	};
+	frmMain *parent;
+public:
+	reportCompareFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar): actionFactory(list) {
+		mnu->Append(id, _("&Compare other objects"), _("Compare other host database select objects."));
+	};
+	bool CheckEnable(pgObject *obj)
+	{
+		return true;
+	};
+};
 
 ///////////////////////////////////////////////////////
 // Object properties report

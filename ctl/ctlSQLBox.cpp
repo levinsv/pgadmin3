@@ -739,7 +739,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		int max = line.Length() - (GetLineEndPosition(GetCurrentLine()) - GetCurrentPos()) - offset;
 		if(line != wxEmptyString)
 		{
-			while ((line[x].GetValue() == '\t' || line[x].GetValue() == ' ') && x < max) {
+			while ((x < max) &&(line[x].GetValue() == '\t' || line[x].GetValue() == ' ')) {
 				wxChar ccc=line[x];
 				indent += line[x++];
 			}

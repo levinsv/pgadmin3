@@ -125,7 +125,7 @@ void pgEventTrigger::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView
 			delete eventTriggerFunction;
 
 		wxString restr = wxT(" WHERE nsp.oid= ") + NumToStr(GetSchemaOid()) + wxT("::oid\n");
-		eventTriggerFunctionSchema = (pgSchema *)schemaFactory.CreateObjects((pgCollection *)browser->GetObject(browser->GetSelection()), 0, restr);
+		eventTriggerFunctionSchema = (pgSchema *)schemaFactory.CreateObjects((pgCollection *)browser->GetObject(GetId()), 0, restr);
 
 		// append function here
 		eventTriggerFunction = functionFactory.AppendFunctions(this, eventTriggerFunctionSchema, browser, wxT(" WHERE pr.oid = ") + NumToStr(functionOid) + wxT("::oid\n"));
@@ -162,7 +162,7 @@ wxString pgEventTrigger::GetSql(ctlTree *browser)
 	if (sql.IsNull() && (this->eventTriggerFunction))
 	{
 		sql = wxT("-- Event Trigger: ") + qtIdent(GetName()) + wxT(" on database ")
-		      + qtIdent(((pgCollection *)browser->GetObject(browser->GetSelection()))->GetDatabase()->GetName()) + wxT("\n\n")
+		      + qtIdent(((pgCollection *)browser->GetObject(GetId()))->GetDatabase()->GetName()) + wxT("\n\n")
 		      + wxT("-- DROP EVENT TRIGGER ") + qtIdent(GetName()) + wxT(";\n\n");
 
 		sql += wxT("CREATE EVENT TRIGGER ") + qtIdent(GetName()) + wxT(" ON ")

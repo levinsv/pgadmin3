@@ -32,6 +32,7 @@ pgCollection::pgCollection(pgaFactory *factory)
 	schema = 0;
 	database = 0;
 	server = 0;
+	projob = 0;
 }
 
 bool pgCollection::IsCollectionFor(pgObject *obj)
