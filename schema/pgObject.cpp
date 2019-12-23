@@ -1064,11 +1064,14 @@ wxString pgObject::GetGrant(const wxString &allPattern, const wxString &_grantFo
 			// checks if certain privilege is granted to owner
 			bool grantedToOwner = false;
 
-			queryTokenizer acls(acl.Mid(1, acl.Length() - 2), ',');
-			while (acls.HasMoreTokens())
-			{
-				str = acls.GetNextToken();
+			//queryTokenizer acls(acl.Mid(1, acl.Length() - 2), ',');
+			wxSortedArrayString acls(wxSplit(acl.Mid(1, acl.Length() - 2),','));
 
+			//while (acls.HasMoreTokens())
+			for (int j=0;j<acls.Count();j++)
+			{
+				//str = acls.GetNextToken();
+				str = acls[j];
 				if (str.Left(1) == '"')
 					str = str.Mid(1, str.Length() - 2);
 				user = str.BeforeFirst('=');

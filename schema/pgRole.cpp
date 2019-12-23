@@ -290,7 +290,7 @@ wxString pgRole::GetSql(ctlTree *browser)
 		}
 
 	    wxString query;
-		query = wxT("select type,objname,grantee,string_agg(privilege_type,',') priv from (\n")
+		query = wxT("select type,objname,grantee,string_agg(privilege_type,',' order by privilege_type) priv from (\n")
 wxT("  select type, objname, r1.rolname grantor, r2.rolname grantee, privilege_type\n")
 wxT("    from\n")
 wxT("    (select \n")

@@ -135,6 +135,9 @@ private:
 	wxString tableheader2;
 	wxString tableshtml;
 	int startpathpos,countdiffline;
+	short Diff_EditCost;
+	float Match_Threshold;
+	int Match_Distance;
 protected:
 	//reportCompareFactory(menuFactoryList *list) : actionFactory(list) {}
 	wxString reportCompareFactory::GetNodePath(wxTreeItemId node);

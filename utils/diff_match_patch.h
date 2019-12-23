@@ -177,7 +177,7 @@ class diff_match_patch {
   static std::wregex BLANKLINESTART;
 
  public:
-  diff_match_patch();
+  diff_match_patch(short Diff_EditCost_,float Match_Threshold_,int  Match_Distance_);
 
   //  DIFF FUNCTIONS
 

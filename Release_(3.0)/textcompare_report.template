@@ -10,7 +10,10 @@
         &nbsp;
 
 
-        
+@Diff_EditCost=4
+@Match_Threshold=0.1
+@Match_Distance=300
+
 
     	<style type="text/css">
 body {
@@ -220,6 +223,14 @@ label {
 		}
 		.diff_header {	width: 1em;}
 		.difference {
+			width: 1em;
+			background: #A9D0F5;
+		}
+		.differencei {
+			width: 1em;
+			background: Gold;
+		}
+		.differenced {
 			width: 1em;
 			background: #A9D0F5;
 		}

@@ -1601,12 +1601,18 @@ MyListSql::iterator iter2;
 		wxLogError(_("Failed to open file %s."), f.c_str());
 		return 0;
 	}
+	buffer.Replace('\r',wxEmptyString,true);
 	wxStringTokenizer lines(buffer, wxT("\n"));
+	Diff_EditCost=4;
+	Match_Threshold=0.5;
+	Match_Distance=1000;
 	
 	bool mline=false;
 	while (lines.HasMoreTokens())
 	{
 		wxString tmp = lines.GetNextToken();
+		
+		//if (tmp.length()>0 && tmp[tmp.length()-1]=='\r') tmp.RemoveLast();
 		wxString line = tmp.Strip(wxString::both);
 		if (tmp.StartsWith("@end@")) break;
 		int l=wxString("@titleline").Len();
@@ -1622,6 +1628,11 @@ MyListSql::iterator iter2;
 		
 		if (tmp==wxString("@tableheader@")) {mline=!mline; continue;}
 		if (mline) { tableheader+=tmp+"\n";continue;}
+		// diff config
+		if (tmp.StartsWith("@Match_Distance=")) {Match_Distance=(int)StrToDouble(tmp.After('=')); continue;}
+		if (tmp.StartsWith("@Diff_EditCost=")) {Diff_EditCost=StrToDouble(tmp.After('=')); continue;}
+		if (tmp.StartsWith("@Match_Threshold=")) {Match_Threshold=(float)StrToDouble(tmp.After('=')); continue;}
+		
 		head+=tmp+"\n";
 	}
 	//
@@ -1695,7 +1706,7 @@ h_path.clear();
 
 std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str2 )
 {
-	  diff_match_patch dmp;
+	  diff_match_patch dmp(Diff_EditCost,Match_Threshold,Match_Distance);
 	  std::list<Diff> diffs;
 	  if (str1==str2) {
 		  return L"";
@@ -1728,8 +1739,8 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 			if (pos==-1) {t.assign(tex,nstart,tex.length());nstart=tex.length();} else {t.assign(tex,nstart,pos-nstart);nstart=pos;}
 			if (t.length()>0) {
 				// это всё ещё одна строка
-				if (aDiff.operation==Operation::INSERT) cur_r+=L"<span class=\"difference\">"+t+L"</span>";
-				if (aDiff.operation==Operation::DELETE) cur_l+=L"<span class=\"difference\">"+t+L"</span>";
+				if (aDiff.operation==Operation::INSERT) cur_r+=L"<span class=\"differencei\">"+t+L"</span>";
+				if (aDiff.operation==Operation::DELETE) cur_l+=L"<span class=\"differenced\">"+t+L"</span>";
 				if (aDiff.operation==Operation::EQUAL) {
 					cur_r+=t;
 					cur_l+=t;
@@ -1741,30 +1752,56 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 				// дошли до перевода \n
 				nstart=pos+1;
 				ncur_l=std::to_wstring(lline);
-				ncur_r=std::to_wstring(rline);
-				if (p_ncur_r==ncur_r) { ncur_r=L""; modify=true;}
-				if (p_ncur_l==ncur_l) { ncur_l=L""; modify=true;}
+				ncur_l=L""; ncur_r=L"";
+//				if (p_ncur_r==ncur_r) { ncur_r=L""; modify=true;}
+//				if (p_ncur_l==ncur_l) { ncur_l=L""; modify=true;}
+				
+				std::wstring t_cur_l=cur_l;
+				std::wstring t_cur_r=cur_r;
+				if (aDiff.operation==Operation::DELETE) {
+					t_cur_r=L"";
+					ncur_l=std::to_wstring(lline);
+					modify=true;
+					lline++;
+				} else  if (aDiff.operation==Operation::INSERT) {
+					t_cur_l=L"";
+					ncur_r=std::to_wstring(rline);
+					modify=true;
+					rline++;
+				} else if (aDiff.operation==Operation::EQUAL) {
+					ncur_r=std::to_wstring(rline);
+					ncur_l=std::to_wstring(lline);
+					rline++; lline++;
+				}
 				if (modify) countdiffline++;
+//				if (( (ncur_r.empty()&&(!ncur_l.empty()))
+//					||(ncur_l.empty()&&(!ncur_r.empty()))
+//					)&&(!modify)) modify=true;
 				// формируем колонки
 				//left
-				tableline+=L"<tr><td class=\"diff_next\"></td>";
-				 tableline+= modify ? L"<td class=\"has_difference\">"+ncur_l+"</td>" : L"<td class=\"diff_header\">"+ncur_l+"</td>";
-				tableline+=L"<td class=\"lineContent\"><pre>"+cur_l+"</pre></td>";
+					tableline+=L"<tr><td class=\"diff_next\"></td>";
+					 tableline+= modify ? L"<td class=\"has_difference\">"+ncur_l+"</td>" : L"<td class=\"diff_header\">"+ncur_l+"</td>";
+					tableline+=L"<td class=\"lineContent\"><pre>"+t_cur_l+"</pre></td>";
 				// right
 				tableline+=L"<td class=\"diff_next\"></td>";
 				tableline+= modify ? L"<td class=\"has_difference\">"+ncur_r+"</td>" : L"<td class=\"diff_header\">"+ncur_r+"</td>";
-				tableline+=L"<td class=\"lineContent\"><pre>"+cur_r+"</pre></td>";
+				tableline+=L"<td class=\"lineContent\"><pre>"+t_cur_r+"</pre></td>";
 				tableline+=L"</tr>";
-				if (aDiff.operation==Operation::INSERT) {
-					rline++;
-				} else if (aDiff.operation==Operation::DELETE)  {
-					lline++;
-				} else if (aDiff.operation==Operation::EQUAL) {
-					rline++; lline++;
-				}
+
+
+
 				if (ncur_r.length()>0) p_ncur_r=ncur_r;
 				if (ncur_l.length()>0) p_ncur_l=ncur_l;
-				cur_r=L"";cur_l=L""; ncur_l=L""; ncur_r=L"";
+				
+				if (aDiff.operation==Operation::DELETE) {
+					cur_l=L"";
+				} else  if (aDiff.operation==Operation::INSERT) {
+					cur_r=L"";
+				} else if (aDiff.operation==Operation::EQUAL) {
+					cur_r=L"";cur_l=L"";
+				}
+				
+				//
 				modify=false;
 				oneline=false;
 			}
@@ -1814,6 +1851,8 @@ wxString reportCompareFactory::printlvl(int element,int lvl,ArraySQL &list, wxHa
 			// для одинаковых небудкм таблицу формировать
 			std::wstring t1=sq.sql.wc_str();
 			std::wstring t2(sq.sql2.wc_str());
+			t1.erase(std::remove(t1.begin(), t1.end(), '\r'), t1.end());
+			t2.erase(std::remove(t2.begin(), t2.end(), '\r'), t2.end());
 			std::wstring rez=printdiff(t1,t2);
 			if (rez.length()>0) {
 				//L"</tbody></table>"
