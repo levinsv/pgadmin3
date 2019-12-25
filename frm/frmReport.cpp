@@ -1779,12 +1779,12 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 //					)&&(!modify)) modify=true;
 				// формируем колонки
 				//left
-					tableline+=L"<tr><td class=\"diff_next\"></td>";
-					 tableline+= modify ? L"<td class=\"has_difference\">"+ncur_l+"</td>" : L"<td class=\"diff_header\">"+ncur_l+"</td>";
+					tableline+=L"<tr><td class=\"diff_next\" onclick=\"c(this)\"></td>";
+					 tableline+= modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">"+ncur_l+"</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">"+ncur_l+"</td>";
 					tableline+=L"<td class=\"lineContent\"><pre>"+t_cur_l+"</pre></td>";
 				// right
-				tableline+=L"<td class=\"diff_next\"></td>";
-				tableline+= modify ? L"<td class=\"has_difference\">"+ncur_r+"</td>" : L"<td class=\"diff_header\">"+ncur_r+"</td>";
+				tableline+=L"<td class=\"diff_next\" onclick=\"c(this)\"></td>";
+				tableline+= modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">"+ncur_r+"</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">"+ncur_r+"</td>";
 				tableline+=L"<td class=\"lineContent\"><pre>"+t_cur_r+"</pre></td>";
 				tableline+=L"</tr>";
 

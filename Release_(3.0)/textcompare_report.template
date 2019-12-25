@@ -237,10 +237,12 @@ label {
 		.has_difference { 
 			background: #97D397;
 			width: 1em;
+			user-select: none;
 		}
 		.diff_header, .diff_next {
 			vertical-align:top;
 			background: #dedede;
+			user-select: none;
 		}
 		.diff_next {padding-top:2px;}
 		.diff_remove {background: Pink;}
@@ -281,7 +283,59 @@ $tables$
 
 
         
+<script>       
+function c(t)
+{
+         console.log(t.parentNode)
+         console.log(t.parentNode.parentNode.parentNode)
+         var myTab= t.parentNode.parentNode.parentNode;
+         var text='';
+         var j=t.cellIndex;
+         console.log('cellIndex='+t.cellIndex);
+ 
+         for (i = 0; i < myTab.rows.length; i++) {
+          text = text + myTab.rows.item(i).cells.item(j+2).innerText +'\n';
+        }
+ 
+var node = document.createElement('textarea');
+          var selection = document.getSelection();
+ 
+          node.textContent = text;
+          document.body.appendChild(node);
+ 
+          selection.removeAllRanges();
+          node.select();
+          document.execCommand('copy');
+ 
+          selection.removeAllRanges();
+          document.body.removeChild(node);
+          alert('SQL copy to clipbord Length: '+text.length);
+}
+function d(t)
+{
+         console.log(t.parentNode)
+         
+         var myTab= t.parentNode.parentNode.parentNode;
+         var text='';
+         var j=t.cellIndex;
+         console.log('cellIndex='+t.cellIndex);
+ 
+         for (i = 0; i < myTab.rows.length; i++) {
+	  var sel=myTab.rows.item(i).cells.item(j+1);
+	  // sel.setAttribute("style", "color:grey; user-select: none;");
+          console.log(sel.style.userSelect);
+	  if (sel.style.userSelect=="") { sel.setAttribute("style", "color:grey; user-select: none;");}
+		 else 
+			{sel.style.userSelect = null; sel.style.color= null;}
 
+	  //console.log(sel.style)
+
+        }
+
+}
+
+ 
+</script>        
 
 
 </body></html>
