@@ -696,7 +696,8 @@ wxString pgTable::GetSql(ctlTree *browser)
 			sql += GetGrant(wxT("arwdxt"));
 		else
 			sql += GetGrant(wxT("arwdRxt"));
-
+		wxString st=GetStatExt();
+		if (!st.IsEmpty()) sql += st + wxT(";\n");
 		sql += GetCommentSql();
 
 		if (GetConnection()->BackendMinimumVersion(9, 1))
@@ -1531,7 +1532,13 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 			pg10=wxT("(rel.relpartbound is null and i.inhrelid is null) and");
 			//query += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=rel.oid AND sl2.objsubid=0) AS providers");
 		}
+//		'ALTER STATISTICS '||substring('CREATE STATISTICS public.tab_a (dependencies) ON c1, c3 FROM a' from 'ICS (.+?)\s\(')||' OWNER TO '||
 		//select relation from pg_locks where locktype='relation' and granted=true and mode='AccessExclusiveLock'
+		if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
+		{
+			query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
+			query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+		}
 		query += wxT("  FROM pg_class rel\n")
 				 wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
 		         wxT("  LEFT OUTER JOIN pg_tablespace spc on spc.oid=rel.reltablespace\n")
@@ -1548,6 +1555,8 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 
 		if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 			query += wxT("LEFT JOIN pg_type typ ON rel.reloftype=typ.oid\n");
+		if (collection->GetConnection()->BackendMinimumVersion(10, 0))
+			query += wxT("LEFT JOIN pg_statistic_ext stat_ext ON rel.oid=stat_ext.stxrelid\n");
 
 		query += wxT(" WHERE ")+pg10+wxT(" rel.relkind IN ('r','s','t','p') AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
 
@@ -1624,6 +1633,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 			{
 				table->iSetFillFactor(tables->GetVal(wxT("fillfactor")));
 			}
+			
 			if (collection->GetConnection()->BackendMinimumVersion(8, 4))
 			{
 				table->iSetRelOptions(tables->GetVal(wxT("reloptions")));
@@ -1684,6 +1694,11 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				table->iSetPartKeyDef(tables->GetVal(wxT("partkeydef")));
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
 				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
+				wxString st = tables->GetVal(wxT("stat_stmt"));
+				wxString at = tables->GetVal(wxT("alter_stmt"));
+				if (!st.IsEmpty()&&!at.IsEmpty()) st=st+wxT(";\n")+at;
+				table->iSetStatExt(st);
+
 			}
 			if (collection->GetConnection()->GetIsGreenplum())
 			{

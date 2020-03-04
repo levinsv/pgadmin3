@@ -209,8 +209,9 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 
 			wxString tmp;
 			tmp = jobs->GetVal(wxT("commands"));
-			tmp.Replace(wxT("{"), wxT(""));
-			tmp.Replace(wxT("}"), wxT(""));
+			if (tmp.find('{',0)==0) { tmp=wxT("[")+tmp.Mid(1,tmp.Len()-2)+wxT("]");  }
+			//tmp.Replace(wxT("{"), wxT("["),false);
+			//tmp.Replace(wxT("}"), wxT("]"));
 
 			
 			job->iSetCommands(tmp);

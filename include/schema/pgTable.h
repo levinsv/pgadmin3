@@ -336,6 +336,15 @@ public:
 	{
 		partexp = s;
 	}
+	void iSetStatExt(const wxString &s)
+	{
+		statext = s;
+	}
+	wxString GetStatExt()
+	{
+		return statext;
+	}
+	
 	bool GetIsPartitioned() const
 	{
 		return isPartitioned || partitionDef.Length() > 0;
@@ -584,6 +593,7 @@ private:
 	wxString partkeydef; // partition feature 10 version
 	wxString partexp; // partition feature 10 version
 	wxString partitionDef;
+	wxString statext;
 	bool isPartitioned;
 	bool hasOids, unlogged, hasSubclass, rowsCounted, isReplicated, showExtendedStatistics, distributionIsRandom;
 
