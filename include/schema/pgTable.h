@@ -142,6 +142,15 @@ public:
 	{
 		tablespace = newVal;
 	}
+	wxString GetRatio() const
+	{
+		return ratio;
+	};
+	void iSetRatio(const wxString &newVal)
+	{
+		if (newVal==wxT("NaN")) ratio=wxEmptyString; else ratio = newVal;
+
+	}
 	OID GetTablespaceOid() const
 	{
 		return tablespaceOid;
@@ -604,7 +613,7 @@ private:
 
 	long inheritedTableCount, triggerCount;
 	wxString quotedInheritedTables, inheritedTables, primaryKey, quotedPrimaryKey,
-	         primaryKeyName, primaryKeyColNumbers, tablespace,
+	         primaryKeyName, primaryKeyColNumbers, tablespace, ratio,
 	         distributionColNumbers, ofType;
 	wxArrayString quotedInheritedTablesList, inheritedTablesOidList;
 

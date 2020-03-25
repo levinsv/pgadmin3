@@ -109,6 +109,7 @@ public:
 		return minorVersion;
 	}
 	bool GetIsEdb();
+	bool GetIsPgProEnt();
 	bool GetIsGreenplum();
 	bool GetIsHawq();
 	wxString EncryptPassword(const wxString &user, const wxString &password);
@@ -296,6 +297,7 @@ private:
 	int minorVersion, majorVersion, patchVersion;
 	bool isEdb;
 	bool isGreenplum;
+	bool isPgProEnt;
 	bool isHawq;
 
 	wxString reservedNamespaces;

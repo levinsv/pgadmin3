@@ -513,107 +513,117 @@ wxString pgTable::GetSql(ctlTree *browser)
 		}
 		if (GetConnection()->BackendMinimumVersion(8, 2))
 		{
-			sql += wxT("\nWITH (");
+			wxString sqlopt=wxEmptyString;
 			if (GetFillFactor().Length() > 0)
-				sql += wxT("\n  FILLFACTOR=") + GetFillFactor() + wxT(", ");
+				sqlopt += wxT("\n  FILLFACTOR=") + GetFillFactor() + wxT(", ");
 			if (GetAppendOnly().Length() > 0)
-				sql += wxT("APPENDONLY=") + GetAppendOnly() + wxT(", ");
+				sqlopt += wxT("APPENDONLY=") + GetAppendOnly() + wxT(", ");
 			if (GetCompressLevel().Length() > 0)
-				sql += wxT("COMPRESSLEVEL=") + GetCompressLevel() + wxT(", ");
+				sqlopt += wxT("COMPRESSLEVEL=") + GetCompressLevel() + wxT(", ");
 			if (GetOrientation().Length() > 0)
-				sql += wxT("ORIENTATION=") + GetOrientation() + wxT(", ");
+				sqlopt += wxT("ORIENTATION=") + GetOrientation() + wxT(", ");
 			if (GetCompressType().Length() > 0)
-				sql += wxT("COMPRESSTYPE=") + GetCompressType() + wxT(", ");
+				sqlopt += wxT("COMPRESSTYPE=") + GetCompressType() + wxT(", ");
 			if (GetBlocksize().Length() > 0)
-				sql += wxT("BLOCKSIZE=") + GetBlocksize() + wxT(", ");
+				sqlopt += wxT("BLOCKSIZE=") + GetBlocksize() + wxT(", ");
 			if (GetChecksum().Length() > 0)
-				sql += wxT("CHECKSUM=") + GetChecksum() + wxT(", ");
-			if (GetHasOids())
-				sql +=  wxT("\n  OIDS=TRUE");
-			else
-				sql +=  wxT("\n  OIDS=FALSE");
+				sqlopt += wxT("CHECKSUM=") + GetChecksum() + wxT(", ");
+			if (GetConnection()->BackendMinimumVersion(12, 0)) {
+				if (!sqlopt.IsEmpty()) sqlopt=sqlopt.BeforeLast(',');
+			} else {
+					if (GetHasOids())
+						sqlopt +=  wxT("\n  OIDS=TRUE");
+					else
+						sqlopt +=  wxT("\n  OIDS=FALSE");
+				    }
+
 			if(GetConnection()->BackendMinimumVersion(8, 4))
 			{
 				if (GetCustomAutoVacuumEnabled())
 				{
 					if (GetAutoVacuumEnabled() == 1)
-						sql += wxT(",\n  autovacuum_enabled=true");
+						sqlopt += wxT(",\n  autovacuum_enabled=true");
 					else if (GetCustomAutoVacuumEnabled() == 0)
-						sql += wxT(",\n  autovacuum_enabled=false");
+						sqlopt += wxT(",\n  autovacuum_enabled=false");
 					if (!GetAutoVacuumVacuumThreshold().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_vacuum_threshold=") + GetAutoVacuumVacuumThreshold();
+						sqlopt += wxT(",\n  autovacuum_vacuum_threshold=") + GetAutoVacuumVacuumThreshold();
 					}
 					if (!GetAutoVacuumVacuumScaleFactor().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_vacuum_scale_factor=") + GetAutoVacuumVacuumScaleFactor();
+						sqlopt += wxT(",\n  autovacuum_vacuum_scale_factor=") + GetAutoVacuumVacuumScaleFactor();
 					}
 					if (!GetAutoVacuumAnalyzeThreshold().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_analyze_threshold=") + GetAutoVacuumAnalyzeThreshold();
+						sqlopt += wxT(",\n  autovacuum_analyze_threshold=") + GetAutoVacuumAnalyzeThreshold();
 					}
 					if (!GetAutoVacuumAnalyzeScaleFactor().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_analyze_scale_factor=") + GetAutoVacuumAnalyzeScaleFactor();
+						sqlopt += wxT(",\n  autovacuum_analyze_scale_factor=") + GetAutoVacuumAnalyzeScaleFactor();
 					}
 					if (!GetAutoVacuumVacuumCostDelay().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_vacuum_cost_delay=") + GetAutoVacuumVacuumCostDelay();
+						sqlopt += wxT(",\n  autovacuum_vacuum_cost_delay=") + GetAutoVacuumVacuumCostDelay();
 					}
 					if (!GetAutoVacuumVacuumCostLimit().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_vacuum_cost_limit=") + GetAutoVacuumVacuumCostLimit();
+						sqlopt += wxT(",\n  autovacuum_vacuum_cost_limit=") + GetAutoVacuumVacuumCostLimit();
 					}
 					if (!GetAutoVacuumFreezeMinAge().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_freeze_min_age=") + GetAutoVacuumFreezeMinAge();
+						sqlopt += wxT(",\n  autovacuum_freeze_min_age=") + GetAutoVacuumFreezeMinAge();
 					}
 					if (!GetAutoVacuumFreezeMaxAge().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_freeze_max_age=") + GetAutoVacuumFreezeMaxAge();
+						sqlopt += wxT(",\n  autovacuum_freeze_max_age=") + GetAutoVacuumFreezeMaxAge();
 					}
 					if (!GetAutoVacuumFreezeTableAge().IsEmpty())
 					{
-						sql += wxT(",\n  autovacuum_freeze_table_age=") + GetAutoVacuumFreezeTableAge();
+						sqlopt += wxT(",\n  autovacuum_freeze_table_age=") + GetAutoVacuumFreezeTableAge();
 					}
 				}
 				if (GetHasToastTable() && GetToastCustomAutoVacuumEnabled())
 				{
 					if (GetToastAutoVacuumEnabled() == 1)
-						sql += wxT(",\n  toast.autovacuum_enabled=true");
+						sqlopt += wxT(",\n  toast.autovacuum_enabled=true");
 					else if (GetToastAutoVacuumEnabled() == 0)
-						sql += wxT(",\n  toast.autovacuum_enabled=false");
+						sqlopt += wxT(",\n  toast.autovacuum_enabled=false");
 					if (!GetToastAutoVacuumVacuumThreshold().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_vacuum_threshold=") + GetToastAutoVacuumVacuumThreshold();
+						sqlopt += wxT(",\n  toast.autovacuum_vacuum_threshold=") + GetToastAutoVacuumVacuumThreshold();
 					}
 					if (!GetToastAutoVacuumVacuumScaleFactor().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_vacuum_scale_factor=") + GetToastAutoVacuumVacuumScaleFactor();
+						sqlopt += wxT(",\n  toast.autovacuum_vacuum_scale_factor=") + GetToastAutoVacuumVacuumScaleFactor();
 					}
 					if (!GetToastAutoVacuumVacuumCostDelay().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_vacuum_cost_delay=") + GetToastAutoVacuumVacuumCostDelay();
+						sqlopt += wxT(",\n  toast.autovacuum_vacuum_cost_delay=") + GetToastAutoVacuumVacuumCostDelay();
 					}
 					if (!GetToastAutoVacuumVacuumCostLimit().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_vacuum_cost_limit=") + GetToastAutoVacuumVacuumCostLimit();
+						sqlopt += wxT(",\n  toast.autovacuum_vacuum_cost_limit=") + GetToastAutoVacuumVacuumCostLimit();
 					}
 					if (!GetToastAutoVacuumFreezeMinAge().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_freeze_min_age=") + GetToastAutoVacuumFreezeMinAge();
+						sqlopt += wxT(",\n  toast.autovacuum_freeze_min_age=") + GetToastAutoVacuumFreezeMinAge();
 					}
 					if (!GetToastAutoVacuumFreezeMaxAge().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_freeze_max_age=") + GetToastAutoVacuumFreezeMaxAge();
+						sqlopt += wxT(",\n  toast.autovacuum_freeze_max_age=") + GetToastAutoVacuumFreezeMaxAge();
 					}
 					if (!GetToastAutoVacuumFreezeTableAge().IsEmpty())
 					{
-						sql += wxT(",\n  toast.autovacuum_freeze_table_age=") + GetToastAutoVacuumFreezeTableAge();
+						sqlopt += wxT(",\n  toast.autovacuum_freeze_table_age=") + GetToastAutoVacuumFreezeTableAge();
 					}
 				}
 			}
-			sql += wxT("\n)");
+			if (!sqlopt.IsEmpty()) {
+				sql += wxT("\nWITH (");
+				if (sqlopt.Index(',')==0) sqlopt=sqlopt.Mid(1);
+				sql += sqlopt;
+				sql += wxT("\n)");
+			}
 		}
 		else
 		{
@@ -1052,9 +1062,13 @@ void pgTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prope
 			properties->AppendItem(_("Inherited tables"), GetInheritedTables());
 		if (GetConnection()->BackendMinimumVersion(9, 1))
 			properties->AppendYesNoItem(_("Unlogged?"), GetUnlogged());
-		properties->AppendYesNoItem(_("Has OIDs?"), GetHasOids());
-		properties->AppendYesNoItem(_("System table?"), GetSystemObject());
-
+		if (!GetConnection()->BackendMinimumVersion(12, 0))
+			properties->AppendYesNoItem(_("Has OIDs?"), GetHasOids());
+		if (!GetConnection()->BackendMinimumVersion(12, 0))
+			properties->AppendYesNoItem(_("System table?"), GetSystemObject());
+		if (GetConnection()->GetIsPgProEnt())
+			properties->AppendItem(_("CFS fragmentation"), GetRatio());
+		
 		/* Custom AutoVacuum Settings */
 		if (GetConnection()->BackendMinimumVersion(8, 4) && GetCustomAutoVacuumEnabled())
 		{
@@ -1534,6 +1548,9 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 		}
 //		'ALTER STATISTICS '||substring('CREATE STATISTICS public.tab_a (dependencies) ON c1, c3 FROM a' from 'ICS (.+?)\s\(')||' OWNER TO '||
 		//select relation from pg_locks where locktype='relation' and granted=true and mode='AccessExclusiveLock'
+		if (collection->GetDatabase()->connection()->GetIsPgProEnt()) query += wxT(",left((cfs_fragmentation(rel.oid)*100)::text,5)::text AS cfs_ratio");
+			else query += wxT(",null::text AS cfs_ratio");
+
 		if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
 		{
 			query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
@@ -1600,6 +1617,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 			table->iSetOid(tables->GetOid(wxT("oid")));
 			table->iSetOwner(tables->GetVal(wxT("relowner")));
 			table->iSetAcl(tables->GetVal(wxT("relacl")));
+			table->iSetRatio(tables->GetVal(wxT("cfs_ratio")));
 			if (collection->GetConnection()->BackendMinimumVersion(8, 0))
 			{
 				if (tables->GetOid(wxT("spcoid")) == 0)
@@ -1612,6 +1630,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				else
 					table->iSetTablespace(tables->GetVal(wxT("spcname")));
 			}
+			
 			if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 			{
 				table->iSetOfTypeOid(tables->GetOid(wxT("reloftype")));

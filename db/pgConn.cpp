@@ -409,6 +409,12 @@ bool pgConn::GetIsEdb()
 	BackendMinimumVersion(0, 0);
 	return isEdb;
 }
+bool pgConn::GetIsPgProEnt()
+{
+	// to retrieve edb flag
+	BackendMinimumVersion(0, 0);
+	return isPgProEnt;
+}
 
 bool pgConn::GetIsGreenplum()
 {
@@ -495,6 +501,10 @@ bool pgConn::BackendMinimumVersion(int major, int minor)
 			if (ExecuteScalar(wxT("SELECT count(*) FROM pg_attribute WHERE attname = 'proconfig' AND attrelid = 'pg_proc'::regclass")) == wxT("0"))
 				minorVersion = 2;
 		}
+		isPgProEnt=false;
+		wxString ed=ExecuteScalar(wxT("select to_regproc('pgpro_edition')::text"));
+		if (!ed.IsEmpty()) ed=ExecuteScalar(wxT("select pgpro_edition()"));
+		if (ed==wxT("enterprise")) isPgProEnt=true;
 
 		isGreenplum = version.Upper().Matches(wxT("*GREENPLUM DATABASE*"));
 		isHawq = version.Upper().Matches(wxT("*GREENPLUM DATABASE*")) && version.Upper().Matches(wxT("*HAWQ*"));;
