@@ -219,6 +219,9 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 		query += wxT("       (select count(*) FROM pg_trigger\n")
 		         wxT("                     WHERE tgrelid=rel.oid AND tgisinternal = FALSE) AS triggercount\n");
 		query += wxT(", rel.relpersistence \n");
+		if (collection->GetDatabase()->connection()->GetIsPgProEnt()) query += wxT(",left((cfs_fragmentation(rel.oid)*100)::text,5)::text AS cfs_ratio\n");
+			else query += wxT(",null::text AS cfs_ratio\n");
+
 		query += wxT(", substring(array_to_string(rel.reloptions, ',') FROM 'fillfactor=([0-9]*)') AS fillfactor \n");
 		query += wxT(", substring(array_to_string(rel.reloptions, ',') FROM 'autovacuum_enabled=([a-z|0-9]*)') AS autovacuum_enabled \n")
 			         wxT(", substring(array_to_string(rel.reloptions, ',') FROM 'autovacuum_vacuum_threshold=([0-9]*)') AS autovacuum_vacuum_threshold \n")
@@ -277,6 +280,7 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			table->iSetOid(tables->GetOid(wxT("oid")));
 			table->iSetOwner(tables->GetVal(wxT("relowner")));
 			table->iSetAcl(tables->GetVal(wxT("relacl")));
+			table->iSetRatio(tables->GetVal(wxT("cfs_ratio")));
 				if (tables->GetOid(wxT("spcoid")) == 0)
 					table->iSetTablespaceOid(collection->GetDatabase()->GetTablespaceOid());
 				else
