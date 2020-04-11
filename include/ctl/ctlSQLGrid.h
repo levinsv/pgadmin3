@@ -56,6 +56,7 @@ private:
 	void OnCopy(wxCommandEvent &event);
 	void OnMouseWheel(wxMouseEvent &event);
 	void OnGridColSize(wxGridSizeEvent &event);
+	void DrawColLabel( wxDC& dc, int col );
 	wxString GetColumnName(int colNum);
 	wxString GetColKeyValue(int col);
 	void AppendColumnHeader(wxString &str, int start, int end);

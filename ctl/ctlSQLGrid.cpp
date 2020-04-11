@@ -20,7 +20,7 @@
 #include "utils/sysSettings.h"
 #include "frm/frmExport.h"
 #include <wx/regex.h>
-
+#include "ctl/ctlSQLResult.h"
 
 #define EXTRAEXTENT_HEIGHT 6
 #define EXTRAEXTENT_WIDTH  6
@@ -56,10 +56,94 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetDefaultCellOverflow(false);
 	//SetDefaultRenderer(new  wxGridCellAutoWrapStringRenderer);
 	SetDefaultRenderer(new  CursorCellRenderer);
-	
+	//SetUseNativeColLabels(true);
+	//UseNativeColHeader(true);
 	grp=NULL;
 
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
+}
+#include "wx/renderer.h"
+#include "wx/headerctrl.h"
+
+void ctlSQLGrid::DrawColLabel( wxDC& dc, int col ) {
+	wxGrid::DrawColLabel(dc,col);
+    int colLeft = GetColLeft(col);
+
+    wxRect rect(colLeft, 0, GetColWidth(col), m_colLabelHeight);
+    sqlResultTable *t=(sqlResultTable *)GetTable();
+
+		wxHeaderSortIconType sortArrow=t->getSortColumn(col)!=0
+                                        ? t->getSortColumn(col)>0
+                                            ? wxHDR_SORT_ICON_UP
+                                            : wxHDR_SORT_ICON_DOWN
+                                        : wxHDR_SORT_ICON_NONE;
+
+    if (sortArrow != wxHDR_SORT_ICON_NONE )
+    {
+        wxRect ar = rect;
+
+        // make a rect for the arrow
+        ar.height = 4;
+        ar.width = 8;
+        ar.y += (rect.height - ar.height)/2;
+        ar.x = ar.x + rect.width - 3*ar.width/2;
+	    int arrowSpace = 0;
+        arrowSpace = 3*ar.width/2; // space to preserve when drawing the label
+        wxPoint triPt[3];
+        if ( sortArrow & wxHDR_SORT_ICON_UP )
+        {
+            triPt[0].x = ar.width / 2;
+            triPt[0].y = 0;
+            triPt[1].x = ar.width;
+            triPt[1].y = ar.height;
+            triPt[2].x = 0;
+            triPt[2].y = ar.height;
+        }
+        else
+        {
+            triPt[0].x = 0;
+            triPt[0].y = 0;
+            triPt[1].x = ar.width;
+            triPt[1].y = 0;
+            triPt[2].x = ar.width / 2;
+            triPt[2].y = ar.height;
+        }
+
+       wxColour c;
+
+		c = wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW);
+			 for (int k=0;k<MAX_COL_SORT;k++) {
+				 int cl=t->colsortnumber[k];
+				 if (cl!=-1) {
+					 if (cl==col) {
+						 if (k==0) c=wxColor(155,17,48); // red
+						 if (k==1) c=wxColor(255,255,0); // yellow
+						 if (k==2) c=wxColor(34,199,76); // green
+						 if (k==3) c=wxColor(12,38,160);  // blue
+					 }
+				 } else break;
+			 }
+        wxDCPenChanger setPen(dc, c);
+        wxDCBrushChanger setBrush(dc, c);
+
+        wxDCClipper clip(dc, rect);
+        dc.DrawPolygon( 3, triPt, ar.x, ar.y);
+    }
+
+        //wxRendererNative::Get().DrawHeaderButton
+        //                        (m_colWindow,
+        //                            //GetColLabelWindow(),
+        //                            dc,
+        //                            rect,
+        //                            0,
+        //                            IsSortingBy(col)
+        //                                ? IsSortOrderAscending()
+        //                                    ? wxHDR_SORT_ICON_UP
+        //                                    : wxHDR_SORT_ICON_DOWN
+        //                                : wxHDR_SORT_ICON_NONE
+        //                        );
+
+
 }
 void ctlSQLGrid::OnGridColSize(wxGridSizeEvent &event)
 {
@@ -429,8 +513,15 @@ void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 		grp->VisibleGroup(row,GetRowSize(row+1)==0);
 		return;
 	}
+	if ( col >= 0 && (event.AltDown() ) )
+	{
+		// continue for sort event
+		sqlResultTable *t=(sqlResultTable *)GetTable();
+		t->setSortColumn(col);
+		return;
+	}
 	// add support for (de)selecting multiple rows and cols with Control pressed
-	if ( row >= 0 && (event.ControlDown() || event.CmdDown()) )
+	else if ( row >= 0 && (event.ControlDown() || event.CmdDown()) )
 	{
 		if (GetSelectedRows().Index(row) == wxNOT_FOUND)
 			SelectRow(row, true);
@@ -443,6 +534,7 @@ void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 			SelectCol(col, true);
 		else
 			DeselectCol(col);
+		event.Skip();
 	}
 	else
 		event.Skip();

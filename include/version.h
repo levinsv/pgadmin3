@@ -13,7 +13,7 @@
 #define VERSION_H
 
 // Application Versions
-#define VERSION_STR     wxT("1.25.0 Dev ASUTP version with support PG11")
+#define VERSION_STR     wxT("1.25.0 Dev ASUTP version with support PG12")
 #define VERSION_NUM     1,25,0,0
 #define VERSION_PACKAGE 1.25.0-dev
 

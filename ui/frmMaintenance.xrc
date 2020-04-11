@@ -37,7 +37,7 @@
                 <object class="sizeritem">
                   <object class="wxStaticBoxSizer">
                     <label>VACUUM options</label>
-                    <cols>3</cols>
+                    <cols>5</cols>
                     <vgap>5</vgap>
                     <hgap>5</hgap>
                     <growablecols>0</growablecols>
@@ -59,6 +59,20 @@
                     <object class="sizeritem">
                       <object class="wxCheckBox" name="chkAnalyze">
                         <label>ANALYZE</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkDISABLE_PAGE_SKIPPING">
+                        <label>DISABLE_PAGE_SKIPPING</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkCONCURRENTLY">
+                        <label>CONCURRENTLY</label>
                       </object>
                       <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>

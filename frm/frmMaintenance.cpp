@@ -38,6 +38,9 @@ END_EVENT_TABLE()
 #define chkFreeze               CTRL_CHECKBOX("chkFreeze")
 #define chkAnalyze              CTRL_CHECKBOX("chkAnalyze")
 #define chkVerbose              CTRL_CHECKBOX("chkVerbose")
+#define chkDISABLE_PAGE_SKIPPING  CTRL_CHECKBOX("chkDISABLE_PAGE_SKIPPING")
+#define chkCONCURRENTLY         CTRL_CHECKBOX("chkCONCURRENTLY")
+
 
 #define stBitmap                CTRL("stBitmap", wxStaticBitmap)
 
@@ -109,10 +112,13 @@ void frmMaintenance::OnAction(wxCommandEvent &ev)
 	chkFull->Enable(isVacuum);
 	chkFreeze->Enable(isVacuum);
 	chkAnalyze->Enable(isVacuum);
+	chkDISABLE_PAGE_SKIPPING->Enable(isVacuum && conn->BackendMinimumVersion(10, 0));
 
 	bool isReindex = (rbxAction->GetSelection() == 2);
+	chkCONCURRENTLY->Enable(isReindex && conn->BackendMinimumVersion(12, 0));
+
 	bool isCluster = (rbxAction->GetSelection() == 3);
-	if (isReindex || (isCluster && !conn->BackendMinimumVersion(8, 4)))
+	if ((isCluster && !conn->BackendMinimumVersion(8, 4)))
 	{
 		chkVerbose->SetValue(false);
 		chkVerbose->Enable(false);
@@ -142,16 +148,18 @@ wxString frmMaintenance::GetSql()
 					return wxEmptyString;
 			}
 			sql = wxT("VACUUM ");
-
+			wxString opt = "";
 			if (chkFull->GetValue())
-				sql += wxT("FULL ");
+				AppendIfFilled(opt,",",wxT("FULL"));
 			if (chkFreeze->GetValue())
-				sql += wxT("FREEZE ");
+				AppendIfFilled(opt,",",wxT("FREEZE"));
 			if (chkVerbose->GetValue())
-				sql += wxT("VERBOSE ");
+				AppendIfFilled(opt,",",wxT("VERBOSE"));
 			if (chkAnalyze->GetValue())
-				sql += wxT("ANALYZE ");
-
+				AppendIfFilled(opt,",",wxT("ANALYZE"));
+			if (chkDISABLE_PAGE_SKIPPING->GetValue())
+				AppendIfFilled(opt,",",wxT("DISABLE_PAGE_SKIPPING"));
+			sql += opt.IsNull() ? "" : "("+opt.Mid(1)+")";
 			if (object->GetMetaType() != PGM_DATABASE)
 				sql += object->GetQuotedFullIdentifier();
 
@@ -170,14 +178,20 @@ wxString frmMaintenance::GetSql()
 		}
 		case 2:
 		{
+			sql = wxT("REINDEX ");
+			if (chkVerbose->GetValue())
+				sql += wxT("(VERBOSE) ");
+
 			if (object->GetMetaType() == PGM_UNIQUE || object->GetMetaType() == PGM_PRIMARYKEY)
 			{
-				sql = wxT("REINDEX INDEX ") + object->GetQuotedFullIdentifier();
+				sql += wxT("INDEX ") + chkCONCURRENTLY->GetValue() ? "CONCURRENTLY ": "";
+				sql	+= object->GetQuotedFullIdentifier();
 			}
 			else // Database, Tables, and Index (but not Constraintes ones)
 			{
-				sql = wxT("REINDEX ") + object->GetTypeName().Upper()
-				      + wxT(" ") + object->GetQuotedFullIdentifier();
+				sql += object->GetTypeName().Upper();
+				sql += chkCONCURRENTLY->GetValue() ? " CONCURRENTLY ": " ";
+				sql += object->GetQuotedFullIdentifier();
 			}
 			break;
 		}

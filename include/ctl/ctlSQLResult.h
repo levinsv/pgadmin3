@@ -69,6 +69,7 @@ public:
 	void SetMaxRows(int rows);
 	void ResultsFinished();
 	void OnGridSelect(wxGridRangeSelectEvent &event);
+	void OnGridColSort(wxGridEvent& event);
 	wxString SetFilter(int row,int col,bool reverse);
 
 	wxArrayString colNames;
@@ -86,10 +87,20 @@ class sqlResultTable : public wxGridStringTable//wxGridTableBase
 public:
 	sqlResultTable();
 	wxString GetValue(int row, int col);
+    wxString GetValueFast(int row, int col);
 	wxString GetRowLabelValue( int row ) ;
 	int GetNumberRows();
 	int GetNumberCols();
 	bool isplan;
+	bool use_map;    // use maplines for GetValue
+	int *maplines;	// maplines[visible_row]=real_row
+	int *colorder;  // array order type -1 desc , 0 no sort, 1 asc
+#define MAX_COL_SORT 5
+	int colsortnumber[MAX_COL_SORT];
+	int sortColumns(); // 
+	int setSortColumn(int col); // set order for column (cycle change value -1,0,1)
+	int getSortColumn(int col);
+	int initSort(); // allocate memory
 	bool IsEmptyCell(int row, int col)
 	{
 		return false;
