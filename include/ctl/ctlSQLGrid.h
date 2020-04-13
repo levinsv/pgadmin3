@@ -36,6 +36,15 @@ public:
 	{
 		return true;
 	};
+	bool IsSort()
+	{
+		return isSort;
+	};
+	void SetSort(bool flag)
+	{
+		isSort=flag;
+	};
+
 	wxSize GetBestSize(int row, int col);
 	void OnLabelDoubleClick(wxGridEvent &event);
 	void OnLabelClick(wxGridEvent &event);
@@ -65,6 +74,7 @@ private:
 	ColKeySizeHashMap colSizes;
 	// Max size for each column
 	wxArrayInt colMaxSizes;
+	bool isSort;
 	
 };
 

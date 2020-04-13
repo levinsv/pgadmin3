@@ -927,7 +927,7 @@ wxString dlgFunction::GetSql()
 	{
 		if (isProcedure && GetArgs().IsEmpty())
 		{
-			sql += schema->GetQuotedPrefix() + qtIdent(GetName());
+			sql += schema->GetQuotedPrefix() + qtIdent(GetName()) + wxT("()");
 		}
 		else
 		{

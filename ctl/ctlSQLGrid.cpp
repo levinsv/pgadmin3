@@ -59,7 +59,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	//SetUseNativeColLabels(true);
 	//UseNativeColHeader(true);
 	grp=NULL;
-
+	isSort=false;
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
 }
 #include "wx/renderer.h"
@@ -67,6 +67,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 
 void ctlSQLGrid::DrawColLabel( wxDC& dc, int col ) {
 	wxGrid::DrawColLabel(dc,col);
+	if (!IsSort()) return;
     int colLeft = GetColLeft(col);
 
     wxRect rect(colLeft, 0, GetColWidth(col), m_colLabelHeight);
@@ -516,9 +517,11 @@ void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 	if ( col >= 0 && (event.AltDown() ) )
 	{
 		// continue for sort event
-		sqlResultTable *t=(sqlResultTable *)GetTable();
-		t->setSortColumn(col);
-		return;
+		if (IsSort()) {
+			sqlResultTable *t=(sqlResultTable *)GetTable();
+			t->setSortColumn(col);
+			return;
+		}
 	}
 	// add support for (de)selecting multiple rows and cols with Control pressed
 	else if ( row >= 0 && (event.ControlDown() || event.CmdDown()) )

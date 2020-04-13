@@ -458,8 +458,8 @@ wxString pgProcedure::GetSql(ctlTree *browser)
 
 		if (GetArgListWithNames().IsEmpty())
 		{
-			qtName = GetQuotedFullIdentifier();
-			qtSig = GetQuotedFullIdentifier();
+			qtName = GetQuotedFullIdentifier()+wxT("()");
+			qtSig = GetQuotedFullIdentifier()+wxT("()");
 		}
 		else
 		{

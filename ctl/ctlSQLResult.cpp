@@ -194,6 +194,7 @@ void ctlSQLResult::DisplayData(bool single)
 	ProcessTableMessage(*msg);
 	delete msg;
 	table->initSort();
+	SetSort(true);
 	if (NumRows()<1000) {
 	for(int row = 0; row < NumRows(); ++row) {
 	    if (row%2==0) {
@@ -679,6 +680,7 @@ sqlResultTable::sqlResultTable()
 	thread = NULL;
 	colorder=NULL;
 	maplines=NULL;
+	use_map=false;
 }
 
 int sqlResultTable::GetNumberRows()
