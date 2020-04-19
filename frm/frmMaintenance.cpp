@@ -184,7 +184,8 @@ wxString frmMaintenance::GetSql()
 
 			if (object->GetMetaType() == PGM_UNIQUE || object->GetMetaType() == PGM_PRIMARYKEY)
 			{
-				sql += wxT("INDEX ") + chkCONCURRENTLY->GetValue() ? "CONCURRENTLY ": "";
+				sql += wxT("INDEX ");
+				sql += chkCONCURRENTLY->GetValue() ? "CONCURRENTLY ": "";
 				sql	+= object->GetQuotedFullIdentifier();
 			}
 			else // Database, Tables, and Index (but not Constraintes ones)
