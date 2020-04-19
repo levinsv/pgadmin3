@@ -28,7 +28,7 @@
 #include "schema/pgConstraints.h"
 #include "schema/gpPartition.h"
 #include "schema/pgPartition.h"
-
+#include <wx/regex.h>
 
 // App headers
 
@@ -617,6 +617,25 @@ wxString pgTable::GetSql(ctlTree *browser)
 						sqlopt += wxT(",\n  toast.autovacuum_freeze_table_age=") + GetToastAutoVacuumFreezeTableAge();
 					}
 				}
+			}
+			wxRegEx reg("vacuum_index_cleanup=[a-z]+|vacuum_truncate=[a-z]+|parallel_workers=[0-9]+|toast_tuple_target=[0-9]+|log_autovacuum_min_duration=[0-9]+|user_catalog_table=[a-z]+");
+			wxString relopt=GetRelOptions();
+			wxString o;
+			size_t start, len;
+			while ( reg.Matches(relopt) )
+			{
+				reg.GetMatch(&start, &len, 0);
+				o=reg.GetMatch(relopt, 0);
+				AppendIfFilled(sqlopt, ",\n  ", o);
+				relopt = relopt.Mid (start + len);
+			}
+			relopt=GetToastRelOptions();
+			while ( reg.Matches(relopt) )
+			{
+				reg.GetMatch(&start, &len, 0);
+				o="toast." + reg.GetMatch(relopt, 0);
+				AppendIfFilled(sqlopt, ",\n  ", o);
+				relopt = relopt.Mid (start + len);
 			}
 			if (!sqlopt.IsEmpty()) {
 				sql += wxT("\nWITH (");

@@ -237,6 +237,22 @@ public:
 	{
 		serialSchema = s;
 	}
+	wxString GetGenerated() const
+	{
+		return generated;
+	}
+	void iSetGenerated(const wxString &s)
+	{
+		generated = s;
+	}
+	wxString GetIdentity() const
+	{
+		return identity;
+	}
+	void iSetIdentity(const wxString &s)
+	{
+		identity = s;
+	}
 	void iSetPkCols(const wxString &s)
 	{
 		pkCols = s;
@@ -299,7 +315,7 @@ public:
 
 private:
 	wxString varTypename, quotedTypename, defaultVal, tableName, quotedFullTable, defaultStorage, storage, rawTypename;
-	wxString serialSequence, serialSchema, pkCols, inheritedTableName, collation;
+	wxString serialSequence, serialSchema, pkCols, inheritedTableName, collation, generated, identity;
 	long colNumber, length, precision, statistics, attstattarget;
 	long typlen, typmod, inheritedCount;
 	bool isPK, isFK, notNull, isArray, isLocal;
