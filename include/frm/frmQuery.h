@@ -126,7 +126,10 @@ private:
 	ctlSQLBox *sqlQuery;
 	ctlAuiNotebook *outputPane;
 	ctlSQLResult *sqlResult;
-	ctlSQLResult *ctlSQL[10];
+#define MAX_RESULT_COUNT 10
+	ctlSQLResult *ctlSQL[MAX_RESULT_COUNT];
+	ctlSQLBox    *ctlSBox[MAX_RESULT_COUNT];
+	int indexResult;
 	ExplainCanvas *explainCanvas;
 	wxTextCtrl *msgResult, *msgHistory;
 	wxBitmapComboBox *cbConnection;
@@ -188,6 +191,7 @@ private:
 	void OnHelp(wxCommandEvent &event);
 	void OnCancel(wxCommandEvent &event);
 	void OnExecute(wxCommandEvent &event);
+	void OnExecuteShift(wxCommandEvent &event);
 	void OnExecScript(wxCommandEvent &event);
 	void OnExecFile(wxCommandEvent &event);
 	void OnExplain(wxCommandEvent &event);
@@ -301,6 +305,8 @@ private:
 	void OnSqlBookPageChanged(wxAuiNotebookEvent &event);
 	void OnSqlBookPageChanging(wxAuiNotebookEvent &event);
 	void OnSqlBookTabRDown(wxAuiNotebookEvent &event);
+	void OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event);
+	
 	void BeginPerspectiveChange();
 	void EndPerspectiveChange(bool update = false);
 	void SetOutputPaneCaption(bool update = false);

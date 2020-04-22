@@ -126,6 +126,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
 	EVT_MENU(MNU_REDO,              frmQuery::OnRedo)
 	EVT_MENU(MNU_EXECUTE,           frmQuery::OnExecute)
+	EVT_MENU(MNU_EXECUTE_2,         frmQuery::OnExecuteShift)
 	EVT_MENU(MNU_EXECPGS,           frmQuery::OnExecScript)
 	EVT_MENU(MNU_EXECFILE,          frmQuery::OnExecFile)
 	EVT_MENU(MNU_EXPLAIN,           frmQuery::OnExplain)
@@ -184,6 +185,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(PGSCRIPT_COMPLETE,     frmQuery::OnScriptComplete)
 	EVT_AUINOTEBOOK_PAGE_CHANGED(CTL_NTBKCENTER, frmQuery::OnChangeNotebook)
 	EVT_AUINOTEBOOK_PAGE_CHANGED(CTL_NTBKGQB, frmQuery::OnChangeNotebookOutpane)
+	EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(CTL_NTBKGQB, frmQuery::OnNotebookOutpaneTabRDown)
 	EVT_AUINOTEBOOK_PAGE_CHANGED(CTL_SQLQUERYBOOK, frmQuery::OnSqlBookPageChanged)
 	EVT_AUINOTEBOOK_PAGE_CHANGING(CTL_SQLQUERYBOOK, frmQuery::OnSqlBookPageChanging)
 	EVT_AUINOTEBOOK_PAGE_CLOSE(CTL_SQLQUERYBOOK, frmQuery::OnSqlBookPageClose)
@@ -336,6 +338,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	queryMenu = new wxMenu();
 	queryMenu->Append(MNU_EXECUTE, _("&Execute\tF8"), _("Execute query"));
+	queryMenu->Append(MNU_EXECUTE_2, _("&Execute new output\tShift-F8"), _("Execute query in new output"));
 	queryMenu->Append(MNU_EXECPGS, _("Execute &pgScript\tF6"), _("Execute pgScript"));
 	queryMenu->Append(MNU_EXECFILE, _("Execute to file\tF5"), _("Execute query, write result to file"));
 	queryMenu->Append(MNU_EXPLAIN, _("E&xplain\tF7"), _("Explain query"));
@@ -560,7 +563,12 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	// Results pane
 	outputPane = new ctlAuiNotebook(this, CTL_NTBKGQB, wxDefaultPosition, wxSize(500, 300), wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_WINDOWLIST_BUTTON);
 	sqlResult = new ctlSQLResult(outputPane, conn, CTL_SQLRESULT, wxDefaultPosition, wxDefaultSize);
+	
+	int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
+	for (int i=0;i<len;i++) ctlSQL[i]=NULL;
+	for (int i=0;i<len;i++) ctlSBox[i]=NULL;
 	ctlSQL[0] = sqlResult;
+	indexResult=0;
 	explainCanvas = new ExplainCanvas(outputPane);
 	msgResult = new wxTextCtrl(outputPane, CTL_MSGRESULT, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
 	msgResult->SetFont(settings->GetSQLFont());
@@ -719,9 +727,20 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 			{ file.Read(str); file.Close(); }
 			if (!str.IsEmpty())
 			{
+				wxString fline=str.BeforeFirst('@');
+				int l=fline.Length();
+				if (fline.Find('\n')>=0) l=0;
+				long nl=0;
+				if (l>0) fline.ToLong(&nl);
+				if (l>0) {
+					fline=str.Mid(l+1);
+					str=fline;
+				}
 				sqlQuery->SetText(str);
 				sqlQuery->Colourise(0, str.Length());
 				sqlQuery->EmptyUndoBuffer();
+				
+				sqlQuery->GotoPos(nl);
 				wxSafeYield();                            // needed to process sqlQuery modify event
 				//sqlQuery->SetFilename(lastPath);
 				sqlQuery->SetChanged(true);
@@ -1229,7 +1248,9 @@ void frmQuery::OnChangeConnection(wxCommandEvent &ev)
 	{
 		conn = (pgConn *)cbConnection->GetClientData(sel);
 		SqlBookSetDatabase(conn);
-		sqlResult->SetConnection(conn);
+	int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
+	for (int i=0;i<len;i++) if (ctlSQL[i]!=NULL) ctlSQL[i]->SetConnection(conn);
+		//sqlResult->SetConnection(conn);
 		pgScript->SetConnection(conn);
 		title = wxT("Query - ") + cbConnection->GetValue();
 		setExtendedTitle();
@@ -1359,6 +1380,18 @@ void frmQuery::OnChangeNotebookOutpane(wxAuiNotebookEvent &event)
 			}
 			//showMessage();
 		}
+		if (wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult))
+		{
+			ctlSQLResult *c=wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult);
+			int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
+			for (int i=0;i<len;i++) 
+				if (ctlSQL[i]!=NULL && c==ctlSQL[i]) 
+				{
+					sqlResult=ctlSQL[i];
+					indexResult=i;
+					break;
+				}
+		}
 		//hist->CmdKeyExecute(wxSTC_CMD_TAB);
 	}
 
@@ -1469,6 +1502,7 @@ wxWindow *frmQuery::currentControl()
 	wxWindow *wnd = FindFocus();
 	if (wnd == outputPane)
 	{
+		wnd = sqlResult;
 		switch (outputPane->GetSelection())
 		{
 			case 0:
@@ -1920,8 +1954,10 @@ void frmQuery::OnClose(wxCloseEvent &event)
 	manager.Update();
 
 	Hide();
+	int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
+	for (int i=0;i<len;i++) if (ctlSQL[i]!=NULL) ctlSQL[i]->Disconnect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 
-	sqlResult->Disconnect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
+//	sqlResult->Disconnect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	msgResult->Disconnect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	msgHistory->Disconnect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 
@@ -1932,7 +1968,9 @@ void frmQuery::OnClose(wxCloseEvent &event)
 	settings->SetExplainBuffers(queryMenu->IsChecked(MNU_BUFFERS));
 	settings->SetExplainTiming(queryMenu->IsChecked(MNU_TIMING));
 
-	sqlResult->Abort();                           // to make sure conn is unused
+	for (int i=0;i<len;i++) if (ctlSQL[i]!=NULL) ctlSQL[i]->Abort();
+
+//	sqlResult->Abort();                           // to make sure conn is unused
 
 	Destroy();
 
@@ -2135,6 +2173,10 @@ void frmQuery::SaveTempFile()
 	wxUtfFile file(tempDir+wxT("\\")+filename, wxFile::write, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
 	if (file.IsOpened())
 	{
+		int nl=sqlQuery->GetCurrentPos();
+		wxString strnl;
+		strnl=wxString::Format(_("%i@"), nl);
+		file.Write(strnl);
 		if ((file.Write(sqlQuery->GetText()) == 0) && (!modeUnicode))
 			wxMessageBox(_("Query text incomplete.\nQuery contained characters that could not be converted to the local charset.\nPlease correct the data or try using UTF8 instead."));
 		file.Close();
@@ -2521,7 +2563,7 @@ void frmQuery::OnExplain(wxCommandEvent &event)
 		// Add a \n first.
 		sql += wxT("\n;\nROLLBACK;");
 	}
-
+	sqlQuery->MarkerDeleteAll(1);
 	execQuery(sql, resultToRetrieve, true, offset, false, true, verbose);
 }
 
@@ -2645,6 +2687,24 @@ void frmQuery::SelectQuery() {
 	delete [] q;
 	
 }
+void frmQuery::OnExecuteShift(wxCommandEvent &event)
+{
+	//add new page outpane
+	int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
+	wxString titlename;
+	for (int i=0;i<len;i++) if (ctlSQL[i]==NULL) {
+
+		sqlResult = new ctlSQLResult(outputPane, conn, CTL_SQLRESULT, wxDefaultPosition, wxDefaultSize);
+		titlename=wxString::Format(_("Out %i"), i);
+		outputPane->AddPage(sqlResult, titlename);
+		sqlResult->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
+		indexResult=i;
+		ctlSQL[i]=sqlResult;
+		ctlSBox[i]=sqlQuery;
+		break;
+	};
+	OnExecute(event);
+}
 void frmQuery::OnExecute(wxCommandEvent &event)
 {
 	if(sqlNotebook->GetSelection() == 1)
@@ -2664,6 +2724,20 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 
 	if (query.IsNull())
 		return;
+	// set marker sqlQueryExec->MarkerAdd(line, 0); // wxSTC_MARK_CIRCLE
+	int en=sqlQuery->GetSelectionEnd();
+	int st=-1;
+	if (sqlQueryExecLast==sqlQuery) sqlQuery->MarkerDeleteAll(1);
+	
+	if (en>=0) {
+		st=sqlQuery->GetSelectionStart();
+		int hline=sqlQuery->LineFromPosition(st);
+		int eline=sqlQuery->LineFromPosition(en);
+		for (int i=hline;i<=eline;i++) {
+			sqlQuery->MarkerAdd(i,1);
+		}
+		//sqlResult->SetRangeLineExecuteSQL(hline,eline);
+	}
 	execQuery(query);
 	sqlQuery->SetFocus();
 }
@@ -2810,6 +2884,7 @@ void frmQuery::setTools(const bool running)
 	bool canEndTransaction = (!running && conn->GetTxStatus() != PQTRANS_IDLE);
 
 	toolBar->EnableTool(MNU_EXECUTE, !running);
+	toolBar->EnableTool(MNU_EXECUTE_2, !running);
 	toolBar->EnableTool(MNU_EXECPGS, !running);
 	toolBar->EnableTool(MNU_EXECFILE, !running);
 	toolBar->EnableTool(MNU_EXPLAIN, !running);
@@ -2817,6 +2892,7 @@ void frmQuery::setTools(const bool running)
 	toolBar->EnableTool(MNU_DOCOMMIT, canEndTransaction);
 	toolBar->EnableTool(MNU_DOROLLBACK, canEndTransaction);
 	queryMenu->Enable(MNU_EXECUTE, !running);
+	queryMenu->Enable(MNU_EXECUTE_2, !running);
 	queryMenu->Enable(MNU_EXECPGS, !running);
 	queryMenu->Enable(MNU_EXECFILE, !running);
 	queryMenu->Enable(MNU_EXPLAIN, !running);
@@ -2858,13 +2934,23 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	sqlQuery->MarkerDeleteAll(0);
 	sqlQuery->StartStyling(0, wxSTC_INDICS_MASK);
 	sqlQuery->SetStyling(sqlQuery->GetText().Length(), 0);
+	
+	int i=sqlQueryBook->GetSelection();
+	sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxColour(255,0,0)));
 
 	if (!sqlQuery->IsChanged())
 		setExtendedTitle();
 
 	aborted = false;
 	isfilterresult=false;
+
+	sqlResult=ctlSQL[indexResult];
 	sqlResult->ClearFilter();
+	ctlSBox[indexResult]=sqlQuery;
+	// 
+	int idx=outputPane->GetPageIndex(sqlResult);
+	outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
+
 	QueryExecInfo *qi = new QueryExecInfo();
 	qi->queryOffset = queryOffset;
 	qi->toFileExportForm = NULL;
@@ -3259,7 +3345,8 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 				if (line < maxLine)
 				{
 					sqlQueryExec->GotoPos(sPos);
-					sqlQueryExec->MarkerAdd(line, 0);
+					// wxSTC_MARK_ARROW = 2
+					sqlQueryExec->MarkerAdd(line, 0); // wxSTC_MARK_CIRCLE
 
 					if (!sqlQueryExec->IsChanged())
 						setExtendedTitle();
@@ -3272,7 +3359,13 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 	else
 	{
 		done = true;
-		outputPane->SetSelection(0);
+		for(int i=0;i<outputPane->GetPageCount();i++)
+		{
+			if (wxDynamicCast(outputPane->GetPage(i), ctlSQLResult)==sqlResult) {
+				outputPane->SetSelection(i);
+			}
+		}
+		
 		long rowsTotal = sqlResult->NumRows();
 
 		if (qi->toFileExportForm)
@@ -3559,6 +3652,13 @@ void frmQuery::completeQuery(bool done, bool explain, bool verbose)
 	// Change the output pane caption so the user knows which tab the result came from
 	sqlQueryExecLast = sqlQueryExec;
 	SetOutputPaneCaption(true);
+	for (int i=0;i<sqlQueryBook->GetPageCount();i++) 
+		if ((sqlQueryBook->GetPageBitmap(i)).IsOk()) sqlQueryBook->SetPageBitmap(i,wxNullBitmap);
+ 	//int i=sqlQueryBook->GetPageCount()-1;
+	//sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxNullColour));
+
+	//int i=sqlQueryBook->GetSelection() if ();
+	
 
 	sqlQueryExec = NULL;
 	sqlQuery->SetFocus();
@@ -3964,6 +4064,29 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			// Update UI with chosen query's info
 			SetEOLModeDisplay(sqlQuery->GetEOLMode());
 			setExtendedTitle();
+			curpage = outputPane->GetSelection();
+			ctlSQLResult *r;
+			r=NULL;
+			if (wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult)) {
+				ctlSQLResult *r = wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult);
+			}
+			int pos=-1;
+			//if (r!=NULL) for (int i=0;i<MAX_RESULT_COUNT;i++) if (ctlSQL[i]==r && ctlSBox[i]==sqlQuery) pos=i;
+			if (pos==-1) {
+				for (int i=0;i<MAX_RESULT_COUNT;i++) 
+				{
+					if (ctlSQL[i]==NULL) continue;
+					int idx=outputPane->GetPageIndex(ctlSQL[i]);
+	
+					if (ctlSBox[i]==sqlQuery) {
+						outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
+						pos=i;
+					} else
+					{
+						outputPane->SetPageBitmap(idx,wxNullBitmap);
+					}
+				}
+			}
 
 			sqlQuery->SetFocus();
 			//wxMessageBox(wxT("OnSqlBookPageChanged "));
@@ -4000,6 +4123,25 @@ void frmQuery::OnSqlBookPageClosed(wxAuiNotebookEvent &event)
 
 	//wxSleep(5);
 //	wxMessageBox(wxT("OnSqlBookPageClosed end"));
+}
+
+void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
+//ctlSQL
+	size_t curpage = outputPane->GetSelection();
+	if ( event.GetSelection()!=curpage) return;
+	wxBitmap b=outputPane->GetPageBitmap(curpage);
+	if (b.IsOk()) {
+		if (sqlQuery!=NULL) {
+			wxString sql=sqlResult->sqlquerytext;
+			if (!sqlQuery->Find(sql,false,false,false,true,false,true)) {
+				wxString t=sqlQuery->GetText();
+				if (t.Find(sql)>-1) {
+					SetStatusText("Found",1);
+				}
+			}
+
+		}
+	}
 }
 void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 		size_t curpage = sqlQueryBook->GetSelection();
@@ -4122,6 +4264,8 @@ void frmQuery::SqlBookDisconnectPage(ctlSQLBox *box)
 	{
 		box->Disconnect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 		box->Disconnect(wxID_ANY, wxEVT_KILL_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
+		for (int k=0;k<MAX_RESULT_COUNT;k++) if (ctlSBox[k]==box) ctlSBox[k]=NULL;
+
 	}
 }
 

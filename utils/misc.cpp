@@ -1208,12 +1208,13 @@ bool pgAppMinimumVersion(const wxString &cmd, const int majorVer, const int mino
 		isEnterpriseDB = true;
 
 	wxString version = output[0].AfterLast(' ');
+	int len=version.Length();
 	long actualMajor = 0, actualMinor = 0;
 
 	wxString tmp = wxT("");
 	int x = 0;
-	while(version[x] == '0' || version[x] == '1' || version[x] == '2' || version[x] == '3' || version[x] == '4' ||
-	        version[x] == '5' || version[x] == '6' || version[x] == '7' || version[x] == '8' || version[x] == '9')
+	while(x<len&&(version[x] == '0' || version[x] == '1' || version[x] == '2' || version[x] == '3' || version[x] == '4' ||
+	        version[x] == '5' || version[x] == '6' || version[x] == '7' || version[x] == '8' || version[x] == '9'))
 	{
 		tmp += version[x];
 		x++;
@@ -1222,8 +1223,8 @@ bool pgAppMinimumVersion(const wxString &cmd, const int majorVer, const int mino
 	x++;
 
 	tmp = wxT("");
-	while(version[x] == '0' || version[x] == '1' || version[x] == '2' || version[x] == '3' || version[x] == '4' ||
-	        version[x] == '5' || version[x] == '6' || version[x] == '7' || version[x] == '8' || version[x] == '9')
+	while(x<len&&(version[x] == '0' || version[x] == '1' || version[x] == '2' || version[x] == '3' || version[x] == '4' ||
+	        version[x] == '5' || version[x] == '6' || version[x] == '7' || version[x] == '8' || version[x] == '9'))
 	{
 		tmp += version[x];
 		x++;

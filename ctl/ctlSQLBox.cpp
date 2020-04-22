@@ -186,6 +186,8 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	MarkerDefine(wxSTC_MARKNUM_FOLDER,        wxSTC_MARK_BOXPLUS,  *wxWHITE, *wxBLACK);
 	MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN,    wxSTC_MARK_BOXMINUS, *wxWHITE, *wxBLACK);
 
+    MarkerDefine(1,wxSTC_MARK_ARROW,*wxBLACK,*wxGREEN);
+	
 	SetProperty(wxT("fold"), wxT("1"));
 	SetFoldFlags(16);
 
@@ -498,7 +500,6 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		//GetIndicatorCurrent()==s_indicHighlight
 		IndicatorClearRange(0,GetTextLength());
 		fix_pos=-1; 
-		
 	}
 
 	// Check for braces that aren't in comment styles,
