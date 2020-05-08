@@ -76,11 +76,12 @@ wxString pgPartition::GetSql(ctlTree *browser)
 	sql += pgTable::GetSql(browser);
 	return sql;
 }
-
+ctlTree *tmp_br;
 pgObject *pgPartition::Refresh(ctlTree *browser, const wxTreeItemId item)
 {
 	pgPartition *partition = 0;
 	pgCollection *coll = browser->GetParentCollection(item);
+	tmp_br=browser;
 	if (coll)
 		partition = (pgPartition *)pg_partitionFactory.CreateObjects(coll, 0, wxT("\n   AND rel.oid=") + GetOidStr());
 
@@ -197,7 +198,8 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 	pgPartitionCollection *collection = (pgPartitionCollection *)coll;
 	wxString query;
 	pgPartition *table = 0;
-
+	ctlTree *br=browser;
+	if (!br) br=tmp_br;
 	// Greenplum returns reltuples and relpages as tuples per segmentDB and pages per segmentDB,
 	// so we need to multiply them by the number of segmentDBs to get reasonable values.
 	long gp_segments = 1;
@@ -206,7 +208,7 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 	//gp_segments = StrToLong(collection->GetDatabase()->ExecuteScalar(query));
 	//if (gp_segments <= 1)
 	//	gp_segments = 1;
-
+	
 
 	pgSet *tables;
 
@@ -287,10 +289,10 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 				wxTreeItemId currentItem = collection->GetSchema()->GetId();
 				pgCollection *collsch;
 				wxTreeItemId scItem;
-				if (currentItem) scItem = browser->GetItemParent(currentItem);
-				    collsch = (pgCollection *) browser->GetObject(scItem);
+				if (currentItem) scItem = br->GetItemParent(currentItem);
+				    collsch = (pgCollection *) br->GetObject(scItem);
 					if (!collsch) continue;
-					treeObjectIterator schemaIterator(browser, collsch);
+					treeObjectIterator schemaIterator(br, collsch);
 					pgSchema *s;
 					while ((s = (pgSchema *)schemaIterator.GetNextObject()) != 0)
 						schemaArr.push_back(s);

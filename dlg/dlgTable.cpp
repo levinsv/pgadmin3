@@ -181,6 +181,9 @@ dlgProperty *pgPartitionFactory::CreateDialog(frmMain *frame, pgObject *node, pg
 		break;
 	}
 	parent=parentNode;
+	pgPartition *n=(pgPartition *)node;
+	pgSchema *p=(pgSchema *)parent;
+	if (n->GetSchema()->GetName()!=p->GetName()) parent=n->GetSchema();
 	return new dlgTable(this, frame, (pgPartition *)node, (pgSchema *)parent);
 }
 
