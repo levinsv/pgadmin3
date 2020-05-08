@@ -210,7 +210,7 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 
 	pgSet *tables;
 
-		query = wxT("SELECT rel.oid, rel.relname, rel.reltablespace AS spcoid, spc.spcname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, ")
+		query = wxT("SELECT rel.oid, rel.relname,rel.relnamespace::regnamespace AS nspace, rel.reltablespace AS spcoid, spc.spcname, pg_get_userbyid(rel.relowner) AS relowner, rel.relacl, ")
 		        wxT("rel.relhassubclass, rel.reltuples, des.description, con.conname, con.conkey,\n")
 		        wxT("       EXISTS(select 1 FROM pg_trigger\n")
 		        wxT("                       JOIN pg_proc pt ON pt.oid=tgfoid AND pt.proname='logtrigger'\n")
@@ -262,7 +262,9 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 		query += wxT("  LEFT OUTER JOIN pg_class tst ON tst.oid = rel.reltoastrelid\n");
 			query += wxT("LEFT JOIN pg_type typ ON rel.reloftype=typ.oid\n");
 
-		query += wxT(" WHERE rel.relkind IN ('r','s','t','p') AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
+		query += wxT(" WHERE rel.relkind IN ('r','s','t','p')\n");
+		// show partitions in other schema
+		//query += wxT(" AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
 		query += wxT("--AND (not (rel.relkind='r' and rel.relpartbound IS NOT NULL))\n ")
 				 wxT(" AND i.inhparent = ") + collection->GetOidStr() + wxT("\n");
 
@@ -273,9 +275,35 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 	tables = collection->GetDatabase()->ExecuteSet(query);
 	if (tables)
 	{
+		wxString currns=collection->GetSchema()->GetName();
+//		wxArrayObject schemaArr;
+		std::vector<pgSchema*> schemaArr;
 		while (!tables->Eof())
 		{
-			table = new pgPartition(collection->GetSchema(), tables->GetVal(wxT("relname")));
+			wxString ns=tables->GetVal(wxT("nspace"));
+			if (currns!=ns) {
+				// find pgSchema object in tree
+			  if (!(schemaArr.size()>0)) {
+				wxTreeItemId currentItem = collection->GetSchema()->GetId();
+				pgCollection *collsch;
+				wxTreeItemId scItem;
+				if (currentItem) scItem = browser->GetItemParent(currentItem);
+				    collsch = (pgCollection *) browser->GetObject(scItem);
+					if (!collsch) continue;
+					treeObjectIterator schemaIterator(browser, collsch);
+					pgSchema *s;
+					while ((s = (pgSchema *)schemaIterator.GetNextObject()) != 0)
+						schemaArr.push_back(s);
+			  }
+			  table = 0;
+			  for (size_t j=0;j<schemaArr.size();j++)	{
+				  if (ns==schemaArr[j]->GetName()) {
+					  table = new pgPartition(schemaArr[j], tables->GetVal(wxT("relname")));
+					  break;
+				  }
+			  }
+			  if (!table) continue;
+			} else 	table = new pgPartition(collection->GetSchema(), tables->GetVal(wxT("relname")));
 
 			table->iSetOid(tables->GetOid(wxT("oid")));
 			table->iSetOwner(tables->GetVal(wxT("relowner")));
@@ -394,7 +422,7 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			else
 				break;
 		}
-
+		if (schemaArr.size()>0) schemaArr.clear();
 		delete tables;
 	}
 	return table;

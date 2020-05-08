@@ -1556,7 +1556,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 			query += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=rel.oid AND sl2.objsubid=0) AS providers");
 		}
 		wxString pg10=wxEmptyString;
-		if (collection->GetDatabase()->BackendMinimumVersion(10, 1))
+		if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
 		{
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_partkeydef(rel.oid) end \n AS partkeydef");
 			query += wxT(",case when lk.relation=rel.oid then null else pg_get_expr(rel.relpartbound, rel.oid) end \n AS partexp");

@@ -4133,6 +4133,12 @@ void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
 	if (b.IsOk()) {
 		if (sqlQuery!=NULL) {
 			wxString sql=sqlResult->sqlquerytext;
+			if (sql.StartsWith("EXPLAIN")) sql=sql.AfterFirst(')');
+			if (sql.StartsWith("\nBEGIN;\nEXPLAIN")) { 
+				sql=sql.AfterFirst(')');
+				//"\n;\nROLLBACK;"
+				sql=sql.Mid(0,sql.Length()-12);
+			}
 			if (!sqlQuery->Find(sql,false,false,false,true,false,true)) {
 				wxString t=sqlQuery->GetText();
 				if (t.Find(sql)>-1) {
