@@ -1,0 +1,10 @@
+Debug/*
+x64/*
+Release/*
+*.sbr
+*.obj
+*.cod
+*.tlog
+*.7z
+*.bsc
+*.pdb

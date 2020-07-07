@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<resource>
+  <object class="wxDialog" name="frmMaintenance">
+    <title>Maintenance</title>
+    <size>200,153d</size>
+    <style>wxDEFAULT_DIALOG_STYLE|wxCAPTION|wxSYSTEM_MENU|wxRESIZE_BORDER</style>
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <growablecols>0</growablecols>
+      <growablerows>0</growablerows>
+      <object class="sizeritem">
+        <object class="wxNotebook" name="nbNotebook">
+          <style>wxNB_BOTTOM</style>
+          <object class="notebookpage">
+            <label>Options</label>
+            <object class="wxPanel" name="pnlOptions">
+              <object class="wxFlexGridSizer">
+                <cols>1</cols>
+                <vgap>5</vgap>
+                <hgap>5</hgap>
+                <growablecols>0</growablecols>
+                <object class="sizeritem">
+                  <object class="wxRadioBox" name="rbxAction">
+                    <label>Maintenance operation</label>
+                    <content>
+                      <item>VACUUM</item>
+                      <item>ANALYZE</item>
+                      <item>REINDEX</item>
+                      <item>CLUSTER</item>
+                    </content>
+                    <selection>0</selection>
+                    <style>wxRA_SPECIFY_ROWS</style>
+                  </object>
+                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <border>4</border>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxStaticBoxSizer">
+                    <label>VACUUM options</label>
+                    <cols>5</cols>
+                    <vgap>5</vgap>
+                    <hgap>5</hgap>
+                    <growablecols>0</growablecols>
+                    <orient>wxHORIZONTAL</orient>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkFull">
+                        <label>FULL</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkFreeze">
+                        <label>FREEZE</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkAnalyze">
+                        <label>ANALYZE</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkDISABLE_PAGE_SKIPPING">
+                        <label>DISABLE_PAGE_SKIPPING</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkCONCURRENTLY">
+                        <label>CONCURRENTLY</label>
+                      </object>
+                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                  </object>
+                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <border>4</border>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxCheckBox" name="chkVerbose">
+                    <label>Verbose messages</label>
+                    <checked>1</checked>
+                  </object>
+                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <border>4</border>
+                </object>
+              </object>
+            </object>
+            <selected>1</selected>
+          </object>
+          <object class="notebookpage">
+            <label>Messages</label>
+            <object class="wxTextCtrl" name="txtMessages">
+              <style>wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL</style>
+            </object>
+          </object>
+        </object>
+        <flag>wxTOP|wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND|wxGROW|wxALIGN_CENTRE</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>4</cols>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_HELP">
+              <label>&amp;Help</label>
+              <pos>2,135d</pos>
+            </object>
+            <flag>wxTOP|wxBOTTOM|wxLEFT|wxRIGHT</flag>
+            <border>5</border>
+          </object>
+          <object class="spacer">
+            <size>0,0</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_OK">
+              <label>&amp;OK</label>
+              <default>1</default>
+              <pos>93,135d</pos>
+            </object>
+            <flag>wxTOP|wxBOTTOM|wxLEFT|wxRIGHT</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>&amp;Cancel</label>
+              <pos>146,135d</pos>
+            </object>
+            <flag>wxTOP|wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND|wxGROW|wxALIGN_RIGHT</flag>
+            <border>5</border>
+          </object>
+          <growablecols>1</growablecols>
+        </object>
+        <flag>wxEXPAND|wxGROW</flag>
+      </object>
+    </object>
+  </object>
+</resource>
