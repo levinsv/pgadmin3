@@ -1460,6 +1460,7 @@ bool pgServer::PauseReplay()
 {
 	SetReplayPaused(true);
 	wxString sql = wxT("SELECT pg_xlog_replay_pause()");
+	if (conn->BackendMinimumVersion(10, 0)) sql = wxT("SELECT pg_wal_replay_pause()");
 	return conn->ExecuteVoid(sql);
 }
 
@@ -1468,6 +1469,7 @@ bool pgServer::ResumeReplay()
 {
 	SetReplayPaused(false);
 	wxString sql = wxT("SELECT pg_xlog_replay_resume()");
+	if (conn->BackendMinimumVersion(10, 0)) sql = wxT("SELECT pg_wal_replay_resume()");
 	return conn->ExecuteVoid(sql);
 }
 
