@@ -122,7 +122,7 @@ private:
 
 	long backend_pid;
 	int wait_event_type_col;
-
+	bool isrecovery;
 	bool loaded;
 	long logfileLength;
 

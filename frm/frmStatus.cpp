@@ -219,6 +219,9 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 				initquery = wxT("SET log_statement='off';SET log_duration='off';SET log_min_duration_statement=-1;");
 			connection->ExecuteVoid(initquery, false);
 		}
+		//pg_is_in_recovery()
+		wxString v = connection->ExecuteScalar(wxT("select pg_is_in_recovery()"));
+		isrecovery = (v == wxT("t"));
 		delete user;
 	}
 
@@ -1640,10 +1643,18 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 		q += wxT("false");
 	}
 	q += wxT("AS slowquery\n");
-	if (connection->BackendMinimumVersion(9, 6))
+	bool iswalsend = false;
+	if (connection->BackendMinimumVersion(10, 0))
 	{
-		q += wxT(",wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
-		q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid ");
+		q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
+		if (isrecovery) 
+			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
+		else
+			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
+		q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid\n");
+		q += wxT("LEFT JOIN pg_replication_slots sl ON p.pid=sl.active_pid ");
+		iswalsend = true;
+		//backend_type
 	} else
 	{
 		q += wxT("FROM pg_stat_activity p ");
@@ -1666,6 +1677,10 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 		while (!dataSet1->Eof())
 		{
 			pid = dataSet1->GetLong(wxT("pid"));
+			wxString slinfo=wxEmptyString;
+			if (iswalsend) {
+				slinfo = dataSet1->GetVal(wxT("slotinfo"));
+			}
 			// Update the UI
 			if (pid != backend_pid)
 			{
@@ -1705,7 +1720,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 						str.Printf(wxT("%s %5.2f%%"), phase, proc);
 						app_name=str;
 					}
-
+					if (!slinfo.IsEmpty()) app_name += slinfo;
 				}
 				int colpos = 1;
 				if (connection->BackendMinimumVersion(8, 5))
@@ -1735,7 +1750,9 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				if (connection->BackendMinimumVersion(9, 4))
 				{
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xid")));
-					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xmin")));
+					if (!slinfo.IsEmpty())  statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xmin_slot")));
+								   else
+									statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xmin")));
 				}
 				if (connection->BackendMinimumVersion(9, 6))
 				{
@@ -1745,7 +1762,11 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				}
 
 				statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("blockedby")));
-				statusList->SetItem(row, colpos, qry);
+				if (!slinfo.IsEmpty()) {
+					statusList->SetItem(row, colpos, dataSet1->GetVal(wxT("xminlag")));
+				} 
+				else 
+					statusList->SetItem(row, colpos, qry);
 
 				// Colorize the new line
 				if (viewMenu->IsChecked(MNU_HIGHLIGHTSTATUS))
@@ -1771,6 +1792,17 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 						blocked += dataSet1->GetVal(wxT("blockedby"));
 						blocked += wxT(",");
 					}
+					if (!slinfo.IsEmpty()) {
+						// walsender
+						long xmindelta = dataSet1->GetLong(wxT("xminslotdelta"));
+						
+						if (xmindelta>=1800)
+							statusList->SetItemBackgroundColour(row,wxColour(wxT("#FF8028"))); // orange
+						else
+							statusList->SetItemBackgroundColour(row, wxColour(settings->GetIdleProcessColour())); // idle
+					}
+					if (app_name.StartsWith(wxT("pgp-s super"))||app_name.StartsWith(wxT("pgp-s manager"))) statusList->SetItemBackgroundColour(row, wxColour(settings->GetIdleProcessColour())); // idle
+
 				}
 				else
 					statusList->SetItemBackgroundColour(row, *wxWHITE);
