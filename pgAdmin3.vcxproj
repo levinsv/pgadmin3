@@ -2238,6 +2238,7 @@
     <png2c Include="include\images\slsubscription2.png" />
     <png2c Include="include\images\slsubscriptions.png" />
     <png2c Include="include\images\sortfilter.png" />
+    <png2c Include="include\images\sortfilterclear.png" />
     <png2c Include="include\images\splash.png" />
     <png2c Include="include\images\sql-16.png" />
     <png2c Include="include\images\sql-32.png" />

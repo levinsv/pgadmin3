@@ -4435,6 +4435,9 @@
     <png2c Include="include\images\jobrun.png">
       <Filter>include\images</Filter>
     </png2c>
+    <png2c Include="include\images\sortfilterclear.png">
+      <Filter>include\images</Filter>
+    </png2c>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pgAdmin3.rc" />

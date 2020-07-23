@@ -50,6 +50,7 @@ enum
 	MNU_COMMIT,
 	MNU_ROLLBACK,
 	MNU_COPY_QUERY,
+	MNU_CLEAR_FILTER_SERVER_STATUS,
 	MNU_COPY_QUERY_PLAN,
 	MNU_HIGHLIGHTSTATUS,
 	MNU_QUERYSTATEVERBOSE,
@@ -157,6 +158,8 @@ private:
 	wxMenu        *querystatePopupMenu;
 	wxString queryplan;
 	wxArrayString queries;
+	wxArrayInt filterColumn;
+	wxArrayString filterValue;
 
 	int statusColWidth[12], lockColWidth[10], xactColWidth[5], querystateColWidth[5];
 
@@ -198,6 +201,7 @@ private:
 
 	void SetColumnImage(ctlListView *list, int col, int image);
 	void OnSortStatusGrid(wxListEvent &event);
+	void OnRightClickStatusItem(wxListEvent& event);
 	void OnSortLockGrid(wxListEvent &event);
 	void OnSortXactGrid(wxListEvent &event);
 
@@ -237,6 +241,7 @@ private:
 	void OnRotateLogfile(wxCommandEvent &event);
 	void OnCommit(wxCommandEvent &event);
 	void OnRollback(wxCommandEvent &event);
+	void OnClearFilter(wxCommandEvent& event);
 
 	void OnChangeDatabase(wxCommandEvent &ev);
 

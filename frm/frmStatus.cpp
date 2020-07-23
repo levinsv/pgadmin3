@@ -44,6 +44,7 @@
 #include "images/terminate_backend.pngc"
 #include "images/delete.pngc"
 #include "images/storedata.pngc"
+#include "images/sortfilterclear.pngc"
 #include "images/down.pngc"
 #include "images/up.pngc"
 
@@ -83,6 +84,7 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
 	EVT_MENU(MNU_TERMINATE,                       frmStatus::OnTerminateBtn)
 	EVT_MENU(MNU_COMMIT,                          frmStatus::OnCommit)
 	EVT_MENU(MNU_ROLLBACK,                        frmStatus::OnRollback)
+	EVT_MENU(MNU_CLEAR_FILTER_SERVER_STATUS,      frmStatus::OnClearFilter)
 	EVT_COMBOBOX(CTL_LOGCBO,                      frmStatus::OnLoadLogfile)
 	EVT_BUTTON(CTL_ROTATEBTN,                     frmStatus::OnRotateLogfile)
 
@@ -91,6 +93,7 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
 	EVT_TIMER(TIMER_STATUS_ID,                    frmStatus::OnRefreshStatusTimer)
 	EVT_LIST_ITEM_SELECTED(CTL_STATUSLIST,        frmStatus::OnSelStatusItem)
 	EVT_LIST_ITEM_DESELECTED(CTL_STATUSLIST,      frmStatus::OnSelStatusItem)
+	EVT_LIST_ITEM_RIGHT_CLICK(CTL_STATUSLIST,	  frmStatus::OnRightClickStatusItem)
 	EVT_LIST_COL_CLICK(CTL_STATUSLIST,            frmStatus::OnSortStatusGrid)
 	EVT_LIST_COL_RIGHT_CLICK(CTL_STATUSLIST,      frmStatus::OnRightClickStatusGrid)
 	EVT_LIST_COL_END_DRAG(CTL_STATUSLIST,         frmStatus::OnChgColSizeStatusGrid)
@@ -317,6 +320,9 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	toolBar->AddTool(MNU_COMMIT, wxEmptyString, *storedata_png_bmp, _("Commit transaction"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_ROLLBACK, wxEmptyString, *delete_png_bmp, _("Rollback transaction"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
+	toolBar->AddTool(MNU_CLEAR_FILTER_SERVER_STATUS, wxEmptyString, *sortfilterclear_png_bmp, _("Clear filter"), wxITEM_NORMAL);
+	toolBar->AddSeparator();
+	
 	cbLogfiles = new wxComboBox(toolBar, CTL_LOGCBO, wxT(""), wxDefaultPosition, wxDefaultSize, 0, NULL,
 	                            wxCB_READONLY | wxCB_DROPDOWN);
 	toolBar->AddControl(cbLogfiles);
@@ -347,6 +353,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	toolBar->EnableTool(MNU_TERMINATE, false);
 	toolBar->EnableTool(MNU_COMMIT, false);
 	toolBar->EnableTool(MNU_ROLLBACK, false);
+	toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, false);
 	actionMenu->Enable(MNU_CANCEL, false);
 	actionMenu->Enable(MNU_TERMINATE, false);
 	actionMenu->Enable(MNU_COMMIT, false);
@@ -1684,7 +1691,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			// Update the UI
 			if (pid != backend_pid)
 			{
-				pids.Add(pid);
+				
 				// Add the query content to the queries array
 				queries.Add(dataSet1->GetVal(wxT("query")));
 
@@ -1807,7 +1814,20 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				else
 					statusList->SetItemBackgroundColour(row, *wxWHITE);
 
-				row++;
+				// filter apply
+				bool flt = false;
+				for (int i = 0; i < filterColumn.size(); i++) {
+					int col = filterColumn[i];
+					wxString tabval=statusList->GetItemText(row, col);
+					if (tabval != filterValue[i]) {
+						flt = true;
+						break;
+					}
+				}
+				if (!flt) {
+					pids.Add(pid);
+					row++;
+				}
 			}
 			dataSet1->MoveNext();
 		}
@@ -3284,7 +3304,6 @@ void frmStatus::OnCommit(wxCommandEvent &event)
 	OnSelXactItem(ev);
 }
 
-
 void frmStatus::OnRollback(wxCommandEvent &event)
 {
 	long item = xactList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -3545,6 +3564,51 @@ void frmStatus::SetColumnImage(ctlListView *list, int col, int image)
 	list->SetColumn(col, item);
 }
 
+void frmStatus::OnRightClickStatusItem(wxListEvent& event)
+{
+	int row = event.GetIndex();
+	//wxString txt = event.GetText();
+	
+	wxRect r;
+	//statusList->GetItemRect(row, r);
+	wxString ss = wxEmptyString;
+	int col = -1;
+	for (int cc = 0; cc < statusList->GetColumnCount();cc++) {
+		statusList->GetSubItemRect(row, cc, r, wxLIST_RECT_BOUNDS);
+		if (r.Contains(event.GetPoint())) {
+			ss = wxString::Format("\rBounding rect of item %ld column %d is (%d, %d)-(%d, %d)", row,cc, r.x, r.y, r.x + r.width, r.y + r.height);
+			col = cc;
+			break;
+		}
+	}
+	if (col == -1) return;
+	wxString val=statusList->GetItemText(row, col);
+	wxString txt = wxString::Format("gettext=%s\r index=%d\r column=%d", val.c_str(), row, col);
+	txt = txt + ss;
+	
+	wxListItem listitem;
+	listitem.SetMask(wxLIST_MASK_TEXT);
+	statusList->GetColumn(col, listitem);
+	wxString label = listitem.GetText()+" = "+val;
+	//wxMessageBox(txt, "test", wxICON_WARNING | wxOK);
+	wxString hint=label;
+	if (filterColumn.size() > 0) hint = toolBar->GetToolShortHelp(MNU_CLEAR_FILTER_SERVER_STATUS)+"\n"+label;
+	filterColumn.Add(col);
+	filterValue.Add(val);
+	toolBar->SetToolShortHelp(MNU_CLEAR_FILTER_SERVER_STATUS, hint);
+	toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, true);
+	wxTimerEvent evt;
+	OnRefreshStatusTimer(evt);
+}
+void frmStatus::OnClearFilter(wxCommandEvent& event) {
+	toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, false);
+	toolBar->SetToolShortHelp(MNU_CLEAR_FILTER_SERVER_STATUS, "Clear filter");
+	filterColumn.Clear();
+	filterValue.Clear();
+	wxTimerEvent evt;
+	OnRefreshStatusTimer(evt);
+
+}
 
 void frmStatus::OnSortStatusGrid(wxListEvent &event)
 {
