@@ -1034,7 +1034,7 @@ void frmStatus::AddLogPane()
 
 	// Add the log list
 	logList = (ctlListView *)lstLog;
-
+	bgColor = logList->GetBackgroundColour();
 	// We don't need this report (but we need the pane)
 	// if server release is less than 8.0 or if server has no adminpack
 	if (!(connection->BackendMinimumVersion(8, 0) &&
@@ -2296,7 +2296,12 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 	if (isCurrent)
 	{
 		// check if the current logfile changed
-		pgSet *set = connection->ExecuteSet(wxT("SELECT pg_file_length(") + connection->qtDbString(logfileName) + wxT(") AS len"));
+		
+		pgSet* set;
+		if ((connection->BackendMinimumVersion(10, 0)))
+			set = connection->ExecuteSet(wxT("select size len from pg_stat_file(") + connection->qtDbString(logfileName) + wxT(")"));
+			else 
+			set = connection->ExecuteSet(wxT("SELECT pg_file_length(") + connection->qtDbString(logfileName) + wxT(") AS len"));
 		if (set)
 		{
 			newlen = set->GetLong(wxT("len"));
@@ -2309,10 +2314,24 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 		}
 		if (newlen > logfileLength)
 		{
+
+			long lastrow = logList->GetItemCount();
+			bool remote = lastrow-1 == logList->GetFocusedItem();
 			statusBar->SetStatusText(_("Refreshing log list."));
 			addLogFile(logfileName, logfileTimestamp, newlen, logfileLength, false);
 			statusBar->SetStatusText(_("Done."));
-
+			if (bgColor == logList->GetBackgroundColour()) bgColor = wxColour("#afafaf"); else
+			{
+				bgColor = logList->GetBackgroundColour();
+			}
+			if (remote) {
+				//logList->Select(lastrow - 1,false);
+				//logList->SetScrollPos(wxGA_VERTICAL, logList->GetItemCount() - 1, true);
+				//logList->Select(logList->GetItemCount() - 1);
+				logList->Focus(logList->GetItemCount() - 1);
+				
+				//logList->Show
+			}
 			// as long as there was new data, the logfile is probably the current
 			// one so we don't need to check for rotation
 			return;
@@ -2396,7 +2415,13 @@ void frmStatus::checkConnection()
 
 void frmStatus::addLogFile(wxDateTime *dt, bool skipFirst)
 {
-	pgSet *set = connection->ExecuteSet(
+	pgSet* set;
+	if (settings->GetASUTPstyle()) {
+		set = connection->ExecuteSet(
+			wxT("select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n")
+			wxT("  FROM pg_ls_logdir()  where modification = '") + DateToAnsiStr(*dt) + wxT("'::timestamp"));
+	} else
+		set = connection->ExecuteSet(
 	                 wxT("SELECT filetime, filename, pg_file_length(filename) AS len ")
 	                 wxT("  FROM pg_logdir_ls() AS A(filetime timestamp, filename text) ")
 	                 wxT(" WHERE filetime = '") + DateToAnsiStr(*dt) + wxT("'::timestamp"));
@@ -2447,11 +2472,12 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 		else
 			line = savedPartialLine;
 	}
-
+	wxString funcname = "pg_read_file(";
+	if (!settings->GetASUTPstyle()) funcname = "pg_file_read(";
 	while (len > read)
 	{
 		statusBar->SetStatusText(_("Reading log from server..."));
-		pgSet *set = connection->ExecuteSet(wxT("SELECT pg_file_read(") +
+		pgSet *set = connection->ExecuteSet(wxT("SELECT ") + funcname +
 		                                    connection->qtDbString(filename) + wxT(", ") + NumToStr(read) + wxT(", 50000)"));
 		if (!set)
 		{
@@ -2469,10 +2495,13 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 		read += strlen(raw);
 
 		wxString str;
-		if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
-			str = line + wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8);
-		else
-			str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
+		str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
+		//if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
+		//	str = line + wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8);
+		//else {
+		//	str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
+		//}
+			
 
 		delete set;
 
@@ -2615,8 +2644,11 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
 		}
 	}
 
-	if (!logFormatKnown)
+	if (!logFormatKnown) {
 		logList->AppendItem(-1, str);
+		if (bgColor != logList->GetBackgroundColour()) logList->SetItemBackgroundColour(row, bgColor);
+
+	}
 	else if ((!csv_log_format) && str.Find(':') < 0)
 	{
 		// Must be a continuation of a previous line.
@@ -2899,8 +2931,9 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
 
 				int pos = rest.Find(':');
 
-				if (pos < 0)
+				if (pos < 0) {
 					logList->InsertItem(row, rest, -1);
+				}
 				else
 				{
 					logList->InsertItem(row, rest.BeforeFirst(':'), -1);
@@ -2934,11 +2967,19 @@ int frmStatus::fillLogfileCombo()
 		cbLogfiles->Append(_("Current log"));
 	else
 		count--;
+	pgSet* set;
+	if (settings->GetASUTPstyle())
+	    set = connection->ExecuteSet(
+		wxT("select name filename,modification filetime\n")
+		wxT("  FROM pg_ls_logdir()  where name ~ '.csv'\n")
+		wxT(" ORDER BY modification DESC"));
 
-	pgSet *set = connection->ExecuteSet(
-	                 wxT("SELECT filename, filetime\n")
-	                 wxT("  FROM pg_logdir_ls() AS A(filetime timestamp, filename text)\n")
-	                 wxT(" ORDER BY filetime DESC"));
+	else set = connection->ExecuteSet(
+		   wxT("SELECT filename, filetime\n")
+		   wxT("  FROM pg_logdir_ls() AS A(filetime timestamp, filename text) \n")
+		   wxT(" ORDER BY filetime DESC"));
+
+
 	if (set)
 	{
 		if (set->NumRows() <= count)

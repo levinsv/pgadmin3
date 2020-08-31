@@ -556,6 +556,7 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 			{
 				wxString proname = set->GetVal(wxT("proname"));
 				long pronargs = set->GetLong(wxT("pronargs"));
+				if (BackendMinimumVersion(9, 6)) features[FEATURE_FILEREAD] = true;
 
 				if (proname == wxT("pg_tablespace_size") && pronargs == 1 && set->GetLong(wxT("arg0")) == 26)
 					features[FEATURE_SIZE] = true;

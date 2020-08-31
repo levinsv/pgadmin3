@@ -126,6 +126,7 @@ private:
 	bool isrecovery;
 	bool loaded;
 	long logfileLength;
+	wxColour bgColor;
 
 	int currentPane;
 
