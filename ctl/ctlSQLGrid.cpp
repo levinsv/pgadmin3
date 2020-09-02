@@ -293,7 +293,7 @@ void ctlSQLGrid::AppendColumnHeader(wxString &str, wxArrayInt columns)
 		bool CopyQuoting = (settings->GetCopyQuoting() == 1 || settings->GetCopyQuoting() == 2);
 		size_t i;
 		wxString fielddelim = ",";
-		if (generatesql == 3) fielddelim = " And ";
+		if (generatesql == 3) return;
 		if (generatesql == 1) return;
 		for(i = 0; i < columns.Count() ; i++)
 		{
