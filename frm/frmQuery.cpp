@@ -121,6 +121,8 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_CLEAR,             frmQuery::OnClear)
 	EVT_MENU(MNU_SUMMARY_COL,       frmQuery::OnSummary_Column)
 	EVT_MENU(MNU_COPY_INSERT,       frmQuery::OnCopy_Insert)
+	EVT_MENU(MNU_COPY_INLIST,       frmQuery::OnCopy_InList)
+	EVT_MENU(MNU_COPY_WHERELIST,	frmQuery::OnCopy_WhereList)
 	EVT_MENU(MNU_CLEAR_FILTER,      frmQuery::OnClear_Filter)
 	EVT_MENU(MNU_FIND,              frmQuery::OnSearchReplace)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
@@ -1544,7 +1546,7 @@ void frmQuery::OnCopy(wxCommandEvent &ev)
 		{
 			if (obj == sqlResult)
 			{
-				sqlResult->Copy(false);
+				sqlResult->Copy(0);
 				break;
 			}
 			obj = obj->GetParent();
@@ -2011,6 +2013,9 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_DELETE, _("&Delete"), _("Delete selected rows."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
 	xmenu->Append(MNU_COPY_INSERT, _("Copy Insert format"), _("Copy Insert format."));
+	xmenu->Append(MNU_COPY_INLIST, _("IN LIST format copy"), _("Copy In list format."));
+	xmenu->Append(MNU_COPY_WHERELIST, _("WHERE LIST format copy"), _("Copy where list format."));
+	
 	xmenu->Append(MNU_CLEAR_FILTER, _("Clear filter"), _("Clear filter"));
 	
 	if ((rows.GetCount()))
@@ -2033,11 +2038,29 @@ void frmQuery::OnCopy_Insert(wxCommandEvent &ev)
 //	if (currentControl() == sqlResult)
 	{
 		wxString s=wxT("Insert into format copy buffer.");
-		sqlResult->Copy(true);
+		sqlResult->Copy(1);
 		SetStatusText(s, STATUSPOS_POS);
 	}
 }
-void frmQuery::OnCellLeftDClick(wxGridEvent &event) 
+void frmQuery::OnCopy_InList(wxCommandEvent& ev)
+{
+	//	if (currentControl() == sqlResult)
+	{
+		wxString s = wxT("In list format copy buffer.");
+		sqlResult->Copy(2);
+		SetStatusText(s, STATUSPOS_POS);
+	}
+}
+void frmQuery::OnCopy_WhereList(wxCommandEvent& ev)
+{
+	//	if (currentControl() == sqlResult)
+	{
+		wxString s = wxT("Where list format copy buffer.");
+		sqlResult->Copy(3);
+		SetStatusText(s, STATUSPOS_POS);
+	}
+}
+void frmQuery::OnCellLeftDClick(wxGridEvent &event)
 {
 		int row=event.GetRow();
 		int col=event.GetCol();

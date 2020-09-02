@@ -217,10 +217,12 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 	if (GetNumberCols() == 0 || GetRowSize(row)==0)
 		return str;
 	wxString colsep=settings->GetCopyColSeparator();
-	if (generatesql) colsep=wxT(",");
+	if (generatesql == 2) colsep=wxT(",");
+	if (generatesql == 3) colsep = wxT(" and ");
 	wxString qtsimbol=settings->GetCopyQuoteChar();
-	if (generatesql) qtsimbol=wxT("'");
+	if (generatesql>0) qtsimbol=wxT("'");
 	wxString head=wxT("insert into tbl(");
+	if (cols.Count()>1 && generatesql > 1) str.Append("(");
 	for (col = 0 ; col < cols.Count() ; col++)
 	{
 		if (col > 0)
@@ -228,6 +230,7 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 		if (col > 0) head.Append(colsep);
 		head=head+GetColumnName(cols[col]);
 		wxString text = GetCellValue(row, cols[col]);
+		wxString cname = GetColumnName(cols[col]);
 		bool needQuote  = false;
 		if (settings->GetCopyQuoting() == 1)
 		{
@@ -236,22 +239,29 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 		else if (settings->GetCopyQuoting() == 2)
 			/* Quote everything */
 			needQuote = true;
-		if (text.Length()==0&&generatesql) {needQuote  = false;} else
-			if (generatesql) needQuote = IsColText(cols[col]);
+		if (text.Length()==0&&generatesql>0) {needQuote  = false;} else
+			if (generatesql>0) needQuote = IsColText(cols[col]);
+
+		if (generatesql > 0) {
+			if (text.Length() != 0) {
+				text.Replace(wxT("'"), wxT("''"));
+			}
+			else text = wxT("null");
+
+		}
+		if (generatesql == 3) if (text == "null") str.Append(cname).Append(" is "); else
+			str.Append(cname).Append("=");
+
+
 		if (needQuote)
 			str.Append(qtsimbol);
-
-		if (generatesql) {
-			if (text.Length()!=0) {
-				text.Replace(wxT("'"),wxT("''"));
-			} else text=wxT("null");
-			
-		}
 		str.Append(text);
 		if (needQuote)
 			str.Append(qtsimbol);
 	}
-	if (generatesql) str=head+wxT(") values (")+str+");";
+	if (cols.Count() > 1 && generatesql > 1) str.Append(")");
+	if (generatesql == 1) str=head+wxT(") values (")+str+");";
+
 	return str;
 }
 
@@ -278,35 +288,54 @@ void ctlSQLGrid::AppendColumnHeader(wxString &str, int start, int end)
 
 void ctlSQLGrid::AppendColumnHeader(wxString &str, wxArrayInt columns)
 {
-	if(settings->GetColumnNames()&&!generatesql)
+	if(settings->GetColumnNames()|| generatesql == 2)
 	{
 		bool CopyQuoting = (settings->GetCopyQuoting() == 1 || settings->GetCopyQuoting() == 2);
 		size_t i;
-
+		wxString fielddelim = ",";
+		if (generatesql == 3) fielddelim = " And ";
+		if (generatesql == 1) return;
 		for(i = 0; i < columns.Count() ; i++)
 		{
 			long columnPos = columns.Item(i);
-			if(i > 0)
-				str.Append(settings->GetCopyColSeparator());
+			if (generatesql == 2) {
+				if (i > 0) str.Append(fielddelim);
+				if (i == 0 && columns.Count() > 1) str.Append("(");
+				str.Append(GetColumnName(columnPos));
+				if (i == columns.Count()-1 && columns.Count() > 1 && generatesql == 2) str.Append(") in (");
+				if (columns.Count() == 1 && generatesql == 2) str.Append(" in (");
 
-			if(CopyQuoting)
-				str.Append(settings->GetCopyQuoteChar());
-			str.Append(GetColumnName(columnPos));
-			if(CopyQuoting)
-				str.Append(settings->GetCopyQuoteChar());
+			}
+			else
+			{
+				if (i > 0)
+					str.Append(settings->GetCopyColSeparator());
 
+				if (CopyQuoting)
+					str.Append(settings->GetCopyQuoteChar());
+				str.Append(GetColumnName(columnPos));
+				if (CopyQuoting)
+					str.Append(settings->GetCopyQuoteChar());
+			}
 		}
+
 		str.Append(END_OF_LINE);
 	}
 }
-
-int ctlSQLGrid::Copy(bool gensql)
+int compare_int(int* a, int* b)
 {
-	wxString str,tmp;
+	if (*a > * b) return 1;
+	else if (*a < *b) return -1;
+	else return 0;
+}
+int ctlSQLGrid::Copy(int gensql)
+{
+	wxString str,tmp,linedelim="";
 	int copied = 0;
 	size_t i;
 	generatesql=gensql;
-
+	if (gensql == 2) linedelim = ",";
+	else if(gensql == 3) linedelim = " or ";
 
 	if (GetSelectedRows().GetCount())
 	{
@@ -319,6 +348,7 @@ int ctlSQLGrid::Copy(bool gensql)
 			tmp=GetExportLine(rows.Item(i));
 			if (tmp.IsEmpty()) continue;
 			str.Append(tmp);
+			if (i < rows.GetCount() - 1 && (generatesql > 1)) str.Append(linedelim);
 			if (rows.GetCount() > 1)
 				str.Append(END_OF_LINE);
 		}
@@ -335,48 +365,93 @@ int ctlSQLGrid::Copy(bool gensql)
 		for (i = 0 ; i < numRows ; i++)
 		{
 			str.Append(GetExportLine(i, cols));
-
+			if (i<(numRows-1) && (generatesql > 1)) str.Append(linedelim);
 			if (numRows > 1)
 				str.Append(END_OF_LINE);
 		}
-
 		copied = numRows;
 	}
 	else if (GetSelectionBlockTopLeft().GetCount() > 0 &&
 	         GetSelectionBlockBottomRight().GetCount() > 0)
 	{
 		unsigned int x1, x2, y1, y2;
+		int count = GetSelectionBlockTopLeft().GetCount();
 
 		x1 = GetSelectionBlockTopLeft()[0].GetCol();
 		x2 = GetSelectionBlockBottomRight()[0].GetCol();
 		y1 = GetSelectionBlockTopLeft()[0].GetRow();
 		y2 = GetSelectionBlockBottomRight()[0].GetRow();
-
+		copied = 0;
 		AppendColumnHeader(str, x1, x2);
-
-		for (i = y1; i <= y2; i++)
+		for (size_t n = 0; n < count; n++)
 		{
-			str.Append(GetExportLine(i, x1, x2));
+			x1 = GetSelectionBlockTopLeft()[n].GetCol();
+			x2 = GetSelectionBlockBottomRight()[n].GetCol();
+			y1 = GetSelectionBlockTopLeft()[n].GetRow();
+			y2 = GetSelectionBlockBottomRight()[n].GetRow();
 
-			if (y2 > y1)
-				str.Append(END_OF_LINE);
+			for (i = y1; i <= y2; i++)
+			{
+				str.Append(GetExportLine(i, x1, x2));
+				if (i < y2 && (generatesql > 1)) str.Append(linedelim);
+				if (y2 > y1)
+					str.Append(END_OF_LINE);
+			}
+			copied = copied+(y2 - y1 + 1);
 		}
-
-		copied = y2 - y1 + 1;
 	}
 	else
 	{
 		int row, col;
+		if (generatesql > 1) {
+			wxGridCellCoordsArray cord = GetSelectedCells();
+			int count = cord.GetCount();
+			int curr_row = 1000000000;
+			int next_row = 1000000000;
+			
+			for (size_t n = 0; n < count; n++)
+			{
+				wxGridCellCoords& coords = cord[n];
+				if (coords.GetRow() < curr_row) curr_row = coords.GetRow();
+			}
+			while (curr_row != 1000000000)
+			{
+				wxArrayInt colsNum;
+				next_row = 1000000000;
+				for (size_t n = 0; n < count; n++)
+				{
+					wxGridCellCoords& coords = cord[n];
+					//wxString msg;
+					//msg.Printf(wxT("Координаты выбраных ячеек row=%d col=%d.\n"), coords.GetRow(), coords.GetCol());
+					//wxMessageBox(msg, wxT("About coord"), wxOK | wxICON_INFORMATION, this);
+					int r = coords.GetRow();
+					if (r == curr_row) {
+						colsNum.Add(coords.GetCol());
+					}
+					else if (r > curr_row && r < next_row) next_row = r;
 
-		row = GetGridCursorRow();
-		col = GetGridCursorCol();
+				}
+				colsNum.Sort(compare_int);
+				if (generatesql == 2) AppendColumnHeader(str, colsNum);
+				str.Append(GetExportLine(curr_row, colsNum));
+				if ((next_row != 1000000000) && (generatesql == 3)) str.Append(linedelim);
+				if ((next_row != 1000000000) && (generatesql == 2)) str.Append(") or ");
+				str.Append(END_OF_LINE);
+				curr_row = next_row;
+				copied++;
+			}
+		}
+		else {
+			row = GetGridCursorRow();
+			col = GetGridCursorCol();
 
-		AppendColumnHeader(str, col, col);
+			AppendColumnHeader(str, col, col);
 
-		str.Append(GetExportLine(row, col, col));
-		copied = 1;
+			str.Append(GetExportLine(row, col, col));
+			copied = 1;
+		}
 	}
-
+	if (copied && (generatesql == 2)) str.Append(")");
 	if (copied && wxTheClipboard->Open())
 	{
 		wxTheClipboard->SetData(new wxTextDataObject(str));
