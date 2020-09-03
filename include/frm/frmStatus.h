@@ -123,7 +123,7 @@ private:
 
 	long backend_pid;
 	int wait_event_type_col;
-	bool isrecovery;
+	bool isrecovery,track_commit_timestamp;
 	bool loaded;
 	long logfileLength;
 	wxColour bgColor;

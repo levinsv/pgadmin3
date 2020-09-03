@@ -13,9 +13,9 @@
 #define VERSION_H
 
 // Application Versions
-#define VERSION_STR     wxT("1.25.0 Dev ASUTP version with support PG12")
-#define VERSION_NUM     1,25,0,0
-#define VERSION_PACKAGE 1.25.0-dev
+#define VERSION_STR     wxT("1.26 Dev ASUTP support PG12")
+#define VERSION_NUM     1,26,0,0
+#define VERSION_PACKAGE 1.26.0-dev
 
 #define PRERELEASE 1
 // #define BUILD "..."

@@ -224,7 +224,10 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 		}
 		//pg_is_in_recovery()
 		wxString v = connection->ExecuteScalar(wxT("select pg_is_in_recovery()"));
+
 		isrecovery = (v == wxT("t"));
+		v = connection->ExecuteScalar(wxT("select current_setting('track_commit_timestamp')"));
+		track_commit_timestamp = (v == wxT("on"));
 		delete user;
 	}
 
@@ -1654,7 +1657,10 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 	if (connection->BackendMinimumVersion(10, 0))
 	{
 		q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
-		if (isrecovery) 
+		wxString xact = "";
+		if (!track_commit_timestamp)
+			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: -1'||' s' xminlag,-1 xminslotdelta\n");
+		else if (isrecovery) 
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
 		else
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
