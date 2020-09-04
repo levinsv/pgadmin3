@@ -432,7 +432,8 @@ void frmMain::CreateMenus()
 	new reportObjectDependentsFactory(menuFactories, reportMenu, 0);
 	new reportObjectListFactory(menuFactories, reportMenu, 0);
 	new reportCompareFactory(menuFactories, reportMenu, 0);
-	
+	choiceSelectOpts.Add(0);
+	choiceSelectOpts.Add(1);
 
 	toolsMenu->AppendSeparator();
 
