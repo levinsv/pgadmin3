@@ -14,6 +14,7 @@
 // App headers
 #include "pgAdmin3.h"
 #include <wx/file.h>
+#include <wx/regex.h>
 
 #include "frm/frmMain.h"
 #include "frm/frmReport.h"
@@ -1223,6 +1224,59 @@ wxString reportCompareFactory::GetNodePath(wxTreeItemId node) {
 	return path;
 
 }
+wxString reportCompareFactory::ApplyCompareOpts(wxString sql,int metatype) {
+	if (sql.IsEmpty()) return "";
+	bool no_comment = parent->getChoiceSelect(1);
+	bool no_priv = parent->getChoiceSelect(0);
+	if (no_comment) {
+		int last = 0;
+		while (last!=-1) {
+			last = sql.Find("\nCOMMENT ON");
+			int start = last;
+			int end = -1;
+			while (last!=-1) {
+				last++;
+				if (sql.Length() == last) { last = -1; continue; }
+				wxChar c = sql.GetChar(last);
+				if (c == '\'') {
+					last++;
+					if (sql.GetChar(last) == '\'') { continue; }
+					if (sql.GetChar(last) == ';') { end = last; last = -1; continue; }
+					
+				}
+			};
+			if (end != -1) {
+				sql=sql.Remove(start, end - start+1);
+				last = 0;
+			}
+		}
+		
+	}
+	if (no_priv &&(metatype != PGM_ROLE)) {
+		int last = 0;
+		while (last != -1) {
+			last = sql.Find("\nGRANT ");
+			if (last==-1) last = sql.Find("\nREVOKE ");
+			int start = last;
+			int end = -1;
+			while (last != -1) {
+				last++;
+				if (sql.Length() == last) { last = -1; continue; }
+				wxChar c = sql.GetChar(last);
+				if (c == ';') {
+					 end = last; last = -1;
+				}
+			};
+			if (end != -1) {
+				sql = sql.Remove(start, end - start + 1);
+				last = 0;
+			}
+		}
+
+	}
+	return sql;
+
+}
 void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayString &expandedNodes, ArraySQL &list, time_t *t, wxBusyInfo *w, MyHashSQL &h_path,int lvl)
 {
 	wxTreeItemIdValue cookie;
@@ -1312,6 +1366,7 @@ void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayStrin
 		if (obj ) {
 				wxString s=obj->GetSql(browser);
 				if (obj->GetMetaType()==PGM_SEQUENCE) s="";
+				s = ApplyCompareOpts(s, obj->GetMetaType());
 				int c=browser->GetChildrenCount(child,false);
 				if (size>0) {
 					wxString srcpath(path);
@@ -1492,6 +1547,7 @@ if (lastdb!=NULL) {
 	wxMessageBox(msg, _("Error"), wxOK | wxICON_INFORMATION);
 	return 0;
 }
+if (!parent->StartChoiceDialog()) return 0;
 time_t timer=wxDateTime::GetTimeNow();
 	wxArrayString expandedNodes;
 	ArraySQL list;
@@ -1499,12 +1555,14 @@ time_t timer=wxDateTime::GetTimeNow();
 
 wxWindowDisabler disableAll;
 {
+#ifndef DEBUG
 			wxBusyInfo waiting(wxString::Format(" Обход исходной БД Path = %s ,Стартовый объект = %s",
 			                                    browser->GetItemText(obj->GetServer()->GetId()).c_str(), obj->GetName().c_str(),parent));
 			// Give the UI a chance to redraw
 			wxSafeYield();
 			wxMilliSleep(50);
 			wxSafeYield();
+#endif
 //			waiting->~wxBusyInfo();
 	GetExpandedChildNodes(obj->GetId(),expandedNodes,list,&timer, NULL,h_path,0);
 }
@@ -1809,7 +1867,7 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 	  ++it;
 	  }
 #ifdef _DEBUG
-	wxFileName fn("D:\\PostgreSQL\\cmp.txt");
+	wxFileName fn("cmp_debug.txt");
 	fn.MakeAbsolute();
 
 	wxFile file(fn.GetFullPath(), wxFile::write);

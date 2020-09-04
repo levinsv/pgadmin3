@@ -107,7 +107,28 @@ public:
 		currentObject = data;
 	}
 	bool CheckAlive();
-
+	// 
+	bool getChoiceSelect(int index) {
+		for (size_t n = 0; n < choiceSelectOpts.GetCount(); n++) {
+			if (choiceSelectOpts[n] == index) return true;
+		}
+		return false;
+	}
+	bool StartChoiceDialog() {
+		choiceCmpOpts.Clear();
+		choiceCmpOpts.Add("Priveleges ignore");
+		choiceCmpOpts.Add("Comment ignore");
+		wxMultiChoiceDialog dialog(this,
+			wxT("A multi-choice convenience dialog"),
+			wxT("Please select several compare options"),
+			choiceCmpOpts);
+		dialog.SetSelections(choiceSelectOpts);
+		if (dialog.ShowModal() == wxID_OK) {
+			choiceSelectOpts = dialog.GetSelections();
+			return true;
+		}
+		return false;
+	}
 	void execSelChange(wxTreeItemId item, bool currentNode);
 	void Refresh(pgObject *data);
 	void ExecDrop(bool cascaded);
@@ -203,6 +224,8 @@ private:
 	long msgLevel;
 
 	bool m_refreshing;
+	wxArrayString choiceCmpOpts; 
+	wxArrayInt choiceSelectOpts;
 
 	wxTreeItemId denyCollapseItem;
 	pgObject *currentObject;
