@@ -1699,8 +1699,6 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			if (pid != backend_pid)
 			{
 				
-				// Add the query content to the queries array
-				queries.Add(dataSet1->GetVal(wxT("query")));
 
 				if (row >= statusList->GetItemCount())
 				{
@@ -1825,13 +1823,24 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				bool flt = false;
 				for (int i = 0; i < filterColumn.size(); i++) {
 					int col = filterColumn[i];
+					wxListItem listitem;
+					listitem.SetMask(wxLIST_MASK_TEXT);
+					statusList->GetColumn(col, listitem);
+					wxString label = listitem.GetText();
 					wxString tabval=statusList->GetItemText(row, col);
-					if (tabval != filterValue[i]) {
+					wxString fval = filterValue[i];
+					if (label == _("Client")) {
+						tabval = tabval.BeforeLast(':');
+						fval = fval.BeforeLast(':');
+					}
+					if (tabval != fval) {
 						flt = true;
 						break;
 					}
 				}
 				if (!flt) {
+					// Add the query content to the queries array
+					queries.Add(dataSet1->GetVal(wxT("query")));
 					pids.Add(pid);
 					row++;
 				}
