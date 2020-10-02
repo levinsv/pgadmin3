@@ -81,6 +81,15 @@ public:
 	{
 		return del;
 	}
+	bool GetIsViaRoot() const
+	{
+		return publish_via_partition_root;
+	}
+	void iSetIsViaRoot(const bool b)
+	{
+		publish_via_partition_root = b;
+	}
+
 	wxString GetStrOper() const
 	{
 		wxString s = wxT("");
@@ -115,7 +124,7 @@ public:
 
 private:
 	wxString tables, version;
-	bool all,ins,upd,del;
+	bool all,ins,upd,del, publish_via_partition_root;
 };
 
 class pgPublicationCollection : public pgDatabaseObjCollection

@@ -618,7 +618,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 					}
 				}
 			}
-			wxRegEx reg("vacuum_index_cleanup=[a-z]+|vacuum_truncate=[a-z]+|parallel_workers=[0-9]+|toast_tuple_target=[0-9]+|log_autovacuum_min_duration=[0-9]+|user_catalog_table=[a-z]+");
+			wxRegEx reg("autovacuum_vacuum_insert_scale_factor=[0-9.]+|autovacuum_vacuum_insert_threshold=[0-9]+|vacuum_index_cleanup=[a-z]+|vacuum_truncate=[a-z]+|parallel_workers=[0-9]+|toast_tuple_target=[0-9]+|log_autovacuum_min_duration=[0-9]+|user_catalog_table=[a-z]+");
 			wxString relopt=GetRelOptions();
 			wxString o;
 			size_t start, len;
@@ -726,7 +726,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 		else
 			sql += GetGrant(wxT("arwdRxt"));
 		wxString st=GetStatExt();
-		if (!st.IsEmpty()) sql += st + wxT(";\n");
+		if (!st.IsEmpty()) sql += st + wxT("\n");
 		sql += GetCommentSql();
 
 		if (GetConnection()->BackendMinimumVersion(9, 1))
@@ -1572,8 +1572,14 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 
 		if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
 		{
-			query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
-			query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+			//query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
+			//query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+			query += ",(select string_agg(pg_get_statisticsobjdef(stat_ext.oid)||CASE WHEN stat_ext.stxowner<>rl.relowner then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' OWNER TO '||stat_ext.stxowner::regrole else '' end"
+				;
+			if (collection->GetDatabase()->BackendMinimumVersion(13, 0)) {
+				query += "||CASE WHEN stat_ext.stxstattarget<>-1  then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' SET STATISTICS '||stat_ext.stxstattarget else '' end";
+			}
+			query += ",E';\\n' order by stat_ext.stxrelid) stat_stmt from pg_class rl join  pg_statistic_ext stat_ext on rl.oid=stat_ext.stxrelid where stat_ext.stxrelid=rel.oid) stat_stmt";
 		}
 		query += wxT("  FROM pg_class rel\n")
 				 wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
@@ -1591,8 +1597,6 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 
 		if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 			query += wxT("LEFT JOIN pg_type typ ON rel.reloftype=typ.oid\n");
-		if (collection->GetConnection()->BackendMinimumVersion(10, 0))
-			query += wxT("LEFT JOIN pg_statistic_ext stat_ext ON rel.oid=stat_ext.stxrelid\n");
 
 		query += wxT(" WHERE ")+pg10+wxT(" rel.relkind IN ('r','s','t','p') AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
 
@@ -1733,8 +1737,8 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
 				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
 				wxString st = tables->GetVal(wxT("stat_stmt"));
-				wxString at = tables->GetVal(wxT("alter_stmt"));
-				if (!st.IsEmpty()&&!at.IsEmpty()) st=st+wxT(";\n")+at;
+				//wxString at = tables->GetVal(wxT("alter_stmt"));
+				if (!st.IsEmpty()) if ((st.Right(1) != ";") ) st=st+wxT(";\n");
 				table->iSetStatExt(st);
 
 			}
