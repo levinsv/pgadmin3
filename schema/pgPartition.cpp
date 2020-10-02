@@ -254,7 +254,18 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			query += wxT(",case when lk.relation=rel.oid then 'AccessExclusiveLock' else pg_get_expr(rel.relpartbound, rel.oid) end \n AS partexp");
 			query += wxT(",(select count(*)from pg_inherits ii where ii.inhparent=rel.oid)>0 AS ispartitioned");
 			
-			
+			if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
+			{
+				//query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
+				//query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+				query += ",(select string_agg(pg_get_statisticsobjdef(stat_ext.oid)||CASE WHEN stat_ext.stxowner<>rl.relowner then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' OWNER TO '||stat_ext.stxowner::regrole else '' end"
+					;
+				if (collection->GetDatabase()->BackendMinimumVersion(13, 0)) {
+					query += "||CASE WHEN stat_ext.stxstattarget<>-1  then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' SET STATISTICS '||stat_ext.stxstattarget else '' end";
+				}
+				query += ",E';\\n' order by stat_ext.stxrelid) stat_stmt from pg_class rl join  pg_statistic_ext stat_ext on rl.oid=stat_ext.stxrelid where stat_ext.stxrelid=rel.oid) stat_stmt";
+			}
+
 		query += wxT("  FROM pg_class rel\n")
 	             wxT("  JOIN pg_inherits i ON (rel.oid = i.inhrelid) \n")
 			     wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
@@ -386,6 +397,11 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 				table->iSetPartKeyDef(tables->GetVal(wxT("partkeydef")));
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
 				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
+				wxString st = tables->GetVal(wxT("stat_stmt"));
+				//wxString at = tables->GetVal(wxT("alter_stmt"));
+				if (!st.IsEmpty()) if ((st.Right(1) != ";")) st = st + wxT(";\n");
+				table->iSetStatExt(st);
+
 			}
 			if (collection->GetConnection()->GetIsGreenplum())
 			{

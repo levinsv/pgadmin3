@@ -486,11 +486,13 @@ bool pgConn::BackendMinimumVersion(int major, int minor)
 	if (!majorVersion)
 	{
 		wxString version = GetVersionString();
+		minorVersion = 0;
+		patchVersion = 0;
 		sscanf(version.ToAscii(), "%*s %d.%d.%d", &majorVersion, &minorVersion, &patchVersion);
 		isEdb = version.Upper().Matches(wxT("ENTERPRISEDB*"));
-		if (version.Upper().Matches(wxT("*11BETA*"))) {
-			majorVersion=11;
-			minorVersion=0;
+		if (!majorVersion) {
+			wxString vers=ExecuteScalar(wxT("SELECT current_setting('server_version_num');"));
+			sscanf(vers.ToAscii(), "%2d%04d", &majorVersion, &minorVersion);
 		}
 		// EnterpriseDB 8.3 beta 1 & 2 and possibly later actually have PostgreSQL 8.2 style
 		// catalogs. This is expected to change either before GA, but in the meantime we

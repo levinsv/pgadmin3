@@ -110,12 +110,21 @@ wxString pgPublication::GetSql(ctlTree *browser)
 			 if (!GetTablesStr().IsEmpty())
 			     sql += wxT("") + GetTablesStr();
 			}
-	        if (GetIsIns()&&GetIsUpd()&&GetIsDel()) 
+	        if (GetIsIns()&&GetIsUpd()&&GetIsDel()&&!GetIsViaRoot()) 
 			{
 
-			} else
+			}
+			else
 			{
-				sql += wxT("\n  WITH (publish = '") + GetStrOper() + wxT("')");
+				sql += wxT("\n  WITH (");
+				wxString opts = wxEmptyString;
+				if (!(GetIsIns() && GetIsUpd() && GetIsDel())) opts =opts+ "publish = '" + GetStrOper() + wxT("'");
+				if (GetIsViaRoot()) {
+					if (!opts.IsEmpty()) opts += ",";
+					opts += "publish_via_partition_root = on";
+				}
+				if (!opts.IsEmpty()) opts += ")";
+				sql += opts;
 			}
 
 		sql += wxT(";\n");
@@ -158,8 +167,13 @@ pgObject *pgPublicationFactory::CreateObjects(pgCollection *collection, ctlTree 
 {
 	wxString sql;
 	pgPublication *publication = 0;
+	wxString pg13="";
+	if (collection->GetDatabase()->BackendMinimumVersion(13, 0)) {
+		pg13 = ", pubviaroot";
+	}
 
 	sql = wxT("select x.oid,x.pubname, pg_get_userbyid(x.pubowner) AS owner, x.puballtables, x.pubinsert, x.pubupdate, x.pubdelete, obj_description(x.oid,'pg_publication') AS comment, t.t")
+		  + pg13 + wxT("\n")
 	      wxT("  FROM pg_publication x\n")
 	      wxT("  LEFT JOIN LATERAL (select string_agg(schemaname||'.'||tablename,', ') t from pg_publication_tables  where pubname=x.pubname) t on true \n")
 	      wxT("  ")
@@ -183,6 +197,7 @@ pgObject *pgPublicationFactory::CreateObjects(pgCollection *collection, ctlTree 
 			publication->iSetIsDel(publications->GetBool(wxT("pubdelete")));
 			//publication->iSetVersion(publications->GetVal(wxT("extversion")));
 			publication->iSetComment(publications->GetVal(wxT("comment")));
+			if (!pg13.IsEmpty()) publication->iSetIsViaRoot(publications->GetBool(wxT("pubviaroot")));
 
 			if (browser)
 			{
