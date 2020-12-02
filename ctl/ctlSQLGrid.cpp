@@ -217,7 +217,7 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 	if (GetNumberCols() == 0 || GetRowSize(row)==0)
 		return str;
 	wxString colsep=settings->GetCopyColSeparator();
-	if (generatesql == 2) colsep=wxT(",");
+	if (generatesql == 2|| generatesql == 1) colsep=wxT(",");
 	if (generatesql == 3) colsep = wxT(" and ");
 	wxString qtsimbol=settings->GetCopyQuoteChar();
 	if (generatesql>0) qtsimbol=wxT("'");
