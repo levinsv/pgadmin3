@@ -473,6 +473,36 @@ bool pgIndexBase::HasPgstatindex()
 	return GetConnection()->HasFeature(FEATURE_PGSTATINDEX);
 }
 
+bool pgIndexBase::HasPgcheckindex()
+{
+	return GetConnection()->HasFeature(FEATURE_PGCHECKINDEX);
+}
+
+executePgcheckindexFactory::executePgcheckindexFactory(menuFactoryList* list, wxMenu* mnu, ctlMenuToolbar* toolbar) : contextActionFactory(list)
+{
+	mnu->Append(id, _("Check Btree index"), _("Check Btree index function bt_index_parent_check(oid,true)"));
+}
+
+
+wxWindow* executePgcheckindexFactory::StartDialog(frmMain* form, pgObject* obj)
+{
+	pgIndexBase* i = (pgIndexBase*)obj;
+	form->StartMsg(_("Check Btree index "+i->GetName()+" "));
+	wxString sql = "SELECT bt_index_parent_check("+i->GetOidStr()+",true);";
+	i->GetConnection()->ExecuteVoid(sql);
+	form->EndMsg(true);
+	return 0;
+}
+
+
+bool executePgcheckindexFactory::CheckEnable(pgObject* obj)
+{
+
+	return obj &&
+		(obj->IsCreatedBy(indexFactory) || obj->IsCreatedBy(primaryKeyFactory)
+			|| obj->IsCreatedBy(uniqueFactory) || obj->IsCreatedBy(excludeFactory)) && ((pgIndexBase*)obj)->GetIndexType()=="btree" &&
+		((pgIndexBase*)obj)->HasPgcheckindex();
+}
 
 executePgstatindexFactory::executePgstatindexFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {
