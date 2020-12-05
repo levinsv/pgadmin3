@@ -547,7 +547,7 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT("  JOIN pg_namespace n ON n.oid=pronamespace\n")
 		    wxT(" WHERE proname IN ('pg_tablespace_size', 'pg_file_read', 'pg_logfile_rotate',")
 		    wxT(                  " 'pg_postmaster_starttime', 'pg_terminate_backend', 'pg_reload_conf',")
-		    wxT(                  " 'pgstattuple', 'pgstatindex')\n")
+		    wxT(                  " 'pgstattuple', 'pgstatindex','bt_index_parent_check')\n")
 		    wxT("   AND nspname IN ('pg_catalog', 'public')");
 
 		pgSet *set = ExecuteSet(sql);
@@ -577,6 +577,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_PGSTATTUPLE] = true;
 				else if (proname == wxT("pgstatindex") && pronargs == 1 && set->GetLong(wxT("arg0")) == 25)
 					features[FEATURE_PGSTATINDEX] = true;
+				else if (proname == wxT("bt_index_parent_check") && pronargs == 2 )
+					features[FEATURE_PGCHECKINDEX] = true;
 
 				set->MoveNext();
 			}

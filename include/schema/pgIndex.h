@@ -287,6 +287,7 @@ public:
 		return true;
 	}
 	bool HasPgstatindex();
+	bool HasPgcheckindex();
 
 protected:
 	void ReadColumnDetails();
@@ -344,6 +345,13 @@ public:
 	wxWindow *StartDialog(frmMain *form, pgObject *obj);
 	bool CheckEnable(pgObject *obj);
 	bool CheckChecked(pgObject *obj);
+};
+class executePgcheckindexFactory : public contextActionFactory
+{
+public:
+	executePgcheckindexFactory(menuFactoryList* list, wxMenu* mnu, ctlMenuToolbar* toolbar);
+	wxWindow* StartDialog(frmMain* form, pgObject* obj);
+	bool CheckEnable(pgObject* obj);
 };
 
 

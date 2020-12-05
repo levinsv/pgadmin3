@@ -315,6 +315,7 @@ void frmMain::CreateMenus()
 	new refreshConcurrentlyMatViewFactory(menuFactories, viewMenu, 0);
 	new executePgstattupleFactory(menuFactories, viewMenu, 0);
 	new executePgstatindexFactory(menuFactories, viewMenu, 0);
+	new executePgcheckindexFactory(menuFactories, viewMenu, 0);
 	new enabledisableRuleFactory(menuFactories, toolsMenu, 0);
 	new enabledisableTriggerFactory(menuFactories, toolsMenu, 0);
 	new enabledisableEventTriggerFactory(menuFactories, toolsMenu, 0);
