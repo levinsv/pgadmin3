@@ -787,4 +787,5 @@ void pgIndexBaseCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 
 		delete stats;
 	}
+	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
 }
