@@ -97,6 +97,8 @@ pgPartitionCollection::pgPartitionCollection(pgaFactory *factory, pgPartition *_
 }
 void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+	ShowStatisticsTables(form, statistics, this);
+	return;
 	wxLogInfo(wxT("Displaying statistics for tables on %s"), GetSchema()->GetIdentifier().c_str());
 
 	bool hasSize = GetConnection()->HasFeature(FEATURE_SIZE);
@@ -104,6 +106,9 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 	// Add the statistics view columns
 	statistics->ClearAll();
 	statistics->AddColumn(_("Table Name"));
+	if (hasSize)
+		statistics->AddColumn(_("Size"));
+	if (GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
 	statistics->AddColumn(_("Tuples deleted"));
@@ -127,8 +132,6 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 		statistics->AddColumn(_("Analyze counter"));
 		statistics->AddColumn(_("Autoanalyze counter"));
 	}
-	if (hasSize)
-		statistics->AddColumn(_("Size"), 50);
 
 	wxString sql = wxT("SELECT st.relname, n_tup_ins, n_tup_upd, n_tup_del");
 	if (GetConnection()->BackendMinimumVersion(8, 3))
@@ -141,7 +144,7 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
 		       wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
 		       wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
-
+	if (GetConnection()->GetIsPgProEnt()) sql += wxT(",left((cfs_fragmentation(cl.oid)*100)::text,5)::text AS cfs_ratio");
 	sql += wxT("\n  FROM pg_stat_all_tables st")
 	       wxT("  JOIN pg_class cl on cl.oid=st.relid\n")
 		   wxT("  JOIN pg_inherits i ON (cl.oid = i.inhrelid)")
@@ -156,11 +159,14 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 		int i;
 		while (!stats->Eof())
 		{
-			i = 4;
+			i = 1;
 			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
-			statistics->SetItem(pos, 1, stats->GetVal(wxT("n_tup_ins")));
-			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_upd")));
-			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_del")));
+			if (hasSize)
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
+			if (GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
 			if (GetConnection()->BackendMinimumVersion(8, 3))
 			{
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
@@ -181,14 +187,13 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("analyze_count")));
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("autoanalyze_count")));
 			}
-			if (hasSize)
-				statistics->SetItem(pos, i, stats->GetVal(wxT("size")));
 			stats->MoveNext();
 			pos++;
 		}
 
 		delete stats;
 	}
+	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
 
 }
 

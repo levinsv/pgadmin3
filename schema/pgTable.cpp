@@ -1290,6 +1290,8 @@ wxString pgTableCollection::GetTranslatedMessage(int kindOfMessage) const
 
 void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+	ShowStatisticsTables(form, statistics, this);
+	return;
 	wxLogInfo(wxT("Displaying statistics for tables on %s"), GetSchema()->GetIdentifier().c_str());
 
 	bool hasSize = GetConnection()->HasFeature(FEATURE_SIZE);
@@ -1299,6 +1301,8 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 	statistics->AddColumn(_("Table Name"));
 	if (hasSize)
 		statistics->AddColumn(_("Size"), 50);
+	if (GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
+	
 
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
@@ -1335,6 +1339,7 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
 		       wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
 		       wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
+	if (GetConnection()->GetIsPgProEnt()) sql += wxT(",left((cfs_fragmentation(cl.oid)*100)::text,5)::text AS cfs_ratio");
 
 	sql += wxT("\n  FROM pg_stat_all_tables st")
 	       wxT("  JOIN pg_class cl on cl.oid=st.relid\n")
@@ -1349,13 +1354,14 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 		int i;
 		while (!stats->Eof())
 		{
-			i = 5;
+			i = 1;
 			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
 			if (hasSize)
-				statistics->SetItem(pos, 1, stats->GetVal(wxT("size")));
-			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_ins")));
-			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_upd")));
-			statistics->SetItem(pos, 4, stats->GetVal(wxT("n_tup_del")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
+			if (GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
 			if (GetConnection()->BackendMinimumVersion(8, 3))
 			{
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
@@ -1391,6 +1397,10 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 
 void pgTable::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+	if (GetIsPartitioned()) {
+		ShowStatisticsTables(form,statistics,this);
+		return;
+	}
 	wxString sql =
 	    wxT("SELECT seq_scan AS ") + qtIdent(_("Sequential Scans")) +
 	    wxT(", seq_tup_read AS ") + qtIdent(_("Sequential Tuples Read")) +

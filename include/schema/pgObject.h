@@ -269,6 +269,7 @@ public:
 
 	virtual void ShowTreeDetail(ctlTree *browser, frmMain *form = 0, ctlListView *properties = 0, ctlSQLBox *sqlPane = 0) = 0;
 	virtual void ShowStatistics(frmMain *form, ctlListView *statistics);
+	virtual void ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgObject* obj);
 	virtual void ShowDependencies(frmMain *form, ctlListView *Dependencies, const wxString &where = wxEmptyString);
 	virtual void ShowDependents(frmMain *form, ctlListView *referencedBy, const wxString &where = wxEmptyString);
 	virtual pgObject *Refresh(ctlTree *browser, const wxTreeItemId item)

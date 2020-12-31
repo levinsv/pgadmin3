@@ -67,6 +67,8 @@
 #include "agent/pgaSchedule.h"
 #include "agent/pgaStep.h"
 #include "schema/pgPartition.h"
+#include "utils/pgfeatures.h"
+
 
 int pgObject::GetType() const
 {
@@ -222,6 +224,120 @@ wxMenu *pgObject::GetNewMenu()
 
 void pgObject::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+}
+
+void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgObject *obj)
+{
+	wxLogInfo(wxT("Displaying statistics for tables on %s"), obj->GetSchema()->GetIdentifier().c_str());
+	bool tabcoll = false;
+	bool partcoll = false;
+	bool onetable = false;
+	if (IsCollection()) {
+		wxString t = obj->GetFactory()->GetTypeName();
+		if (t == ("Tables")
+			//obj->IsCreatedBy(tableFactory)
+			) tabcoll = true;
+		if ( t == ("Partitions")) partcoll = true;
+	}
+	else onetable = true;
+	bool hasSize = obj->GetConnection()->HasFeature(FEATURE_SIZE);
+
+	// Add the statistics view columns
+	statistics->ClearAll();
+	statistics->AddColumn(_("Table Name"));
+	if (hasSize)
+		statistics->AddColumn(_("Size"));
+	if (obj->GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
+	statistics->AddColumn(_("Tuples inserted"));
+	statistics->AddColumn(_("Tuples updated"));
+	statistics->AddColumn(_("Tuples deleted"));
+	if (obj->GetConnection()->BackendMinimumVersion(8, 3))
+	{
+		statistics->AddColumn(_("Tuples HOT updated"));
+		statistics->AddColumn(_("Live tuples"));
+		statistics->AddColumn(_("Dead tuples"));
+	}
+	if (obj->GetConnection()->BackendMinimumVersion(8, 2))
+	{
+		statistics->AddColumn(_("Last vacuum"));
+		statistics->AddColumn(_("Last autovacuum"));
+		statistics->AddColumn(_("Last analyze"));
+		statistics->AddColumn(_("Last autoanalyze"));
+	}
+	if (obj->GetConnection()->BackendMinimumVersion(9, 1))
+	{
+		statistics->AddColumn(_("Vacuum counter"));
+		statistics->AddColumn(_("Autovacuum counter"));
+		statistics->AddColumn(_("Analyze counter"));
+		statistics->AddColumn(_("Autoanalyze counter"));
+	}
+
+	wxString sql = wxT("SELECT st.relname, n_tup_ins, n_tup_upd, n_tup_del");
+	if (obj->GetConnection()->BackendMinimumVersion(8, 3))
+		sql += wxT(", n_tup_hot_upd, n_live_tup, n_dead_tup");
+	if (obj->GetConnection()->BackendMinimumVersion(8, 2))
+		sql += wxT(", last_vacuum, last_autovacuum, last_analyze, last_autoanalyze");
+	if (obj->GetConnection()->BackendMinimumVersion(9, 1))
+		sql += wxT(", vacuum_count, autovacuum_count, analyze_count, autoanalyze_count");
+	if (hasSize)
+		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
+		wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
+		wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
+	if (obj->GetConnection()->GetIsPgProEnt()) sql += wxT(",left((cfs_fragmentation(cl.oid)*100)::text,5)::text AS cfs_ratio");
+	sql += wxT("\n  FROM pg_stat_all_tables st")
+		wxT("  JOIN pg_class cl on cl.oid=st.relid\n");
+	if (partcoll) sql += wxT("  JOIN pg_inherits i ON (cl.oid = i.inhrelid) WHERE ");
+	if (tabcoll) sql += wxT("  WHERE schemaname = ")+obj->qtDbString(obj->GetSchema()->GetName());
+	if (partcoll) sql += wxT(" i.inhparent = ") + obj->GetOidStr();
+		//+ obj->qtDbString(obj->GetSchema()->GetName()) + wxT(" AND i.inhparent = ") + obj->GetOidStr()
+	if (onetable) sql += wxT("join (select t.relid::oid oid from pg_partition_tree(")+ (obj->GetOidStr())+wxT("::regclass) t where t.isleaf = 't') t on t.oid=cl.oid");
+
+	sql += wxT("\n ORDER BY relname");
+
+	pgSet* stats = obj->GetDatabase()->ExecuteSet(sql);
+
+	if (stats)
+	{
+		long pos = 0;
+		int i;
+		while (!stats->Eof())
+		{
+			i = 1;
+			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
+			if (hasSize)
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
+			if (obj->GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
+			if (obj->GetConnection()->BackendMinimumVersion(8, 3))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_live_tup")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_dead_tup")));
+			}
+			if (obj->GetConnection()->BackendMinimumVersion(8, 2))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_vacuum")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autovacuum")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_analyze")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autoanalyze")));
+			}
+			if (obj->GetConnection()->BackendMinimumVersion(9, 1))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("vacuum_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("autovacuum_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("analyze_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("autoanalyze_count")));
+			}
+			stats->MoveNext();
+			pos++;
+		}
+
+		delete stats;
+	}
+	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
+
 }
 
 
