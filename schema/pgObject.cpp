@@ -239,7 +239,7 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
 			) tabcoll = true;
 		if ( t == ("Partitions")) partcoll = true;
 	}
-	else onetable = true;
+	else if (obj->GetConnection()->BackendMinimumVersion(12, 0)) onetable = true;
 	bool hasSize = obj->GetConnection()->HasFeature(FEATURE_SIZE);
 
 	// Add the statistics view columns

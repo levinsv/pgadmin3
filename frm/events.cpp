@@ -64,7 +64,9 @@ BEGIN_EVENT_TABLE(frmMain, pgFrame)
 	EVT_LIST_ITEM_SELECTED(CTL_PROPVIEW,    frmMain::OnPropSelChanged)
 	EVT_LIST_ITEM_ACTIVATED(CTL_PROPVIEW,   frmMain::OnPropSelActivated)
 	EVT_LIST_ITEM_RIGHT_CLICK(CTL_PROPVIEW, frmMain::OnPropRightClick)
-	EVT_LIST_ITEM_SELECTED(CTL_STATVIEW,    frmMain::OnSelectItem)
+	EVT_LIST_ITEM_SELECTED(CTL_STATVIEW,    frmMain::OnStatSelChanged)
+	EVT_LIST_ITEM_RIGHT_CLICK(CTL_STATVIEW, frmMain::OnStatRightClick)
+	//	EVT_LIST_ITEM_SELECTED(CTL_STATVIEW,    frmMain::OnSelectItem)
 	EVT_LIST_ITEM_SELECTED(CTL_DEPVIEW,     frmMain::OnSelectItem)
 	EVT_LIST_ITEM_SELECTED(CTL_REFVIEW,     frmMain::OnSelectItem)
 	EVT_TREE_SEL_CHANGED(CTL_BROWSER,       frmMain::OnTreeSelChanged)
@@ -291,6 +293,76 @@ void frmMain::OnCheckAlive(wxCommandEvent &event)
 }
 
 
+void frmMain::OnStatRightClick(wxListEvent& event)
+{
+	OnStatSelChanged(event);
+
+	if (currentObject)
+		doPopup(statistics, event.GetPoint(), currentObject);
+}
+void frmMain::OnStatSelChanged(wxListEvent& event)
+{
+	if (statistics->GetSelectedItemCount() == 1)
+	{
+		int key = event.GetKeyCode();
+		wxTreeItemId item = browser->GetSelection();
+		if (item)
+		{
+			wxString table = statistics->GetItemText(event.GetIndex(), 0);
+			wxCookieType cookie;
+			wxTreeItemId idstop= browser->GetNextSibling(item);
+			if (!idstop.IsOk()) return;
+			//item = browser->GetFirstChild(item, cookie);
+			wxTreeItemId id = item;
+			wxString fn = "";
+			while (id.IsOk()) {
+				pgObject* oo = ((pgObject*)browser->GetItemData(id));
+				if (oo) {
+					pgaFactory* ff = oo->GetFactory();
+					wxString typen = ff->GetTypeName();
+					fn = oo->GetName();
+					bool isChilds = typen == wxT("Tables") || typen == wxT("Partitions");
+					if (typen == wxT("Table")|| typen == wxT("TABLE") && ((((pgTable*)oo)->GetIsPartitioned()))) isChilds = true;
+					if (fn == table) {
+						break;
+					}
+					if (browser->HasChildren(id) && ( isChilds)
+						)
+					{
+						if (oo) oo->ShowTreeDetail(browser);
+						id = browser->GetFirstChild(id, cookie);
+					}
+					else
+					{
+						// Try a sibling of this or ancestor instead
+						wxTreeItemId p = id;
+						wxTreeItemId toFind;
+						do
+						{
+							toFind = browser->GetNextSibling(p);
+							p = browser->GetItemParent(p);
+						} while (p.IsOk() && !toFind.IsOk());
+						id = toFind;
+						if (id == idstop) break;
+					}
+
+				}
+
+			}
+			if (id == idstop || !id.IsOk()) return;
+			
+			pgObject* data = browser->GetObject(id);
+			if (data )
+			{	
+					currentObject = data;
+					setDisplay(currentObject,0,0,false);
+					sqlPane->SetReadOnly(false);
+					sqlPane->SetText(currentObject->GetSql(browser));
+					sqlPane->SetReadOnly(true);
+			}
+		}
+	}
+}
 
 void frmMain::OnPropSelChanged(wxListEvent &event)
 {
@@ -516,7 +588,7 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 }
 
 
-void frmMain::setDisplay(pgObject *data, ctlListView *props, ctlSQLBox *sqlbox)
+void frmMain::setDisplay(pgObject *data, ctlListView *props, ctlSQLBox *sqlbox, bool showtree)
 {
 	pgServer *server = 0;
 
@@ -539,7 +611,7 @@ void frmMain::setDisplay(pgObject *data, ctlListView *props, ctlSQLBox *sqlbox)
 	else
 		showTree = false;
 
-	if (showTree)
+	if (showTree && showtree)
 		data->ShowTree(this, browser, props, sqlbox);
 
 	if (sqlbox)
