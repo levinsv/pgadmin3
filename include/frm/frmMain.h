@@ -249,6 +249,8 @@ private:
 	void OnAuiNotebookPageClose(wxAuiNotebookEvent &event);
 	void OnContextMenu(wxCommandEvent &event);
 
+	void OnStatSelChanged(wxListEvent& event);
+	void OnStatRightClick(wxListEvent& event);
 	void OnPageChange(wxAuiNotebookEvent &event);
 	void OnPropSelChanged(wxListEvent &event);
 	void OnPropSelActivated(wxListEvent &event);
@@ -272,7 +274,7 @@ private:
 	void ResetLists();
 	bool dropSingleObject(pgObject *data, bool updateFinal, bool cascaded);
 	void doPopup(wxWindow *win, wxPoint point, pgObject *object);
-	void setDisplay(pgObject *data, ctlListView *props = 0, ctlSQLBox *sqlbox = 0);
+	void setDisplay(pgObject *data, ctlListView *props = 0, ctlSQLBox *sqlbox = 0, bool showtree=true);
 	void RetrieveServers();
 	bool reportError(const wxString &error, const wxString &msgToIdentify, const wxString &hint);
 	wxTreeItemId RestoreEnvironment(pgServer *server);
