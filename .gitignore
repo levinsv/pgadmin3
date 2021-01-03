@@ -37,3 +37,5 @@ Release_(3.0)/pgAdmin3.exe.*
 Release_(3.0)/*.pdb
 Release_(3.0)/*.rc
 *.pdb
+ctl/ctlMonitorWidget.cpp
+include/ctl/ctlMonitorWidget.h
