@@ -1,7 +1,16 @@
 Debug/*
-x64/*
+x64/Debug_(3.0)/*
 Release/*
 Debug_(3.0)/*
+x64/Release_(3.0)/*.sbr
+x64/Release_(3.0)/*.log
+x64/Release_(3.0)/*.sbr
+x64/Release_(3.0)/*.obj
+x64/Release_(3.0)/*.tlog
+x64/Release_(3.0)/*.res
+x64/Release_(3.0)/*.sbr
+x64/Release_(3.0)/*.ilk
+x64/Release_(3.0)/*.txt
 *.sbr
 *.obj
 *.cod
