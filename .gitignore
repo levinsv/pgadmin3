@@ -1,6 +1,7 @@
 Debug/*
 x64/*
 Release/*
+Debug_(3.0)/*
 *.sbr
 *.obj
 *.cod
@@ -8,3 +9,5 @@ Release/*
 *.7z
 *.bsc
 *.pdb
+ctl/ctlMonitorWidget.cpp
+include/ctl/ctlMonitorWidget.h

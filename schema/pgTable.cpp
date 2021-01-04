@@ -618,7 +618,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 					}
 				}
 			}
-			wxRegEx reg("vacuum_index_cleanup=[a-z]+|vacuum_truncate=[a-z]+|parallel_workers=[0-9]+|toast_tuple_target=[0-9]+|log_autovacuum_min_duration=[0-9]+|user_catalog_table=[a-z]+");
+			wxRegEx reg("autovacuum_vacuum_insert_scale_factor=[0-9.]+|autovacuum_vacuum_insert_threshold=[0-9]+|vacuum_index_cleanup=[a-z]+|vacuum_truncate=[a-z]+|parallel_workers=[0-9]+|toast_tuple_target=[0-9]+|log_autovacuum_min_duration=[0-9]+|user_catalog_table=[a-z]+");
 			wxString relopt=GetRelOptions();
 			wxString o;
 			size_t start, len;
@@ -726,7 +726,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 		else
 			sql += GetGrant(wxT("arwdRxt"));
 		wxString st=GetStatExt();
-		if (!st.IsEmpty()) sql += st + wxT(";\n");
+		if (!st.IsEmpty()) sql += st + wxT("\n");
 		sql += GetCommentSql();
 
 		if (GetConnection()->BackendMinimumVersion(9, 1))
@@ -1290,6 +1290,8 @@ wxString pgTableCollection::GetTranslatedMessage(int kindOfMessage) const
 
 void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+	ShowStatisticsTables(form, statistics, this);
+	return;
 	wxLogInfo(wxT("Displaying statistics for tables on %s"), GetSchema()->GetIdentifier().c_str());
 
 	bool hasSize = GetConnection()->HasFeature(FEATURE_SIZE);
@@ -1299,6 +1301,8 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 	statistics->AddColumn(_("Table Name"));
 	if (hasSize)
 		statistics->AddColumn(_("Size"), 50);
+	if (GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
+	
 
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
@@ -1335,6 +1339,7 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
 		       wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
 		       wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
+	if (GetConnection()->GetIsPgProEnt()) sql += wxT(",left((cfs_fragmentation(cl.oid)*100)::text,5)::text AS cfs_ratio");
 
 	sql += wxT("\n  FROM pg_stat_all_tables st")
 	       wxT("  JOIN pg_class cl on cl.oid=st.relid\n")
@@ -1349,13 +1354,14 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 		int i;
 		while (!stats->Eof())
 		{
-			i = 5;
+			i = 1;
 			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
 			if (hasSize)
-				statistics->SetItem(pos, 1, stats->GetVal(wxT("size")));
-			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_ins")));
-			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_upd")));
-			statistics->SetItem(pos, 4, stats->GetVal(wxT("n_tup_del")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
+			if (GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
 			if (GetConnection()->BackendMinimumVersion(8, 3))
 			{
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
@@ -1391,6 +1397,10 @@ void pgTableCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 
 void pgTable::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+	if (GetIsPartitioned()) {
+		ShowStatisticsTables(form,statistics,this);
+		return;
+	}
 	wxString sql =
 	    wxT("SELECT seq_scan AS ") + qtIdent(_("Sequential Scans")) +
 	    wxT(", seq_tup_read AS ") + qtIdent(_("Sequential Tuples Read")) +
@@ -1572,8 +1582,14 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 
 		if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
 		{
-			query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
-			query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+			//query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
+			//query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+			query += ",(select string_agg(pg_get_statisticsobjdef(stat_ext.oid)||CASE WHEN stat_ext.stxowner<>rl.relowner then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' OWNER TO '||stat_ext.stxowner::regrole else '' end"
+				;
+			if (collection->GetDatabase()->BackendMinimumVersion(13, 0)) {
+				query += "||CASE WHEN stat_ext.stxstattarget<>-1  then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' SET STATISTICS '||stat_ext.stxstattarget else '' end";
+			}
+			query += ",E';\\n' order by stat_ext.stxrelid) stat_stmt from pg_class rl join  pg_statistic_ext stat_ext on rl.oid=stat_ext.stxrelid where stat_ext.stxrelid=rel.oid) stat_stmt";
 		}
 		query += wxT("  FROM pg_class rel\n")
 				 wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
@@ -1591,8 +1607,6 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 
 		if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 			query += wxT("LEFT JOIN pg_type typ ON rel.reloftype=typ.oid\n");
-		if (collection->GetConnection()->BackendMinimumVersion(10, 0))
-			query += wxT("LEFT JOIN pg_statistic_ext stat_ext ON rel.oid=stat_ext.stxrelid\n");
 
 		query += wxT(" WHERE ")+pg10+wxT(" rel.relkind IN ('r','s','t','p') AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
 
@@ -1733,8 +1747,8 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
 				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
 				wxString st = tables->GetVal(wxT("stat_stmt"));
-				wxString at = tables->GetVal(wxT("alter_stmt"));
-				if (!st.IsEmpty()&&!at.IsEmpty()) st=st+wxT(";\n")+at;
+				//wxString at = tables->GetVal(wxT("alter_stmt"));
+				if (!st.IsEmpty()) if ((st.Right(1) != ";") ) st=st+wxT(";\n");
 				table->iSetStatExt(st);
 
 			}

@@ -67,6 +67,8 @@
 #include "agent/pgaSchedule.h"
 #include "agent/pgaStep.h"
 #include "schema/pgPartition.h"
+#include "utils/pgfeatures.h"
+
 
 int pgObject::GetType() const
 {
@@ -222,6 +224,120 @@ wxMenu *pgObject::GetNewMenu()
 
 void pgObject::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+}
+
+void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgObject *obj)
+{
+	wxLogInfo(wxT("Displaying statistics for tables on %s"), obj->GetSchema()->GetIdentifier().c_str());
+	bool tabcoll = false;
+	bool partcoll = false;
+	bool onetable = false;
+	if (IsCollection()) {
+		wxString t = obj->GetFactory()->GetTypeName();
+		if (t == ("Tables")
+			//obj->IsCreatedBy(tableFactory)
+			) tabcoll = true;
+		if ( t == ("Partitions")) partcoll = true;
+	}
+	else onetable = true;
+	bool hasSize = obj->GetConnection()->HasFeature(FEATURE_SIZE);
+
+	// Add the statistics view columns
+	statistics->ClearAll();
+	statistics->AddColumn(_("Table Name"));
+	if (hasSize)
+		statistics->AddColumn(_("Size"));
+	if (obj->GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
+	statistics->AddColumn(_("Tuples inserted"));
+	statistics->AddColumn(_("Tuples updated"));
+	statistics->AddColumn(_("Tuples deleted"));
+	if (obj->GetConnection()->BackendMinimumVersion(8, 3))
+	{
+		statistics->AddColumn(_("Tuples HOT updated"));
+		statistics->AddColumn(_("Live tuples"));
+		statistics->AddColumn(_("Dead tuples"));
+	}
+	if (obj->GetConnection()->BackendMinimumVersion(8, 2))
+	{
+		statistics->AddColumn(_("Last vacuum"));
+		statistics->AddColumn(_("Last autovacuum"));
+		statistics->AddColumn(_("Last analyze"));
+		statistics->AddColumn(_("Last autoanalyze"));
+	}
+	if (obj->GetConnection()->BackendMinimumVersion(9, 1))
+	{
+		statistics->AddColumn(_("Vacuum counter"));
+		statistics->AddColumn(_("Autovacuum counter"));
+		statistics->AddColumn(_("Analyze counter"));
+		statistics->AddColumn(_("Autoanalyze counter"));
+	}
+
+	wxString sql = wxT("SELECT st.relname, n_tup_ins, n_tup_upd, n_tup_del");
+	if (obj->GetConnection()->BackendMinimumVersion(8, 3))
+		sql += wxT(", n_tup_hot_upd, n_live_tup, n_dead_tup");
+	if (obj->GetConnection()->BackendMinimumVersion(8, 2))
+		sql += wxT(", last_vacuum, last_autovacuum, last_analyze, last_autoanalyze");
+	if (obj->GetConnection()->BackendMinimumVersion(9, 1))
+		sql += wxT(", vacuum_count, autovacuum_count, analyze_count, autoanalyze_count");
+	if (hasSize)
+		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
+		wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
+		wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
+	if (obj->GetConnection()->GetIsPgProEnt()) sql += wxT(",left((cfs_fragmentation(cl.oid)*100)::text,5)::text AS cfs_ratio");
+	sql += wxT("\n  FROM pg_stat_all_tables st")
+		wxT("  JOIN pg_class cl on cl.oid=st.relid\n");
+	if (partcoll) sql += wxT("  JOIN pg_inherits i ON (cl.oid = i.inhrelid) WHERE ");
+	if (tabcoll) sql += wxT("  WHERE schemaname = ")+obj->qtDbString(obj->GetSchema()->GetName());
+	if (partcoll) sql += wxT(" i.inhparent = ") + obj->GetOidStr();
+		//+ obj->qtDbString(obj->GetSchema()->GetName()) + wxT(" AND i.inhparent = ") + obj->GetOidStr()
+	if (onetable) sql += wxT("join (select t.relid::oid oid from pg_partition_tree(")+ (obj->GetOidStr())+wxT("::regclass) t where t.isleaf = 't') t on t.oid=cl.oid");
+
+	sql += wxT("\n ORDER BY relname");
+
+	pgSet* stats = obj->GetDatabase()->ExecuteSet(sql);
+
+	if (stats)
+	{
+		long pos = 0;
+		int i;
+		while (!stats->Eof())
+		{
+			i = 1;
+			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
+			if (hasSize)
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
+			if (obj->GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
+			if (obj->GetConnection()->BackendMinimumVersion(8, 3))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_live_tup")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_dead_tup")));
+			}
+			if (obj->GetConnection()->BackendMinimumVersion(8, 2))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_vacuum")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autovacuum")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_analyze")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autoanalyze")));
+			}
+			if (obj->GetConnection()->BackendMinimumVersion(9, 1))
+			{
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("vacuum_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("autovacuum_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("analyze_count")));
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("autoanalyze_count")));
+			}
+			stats->MoveNext();
+			pos++;
+		}
+
+		delete stats;
+	}
+	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
+
 }
 
 
@@ -452,6 +568,52 @@ void pgObject::CreateListColumns(ctlListView *list, const wxString &left, const 
 	list->AddColumn(right, list->GetSize().GetWidth() - 140);
 }
 
+wxString GetClassTableName(int metatype) {
+	switch (metatype)
+	{
+	case PGM_CONSTRAINT:
+		return "pg_constraint";
+	case PGM_FOREIGNKEY:
+		return "pg_constraint";
+	case PGM_PRIMARYKEY:
+		return "pg_constraint";
+	case PGM_UNIQUE:
+		return "pg_constraint";
+	case PGM_EXCLUDE:
+		return "pg_constraint";
+	case PGM_OPCLASS:
+		return "pg_amop";
+	case PGM_COLUMN:
+		return "pg_attribute";
+	case PGM_FUNCTION:
+		return "pg_proc";
+	case PGM_INDEX:
+		return "pg_class";
+	case PGM_TABLE:
+		return "pg_class";
+	case PGM_VIEW:
+		return "pg_class";
+	case PG_PARTITION:
+		return "pg_class";
+	case PGM_LANGUAGE:
+		return "pg_language";
+	case PGM_ROLE:
+		return "pg_authid";
+	case PGM_SCHEMA:
+		return "pg_namespace";
+	case PGM_SEQUENCE:
+		return "pg_class";
+	case PGM_TABLESPACE:
+		return "pg_tablespace";
+	case PGM_TRIGGER:
+		return "pg_trigger";
+	case PGM_OPFAMILY:
+		return "pg_opfamily";
+	default:
+		break;
+	}
+	return "";
+}
 
 void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const wxString &wh)
 {
@@ -465,8 +627,12 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	wxString where;
 	if (wh.IsEmpty())
 	{
-		if(!GetOidStr().IsSameAs(wxT("0")))
+		if (!GetOidStr().IsSameAs(wxT("0")))
+		{
+			wxString ts = GetClassTableName(GetMetaType());
 			where = wxT(" WHERE dep.objid=") + GetOidStr();
+			if (!ts.IsEmpty()) where += " and dep.classid IN(select oid from pg_class where oid=dep.classid and relname='" + ts + "')";
+		}
 		else
 			return;
 	}
@@ -510,25 +676,25 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text)\n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
-	               wxT("  FROM pg_depend dep\n")
-	               wxT("  LEFT JOIN pg_class cl ON dep.refobjid=cl.oid\n")
-	               wxT("  LEFT JOIN pg_attribute att ON dep.refobjid=att.attrelid AND dep.refobjsubid=att.attnum\n")
+	               wxT("  FROM pg_depend dep join pg_class nc on nc.oid=dep.refclassid\n")
+	               wxT("  LEFT JOIN pg_class cl ON dep.refobjid=cl.oid and nc.relname='pg_class'\n")
+	               wxT("  LEFT JOIN pg_attribute att ON dep.refobjid=att.attrelid AND dep.refobjsubid=att.attnum and nc.relname='pg_attribute'\n")
 	               wxT("  LEFT JOIN pg_namespace nsc ON cl.relnamespace=nsc.oid\n")
-	               wxT("  LEFT JOIN pg_proc pr ON dep.refobjid=pr.oid\n")
+	               wxT("  LEFT JOIN pg_proc pr ON dep.refobjid=pr.oid and nc.relname='pg_proc'\n")
 	               wxT("  LEFT JOIN pg_namespace nsp ON pr.pronamespace=nsp.oid\n")
-	               wxT("  LEFT JOIN pg_trigger tg ON dep.refobjid=tg.oid\n")
-	               wxT("  LEFT JOIN pg_type ty ON dep.refobjid=ty.oid\n")
+	               wxT("  LEFT JOIN pg_trigger tg ON dep.refobjid=tg.oid and nc.relname='pg_trigger'\n")
+	               wxT("  LEFT JOIN pg_type ty ON dep.refobjid=ty.oid and nc.relname='pg_type'\n")
 	               wxT("  LEFT JOIN pg_namespace nst ON ty.typnamespace=nst.oid\n")
-	               wxT("  LEFT JOIN pg_constraint co ON dep.refobjid=co.oid\n")
+	               wxT("  LEFT JOIN pg_constraint co ON dep.refobjid=co.oid and nc.relname='pg_constraint'\n")
 	               wxT("  LEFT JOIN pg_class coc ON co.conrelid=coc.oid\n")
 	               wxT("  LEFT JOIN pg_namespace nso ON co.connamespace=nso.oid\n")
-	               wxT("  LEFT JOIN pg_rewrite rw ON dep.refobjid=rw.oid\n")
+	               wxT("  LEFT JOIN pg_rewrite rw ON dep.refobjid=rw.oid and nc.relname='pg_rewrite'\n")
 	               wxT("  LEFT JOIN pg_class clrw ON clrw.oid=rw.ev_class\n")
 	               wxT("  LEFT JOIN pg_namespace nsrw ON clrw.relnamespace=nsrw.oid\n")
-	               wxT("  LEFT JOIN pg_language la ON dep.refobjid=la.oid\n")
-	               wxT("  LEFT JOIN pg_namespace ns ON dep.refobjid=ns.oid\n")
+	               wxT("  LEFT JOIN pg_language la ON dep.refobjid=la.oid and nc.relname='pg_language'\n")
+	               wxT("  LEFT JOIN pg_namespace ns ON dep.refobjid=ns.oid and nc.relname='pg_namespace'\n")
 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.adrelid=att.attrelid AND ad.adnum=att.attnum\n")
-				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid\n")
+				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid and nc.relname='pg_publication_rel'\n")
 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.refobjid\n")
 	               + where, wxT("refclassid"));
 
@@ -627,9 +793,7 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	}
 
 }
-
-
-void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wxString &wh)
+void pgObject::ShowDependents(frmMain* form, ctlListView* referencedBy, const wxString& wh)
 {
 	if (this->IsCollection())
 		return;
@@ -640,7 +804,11 @@ void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wx
 
 	wxString where;
 	if (wh.IsEmpty())
+	{
+		wxString ts = GetClassTableName(GetMetaType());
 		where = wxT(" WHERE dep.refobjid=") + GetOidStr();
+		if (!ts.IsEmpty()) where += " and dep.refclassid IN(select oid from pg_class where oid=dep.refclassid and relname='" + ts + "')";
+	}
 	else
 		where = wh;
 	/*
@@ -681,26 +849,26 @@ void pgObject::ShowDependents(frmMain *form, ctlListView *referencedBy, const wx
 	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text) \n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
-	               wxT("  FROM pg_depend dep\n")
-	               wxT("  LEFT JOIN pg_class cl ON dep.objid=cl.oid\n")
-	               wxT("  LEFT JOIN pg_attribute att ON dep.objid=att.attrelid AND dep.objsubid=att.attnum\n")
+	               wxT("  FROM pg_depend dep join pg_class nc on nc.oid=dep.classid\n")
+	               wxT("  LEFT JOIN pg_class cl ON dep.objid=cl.oid and nc.relname='pg_class'\n")
+	               wxT("  LEFT JOIN pg_attribute att ON dep.objid=att.attrelid AND dep.objsubid=att.attnum and nc.relname='pg_attribute'\n")
 	               wxT("  LEFT JOIN pg_namespace nsc ON cl.relnamespace=nsc.oid\n")
-	               wxT("  LEFT JOIN pg_proc pr ON dep.objid=pr.oid\n")
+	               wxT("  LEFT JOIN pg_proc pr ON dep.objid=pr.oid and nc.relname='pg_proc'\n")
 	               wxT("  LEFT JOIN pg_namespace nsp ON pr.pronamespace=nsp.oid\n")
-	               wxT("  LEFT JOIN pg_trigger tg ON dep.objid=tg.oid\n")
-	               wxT("  LEFT JOIN pg_type ty ON dep.objid=ty.oid\n")
+	               wxT("  LEFT JOIN pg_trigger tg ON dep.objid=tg.oid and nc.relname='pg_trigger'\n")
+	               wxT("  LEFT JOIN pg_type ty ON dep.objid=ty.oid and nc.relname='pg_type'\n")
 	               wxT("  LEFT JOIN pg_namespace nst ON ty.typnamespace=nst.oid\n")
-	               wxT("  LEFT JOIN pg_constraint co ON dep.objid=co.oid\n")
+	               wxT("  LEFT JOIN pg_constraint co ON dep.objid=co.oid and nc.relname='pg_constraint'\n")
 	               wxT("  LEFT JOIN pg_class coc ON co.conrelid=coc.oid\n")
 	               wxT("  LEFT JOIN pg_namespace nso ON co.connamespace=nso.oid\n")
-	               wxT("  LEFT JOIN pg_rewrite rw ON dep.objid=rw.oid\n")
+	               wxT("  LEFT JOIN pg_rewrite rw ON dep.objid=rw.oid and nc.relname='pg_rewrite'\n")
 	               wxT("  LEFT JOIN pg_class clrw ON clrw.oid=rw.ev_class\n")
 	               wxT("  LEFT JOIN pg_namespace nsrw ON clrw.relnamespace=nsrw.oid\n")
-	               wxT("  LEFT JOIN pg_language la ON dep.objid=la.oid\n")
-	               wxT("  LEFT JOIN pg_namespace ns ON dep.objid=ns.oid\n")
-	               wxT("  LEFT JOIN pg_attrdef ad ON ad.oid=dep.objid\n")
-				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.objid\n")
-				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid\n")
+	               wxT("  LEFT JOIN pg_language la ON dep.objid=la.oid and nc.relname='pg_language'\n")
+	               wxT("  LEFT JOIN pg_namespace ns ON dep.objid=ns.oid and nc.relname='pg_namespace'\n")
+	               wxT("  LEFT JOIN pg_attrdef ad ON ad.oid=dep.objid and nc.relname='pg_attrdef'\n")
+				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.objid and nc.relname='pg_extension'\n")
+				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid and nc.relname='pg_publication_rel'\n")
 	               + where, wxT("classid"));
 	
 	/*
@@ -2055,7 +2223,7 @@ if (1==0) {
 									pgaFactory *ff=oo->GetFactory();
 									fn=ff->GetTypeName();
 								fn=oo->GetName();
-								if (fn==wxT("debug*history__0102")) {
+								if (fn==wxT("debug**info_history2")) {
 									fn=oo->GetFullName();
 									pgaFactory *ff=oo->GetFactory();
 									fn=ff->GetTypeName();

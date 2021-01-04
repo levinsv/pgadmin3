@@ -97,6 +97,8 @@ pgPartitionCollection::pgPartitionCollection(pgaFactory *factory, pgPartition *_
 }
 void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistics)
 {
+	ShowStatisticsTables(form, statistics, this);
+	return;
 	wxLogInfo(wxT("Displaying statistics for tables on %s"), GetSchema()->GetIdentifier().c_str());
 
 	bool hasSize = GetConnection()->HasFeature(FEATURE_SIZE);
@@ -104,6 +106,9 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 	// Add the statistics view columns
 	statistics->ClearAll();
 	statistics->AddColumn(_("Table Name"));
+	if (hasSize)
+		statistics->AddColumn(_("Size"));
+	if (GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
 	statistics->AddColumn(_("Tuples deleted"));
@@ -127,8 +132,6 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 		statistics->AddColumn(_("Analyze counter"));
 		statistics->AddColumn(_("Autoanalyze counter"));
 	}
-	if (hasSize)
-		statistics->AddColumn(_("Size"), 50);
 
 	wxString sql = wxT("SELECT st.relname, n_tup_ins, n_tup_upd, n_tup_del");
 	if (GetConnection()->BackendMinimumVersion(8, 3))
@@ -141,7 +144,7 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 		sql += wxT(", pg_size_pretty(pg_relation_size(st.relid)")
 		       wxT(" + CASE WHEN cl.reltoastrelid = 0 THEN 0 ELSE pg_relation_size(cl.reltoastrelid) + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=cl.reltoastrelid)::int8, 0) END")
 		       wxT(" + COALESCE((SELECT SUM(pg_relation_size(indexrelid)) FROM pg_index WHERE indrelid=st.relid)::int8, 0)) AS size");
-
+	if (GetConnection()->GetIsPgProEnt()) sql += wxT(",left((cfs_fragmentation(cl.oid)*100)::text,5)::text AS cfs_ratio");
 	sql += wxT("\n  FROM pg_stat_all_tables st")
 	       wxT("  JOIN pg_class cl on cl.oid=st.relid\n")
 		   wxT("  JOIN pg_inherits i ON (cl.oid = i.inhrelid)")
@@ -156,11 +159,14 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 		int i;
 		while (!stats->Eof())
 		{
-			i = 4;
+			i = 1;
 			statistics->InsertItem(pos, stats->GetVal(wxT("relname")), PGICON_STATISTICS);
-			statistics->SetItem(pos, 1, stats->GetVal(wxT("n_tup_ins")));
-			statistics->SetItem(pos, 2, stats->GetVal(wxT("n_tup_upd")));
-			statistics->SetItem(pos, 3, stats->GetVal(wxT("n_tup_del")));
+			if (hasSize)
+				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
+			if (GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
 			if (GetConnection()->BackendMinimumVersion(8, 3))
 			{
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
@@ -181,14 +187,13 @@ void pgPartitionCollection::ShowStatistics(frmMain *form, ctlListView *statistic
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("analyze_count")));
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("autoanalyze_count")));
 			}
-			if (hasSize)
-				statistics->SetItem(pos, i, stats->GetVal(wxT("size")));
 			stats->MoveNext();
 			pos++;
 		}
 
 		delete stats;
 	}
+	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
 
 }
 
@@ -254,7 +259,18 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			query += wxT(",case when lk.relation=rel.oid then 'AccessExclusiveLock' else pg_get_expr(rel.relpartbound, rel.oid) end \n AS partexp");
 			query += wxT(",(select count(*)from pg_inherits ii where ii.inhparent=rel.oid)>0 AS ispartitioned");
 			
-			
+			if (collection->GetDatabase()->BackendMinimumVersion(10, 0))
+			{
+				//query += wxT(",\n pg_get_statisticsobjdef(stat_ext.oid) AS stat_stmt");
+				//query += wxT(",\nCASE WHEN stat_ext.stxowner<>rel.relowner then 'ALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s\\(')||' OWNER TO '||stat_ext.stxowner::regrole else null end AS alter_stmt");
+				query += ",(select string_agg(pg_get_statisticsobjdef(stat_ext.oid)||CASE WHEN stat_ext.stxowner<>rl.relowner then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' OWNER TO '||stat_ext.stxowner::regrole else '' end"
+					;
+				if (collection->GetDatabase()->BackendMinimumVersion(13, 0)) {
+					query += "||CASE WHEN stat_ext.stxstattarget<>-1  then E';\\nALTER STATISTICS '||substring(pg_get_statisticsobjdef(stat_ext.oid) from 'ICS (.+?)\\s')||' SET STATISTICS '||stat_ext.stxstattarget else '' end";
+				}
+				query += ",E';\\n' order by stat_ext.stxrelid) stat_stmt from pg_class rl join  pg_statistic_ext stat_ext on rl.oid=stat_ext.stxrelid where stat_ext.stxrelid=rel.oid) stat_stmt";
+			}
+
 		query += wxT("  FROM pg_class rel\n")
 	             wxT("  JOIN pg_inherits i ON (rel.oid = i.inhrelid) \n")
 			     wxT("  LEFT JOIN  pg_locks lk ON locktype='relation' and granted=true and mode='AccessExclusiveLock' and relation=rel.oid\n")
@@ -386,6 +402,11 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 				table->iSetPartKeyDef(tables->GetVal(wxT("partkeydef")));
 				table->iSetPartExp(tables->GetVal(wxT("partexp")));
 				table->iSetIsPartitioned(tables->GetBool(wxT("ispartitioned")));
+				wxString st = tables->GetVal(wxT("stat_stmt"));
+				//wxString at = tables->GetVal(wxT("alter_stmt"));
+				if (!st.IsEmpty()) if ((st.Right(1) != ";")) st = st + wxT(";\n");
+				table->iSetStatExt(st);
+
 			}
 			if (collection->GetConnection()->GetIsGreenplum())
 			{

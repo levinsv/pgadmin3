@@ -509,7 +509,7 @@ bool pgProcedure::DropObject(wxFrame *frame, ctlTree *browser, bool cascaded)
 	if (!GetConnection()->BackendMinimumVersion(11, 0))
 		return pgFunction::DropObject(frame, browser, cascaded);
 
-	wxString sql = wxT("DROP PROCEDURE ") + this->GetSchema()->GetQuotedIdentifier() + wxT(".") + this->GetQuotedIdentifier();
+	wxString sql = wxT("DROP PROCEDURE ") + this->GetSchema()->GetQuotedIdentifier() + wxT(".") + this->GetQuotedIdentifier() + wxT("(") + this->GetArgSigList() + wxT(")");;
 	return GetDatabase()->ExecuteVoid(sql);
 }
 

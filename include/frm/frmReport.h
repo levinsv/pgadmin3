@@ -141,6 +141,7 @@ private:
 protected:
 	//reportCompareFactory(menuFactoryList *list) : actionFactory(list) {}
 	wxString reportCompareFactory::GetNodePath(wxTreeItemId node);
+	wxString ApplyCompareOpts(wxString sql, int metatype);
 	wxWindow *StartDialog(frmMain *form, pgObject *obj);
 	void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayString &expandedNodes, ArraySQL &list,time_t *t,wxBusyInfo *w, MyHashSQL &h_path,int lvl);
 	std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str2 );

@@ -74,7 +74,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -157,6 +157,9 @@
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <IncludePath>.\wxwidgets\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);wxwidgets\lib</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_(3.0)|x64'">
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
@@ -479,7 +482,7 @@
       <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
       <ObjectFileName>.\Debug/</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <BrowseInformationFile>.\Debug/</BrowseInformationFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -491,10 +494,9 @@
       <AdditionalIncludeDirectories>$(WXWIN)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase30ud.lib;wxbase30ud_xml.lib;wxbase30ud_net.lib;wxmsw30ud_adv.lib;wxmsw30ud_core.lib;wxmsw30ud_html.lib;wxmsw30ud_aui.lib;wxregexud.lib;wxpngd.lib;wxzlibd.lib;wxjpegd.lib;wxtiffd.lib;wxmsw30ud_stc.lib;wxmsw30ud_xrc.lib;wxexpatd.lib;libeay32MD.lib;libpq.lib;libxml2.lib;libxslt.lib;iconv.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Debug/pgAdmin3.exe</OutputFile>
+      <AdditionalDependencies>wxbase30ud.lib;wxbase30ud_xml.lib;wxbase30ud_net.lib;wxmsw30ud_adv.lib;wxmsw30ud_core.lib;wxmsw30ud_html.lib;wxmsw30ud_aui.lib;wxregexud.lib;wxpngd.lib;wxzlibd.lib;wxjpegd.lib;wxtiffd.lib;wxmsw30ud_stc.lib;wxmsw30ud_xrc.lib;wxexpatd.lib;libssh2.lib;libeay32MD.lib;libpq.lib;libxml2.lib;libxslt.lib;iconv.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(OPENSSL)/lib/VC;$(WXWIN)/lib/vc_dll;$(PGDIR)/lib;$(PGBUILD)/lib;$(PGBUILD)/libxml2/lib;$(PGBUILD)/libxslt/lib;$(PGBUILD)/iconv/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(PROJECTDIR)/../libssh2/src/Release;$(OPENSSL)/lib/VC;$(WXWIN)/lib/vc_x64_dll;$(PGDIR)/lib;$(PGBUILD)/lib;$(PGBUILD)/libxml2/lib;$(PGBUILD)/libxslt/lib;$(PGBUILD)/iconv/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcd.lib;libcid.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/pgAdmin3.pdb</ProgramDatabaseFile>
@@ -2236,6 +2238,7 @@
     <png2c Include="include\images\slsubscription2.png" />
     <png2c Include="include\images\slsubscriptions.png" />
     <png2c Include="include\images\sortfilter.png" />
+    <png2c Include="include\images\sortfilterclear.png" />
     <png2c Include="include\images\splash.png" />
     <png2c Include="include\images\sql-16.png" />
     <png2c Include="include\images\sql-32.png" />

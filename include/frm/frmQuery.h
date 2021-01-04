@@ -212,6 +212,8 @@ private:
 	void OnClear(wxCommandEvent &event);
 	void OnSummary_Column(wxCommandEvent &event);
 	void OnCopy_Insert(wxCommandEvent &event);
+	void OnCopy_InList(wxCommandEvent& event);
+	void OnCopy_WhereList(wxCommandEvent& event);
 	void OnClear_Filter(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnUndo(wxCommandEvent &event);

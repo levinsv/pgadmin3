@@ -9,5 +9,5 @@ REM # embed-xrc.bat - convert xrc files to c++ files
 REM #
 REM #######################################################################
 
-"D:\PostgreSQL\pgadmin3\pgadmin\Debug_(3.0)\wxrc.exe" -c -o xrcDialogs.cpp *.xrc
+"C:\Users\lsv\Source\Repos\wxrc\x64\Release\wxrc.exe" -c -o xrcDialogs.cpp *.xrc
 

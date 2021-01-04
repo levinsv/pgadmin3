@@ -486,11 +486,13 @@ bool pgConn::BackendMinimumVersion(int major, int minor)
 	if (!majorVersion)
 	{
 		wxString version = GetVersionString();
+		minorVersion = 0;
+		patchVersion = 0;
 		sscanf(version.ToAscii(), "%*s %d.%d.%d", &majorVersion, &minorVersion, &patchVersion);
 		isEdb = version.Upper().Matches(wxT("ENTERPRISEDB*"));
-		if (version.Upper().Matches(wxT("*11BETA*"))) {
-			majorVersion=11;
-			minorVersion=0;
+		if (!majorVersion) {
+			wxString vers=ExecuteScalar(wxT("SELECT current_setting('server_version_num');"));
+			sscanf(vers.ToAscii(), "%2d%04d", &majorVersion, &minorVersion);
 		}
 		// EnterpriseDB 8.3 beta 1 & 2 and possibly later actually have PostgreSQL 8.2 style
 		// catalogs. This is expected to change either before GA, but in the meantime we
@@ -545,7 +547,7 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT("  JOIN pg_namespace n ON n.oid=pronamespace\n")
 		    wxT(" WHERE proname IN ('pg_tablespace_size', 'pg_file_read', 'pg_logfile_rotate',")
 		    wxT(                  " 'pg_postmaster_starttime', 'pg_terminate_backend', 'pg_reload_conf',")
-		    wxT(                  " 'pgstattuple', 'pgstatindex')\n")
+		    wxT(                  " 'pgstattuple', 'pgstatindex','bt_index_parent_check')\n")
 		    wxT("   AND nspname IN ('pg_catalog', 'public')");
 
 		pgSet *set = ExecuteSet(sql);
@@ -556,6 +558,7 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 			{
 				wxString proname = set->GetVal(wxT("proname"));
 				long pronargs = set->GetLong(wxT("pronargs"));
+				if (BackendMinimumVersion(9, 6)) features[FEATURE_FILEREAD] = true;
 
 				if (proname == wxT("pg_tablespace_size") && pronargs == 1 && set->GetLong(wxT("arg0")) == 26)
 					features[FEATURE_SIZE] = true;
@@ -574,6 +577,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_PGSTATTUPLE] = true;
 				else if (proname == wxT("pgstatindex") && pronargs == 1 && set->GetLong(wxT("arg0")) == 25)
 					features[FEATURE_PGSTATINDEX] = true;
+				else if (proname == wxT("bt_index_parent_check") && pronargs == 2 )
+					features[FEATURE_PGCHECKINDEX] = true;
 
 				set->MoveNext();
 			}

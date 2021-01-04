@@ -354,19 +354,21 @@ wxT(") aa where aa.grantee='")+GetName()+("' group by type,objname,grantee order
 		wxString addgrant=wxEmptyString;
 		while (!roles->Eof())
 		{
+			bool ad = true;
 			if (wxT("tables")==roles->GetVal(wxT("type")) ) {
 				addgrant += wxT("\nGRANT ") + roles->GetVal(wxT("priv")) + wxT(" ON TABLE ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
 			       +  wxT(" TO ") + qtIdent(GetName());
-			}
-			if (wxT("routine")==roles->GetVal(wxT("type")) ) {
-				addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
-			       +  wxT(" TO ") + qtIdent(GetName());
-			}
-			if (wxT("schema")==roles->GetVal(wxT("type")) ) {
-				addgrant += wxT("\nGRANT USAGE ON SCHEMA ") + qtIdent(roles->GetVal(wxT("objname")))
-			       +  wxT(" TO ") + qtIdent(GetName());
-			}
-			addgrant += wxT(";");
+			} else if (wxT("routine")==roles->GetVal(wxT("type")) ) {
+					addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
+						+  wxT(" TO ") + qtIdent(GetName());
+				} else if (wxT("schema")==roles->GetVal(wxT("type")) ) {
+					addgrant += wxT("\nGRANT USAGE ON SCHEMA ") + qtIdent(roles->GetVal(wxT("objname")))
+						+  wxT(" TO ") + qtIdent(GetName());
+				}
+				else {
+				ad = false;
+				}
+			if (ad) addgrant += wxT(";");
 			roles->MoveNext();
 		}
 		sql += wxT("\n")+ addgrant + wxT("\n");

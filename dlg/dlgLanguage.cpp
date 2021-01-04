@@ -114,7 +114,7 @@ int dlgLanguage::Go(bool modal)
 	else
 	{
 		// create mode
-		if (connection->BackendMinimumVersion(8, 1))
+		if (connection->BackendMinimumVersion(8, 1)&&(!connection->BackendMinimumVersion(13, 0)))
 		{
 			pgSetIterator languages(connection,
 			                        wxT("SELECT tmplname FROM pg_pltemplate\n")
