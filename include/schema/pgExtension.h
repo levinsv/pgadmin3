@@ -89,6 +89,10 @@ class pgExtensionCollection : public pgDatabaseObjCollection
 public:
 	pgExtensionCollection(pgaFactory *factory, pgDatabase *db);
 	wxString GetTranslatedMessage(int kindOfMessage) const;
+	void SetSql(wxString& sq) { sql = sq; };
+	wxString GetSql(ctlTree* browser) { return sql; };
+	
+
 };
 
 #endif

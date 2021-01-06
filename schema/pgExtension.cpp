@@ -147,7 +147,7 @@ pgObject *pgExtensionFactory::CreateObjects(pgCollection *collection, ctlTree *b
 	wxString sql;
 	pgExtension *extension = 0;
 
-	sql = wxT("select x.oid, pg_get_userbyid(extowner) AS owner, x.extname, n.nspname, x.extrelocatable, x.extversion, e.comment")
+	sql = wxT("select x.oid, pg_get_userbyid(extowner) AS owner, x.extname, n.nspname, x.extrelocatable, x.extversion, e.comment,e.default_version")
 	      wxT("  FROM pg_extension x\n")
 	      wxT("  JOIN pg_namespace n on x.extnamespace=n.oid\n")
 	      wxT("  join pg_available_extensions() e(name, default_version, comment) ON x.extname=e.name\n")
@@ -157,6 +157,7 @@ pgObject *pgExtensionFactory::CreateObjects(pgCollection *collection, ctlTree *b
 
 	if (extensions)
 	{
+		wxString needSql="-- Extension need update\n\n";
 		while (!extensions->Eof())
 		{
 
@@ -168,7 +169,9 @@ pgObject *pgExtensionFactory::CreateObjects(pgCollection *collection, ctlTree *b
 			extension->iSetIsRelocatable(extensions->GetBool(wxT("extrelocatable")));
 			extension->iSetVersion(extensions->GetVal(wxT("extversion")));
 			extension->iSetComment(extensions->GetVal(wxT("comment")));
-
+			if (extensions->GetVal(wxT("default_version")) != extension->GetVersion()) {
+				needSql += "alter extension " + extension->GetName() + " update; -- current "+ extension->GetVersion()+" default "+ extensions->GetVal(wxT("default_version")) +"\n";
+			}
 			if (browser)
 			{
 				browser->AppendObject(collection, extension);
@@ -178,7 +181,7 @@ pgObject *pgExtensionFactory::CreateObjects(pgCollection *collection, ctlTree *b
 			else
 				break;
 		}
-
+		((pgExtensionCollection *)collection)->SetSql(needSql);
 		delete extensions;
 	}
 	return extension;
@@ -186,12 +189,10 @@ pgObject *pgExtensionFactory::CreateObjects(pgCollection *collection, ctlTree *b
 
 
 /////////////////////////////
-
 pgExtensionCollection::pgExtensionCollection(pgaFactory *factory, pgDatabase *db)
 	: pgDatabaseObjCollection(factory, db)
 {
 }
-
 
 wxString pgExtensionCollection::GetTranslatedMessage(int kindOfMessage) const
 {
