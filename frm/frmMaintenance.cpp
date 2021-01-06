@@ -64,13 +64,23 @@ frmMaintenance::frmMaintenance(frmMain *form, pgObject *obj) : ExecutionDialog(f
 #ifndef __WXGTK__
 	txtMessages->SetMaxLength(0L);
 #endif
-
+	bool iscomprss = false;
 	if (object->GetMetaType() == PGM_INDEX || object->GetMetaType() == PGM_PRIMARYKEY || object->GetMetaType() == PGM_UNIQUE)
 	{
 		rbxAction->SetSelection(2);
 		rbxAction->Enable(0, false);
 		rbxAction->Enable(1, false);
+		if (object->GetDatabase()->connection()->GetIsPgProEnt()) {
+			wxString ratio = object->GetConnection()->ExecuteScalar("select left((cfs_fragmentation("+object->GetOidStr()+")*100)::text,5)::text");
+			iscomprss = !(ratio == "NaN");
+		}
 	}
+	if (object->GetMetaType() == PGM_TABLE) {
+		pgTable* t = (pgTable *)object;
+		iscomprss = !(t->GetRatio() == "");
+
+	}
+	rbxAction->Enable(4, iscomprss);
 	wxCommandEvent ev;
 	OnAction(ev);
 }
@@ -217,6 +227,17 @@ wxString frmMaintenance::GetSql()
 					sql += wxT(" ON ") + object->GetQuotedIdentifier();
 				}
 			}
+		}
+		case 4:
+		{
+			sql = wxT("set  cfs_gc_threshold = 0;select ");
+			sql += "cfs_gc_relation(" + object->GetOidStr() + ")";
+			if (object->GetMetaType() == PGM_TABLE) {
+				//sql += object->GetQuotedFullIdentifier();
+				wxString strindex= object->GetConnection()->ExecuteScalar("select string_agg('cfs_gc_relation('||indexrelid::text||')',',') from pg_index i where indrelid=" + object->GetOidStr() + " and cfs_fragmentation(indexrelid)  between 0.01 and 1;");
+				if (strindex.Len() > 0) sql += ","+strindex;
+			}
+				
 		}
 	}
 
