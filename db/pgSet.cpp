@@ -303,7 +303,7 @@ wxDateTime pgSet::GetDateTime(const int col) const
 {
 	wxASSERT(col < nCols && col >= 0);
 
-	wxDateTime dt;
+	wxDateTime dt((time_t)-1);
 	wxString str = GetVal(col);
 	/* This hasn't just been used. ( Is not infinity ) */
 	if (!str.IsEmpty())
