@@ -145,6 +145,43 @@ void pgproJob::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 		properties->AppendItem(_("Runas"), GetRunAs());
 		properties->AppendItem(_("Message"), GetMessage());
 		properties->AppendItem(_("Comment"), firstLineOnly(GetComment()));
+		//wxDateTime dt=	GetNextSchedule_At(GetStarted(),-1);
+		wxDateTime t = wxDateTime::Now();
+		wxDateTime dt = GetStarted();
+		if (!dt.IsValid()) dt = t;
+		wxDateTime prev; 
+		while (dt<t) {
+			prev = dt;
+			dt=GetNextSchedule_At(dt, 1);
+		}
+		//dt = prev;
+		wxString str;
+		for (int i = 0; i < 100; i++) {
+
+			dt = GetNextSchedule_At(dt, -1);
+			if (dt < GetSchedMin()) break;
+			if (str.Len() > 0) str += "),(";
+			str += "'"+dt.FormatISODate() + wxT(" ") + dt.FormatISOTime()+ "'";
+		}
+		wxString sql = "with at(dt) as(select to_timestamp(t.dt,'YYY-MM-DD HH24:MI') dt from (values("+str+")) as t(dt))\n";
+		sql += "select dt,status from at left join schedule.get_log() b on b.scheduled_at=dt and b.cron="+ NumToStr(GetRecId())+" where b.scheduled_at is null;";
+		pgSet* jobs = GetConnection()->ExecuteSet(sql);
+
+
+		if (jobs)
+		{
+			wxString str;
+			while (!jobs->Eof())
+			{
+
+				str+=jobs->GetVal(wxT("dt"))+";";
+				jobs->MoveNext();
+			}
+			delete jobs;
+			if (str.Len()>0) properties->AppendItem(_("Previous sched time run skip"), str);
+		}
+		
+
 	}
 }
 
@@ -167,15 +204,17 @@ pgObject *pgproJob::Refresh(ctlTree *browser, const wxTreeItemId item)
 pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *browser, const wxString &restriction)
 {
 	pgproJob *job = 0;
-	wxString sql=    wxT("with last_job as (select cron,max(started) started from schedule.get_log() b group by cron), a as (select cron,scheduled_at,started,finished,status,message from schedule.get_active_jobs()), lastj as (select b.cron,")
+	wxString sql=    wxT("with last_job as (select cron,max(started) started,min(scheduled_at) scheduled_at_min from schedule.get_log() b group by cron)")
+					  wxT(", a as (select cron,scheduled_at,started,finished,status,message from schedule.get_active_jobs()), lastj as (select b.cron,")
 					  wxT("coalesce((select scheduled_at from a where a.cron=b.cron),b.scheduled_at) scheduled_at")
 					  wxT(",coalesce((select started from a where a.cron=b.cron),b.started) started")
 					  wxT(",case when (select status from a where a.cron=b.cron)='working' then null else b.finished end finished")
 					  wxT(",coalesce((select status from a where a.cron=b.cron),b.status) status")
 					  wxT(",coalesce((select message from a where a.cron=b.cron),b.message) message")
+					  wxT(",scheduled_at_min")
 					  wxT(" from schedule.get_log() b,last_job where b.cron=last_job.cron and b.started=last_job.started")
-					  wxT(") select j.crontab cron,* from (select c.*,null stop,l.* from schedule.get_cron() c left join lastj l on c.id=l.cron) c")
-					  wxT(" join lateral (select crontab from jsonb_to_record(c.rule) as (d int[],h int[],wd int[],m int[],crontab text,mi int[]) ) j on true")
+					  wxT(") select j.crontab cron,j.days,j.hours,j.wdays,j.months,j.minutes,* from (select c.*,null stop,l.* from schedule.get_cron() c left join lastj l on c.id=l.cron) c")
+					  wxT(" join lateral (select crontab,days,hours,wdays,months,minutes from jsonb_to_record(c.rule) as (days int[],hours int[],wdays int[],months int[],crontab text,minutes int[]) ) j on true")
 					  wxT("")
 					  wxT("")
 	                  wxT(" ") + restriction;
@@ -212,8 +251,9 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 			if (tmp.find('{',0)==0) { tmp=wxT("[")+tmp.Mid(1,tmp.Len()-2)+wxT("]");  }
 			//tmp.Replace(wxT("{"), wxT("["),false);
 			//tmp.Replace(wxT("}"), wxT("]"));
-
-			
+			// days,hours,wdays,months,minutes
+			job->iSetSched(job->GetRecId(), jobs->GetVal("minutes"), jobs->GetVal("hours"), jobs->GetVal("days"), jobs->GetVal("wdays"), jobs->GetVal("months"));
+			job->iSetSchedMin(jobs->GetDateTime(wxT("scheduled_at_min")));
 			job->iSetCommands(tmp);
 			job->iSetRunAs(jobs->GetVal(wxT("run_as")));
 			job->iSetStarted(jobs->GetDateTime(wxT("started")));
@@ -234,6 +274,12 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 						if (colname==wxT("id")
 							||colname==wxT("node")
 							||colname==wxT("rule")
+							||colname == wxT("minutes")
+							||colname == wxT("days")
+							||colname == wxT("wdays")
+							||colname == wxT("hours")
+							||colname == wxT("months")
+							||colname == wxT("scheduled_at_min")
 							||colname==wxT("owner")) continue;
 						
 						if (colname==wxT("broken")) break;

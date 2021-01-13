@@ -53,6 +53,145 @@ public:
 	{
 		return crontab;
 	}
+	void iSetSched(int cron, wxString &mi, wxString& h, wxString& d, wxString& wd, wxString& mon)
+	{
+		for (int i = 0; i < 60; i++) _mi[i] = false;
+		for (int i = 0; i < 24; i++) _h[i] = false;
+		for (int i = 0; i < 31; i++) _d[i] = false;
+		for (int i = 0; i < 7; i++) _wd[i] = false;
+		for (int i = 0; i < 12; i++) _mon[i] = false;
+
+		wxStringTokenizer confkey(mi.substr(1,mi.Len()-1),",");
+		while (confkey.HasMoreTokens())
+		{
+			wxString str = confkey.GetNextToken();
+			long j = atol(str.ToAscii());
+			_mi[j] = true;
+		}
+		confkey.SetString(h.substr(1, h.Len() - 1),",");
+		while (confkey.HasMoreTokens())
+		{
+			wxString str = confkey.GetNextToken();
+			long j = atol(str.ToAscii());
+			_h[j] = true;
+		}
+		confkey.SetString(wd.substr(1, wd.Len() - 1), ",");
+		while (confkey.HasMoreTokens())
+		{
+			wxString str = confkey.GetNextToken();
+			long j = atol(str.ToAscii());
+			_wd[j] = true;
+		}
+		confkey.SetString(d.substr(1, d.Len() - 1), ",");
+		while (confkey.HasMoreTokens())
+		{
+			wxString str = confkey.GetNextToken();
+			long j = atol(str.ToAscii())-1;
+			_d[j] = true;
+		}
+		confkey.SetString(mon.substr(1, mon.Len() - 1), ",");
+		while (confkey.HasMoreTokens())
+		{
+			wxString str = confkey.GetNextToken();
+			long j = atol(str.ToAscii())-1;
+			_mon[j] = true;
+		}
+	}
+	// получить индекс следующего элемента или -1 если его уже нет.
+	int getnext(bool array[],int len,int pos, int direct) {
+		//int len = sizeof(array) / sizeof(array[0]);
+		int mi = pos;
+		do {
+			mi = mi + direct;
+			if (mi > -1 && mi < len) {
+
+			}
+			else {
+				if (direct == 1 && mi == len) mi = 0;
+				if (direct == -1 && mi < 0) mi = len - 1;
+				mi = -1;
+				break;
+			}
+		} while (!array[mi]);
+
+		// возвращает -1 если нет слудующего элемента.
+		return mi;
+	}
+	// получить индекс первый/последний элемента
+	int getfirst(bool array[], int len, int direct) {
+		int mi = -1;
+		if (direct == -1) mi = len ;
+		do {
+			mi = mi + direct;
+			if (mi > -1 && mi < len) {
+
+
+			}
+			else {
+				if (direct == 1 && mi == len) mi = 0;
+				if (direct == -1 && mi < 0) mi = len - 1;
+				mi = -1;
+				break;
+			}
+		} while (!array[mi]);
+		return mi;
+	}
+
+	wxDateTime GetNextSchedule_At(wxDateTime prev_at, int dr) {
+		int mi = prev_at.GetMinute();
+		int h = prev_at.GetHour();
+		int d = prev_at.GetDay()-1;
+		int wd=prev_at.GetWeekDay();
+		int mon = prev_at.GetMonth();
+		int y = prev_at.GetYear();
+		bool novalid = false;
+
+		int nextp = getnext(_mi, sizeof(_mi) / sizeof(_mi[0]),mi, dr);
+		if (nextp == -1) {
+			mi = getfirst(_mi, sizeof(_mi) / sizeof(_mi[0]), dr);
+			nextp = getnext(_h, sizeof(_h) / sizeof(_h[0]), h, dr);
+			if (nextp == -1) {
+				// hours
+				h = getfirst(_h, sizeof(_h) / sizeof(_h[0]), dr);
+				do {
+					nextp = getnext(_d, sizeof(_d) / sizeof(_d[0]), d, dr);
+					if (nextp == -1) {
+						// days
+						d = getfirst(_d, sizeof(_d) / sizeof(_d[0]), dr);
+						nextp = getnext(_mon, sizeof(_mon) / sizeof(_mon[0]), mon, dr);
+						if (nextp == -1) {
+							// mon
+							mon = getfirst(_mon, sizeof(_mon) / sizeof(_mon[0]), dr);
+							y = y + dr;
+						}
+						else mon = nextp;
+
+					}
+					else d = nextp;
+					// day next 
+					// проверим соответствие wdays
+					wxDateTime tmp((wxDateTime::wxDateTime_t) d + 1, (wxDateTime::Month) mon, y, (wxDateTime::wxDateTime_t)h, (wxDateTime::wxDateTime_t)mi);
+					novalid = !tmp.IsValid();
+					wd = tmp.GetWeekDay();
+					//if (nextp == -1) nextp=getfirst(_wd, dr);
+				} while (!_wd[wd] || novalid);
+
+			}
+			else h = nextp;
+		}
+		else mi = nextp;
+		//
+		wxDateTime tmp((wxDateTime::wxDateTime_t) d+1, (wxDateTime::Month) mon, y, (wxDateTime::wxDateTime_t)h, (wxDateTime::wxDateTime_t)mi);
+		return tmp;
+	}
+	wxDateTime GetSchedMin() const
+	{
+		return sched_min;
+	}
+	void iSetSchedMin(const wxDateTime& d)
+	{
+		sched_min = d;
+	}
 	void iSetCrontab(const wxString &s)
 	{
 		crontab = s;
@@ -186,8 +325,9 @@ public:
 
 private:
 	bool enabled;
-	wxDateTime finished, changed, nextrun, lastrun;
+	wxDateTime finished, changed, nextrun, lastrun,sched_min;
 	wxString message, crontab, runas, commands,status,rule,tryname;
+	bool _d[31], _h[24], _mi[60], _wd[7], _mon[12];
 	long recId;
 };
 
