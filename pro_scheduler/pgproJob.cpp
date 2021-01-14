@@ -185,6 +185,19 @@ void pgproJob::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 	}
 }
 
+bool pgproJob::NeedRefresh()
+{
+	wxDateTime t = wxDateTime::Now();
+	if (t >= nextrefresh) {
+
+		wxTimeSpan m(0, 5);
+
+		t.Add(m);
+		nextrefresh = t;
+		return true;
+	}
+	return false;
+}
 
 
 pgObject *pgproJob::Refresh(ctlTree *browser, const wxTreeItemId item)
