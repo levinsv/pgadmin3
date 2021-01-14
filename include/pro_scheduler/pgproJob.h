@@ -48,6 +48,7 @@ public:
 	bool DropObject(wxFrame *frame, ctlTree *browser, bool cascaded);
 	wxString GetTranslatedMessage(int kindOfMessage) const;
 	wxString GetSql(ctlTree *browser);
+	bool NeedRefresh();
 
 	wxString GetCrontab() const
 	{
@@ -322,10 +323,11 @@ public:
 	{
 		return wxT("pgagent-jobs");
 	}
-
+	
 private:
 	bool enabled;
 	wxDateTime finished, changed, nextrun, lastrun,sched_min;
+	wxDateTime nextrefresh;
 	wxString message, crontab, runas, commands,status,rule,tryname;
 	bool _d[31], _h[24], _mi[60], _wd[7], _mon[12];
 	long recId;

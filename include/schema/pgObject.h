@@ -93,7 +93,11 @@ public:
 	static bool     findUserPrivs(wxString &, wxString &, wxString &);
 
 	static int GetTypeId(const wxString &typname);
-
+	
+	virtual bool NeedRefresh()
+	{
+		return false;
+	}
 	pgaFactory *GetFactory()
 	{
 		return factory;

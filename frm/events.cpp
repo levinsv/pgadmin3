@@ -511,6 +511,7 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 	else
 	{
 		int settingRefreshOnClick = settings->GetRefreshOnClick();
+		if (currentObject->NeedRefresh()) settingRefreshOnClick = REFRESH_OBJECT_ONLY;
 
 		if (settingRefreshOnClick != REFRESH_OBJECT_NONE
 		        && refresh
