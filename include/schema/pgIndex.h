@@ -354,5 +354,13 @@ public:
 	bool CheckEnable(pgObject* obj);
 };
 
+class resetIndexStatsFactory : public contextActionFactory
+{
+public:
+	resetIndexStatsFactory(menuFactoryList* list, wxMenu* mnu, ctlMenuToolbar* toolbar);
+	wxWindow* StartDialog(frmMain* form, pgObject* obj);
+	bool CheckEnable(pgObject* obj);
+};
+
 
 #endif

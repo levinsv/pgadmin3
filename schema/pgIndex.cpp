@@ -547,6 +547,34 @@ bool executePgstatindexFactory::CheckChecked(pgObject *obj)
 
 	return false;
 }
+resetIndexStatsFactory::resetIndexStatsFactory(menuFactoryList* list, wxMenu* mnu, ctlMenuToolbar* toolbar) : contextActionFactory(list)
+{
+	mnu->Append(id, _("&Reset index statistics"), _("Reset statistics of the selected index."));
+}
+
+
+wxWindow* resetIndexStatsFactory::StartDialog(frmMain* form, pgObject* obj)
+{
+	if (wxMessageBox(_("Are you sure you wish to reset statistics of this index?"), _("Reset statistics"), wxYES_NO) != wxYES)
+		return 0;
+
+	wxString sql = wxT("SELECT pg_stat_reset_single_table_counters(")
+		+ NumToStr(obj->GetOid())
+		+ wxT(")");
+	obj->GetDatabase()->ExecuteVoid(sql);
+
+	((pgIndexBase*)obj)->ShowStatistics(form, form->GetStatistics());
+
+	return 0;
+}
+
+
+bool resetIndexStatsFactory::CheckEnable(pgObject* obj)
+{
+	return obj &&
+		(obj->IsCreatedBy(indexFactory) || obj->IsCreatedBy(primaryKeyFactory)
+			|| obj->IsCreatedBy(uniqueFactory) || obj->IsCreatedBy(excludeFactory));
+}
 
 
 pgIndex::pgIndex(pgSchema *newSchema, const wxString &newName)
