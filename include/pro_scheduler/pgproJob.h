@@ -50,10 +50,6 @@ public:
 	wxString GetSql(ctlTree *browser);
 	bool NeedRefresh();
 
-	wxString GetCrontab() const
-	{
-		return crontab;
-	}
 	void iSetSched(int cron, wxString &mi, wxString& h, wxString& d, wxString& wd, wxString& mon)
 	{
 		for (int i = 0; i < 60; i++) _mi[i] = false;
@@ -193,6 +189,10 @@ public:
 	{
 		sched_min = d;
 	}
+	wxString GetCrontab() const
+	{
+		return crontab;
+	}
 	void iSetCrontab(const wxString &s)
 	{
 		crontab = s;
@@ -261,11 +261,24 @@ public:
 	{
 		runas = s;
 	}
-	
+	void iSetSameTransaction(bool b)
+	{
+		use_same_transaction = b;
+	}
+	bool GetSameTransaction()
+	{
+		return use_same_transaction;
+	}
+
 	wxString GetTryName() const
 	{
 		return tryname;
 	}
+	wxString GetFullName()
+	{
+		return GetName() + wxT("(") + NumToStr(recId) + wxT(")");
+	}
+
 	void iSetTryName(const wxString &s)
 	{
 		tryname = s;
@@ -308,7 +321,7 @@ public:
 	}
 	bool CanEdit()
 	{
-		return false;
+		return true;
 	}
 	bool CanDrop()
 	{
@@ -325,7 +338,7 @@ public:
 	}
 	
 private:
-	bool enabled;
+	bool enabled, use_same_transaction;
 	wxDateTime finished, changed, nextrun, lastrun,sched_min;
 	wxDateTime nextrefresh;
 	wxString message, crontab, runas, commands,status,rule,tryname;

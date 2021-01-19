@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<resource>
+	<object class="wxDialog" name="dlgProJob">
+		<style>wxDEFAULT_DIALOG_STYLE|wxCAPTION|wxSYSTEM_MENU|wxRESIZE_BORDER</style>
+		<title></title>
+		<object class="wxFlexGridSizer">
+			<rows>0</rows>
+			<cols>1</cols>
+			<vgap>0</vgap>
+			<hgap>0</hgap>
+			<growablecols>0</growablecols>
+			<growablerows>0</growablerows>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND|wxALIGN_CENTER|wxALL</flag>
+				<border>3</border>
+				<object class="wxNotebook" name="nbNotebook">
+					<object class="notebookpage">
+						<label>Properties</label>
+						<selected>1</selected>
+						<object class="wxPanel" name="pnlProperties">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxFlexGridSizer">
+								<rows>0</rows>
+								<cols>2</cols>
+								<vgap>5</vgap>
+								<hgap>5</hgap>
+								<growablecols>1</growablecols>
+								<growablerows>8</growablerows>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stName">
+										<label>Name</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxTextCtrl" name="txtName">
+										<value></value>
+										<maxlength>0</maxlength>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stID">
+										<label>ID</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxTextCtrl" name="txtID">
+										<value></value>
+										<maxlength>0</maxlength>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stEnabled">
+										<label>Enabled</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxCheckBox" name="chkEnabled">
+										<label></label>
+										<checked>1</checked>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stOwner">
+										<label>Owner</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<flag>wxALL</flag>
+									<border>5</border>
+									<object class="ctlComboBox" name="cbOwner">
+										<style>wxCB_READONLY|wxCB_DROPDOWN</style>
+										<value></value>
+										<content />
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALL</flag>
+									<border>5</border>
+									<object class="wxStaticText" name="stRunAs">
+										<label>Run as</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<flag>wxALL</flag>
+									<border>5</border>
+									<object class="ctlComboBox" name="cbRunAs">
+										<style>wxCB_READONLY|wxCB_DROPDOWN</style>
+										<value></value>
+										<content />
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stCrontab">
+										<label>Crontab</label>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxTextCtrl" name="txtCron">
+										<value></value>
+										<maxlength>0</maxlength>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stNextrun">
+										<label>Next run</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxTextCtrl" name="txtNextrun">
+										<value></value>
+										<style>wxTE_READONLY</style>
+										<maxlength>0</maxlength>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stLastrun">
+										<label>Last run</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxTextCtrl" name="txtLastrun">
+										<style>wxTE_READONLY</style>
+										<value></value>
+										<maxlength>0</maxlength>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<border>4</border>
+									<object class="wxStaticText" name="stComment">
+										<label>Comment</label>
+										<wrap>0</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+									<border>4</border>
+									<object class="wxTextCtrl" name="txtComment">
+										<style>wxTE_MULTILINE</style>
+										<value></value>
+										<maxlength>0</maxlength>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="notebookpage">
+						<label>Commands</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="pnlSteps">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxFlexGridSizer">
+								<rows>0</rows>
+								<cols>1</cols>
+								<vgap>5</vgap>
+								<hgap>5</hgap>
+								<growablecols>0</growablecols>
+								<growablerows>0</growablerows>
+								<object class="sizeritem">
+                  <object class="ctlSQLBox" name="txtSqlBox">
+                    <style>wxTE_MULTILINE|wxSUNKEN_BORDER|wxTE_RICH2</style>
+                  </object>
+                  <flag>wxALL|wxEXPAND</flag>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+									<border>0</border>
+									<object class="wxFlexGridSizer">
+										<rows>0</rows>
+										<cols>5</cols>
+										<vgap>3</vgap>
+										<hgap>3</hgap>
+										<growablecols>0</growablecols>
+										<growablerows></growablerows>
+										<object class="spacer">
+											<option>0</option>
+											<flag></flag>
+											<border>0</border>
+											<size>0,0</size>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxCheckBox" name="chkSameTran">
+												<label>use same transaction</label>
+												<checked>0</checked>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+				<border>0</border>
+				<object class="wxFlexGridSizer">
+					<rows>0</rows>
+					<cols>4</cols>
+					<vgap>0</vgap>
+					<hgap>0</hgap>
+					<growablecols>1</growablecols>
+					<growablerows></growablerows>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND|wxALL</flag>
+						<border>3</border>
+						<object class="wxButton" name="wxID_HELP">
+							<label>Help</label>
+							<default>0</default>
+							<markup>0</markup>
+							<bitmap />
+						</object>
+					</object>
+					<object class="spacer">
+						<option>0</option>
+						<flag></flag>
+						<border>0</border>
+						<size>0,0</size>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND|wxALL</flag>
+						<border>3</border>
+						<object class="wxButton" name="wxID_OK">
+							<label>&amp;OK</label>
+							<default>1</default>
+							<markup>0</markup>
+							<bitmap />
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND|wxALL</flag>
+						<border>3</border>
+						<object class="wxButton" name="wxID_CANCEL">
+							<label>&amp;Cancel</label>
+							<default>0</default>
+							<markup>0</markup>
+							<bitmap />
+						</object>
+					</object>
+				</object>
+			</object>
+		</object>
+	</object>
+</resource>
