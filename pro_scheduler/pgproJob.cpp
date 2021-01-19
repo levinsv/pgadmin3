@@ -132,7 +132,7 @@ void pgproJob::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 	{
 		CreateListColumns(properties);
 
-		properties->AppendItem(_("Name"), GetTryName());
+		properties->AppendItem(_("Name"), GetName());
 		properties->AppendItem(_("ID"), GetRecId());
 		properties->AppendYesNoItem(_("Enabled"), GetEnabled());
 		//properties->AppendItem(_("Host agent"), GetHostAgent());
@@ -142,6 +142,7 @@ void pgproJob::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 		properties->AppendItem(_("Result"), GetStatus());
 		properties->AppendItem(_("Crontab"), GetCrontab());
 		//properties->AppendItem(_("Last result"), GetLastresult());
+		properties->AppendItem(_("Owner"), GetOwner());
 		properties->AppendItem(_("Runas"), GetRunAs());
 		properties->AppendItem(_("Message"), GetMessage());
 		properties->AppendItem(_("Comment"), firstLineOnly(GetComment()));
@@ -249,10 +250,11 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 			status=jobs->GetVal(wxT("status"));
 			if (status.IsNull()) status = _("Not run");
 
-			wxString name=jobs->GetVal(wxT("name"))+wxT("(")+jobs->GetVal(wxT("id"))+wxT(")");
-			job = new pgproJob(name);
+			///wxString name=jobs->GetVal(wxT("name"))+wxT("(")+jobs->GetVal(wxT("id"))+wxT(")");
+			
+			job = new pgproJob(jobs->GetVal(wxT("name")));
 			job->iSetStatus(status);
-			job->iSetTryName(jobs->GetVal(wxT("name")));
+			job->iSetOwner(jobs->GetVal(wxT("owner")));
 			job->iSetServer(collection->GetServer());
 			job->iSetRecId(jobs->GetLong(wxT("id")));
 			job->iSetComment(jobs->GetVal(wxT("comments")));
@@ -270,6 +272,8 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 			job->iSetCommands(tmp);
 			job->iSetRunAs(jobs->GetVal(wxT("run_as")));
 			job->iSetStarted(jobs->GetDateTime(wxT("started")));
+			job->iSetSameTransaction(jobs->GetBool(wxT("use_same_transaction")));
+			
 
 			job->iSetFinished(jobs->GetDateTime(wxT("finished")));
 			job->iSetCrontab(jobs->GetVal(wxT("crontab")));
@@ -291,6 +295,7 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 							||colname == wxT("days")
 							||colname == wxT("wdays")
 							||colname == wxT("hours")
+							|| colname == wxT("active")
 							||colname == wxT("months")
 							||colname == wxT("scheduled_at_min")
 							||colname==wxT("owner")) continue;
@@ -298,9 +303,9 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 						if (colname==wxT("broken")) break;
 						if (columnCount)
 						{
-							tmp += wxT(", ");
+							tmp += wxT("\n,");
 						}
-						if (colname==wxT("commands")) vl=vl.Mid(1,vl.Length()-2);
+						if (colname==wxT("commands")) vl="["+vl.Mid(1,vl.Length()-2)+"]";
 						else vl=wxT("\"")+vl+wxT("\"");
 						
 						tmp += wxT("\"")+colname+wxT("\"")+wxT(": ")+vl;
@@ -425,10 +430,10 @@ void pgproJob::SetEnabled(ctlTree *browser, const bool b)
 	UpdateIcon(browser);
 }
 
-dlgProperty *pgproJobFactory::CreateDialog(frmMain *frame, pgObject *node, pgObject *parent)
-{
-	return 0;
-}
+//dlgProperty *pgproJobFactory::CreateDialog(frmMain *frame, pgObject *node, pgObject *parent)
+//{
+//	return 0;
+//}
 
 
 /////////////////////////////
@@ -440,7 +445,7 @@ dlgProperty *pgproJobFactory::CreateDialog(frmMain *frame, pgObject *node, pgObj
 #include "images/jobrun.pngc"
 
 pgproJobFactory::pgproJobFactory()
-	: pgServerObjFactory(__("pgAgent Job"), __("New Job"), __("Create a new Job."), job_png_img)
+	: pgServerObjFactory(__("pgpro_Scheduler Job"), __("New Job"), __("Create a new Job."), job_png_img)
 {
 	metaType = PGM_PROJOB;
 	disabledId = addIcon(jobdisabled_png_img);

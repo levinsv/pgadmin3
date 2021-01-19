@@ -868,6 +868,7 @@
     <ClCompile Include="dlg\dlgOperator.cpp" />
     <ClCompile Include="dlg\dlgPackage.cpp" />
     <ClCompile Include="dlg\dlgPgpassConfig.cpp" />
+    <ClCompile Include="dlg\dlgProJob.cpp" />
     <ClCompile Include="dlg\dlgProperty.cpp" />
     <ClCompile Include="dlg\dlgReassignDropOwned.cpp" />
     <ClCompile Include="dlg\dlgResourceGroup.cpp" />
@@ -1525,6 +1526,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\copyright.h" />
+    <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
     <ClInclude Include="include\pgAdmin3.h" />
     <ClInclude Include="include\postgres.h" />

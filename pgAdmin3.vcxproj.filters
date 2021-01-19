@@ -1632,6 +1632,9 @@
     <ClCompile Include="utils\diff_match_patch.cc">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="dlg\dlgProJob.cpp">
+      <Filter>dlg</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -3484,6 +3487,9 @@
     </ClInclude>
     <ClInclude Include="utils\diff_match_patch.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dlg\dlgProJob.h">
+      <Filter>include\dlg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
