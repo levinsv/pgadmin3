@@ -310,8 +310,17 @@ void frmMain::OnStatSelChanged(wxListEvent& event)
 		{
 			wxString table = statistics->GetItemText(event.GetIndex(), 0);
 			wxCookieType cookie;
-			wxTreeItemId idstop= browser->GetNextSibling(item);
-			if (!idstop.IsOk()) return;
+			wxTreeItemId idstop;
+			//if (!idstop.IsOk()) return;
+			wxTreeItemId p = item;
+			wxTreeItemId toFind;
+			do
+			{
+				toFind = browser->GetNextSibling(p);
+				p = browser->GetItemParent(p);
+			} while (p.IsOk() && !toFind.IsOk());
+			idstop = toFind;
+
 			//item = browser->GetFirstChild(item, cookie);
 			wxTreeItemId id = item;
 			wxString fn = "";
