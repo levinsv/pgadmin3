@@ -148,6 +148,9 @@ void pgproJob::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 		properties->AppendItem(_("Comment"), firstLineOnly(GetComment()));
 		//wxDateTime dt=	GetNextSchedule_At(GetStarted(),-1);
 		wxDateTime t = wxDateTime::Now();
+		wxDateTime nextdt = GetNextSchedule_At(t, 1);
+		properties->AppendItem(_("Next start job"), nextdt);
+		
 		wxDateTime dt = GetStarted();
 		if (!dt.IsValid()) dt = t;
 		wxDateTime prev; 

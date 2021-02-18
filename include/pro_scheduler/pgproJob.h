@@ -144,10 +144,10 @@ public:
 		bool novalid = false;
 
 		int nextp = getnext(_mi, sizeof(_mi) / sizeof(_mi[0]),mi, dr);
-		if (nextp == -1) {
+		if (nextp == -1 || !_wd[wd]) {
 			mi = getfirst(_mi, sizeof(_mi) / sizeof(_mi[0]), dr);
 			nextp = getnext(_h, sizeof(_h) / sizeof(_h[0]), h, dr);
-			if (nextp == -1) {
+			if (nextp == -1 || !_wd[wd]) {
 				// hours
 				h = getfirst(_h, sizeof(_h) / sizeof(_h[0]), dr);
 				do {
