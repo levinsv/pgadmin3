@@ -614,7 +614,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxString perspective;
 	settings->Read(wxT("frmQuery/Perspective-") + wxString(FRMQUERY_PERSPECTIVE_VER), &perspective, FRMQUERY_DEFAULT_PERSPECTIVE);
 	manager.LoadPerspective(perspective, true);
-
+	outputPaneInfo = manager.SavePerspective();
 	// and reset the captions for the current language
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
 	manager.GetPane(wxT("databaseBar")).Caption(_("Connection bar"));
@@ -945,9 +945,11 @@ void frmQuery::OnToggleOutputPane(wxCommandEvent &event)
 	if (viewMenu->IsChecked(MNU_OUTPUTPANE))
 	{
 		manager.GetPane(wxT("outputPane")).Show(true);
+		manager.LoadPerspective(outputPaneInfo);
 	}
 	else
 	{
+		outputPaneInfo = manager.SavePerspective();
 		manager.GetPane(wxT("outputPane")).Show(false);
 	}
 	manager.Update();
