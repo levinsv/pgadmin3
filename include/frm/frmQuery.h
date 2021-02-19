@@ -125,6 +125,7 @@ private:
 	wxAuiManager manager;
 	ctlSQLBox *sqlQuery;
 	ctlAuiNotebook *outputPane;
+	wxString outputPaneInfo;
 	ctlSQLResult *sqlResult;
 #define MAX_RESULT_COUNT 10
 	ctlSQLResult *ctlSQL[MAX_RESULT_COUNT];
