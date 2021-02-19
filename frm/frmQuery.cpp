@@ -242,7 +242,64 @@ private:
 	frmQuery *m_fquery;
 };
 
+void frmQuery::seticon()
+{
+	wxString str;
+	wxString filename;
 
+	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\icons\\");
+	wxString db = conn->GetDbname();
+	wxString host = conn->GetHostName();
+
+
+	wxString f = tempDir + host+"_"+db+wxT(".png");
+	if (!wxFileExists(f)) {
+		f = tempDir + host + wxT(".png");
+			if (!wxFileExists(f)) {
+				f = tempDir + db + wxT(".png");
+				if (!wxFileExists(f)) f = "";
+			}
+	}
+	while (!f.empty())
+	{
+		wxIcon* ico = new wxIcon();
+		wxBitmap bitmap(f, wxBITMAP_TYPE_PNG);
+		if (!bitmap.Ok())
+		{
+			wxMessageBox(wxT("Sorry, could not load png file.\n")+f);
+		}
+		ico->CopyFromBitmap(bitmap);
+		//SetIcon(*sql_32_png_ico);
+		SetIcon(*ico);
+		return;
+		//f = wxFindNextFile();
+	}
+	
+	wxColor cl=GetServerColour(conn);
+	int rgb = cl.GetRGB();
+	int b = (rgb >> 16) & 255;
+	int g = (rgb >> 8) & 255;
+	int r = rgb & 255;
+	if (r == 255 && g == 255 && b == 255) {
+		SetIcon(*sql_32_png_ico);
+	}
+	else {
+
+		wxImage img = *sql_32_png_img;
+		int w = img.GetWidth();
+		int h = img.GetHeight();
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++) {
+				if (img.IsTransparent(x, y)) img.SetRGB(x, y, r, g, b);
+			}
+		//wxIcon ico=img.
+		wxIcon* ico = new wxIcon();
+		wxBitmap* bmp = new wxBitmap(img);
+		ico->CopyFromBitmap(*bmp);
+		//SetIcon(*sql_32_png_ico);
+		SetIcon(*ico);
+	}
+}
 frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const wxString &query, const wxString &file)
 	: pgFrame(NULL, _title),
 	  timer(this, CTL_TIMERFRM),
@@ -271,8 +328,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	manager.SetFlags(wxAUI_MGR_DEFAULT | wxAUI_MGR_TRANSPARENT_DRAG);
 
 	SetMinSize(wxSize(450, 300));
-
-	SetIcon(*sql_32_png_ico);
+	//seticon();
 	SetFont(settings->GetSystemFont());
 	menuBar = new wxMenuBar();
 
@@ -1258,7 +1314,7 @@ void frmQuery::OnChangeConnection(wxCommandEvent &ev)
 		pgScript->SetConnection(conn);
 		title = wxT("Query - ") + cbConnection->GetValue();
 		setExtendedTitle();
-
+		seticon();
 		//Refresh GQB Tree if used
 		if(conn && !firstTime)
 		{

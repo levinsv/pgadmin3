@@ -164,6 +164,7 @@ private:
 	void OnAdjustSizesTimer(wxTimerEvent &event);
 	void OnResizeHorizontally(wxSplitterEvent &event);
 	void adjustGQBSizes();
+	void seticon();
 	bool updateFromGqb(bool executing);
 	ctlAuiNotebook *sqlNotebook;
 	gqbModel *model;
