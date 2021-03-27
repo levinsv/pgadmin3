@@ -129,9 +129,9 @@ wxString pgIndexBase::GetCreate()
 		if (!this->GetOperatorClasses().IsNull())
 			str += wxT(" ") + GetOperatorClasses();
 	}
-
 	str += wxT(")");
 
+	if (!colInclude.IsEmpty()) str += "\n  INCLUDE (" + colInclude + ")";
 //	if (GetConnection()->BackendMinimumVersion(8, 2) && GetFillFactor().Length() > 0)
 //		str += wxT("\n  WITH (FILLFACTOR=") + GetFillFactor() + wxT(")");
 	if (GetConnection()->BackendMinimumVersion(8, 2) && GetRelOptions().Length() > 0)
@@ -185,11 +185,6 @@ void pgIndexBase::ReadColumnDetails()
 
 			for (i = 1 ; i <= columnCount ; i++)
 			{
-				if (i > 1)
-				{
-					columns += wxT(", ");
-					quotedColumns += wxT(", ");
-				}
 
 				wxString options, coldef, opcname;
 				if (GetConnection()->BackendMinimumVersion(8, 3))
@@ -206,6 +201,10 @@ void pgIndexBase::ReadColumnDetails()
 					        wxT("  CASE WHEN (o.opcdefault = FALSE) THEN o.opcname ELSE null END AS opcname\n");
 					if (GetConnection()->BackendMinimumVersion(9, 1))
 						query += wxT(",\n  coll.collname, nspc.nspname as collnspname\n");
+					if (GetConnection()->BackendMinimumVersion(10, 0))
+						query += ","+ NumToStr(i)+" <= i.indnkeyatts AS is_key\n"; 
+						else query += ",true AS is_key\n";
+
 					query += wxT("FROM pg_index i\n")
 					         wxT("JOIN pg_attribute a ON (a.attrelid = i.indexrelid AND attnum = ") + NumToStr(i) + wxT(")\n") +
 					         wxT("LEFT OUTER JOIN pg_opclass o ON (o.oid = i.indclass[") + NumToStr((long)(i - 1)) + wxT("])\n") +
@@ -232,75 +231,88 @@ void pgIndexBase::ReadColumnDetails()
 				if (res->NumRows() > 0)
 				{
 					coldef = res->GetVal(wxT("coldef"));
-
-					if (GetConnection()->BackendMinimumVersion(9, 1) && !indexconstraint)
-					{
-						wxString collation = wxEmptyString;
-						if (!res->GetVal(wxT("collname")).IsEmpty())
-						{
-							collation = qtIdent(res->GetVal(wxT("collnspname"))) + wxT(".") + qtIdent(res->GetVal(wxT("collname")));
-							coldef += wxT(" COLLATE ") + collation;
-						}
-						collationsArray.Add(collation);
+					if (!res->GetBool(wxT("is_key"))) {
+						if (!colInclude.IsEmpty()) colInclude += wxT(", ");
+						colInclude += coldef;
 					}
-					else
+					else 
 					{
-						collationsArray.Add(wxEmptyString);
-					}
 
-					opcname = res->GetVal(wxT("opcname"));
-					opclassesArray.Add(opcname);
-					if (!opcname.IsEmpty())
-						coldef += wxT(" ") + opcname;
 
-					// Get the column options
-					if (GetConnection()->BackendMinimumVersion(8, 3))
-					{
-						long opt = res->GetLong(wxT("options"));
-
-						if (opt && (opt & 0x0001)) // Descending...
+						if (GetConnection()->BackendMinimumVersion(9, 1) && !indexconstraint)
 						{
-							ordersArray.Add(wxT("DESC"));
-							coldef += wxT(" DESC");
-							// NULLS FIRST is the default for descending
-							if (!(opt && (opt & 0x0002)))
+							wxString collation = wxEmptyString;
+							if (!res->GetVal(wxT("collname")).IsEmpty())
 							{
-								nullsArray.Add(wxT("NULLS LAST"));
-								coldef += wxT(" NULLS LAST");
+								collation = qtIdent(res->GetVal(wxT("collnspname"))) + wxT(".") + qtIdent(res->GetVal(wxT("collname")));
+								coldef += wxT(" COLLATE ") + collation;
 							}
-							else
+							collationsArray.Add(collation);
+						}
+						else
+						{
+							collationsArray.Add(wxEmptyString);
+						}
+
+						opcname = res->GetVal(wxT("opcname"));
+						opclassesArray.Add(opcname);
+						if (!opcname.IsEmpty())
+							coldef += wxT(" ") + opcname;
+
+						// Get the column options
+						if (GetConnection()->BackendMinimumVersion(8, 3))
+						{
+							long opt = res->GetLong(wxT("options"));
+
+							if (opt && (opt & 0x0001)) // Descending...
 							{
-								nullsArray.Add(wxEmptyString);
+								ordersArray.Add(wxT("DESC"));
+								coldef += wxT(" DESC");
+								// NULLS FIRST is the default for descending
+								if (!(opt && (opt & 0x0002)))
+								{
+									nullsArray.Add(wxT("NULLS LAST"));
+									coldef += wxT(" NULLS LAST");
+								}
+								else
+								{
+									nullsArray.Add(wxEmptyString);
+								}
+							}
+							else // Ascending...
+							{
+								ordersArray.Add(wxT("ASC"));
+								if ((opt && (opt & 0x0002)))
+								{
+									nullsArray.Add(wxT("NULLS FIRST"));
+									coldef += wxT(" NULLS FIRST");
+								}
+								else
+								{
+									nullsArray.Add(wxEmptyString);
+								}
 							}
 						}
-						else // Ascending...
+						else
 						{
-							ordersArray.Add(wxT("ASC"));
-							if ((opt && (opt & 0x0002)))
-							{
-								nullsArray.Add(wxT("NULLS FIRST"));
-								coldef += wxT(" NULLS FIRST");
-							}
-							else
-							{
-								nullsArray.Add(wxEmptyString);
-							}
+							ordersArray.Add(wxEmptyString);
+							nullsArray.Add(wxEmptyString);
 						}
-					}
-					else
-					{
-						ordersArray.Add(wxEmptyString);
-						nullsArray.Add(wxEmptyString);
+						if (isExclude)
+						{
+							coldef += wxT(" WITH ") + res->GetVal(wxT("oprname"));
+						}
+						if (i > 1)
+						{
+							columns += wxT(", ");
+							quotedColumns += wxT(", ");
+						}
+						columns += coldef;
+						quotedColumns += coldef;
+						columnList.Add(coldef);
 					}
 				}
 
-				if (isExclude)
-				{
-					coldef += wxT(" WITH ") + res->GetVal(wxT("oprname"));
-				}
-				columns += coldef;
-				quotedColumns += coldef;
-				columnList.Add(coldef);
 
 				//resolve memory leak occurred while expanding the index node in object browser
 				delete res;
