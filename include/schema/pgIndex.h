@@ -291,9 +291,10 @@ public:
 
 protected:
 	void ReadColumnDetails();
+	wxString colInclude;
 
 private:
-	wxString columnNumbers, columns, quotedColumns, indexType, idxTable, reloptions, idxSchema, constraint, tablespace, colInclude;
+	wxString columnNumbers, columns, quotedColumns, indexType, idxTable, reloptions, idxSchema, constraint, tablespace;
 	wxString procName, procNamespace, procArgs, procArgTypeList, typedColumns, quotedTypedColumns, operatorClasses, operatorClassList;
 	long columnCount;
 	wxArrayString columnList, ordersArray, nullsArray, opclassesArray, collationsArray;
