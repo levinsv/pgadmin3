@@ -111,6 +111,7 @@ wxString pgIndexConstraint::GetDefinition()
 		sql += wxT("\n  USING ") + GetIndexType() + wxT(" ");
 
 	sql += wxT("(") + GetQuotedColumns() + wxT(")");
+	if (!colInclude.IsEmpty()) sql += "\n  INCLUDE (" + colInclude + ")";
 
 	if (GetConnection()->BackendMinimumVersion(8, 2) && GetFillFactor().Length() > 0)
 		sql += wxT("\n  WITH (FILLFACTOR=") + GetFillFactor() + wxT(")");
