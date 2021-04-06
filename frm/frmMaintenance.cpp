@@ -227,6 +227,7 @@ wxString frmMaintenance::GetSql()
 					sql += wxT(" ON ") + object->GetQuotedIdentifier();
 				}
 			}
+			break;
 		}
 		case 4:
 		{
@@ -237,7 +238,7 @@ wxString frmMaintenance::GetSql()
 				wxString strindex= object->GetConnection()->ExecuteScalar("select string_agg('cfs_gc_relation('||indexrelid::text||')',',') from pg_index i where indrelid=" + object->GetOidStr() + " and cfs_fragmentation(indexrelid)  between 0.01 and 1;");
 				if (strindex.Len() > 0) sql += ","+strindex;
 			}
-				
+			break;
 		}
 	}
 
