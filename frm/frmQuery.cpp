@@ -4229,6 +4229,27 @@ void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
 
 		}
 	}
+	else
+	{
+		if (wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult))
+		{
+			ctlSQLResult* c = wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult);
+			int len = MAX_RESULT_COUNT;
+			for (int i = 0; i < len; i++)
+				if (ctlSQL[i] != NULL && c == ctlSQL[i])
+				{
+					ctlSQLResult *sqlRes = ctlSQL[i];
+					ctlSQLBox *box= ctlSBox[i];
+					int querypage= sqlQueryBook->GetPageIndex(box);
+					if (querypage >= 0) {
+						sqlQueryBook->SetSelection(querypage);
+					}
+					
+					break;
+				}
+		}
+
+	}
 }
 void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 		size_t curpage = sqlQueryBook->GetSelection();
