@@ -1312,7 +1312,7 @@ void frmQuery::OnChangeConnection(wxCommandEvent &ev)
 	for (int i=0;i<len;i++) if (ctlSQL[i]!=NULL) ctlSQL[i]->SetConnection(conn);
 		//sqlResult->SetConnection(conn);
 		pgScript->SetConnection(conn);
-		title = wxT("Query - ") + cbConnection->GetValue();
+		title = wxT("") + cbConnection->GetValue();
 		setExtendedTitle();
 		seticon();
 		//Refresh GQB Tree if used
