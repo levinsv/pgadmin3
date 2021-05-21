@@ -14,7 +14,7 @@
           <label></label>
           <style>wxALIGN_CENTRE</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -22,7 +22,7 @@
           <style>wxTE_PASSWORD</style>
           <tooltip>Enter the password to use when connecting to the server.</tooltip>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>12</border>
       </object>
       <object class="sizeritem">
@@ -30,7 +30,7 @@
           <label>Store password</label>
           <checked>1</checked>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>10</border>
       </object>
       <object class="spacer">

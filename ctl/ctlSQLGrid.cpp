@@ -58,6 +58,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetDefaultRenderer(new  CursorCellRenderer);
 	//SetUseNativeColLabels(true);
 	//UseNativeColHeader(true);
+	SetCellHighlightColour(wxColor(0, 0, 0));
 	grp=NULL;
 	isSort=false;
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
@@ -151,6 +152,7 @@ void ctlSQLGrid::OnGridColSize(wxGridSizeEvent &event)
 	// Save key="index:label", value=size
 	int col = event.GetRowOrCol();
 	colSizes[GetColKeyValue(col)] = GetColSize(col);
+
 }
 void ctlSQLGrid::OnCopy(wxCommandEvent &ev)
 {
@@ -328,6 +330,42 @@ int compare_int(int* a, int* b)
 	else if (*a < *b) return -1;
 	else return 0;
 }
+#include <map>
+class  selMerge {
+public:
+	std::map<int, std::map<int, int>> getmap() { return grid; }
+	void add(int row, int col);
+	void setArrayColumns(int row, wxArrayInt& columns);
+	void addRange(int r1,int r2, int c1, int c2) {
+		//std::map<int, int> v;
+		
+		for (int r = r1; r <= r2; r++)
+		{
+			auto &v = grid[r];
+			for (int c = c1; c <= c2; c++) {
+				v[c] = c;
+			}
+			//grid[r].swap(v);
+		}
+	}
+
+private:
+	std::map<int, std::map<int, int>> grid;
+};
+void selMerge::add(int row, int col) {
+	std::map<int, int> v;
+	v = grid[row];
+	v[col] = col;
+}
+
+void  selMerge::setArrayColumns(int row, wxArrayInt& columns) {
+	auto &v = grid[row];
+	for (const auto& pair : v) {
+		//std::cout << pair.first << ": " << pair.second << '\n';
+		int k = pair.second;
+		columns.Add(k);
+	}
+};
 int ctlSQLGrid::Copy(int gensql)
 {
 	wxString str,tmp,linedelim="";
@@ -371,7 +409,7 @@ int ctlSQLGrid::Copy(int gensql)
 		}
 		copied = numRows;
 	}
-	else if (GetSelectionBlockTopLeft().GetCount() > 0 &&
+	else if ( GetSelectionBlockTopLeft().GetCount() > 0 &&
 	         GetSelectionBlockBottomRight().GetCount() > 0)
 	{
 		unsigned int x1, x2, y1, y2;
@@ -383,21 +421,42 @@ int ctlSQLGrid::Copy(int gensql)
 		y2 = GetSelectionBlockBottomRight()[0].GetRow();
 		copied = 0;
 		AppendColumnHeader(str, x1, x2);
+		selMerge m;
 		for (size_t n = 0; n < count; n++)
 		{
 			x1 = GetSelectionBlockTopLeft()[n].GetCol();
 			x2 = GetSelectionBlockBottomRight()[n].GetCol();
 			y1 = GetSelectionBlockTopLeft()[n].GetRow();
 			y2 = GetSelectionBlockBottomRight()[n].GetRow();
-
-			for (i = y1; i <= y2; i++)
+			if (generatesql > 1) {
+				m.addRange(y1, y2, x1, x2);
+			} else
 			{
-				str.Append(GetExportLine(i, x1, x2));
-				if (i < y2 && (generatesql > 1)) str.Append(linedelim);
-				if (y2 > y1)
-					str.Append(END_OF_LINE);
+				for (i = y1; i <= y2; i++)
+				{
+
+					str.Append(GetExportLine(i, x1, x2));
+					if (i < y2 && (generatesql > 1)) str.Append(linedelim);
+					if (y2 > y1)
+						str.Append(END_OF_LINE);
+				}
+				
 			}
-			copied = copied+(y2 - y1 + 1);
+			copied = copied + (y2 - y1 + 1);
+		}
+		if (generatesql > 1) {
+			auto &g = m.getmap();
+			wxArrayInt cols;
+			int maxr = g.size();
+			int i = 1;
+			for (const auto& pair : g) {
+				int r = pair.first;
+				cols.Clear();
+				m.setArrayColumns(r, cols);
+				str.Append(GetExportLine(r, cols));
+				if (i < maxr) str.Append(linedelim);
+				i++;
+			}
 		}
 	}
 	else
@@ -587,6 +646,7 @@ void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 	int col = event.GetCol();
 	if (row >= 0 && grp) {
 		grp->VisibleGroup(row,GetRowSize(row+1)==0);
+		Refresh();
 		return;
 	}
 	if ( col >= 0 && (event.AltDown() ) )

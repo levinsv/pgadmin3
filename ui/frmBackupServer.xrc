@@ -61,7 +61,7 @@
             </object>
           </object>
         </object>
-        <flag>wxTOP|wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND|wxGROW|wxALIGN_CENTRE</flag>
+        <flag>wxTOP|wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND|wxGROW</flag>
       </object>
       <object class="sizeritem">
         <object class="wxFlexGridSizer">

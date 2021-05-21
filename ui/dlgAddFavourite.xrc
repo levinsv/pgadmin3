@@ -21,7 +21,7 @@
       <object class="sizeritem">
         <object class="wxTextCtrl" name="txtTitle">
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -35,7 +35,7 @@
         <object class="ctlTree" name="trLocation">
          <style>wxTR_HAS_BUTTONS | wxSIMPLE_BORDER</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -46,7 +46,7 @@
             <object class="wxButton" name="btnNewFolder">
               <label>New Folder</label>
             </object>
-            <flag>wxLEFT|wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+            <flag>wxLEFT|wxEXPAND</flag>
             <border>4</border>
           </object>
           <object class="spacer">
@@ -66,14 +66,14 @@
               <label>&amp;OK</label>
               <default>1</default>
             </object>
-            <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+            <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
             <object class="wxButton" name="wxID_CANCEL">
               <label>&amp;Cancel</label>
             </object>
-            <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+            <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
             <border>4</border>
           </object>
         </object>

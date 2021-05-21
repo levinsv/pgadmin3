@@ -585,7 +585,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	sqlQueries = new wxComboBox(pnlQuery, CTL_SQLQUERYCBOX, wxT(""), wxDefaultPosition, wxDefaultSize, wxArrayString(), wxCB_DROPDOWN | wxCB_READONLY);
 	sqlQueries->SetToolTip(_("Previous queries"));
 	LoadQueries();
-	boxHistory->Add(sqlQueries, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 1);
+	boxHistory->Add(sqlQueries, 1, wxEXPAND | wxALL , 1);
 
 	// Delete Current button
 	btnDeleteCurrent = new wxButton(pnlQuery, CTL_DELETECURRENTBTN, _("Delete"));
@@ -735,10 +735,11 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	viewMenu->Check(MNU_SHOWLINENUMBER, bVal);
 
 	// Create the SQL box. After this, sqlQuery variable can be used.
-	SqlBookAddPage();
 
 	if (!file.IsEmpty() && wxFileName::FileExists(file))
 	{
+		wxString t = wxEmptyString;
+		SqlBookAddPage(t);
 		wxFileName fn = file;
 		lastFilename = fn.GetFullName();
 		lastDir = fn.GetPath();
@@ -748,6 +749,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	}
 	else if (!query.IsNull())
 	{
+		wxString t = wxEmptyString;
+		SqlBookAddPage(t);
 		sqlQuery->SetText(query);
 		SetLineEndingStyle();
 		sqlQuery->Colourise(0, query.Length());
@@ -774,15 +777,20 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxString pref=_conn->GetDbname();
 
 	bool modeUnicode = settings->GetUnicodeFile();
-
+	wxString activePage;
 	wxString f = wxFindFirstFile(tempDir+wxT("*.a"));
      while ( !f.empty() )
      {
 		 filename=f.AfterLast('\\').BeforeLast('.');
+		 if (filename.BeforeFirst('.') == "_active") {
+			 activePage = filename.AfterFirst('.');
+		 }
 		 if ((f.AfterLast('\\').StartsWith(pref+wxT("."))||(filename.BeforeLast('.').IsEmpty()))) {
 			wxUtfFile file(f, wxFile::read, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
-			if (file.IsOpened())
-			{ file.Read(str); file.Close(); }
+			if (file.IsOpened()) {
+				file.Read(str);
+				file.Close();
+			}
 			if (!str.IsEmpty())
 			{
 				wxString fline=str.BeforeFirst('@');
@@ -794,6 +802,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 					fline=str.Mid(l+1);
 					str=fline;
 				}
+				SqlBookAddPage(filename);
+				//SqlBookAddPage(true);
 				sqlQuery->SetText(str);
 				sqlQuery->Colourise(0, str.Length());
 				sqlQuery->EmptyUndoBuffer();
@@ -802,20 +812,31 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 				wxSafeYield();                            // needed to process sqlQuery modify event
 				//sqlQuery->SetFilename(lastPath);
 				sqlQuery->SetChanged(true);
-				//sqlQuery->SetOrigin(ORIGIN_INITIAL);
-				//filename=f.AfterLast('\\').BeforeLast('.');
-				sqlQuery->SetTitle(filename);
+				//sqlQuery->SetTitle(filename);
 				setExtendedTitle();
 				SqlBookUpdatePageTitle();
 				//SetLineEndingStyle();
 				SaveTempFile();
-				SqlBookAddPage();
 
 			}
 
 		 }
          f = wxFindNextFile();
      }
+	 wxString t = wxEmptyString;
+	 if (sqlQueryCounter==0) SqlBookAddPage(t);
+	 if (!activePage.IsEmpty()) {
+		 //activePage
+		 //outputPane->GetPageText(curpage) == _("History");
+		 for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
+			 wxString textpage = sqlQueryBook->GetPageText(i);
+			 if (textpage ==activePage) {
+				 sqlQueryBook->SetSelection(i);
+				 //sqlQueryBook->ChangeSelection(i);
+				 //if (sqlQueryBook->GetSelection()!=i) sqlQueryBook->SetSelection(i);
+			 }
+		 }
+	 }
 	//for (int i=1;i<15;i++) 
 	//{
 	//filename=wxString::Format(_("Query %i"), i);
@@ -3013,8 +3034,8 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 
 	// Clear markers and indicators
 	sqlQuery->MarkerDeleteAll(0);
-	sqlQuery->StartStyling(0, wxSTC_INDICS_MASK);
-	sqlQuery->SetStyling(sqlQuery->GetText().Length(), 0);
+	//sqlQuery->StartStyling(0);
+	//sqlQuery->SetStyling(sqlQuery->GetText().Length(), 0);
 	
 	int i=sqlQueryBook->GetSelection();
 	sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxColour(255,0,0)));
@@ -4131,7 +4152,20 @@ void frmQuery::SetOutputPaneCaption(bool update)
 }
 
 // Methods related to SQL tabs //
+void frmQuery::fileMarkerActive(bool addOrRemove, wxString &sqlTabName) {
+	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\recovery\\");
 
+	wxString tabname = sqlTabName;
+	if (sqlTabName.Find("*")>=0) tabname = sqlTabName.BeforeLast('*');
+	
+	wxString fn = tempDir + wxT("_active.") + tabname + ".a";
+	//if (sqlTabName.Right(1)=='*' ) tabname=
+	if (addOrRemove) 
+		wxUtfFile file(fn, wxFile::write, wxFONTENCODING_UTF8);
+	else
+		if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
+
+}
 void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 {
 	// Try to always keep sqlQuery variable pointing to the currently selected SQLBox.
@@ -4170,6 +4204,7 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			}
 
 			sqlQuery->SetFocus();
+			if (sqlQueryBook->GetPageCount() > 1) fileMarkerActive(true, sqlQueryBook->GetPageText(sqlQueryBook->GetSelection()));
 			//wxMessageBox(wxT("OnSqlBookPageChanged "));
 			wxTheApp->Yield(true);
 		}
@@ -4181,7 +4216,7 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 	}
 }
 
-void frmQuery::OnSqlBookPageChanging(wxAuiNotebookEvent &event)
+void frmQuery::OnSqlBookPageChanging(wxAuiNotebookEvent& event)
 {
 	// Veto event while page change is prohibited.
 	if (!SqlBookCanChangePage())
@@ -4189,12 +4224,24 @@ void frmQuery::OnSqlBookPageChanging(wxAuiNotebookEvent &event)
 		event.Veto();
 		wxMessageBox(_("Cannot change to selected SQL tab now. Try again a bit later."));
 	}
+	if (sqlQueryBook->GetPageCount() > 1)
+	{
+		size_t curpage = sqlQueryBook->GetSelection();
+		sqlQuery = wxDynamicCast(sqlQueryBook->GetPage(curpage), ctlSQLBox);
+		if (sqlQuery != NULL)
+		{
+			//wxString activePage = sqlNotebook->GetPageText(curpage);
+			wxString activePage = sqlQuery->GetTitle(false);
+			fileMarkerActive(false, activePage);
+		}
+	}
 }
-
 void frmQuery::OnSqlBookAddPage(wxCommandEvent &event)
 {
-	if (SqlBookCanChangePage())
-		SqlBookAddPage();
+	if (SqlBookCanChangePage()) {
+		wxString t = wxEmptyString;
+		SqlBookAddPage(t);
+	}
 	else
 		wxMessageBox(_("Cannot add a new SQL tab now. Try again a bit later."));
 }
@@ -4311,7 +4358,7 @@ void frmQuery::OnSqlBookPageClose(wxAuiNotebookEvent &event)
 	wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
 	wxString filename=sqlQuery->GetTitle(false)+wxT(".a");
 	if (wxFileName::FileExists(tempDir+filename)) wxRemoveFile(tempDir+filename);
-
+	fileMarkerActive(false, sqlQuery->GetTitle(false));
 }
 
 bool frmQuery::SqlBookCanChangePage()
@@ -4319,7 +4366,7 @@ bool frmQuery::SqlBookCanChangePage()
 	return !(m_loadingfile || ms_pgScriptRunning);
 }
 
-void frmQuery::SqlBookAddPage()
+void frmQuery::SqlBookAddPage(wxString& title)
 {
 	ctlSQLBox *box;
 	wxString caption;
@@ -4353,9 +4400,13 @@ void frmQuery::SqlBookAddPage()
 	box->Connect(wxID_ANY, wxEVT_KILL_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 
 	sqlQueryCounter ++;
-	caption = wxString::Format(_("Query %i"), sqlQueryCounter);
+	int ll = sqlQueryCounter;
+	caption = wxString::Format(_("Query %d"), ll);
+	bool select = title.IsEmpty();
+	if (!select) caption = title;
+	select = true;
 	box->SetTitle(caption);
-	sqlQueryBook->AddPage(box, caption, true);
+	sqlQueryBook->AddPage(box, caption, select);
 
 	// Probably not needed, as the line above should trigger the PageChange event
 	sqlQuery = box;
@@ -4395,6 +4446,7 @@ bool frmQuery::SqlBookRemovePage()
 		ctlSQLBox *box;
 		box = wxDynamicCast(sqlQueryBook->GetPage(pageidx), ctlSQLBox);
 		wxString filename=box->GetTitle(false);
+		
 		wxRemoveFile(tempDir+filename+wxT(".a"));
 		return sqlQueryBook->DeletePage(pageidx);
 	}

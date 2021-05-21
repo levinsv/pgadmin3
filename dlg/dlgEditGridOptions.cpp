@@ -41,7 +41,6 @@
 #define filter                      CTRL_SQLBOX("sqlFilter")
 
 BEGIN_EVENT_TABLE(dlgEditGridOptions, pgDialog)
-	EVT_CLOSE(                                      dlgEditGridOptions::OnClose)
 	EVT_BUTTON               (wxID_OK,              dlgEditGridOptions::OnOK)
 	EVT_BUTTON               (wxID_CANCEL,          dlgEditGridOptions::OnCancel)
 	EVT_BUTTON               (wxID_REMOVE,          dlgEditGridOptions::OnRemove)
@@ -52,6 +51,7 @@ BEGIN_EVENT_TABLE(dlgEditGridOptions, pgDialog)
 	EVT_LIST_ITEM_SELECTED   (XRCID("lstSortCols"), dlgEditGridOptions::OnLstSortColsChange)
 	EVT_LIST_ITEM_DESELECTED (XRCID("lstSortCols"), dlgEditGridOptions::OnLstSortColsChange)
 	EVT_STC_MODIFIED		 (XRCID("sqlFilter"),   dlgEditGridOptions::OnFilterChange)
+	EVT_CLOSE(dlgEditGridOptions::OnClose)
 #ifdef __WXMAC__
 	EVT_SIZE(                                       dlgEditGridOptions::OnChangeSize)
 #endif
@@ -70,7 +70,6 @@ dlgEditGridOptions::dlgEditGridOptions(frmEditGrid *win, pgConn *conn, const wxS
 	// Icon
 	SetIcon(*sortfilter_png_ico);
 	RestorePosition();
-
 	int cols = grid->GetNumberCols();
 	long x;
 
@@ -83,100 +82,104 @@ dlgEditGridOptions::dlgEditGridOptions(frmEditGrid *win, pgConn *conn, const wxS
 	wxListEvent nullLstEvent;
 	OnLstSortColsChange(nullLstEvent);
 
-	// Setup the list box
-	int leftSize = 140, rightSize;
-	leftSize = ConvertDialogToPixels(wxPoint(leftSize, 0)).x;
-	rightSize = lstSortCols->GetClientSize().GetWidth() - leftSize;
-	// This check is to work around a bug in wxGTK that doesn't set
-	// appropriately the GetClientSize().
-	// Without this workaround, we have an invisible second column.
-	if (rightSize < leftSize)
-		rightSize = leftSize + 1;
-	lstSortCols->InsertColumn(0, _("Column name"), wxLIST_FORMAT_LEFT, leftSize);
-	lstSortCols->InsertColumn(1, _("Sort order"), wxLIST_FORMAT_LEFT, rightSize);
-
 	// Setup the filter SQL box. This is an XRC 'unknown' control so must
 	// be manually created and attache to the XRC global resource.
 	filter->SetText(parent->GetFilter());
 
-	// Get the current sort columns, and populate the listbox.
-	// The current columns will be parsed char by char to allow us
-	// to cope with quoted column names with commas in them (let's hope
-	// no one ever does that, but sod's law etc....)
-	bool inColumn = true, inQuote = false;
-	wxString sortCols = parent->GetSortCols();
-	wxString col, dir;
-	size_t pos, len = sortCols.Length();
-	int itm = 0;
-
-	for (pos = 0; pos < len; pos++)
+	if (!parent->IsShown())
 	{
-		if (inColumn)
+		nbOptions->DeletePage(0);
+		//btnValidate->Disable();
+	}
+	else {
+
+
+		// Setup the list box
+		int leftSize = 140, rightSize;
+		leftSize = ConvertDialogToPixels(wxPoint(leftSize, 0)).x;
+		rightSize = lstSortCols->GetClientSize().GetWidth() - leftSize;
+		// This check is to work around a bug in wxGTK that doesn't set
+		// appropriately the GetClientSize().
+		// Without this workaround, we have an invisible second column.
+		if (rightSize < leftSize)
+			rightSize = leftSize + 1;
+		lstSortCols->InsertColumn(0, _("Column name"), wxLIST_FORMAT_LEFT, leftSize);
+		lstSortCols->InsertColumn(1, _("Sort order"), wxLIST_FORMAT_LEFT, rightSize);
+		// Get the current sort columns, and populate the listbox.
+		// The current columns will be parsed char by char to allow us
+		// to cope with quoted column names with commas in them (let's hope
+		// no one ever does that, but sod's law etc....)
+		bool inColumn = true, inQuote = false;
+		wxString sortCols = parent->GetSortCols();
+		wxString col, dir;
+		size_t pos, len = sortCols.Length();
+		int itm = 0;
+
+		for (pos = 0; pos < len; pos++)
 		{
-			if (sortCols.GetChar(pos) == '"') inQuote = !inQuote;
-			if (!inQuote && (sortCols.GetChar(pos) == ' ' || sortCols.GetChar(pos) == ','))
-				inColumn = false;
-			else if (sortCols.GetChar(pos) != '"') col += sortCols.GetChar(pos);
-		}
-		else
-		{
-			if (sortCols.GetChar(pos - 1) == ',')
+			if (inColumn)
 			{
-				inColumn = true;
-				lstSortCols->InsertItem(itm, col);
-				if (dir.GetChar(0) == 'D')
-				{
-					lstSortCols->SetItem(itm, 1, _("Descending"));
-					lstSortCols->SetItemData(itm, 0);
-				}
-				else
-				{
-					lstSortCols->SetItem(itm, 1, _("Ascending"));
-					lstSortCols->SetItemData(itm, 1);
-				}
-				col = wxT("");
-				dir = wxT("");
-				++itm;
+				if (sortCols.GetChar(pos) == '"') inQuote = !inQuote;
+				if (!inQuote && (sortCols.GetChar(pos) == ' ' || sortCols.GetChar(pos) == ','))
+					inColumn = false;
+				else if (sortCols.GetChar(pos) != '"') col += sortCols.GetChar(pos);
 			}
 			else
 			{
-				dir += sortCols.GetChar(pos);
+				if (sortCols.GetChar(pos - 1) == ',')
+				{
+					inColumn = true;
+					lstSortCols->InsertItem(itm, col);
+					if (dir.GetChar(0) == 'D')
+					{
+						lstSortCols->SetItem(itm, 1, _("Descending"));
+						//lstSortCols->SetItemData(itm, 0);
+					}
+					else
+					{
+						lstSortCols->SetItem(itm, 1, _("Ascending"));
+						//lstSortCols->SetItemData(itm, 1);
+					}
+					col = wxT("");
+					dir = wxT("");
+					++itm;
+				}
+				else
+				{
+					dir += sortCols.GetChar(pos);
+				}
 			}
 		}
-	}
 
-	// Insert the last column
-	if (col.Length() > 0)
-	{
-		lstSortCols->InsertItem(itm, col);
-		if (dir.GetChar(0) == 'D')
+		// Insert the last column
+		if (col.Length() > 0)
 		{
-			lstSortCols->SetItem(itm, 1, _("Descending"));
-			lstSortCols->SetItemData(itm, 0);
+			lstSortCols->InsertItem(itm, col);
+			if (dir.GetChar(0) == 'D')
+			{
+				lstSortCols->SetItem(itm, 1, _("Descending"));
+				//lstSortCols->SetItemData(itm, 0);
+			}
+			else
+			{
+				lstSortCols->SetItem(itm, 1, _("Ascending"));
+				//lstSortCols->SetItemData(itm, 1);
+			}
 		}
-		else
+
+		// Finally (phew!) remove all columns we're already sorting on from the list.
+		long count = lstSortCols->GetItemCount();
+
+		for (x = 0; x < count; x++)
 		{
-			lstSortCols->SetItem(itm, 1, _("Ascending"));
-			lstSortCols->SetItemData(itm, 1);
+			int idx = cboColumns->FindString(lstSortCols->GetItemText(x));
+			if (idx >= 0)
+				cboColumns->Delete(idx);
 		}
 	}
-
-	// Finally (phew!) remove all columns we're already sorting on from the list.
-	long count = lstSortCols->GetItemCount();
-
-	for (x = 0; x < count; x++)
-	{
-		int idx = cboColumns->FindString(lstSortCols->GetItemText(x));
-		if (idx >= 0)
-			cboColumns->Delete(idx);
-	}
-
 	// Display the appropriate tab. If the EditGrid is not shown, we must be
 	// doing a View Filtered Data.
-	if (!parent->IsShown())
-		nbOptions->DeletePage(0);
 
-	btnValidate->Disable();
 	filter->SetFocus();
 }
 
@@ -214,7 +217,7 @@ void dlgEditGridOptions::OnAsc(wxCommandEvent &ev)
 	long itm = lstSortCols->GetItemCount();
 	lstSortCols->InsertItem(itm, cboColumns->GetValue());
 	lstSortCols->SetItem(itm, 1, _("Ascending"));
-	lstSortCols->SetItemData(itm, 1);
+	//lstSortCols->SetItemData(itm, 1);
 	cboColumns->Delete(cboColumns->GetCurrentSelection());
 
 	// Setup the buttons
@@ -228,7 +231,7 @@ void dlgEditGridOptions::OnDesc(wxCommandEvent &ev)
 	long itm = lstSortCols->GetItemCount();
 	lstSortCols->InsertItem(itm, cboColumns->GetValue());
 	lstSortCols->SetItem(itm, 1, _("Descending"));
-	lstSortCols->SetItemData(itm, 0);
+	//lstSortCols->SetItemData(itm, 0);
 	cboColumns->Delete(cboColumns->GetCurrentSelection());
 
 	// Setup the buttons
@@ -308,7 +311,7 @@ void dlgEditGridOptions::OnOK(wxCommandEvent &ev)
 		for (x = 0; x < count; x++)
 		{
 			sortCols += qtIdent(lstSortCols->GetItemText(x));
-			if (lstSortCols->GetItemData(x) == 0)
+			if (lstSortCols->GetItemText(x,1) == _("Descending"))
 				sortCols += wxT(" DESC");
 			else
 				sortCols += wxT(" ASC");
@@ -325,7 +328,10 @@ void dlgEditGridOptions::OnOK(wxCommandEvent &ev)
 	}
 
 	parent->SetFilter(filter->GetText().Trim());
-	EndModal(true);
+	if (IsModal())
+		EndModal(true);
+	else
+		Destroy();
 }
 
 bool dlgEditGridOptions::Validate()

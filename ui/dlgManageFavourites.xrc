@@ -16,7 +16,7 @@
           <size>208,150d</size>
           <style>wxTR_HAS_BUTTONS | wxSIMPLE_BORDER</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -50,7 +50,7 @@
             <size>0,0d</size>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+        <flag>wxEXPAND|wxALL</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -65,14 +65,14 @@
               <label>&amp;OK</label>
               <default>1</default>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+            <flag>wxEXPAND|wxALL</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
             <object class="wxButton" name="wxID_CANCEL">
               <label>&amp;Cancel</label>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+            <flag>wxEXPAND|wxALL</flag>
             <border>4</border>
           </object>
         </object>

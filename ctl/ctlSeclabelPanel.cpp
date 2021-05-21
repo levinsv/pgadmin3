@@ -58,15 +58,15 @@ ctlSeclabelPanel::ctlSeclabelPanel(wxNotebook *nb)
 	lbSeclabels = new ctlListView(this, CTL_LBSECLABEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxLC_REPORT);
 	lbSeclabels->AddColumn(_("Provider"), 70, wxLIST_FORMAT_LEFT);
 	lbSeclabels->AddColumn(_("Security label"), 70, wxLIST_FORMAT_LEFT);
-	sizer1->Add(lbSeclabels, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer1->Add(lbSeclabels, 0, wxEXPAND |  wxTOP | wxLEFT | wxRIGHT, 4);
 	sizer0->Add(sizer1, 0, wxEXPAND | wxALL, 5);
 
 	// buttons sizer
 	wxBoxSizer *sizer2 = new wxBoxSizer(wxHORIZONTAL);
 	btnAddSeclabel = new wxButton(this, CTL_ADDSECLABEL, _("Add/Change"));
-	sizer2->Add(btnAddSeclabel, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer2->Add(btnAddSeclabel, 0, wxEXPAND  | wxTOP | wxLEFT | wxRIGHT, 4);
 	btnDelSeclabel = new wxButton(this, CTL_DELSECLABEL, _("Remove"));
-	sizer2->Add(btnDelSeclabel, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer2->Add(btnDelSeclabel, 0, wxEXPAND  | wxTOP | wxLEFT | wxRIGHT, 4);
 	sizer0->Add(sizer2, 0, wxEXPAND | wxALL, 0);
 
 
@@ -74,13 +74,13 @@ ctlSeclabelPanel::ctlSeclabelPanel(wxNotebook *nb)
 	wxFlexGridSizer *sizer3 = new wxFlexGridSizer(2, 2, 5, 5);
 	sizer3->AddGrowableCol(1);
 	label = new wxStaticText(this, 0, _("Provider"));
-	sizer3->Add(label, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer3->Add(label, 0, wxEXPAND |  wxTOP | wxLEFT | wxRIGHT, 4);
 	txtProvider = new wxTextCtrl(this, CTL_PROVIDER);
-	sizer3->Add(txtProvider, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer3->Add(txtProvider, 0, wxEXPAND |  wxTOP | wxLEFT | wxRIGHT, 4);
 	label = new wxStaticText(this, 0, _("Security label"));
-	sizer3->Add(label, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer3->Add(label, 0, wxEXPAND |  wxTOP | wxLEFT | wxRIGHT, 4);
 	txtSeclabel = new wxTextCtrl(this, CTL_SECLABEL);
-	sizer3->Add(txtSeclabel, 0, wxEXPAND | wxALIGN_CENTRE_VERTICAL | wxTOP | wxLEFT | wxRIGHT, 4);
+	sizer3->Add(txtSeclabel, 0, wxEXPAND |  wxTOP | wxLEFT | wxRIGHT, 4);
 	sizer0->Add(sizer3, 0, wxEXPAND | wxALL, 5);
 
 	// compute sizes

@@ -13,7 +13,7 @@
 			<growablecols>0</growablecols>
 			<object class="sizeritem">
 				<option>1</option>
-				<flag>wxALIGN_CENTER|wxALL|wxEXPAND</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>3</border>
 				<object class="wxGridBagSizer">
 					<vgap>5</vgap>
@@ -43,7 +43,7 @@
 							<growablerows>0</growablerows>
 							<object class="sizeritem">
 								<option>0</option>
-								<flag>wxALIGN_CENTER_VERTICAL|wxEXPAND|wxLEFT|wxTOP</flag>
+								<flag>wxEXPAND|wxLEFT|wxTOP</flag>
 								<border>3</border>
 								<object class="wxTextCtrl" name="txtPattern">
 									<tooltip>Enter part of the object&apos;s attribute you&apos;re looking for</tooltip>
@@ -206,7 +206,7 @@
 				<object class="wxStatusBar" name="unkStatusBar">
 					<style>wxST_SIZEGRIP</style>
 				</object>
-				<flag>wxEXPAND|wxALIGN_CENTRE</flag>
+				<flag>wxEXPAND</flag>
 				<border>3</border>
 			</object>
 		</object>

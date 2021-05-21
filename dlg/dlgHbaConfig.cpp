@@ -17,6 +17,8 @@
 #include "dlg/dlgHbaConfig.h"
 #include "db/pgConn.h"
 #include "db/pgSet.h"
+#include "utils/pgconfig.h"
+
 
 // Icons
 #include "images/property.pngc"
@@ -26,18 +28,18 @@
 
 
 BEGIN_EVENT_TABLE(dlgHbaConfig, DialogWithHelp)
-	EVT_BUTTON (wxID_OK,                dlgHbaConfig::OnOK)
-	EVT_BUTTON (wxID_CANCEL,            dlgHbaConfig::OnCancel)
-	EVT_BUTTON(wxID_REFRESH,	     	dlgHbaConfig::OnAddValue)
-	EVT_CHECKBOX(XRCID("chkEnabled"),   dlgHbaConfig::OnChange)
-	EVT_COMBOBOX(XRCID("cbType"),       dlgHbaConfig::OnChange)
-	EVT_TEXT(XRCID("cbDatabase"),       dlgHbaConfig::OnChange)
-	EVT_TEXT(XRCID("cbUser"),           dlgHbaConfig::OnChange)
-	EVT_COMBOBOX(XRCID("cbDatabase"),   dlgHbaConfig::OnAddDatabase)
-	EVT_COMBOBOX(XRCID("cbUser"),       dlgHbaConfig::OnAddUser)
-	EVT_COMBOBOX(XRCID("cbMethod"),     dlgHbaConfig::OnChange)
-	EVT_TEXT(XRCID("txtIPaddress"),     dlgHbaConfig::OnChange)
-	EVT_TEXT(XRCID("txtOption"),        dlgHbaConfig::OnChange)
+EVT_BUTTON(wxID_OK, dlgHbaConfig::OnOK)
+EVT_BUTTON(wxID_CANCEL, dlgHbaConfig::OnCancel)
+EVT_BUTTON(wxID_REFRESH, dlgHbaConfig::OnAddValue)
+EVT_CHECKBOX(XRCID("chkEnabled"), dlgHbaConfig::OnChange)
+EVT_COMBOBOX(XRCID("cbType"), dlgHbaConfig::OnChange)
+EVT_TEXT(XRCID("cbDatabase"), dlgHbaConfig::OnChange)
+EVT_TEXT(XRCID("cbUser"), dlgHbaConfig::OnChange)
+EVT_COMBOBOX(XRCID("cbDatabase"), dlgHbaConfig::OnAddDatabase)
+EVT_COMBOBOX(XRCID("cbUser"), dlgHbaConfig::OnAddUser)
+EVT_COMBOBOX(XRCID("cbMethod"), dlgHbaConfig::OnChange)
+EVT_TEXT(XRCID("txtIPaddress"), dlgHbaConfig::OnChange)
+EVT_TEXT(XRCID("txtOption"), dlgHbaConfig::OnChange)
 END_EVENT_TABLE()
 
 
@@ -51,7 +53,7 @@ END_EVENT_TABLE()
 #define stIPaddress         CTRL_STATIC("stIPaddress")
 #define stOption            CTRL_STATIC("stOption")
 
-
+extern const wxChar* pgHbaMethodStrings[];
 dlgHbaConfig::dlgHbaConfig(pgFrame *parent, pgHbaConfigLine *_line, pgConn *_conn) :
 	DialogWithHelp((frmMain *)parent)
 {
@@ -108,6 +110,7 @@ dlgHbaConfig::dlgHbaConfig(pgFrame *parent, pgHbaConfigLine *_line, pgConn *_con
 
 	if (conn)
 	{
+
 		// LDAP is supported from 8.2
 		if (conn->BackendMinimumVersion(8, 2))
 			cbMethod->Append(wxT("ldap"));
@@ -141,6 +144,10 @@ dlgHbaConfig::dlgHbaConfig(pgFrame *parent, pgHbaConfigLine *_line, pgConn *_con
 		{
 			cbMethod->Append(wxT("peer"));
 		}
+		if (conn->BackendMinimumVersion(10, 0))
+		{
+			cbMethod->Append(wxT("scram-sha-256"));
+		}
 	}
 	else
 	{
@@ -152,6 +159,12 @@ dlgHbaConfig::dlgHbaConfig(pgFrame *parent, pgHbaConfigLine *_line, pgConn *_con
 		cbMethod->Append(wxT("crypt"));
 		cbMethod->Append(wxT("radius"));
 		cbMethod->Append(wxT("peer"));
+	}
+	cbMethod->Clear();
+	int index;
+	for (index = 0; pgHbaMethodStrings[index]; index++)
+	{
+		cbMethod->Append(pgHbaMethodStrings[index]);
 	}
 
 	if (conn)
@@ -189,13 +202,14 @@ dlgHbaConfig::dlgHbaConfig(pgFrame *parent, pgHbaConfigLine *_line, pgConn *_con
 	{
 		database = line->database;
 		user = line->user;
-
+		userAdding = true;
 		cbType->SetSelection(line->connectType);
 		cbMethod->SetSelection(line->method);
 		cbDatabase->SetValue(database);
 		cbUser->SetValue(user);
 		txtIPaddress->SetValue(line->ipaddress);
 		txtOption->SetValue(line->option);
+		userAdding = false;
 	}
 	wxCommandEvent noEvent;
 	OnChange(noEvent);

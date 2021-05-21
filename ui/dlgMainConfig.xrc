@@ -27,7 +27,7 @@
             <object class="wxCheckBox" name="chkEnabled">
               <label></label>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
@@ -46,25 +46,25 @@
               <object class="sizeritem">
                 <object class="wxTextCtrl" name="txtValue">
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
                 <object class="wxComboBox" name="cbValue">
                   <content/>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
                 <object class="wxCheckBox" name="chkValue">
                   <label></label>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+            <flag>wxEXPAND|wxALL</flag>
             <border>3</border>
           </object>
           <object class="sizeritem">
@@ -77,11 +77,11 @@
           <object class="sizeritem">
             <object class="wxTextCtrl" name="txtComment">
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+        <flag>wxEXPAND|wxALL</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -89,7 +89,7 @@
           <label></label>
           <pos>5,55d</pos>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -99,7 +99,7 @@
           <size>238,90d</size>
           <style>wxST_NO_AUTORESIZE</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">

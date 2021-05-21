@@ -12,7 +12,7 @@
 			<growablerows>0</growablerows>
 			<object class="sizeritem">
 				<option>0</option>
-				<flag>wxEXPAND|wxALIGN_CENTER|wxALL</flag>
+				<flag>wxEXPAND|wxALL</flag>
 				<border>3</border>
 				<object class="wxNotebook" name="nbNotebook">
 					<object class="notebookpage">
@@ -37,7 +37,7 @@
 									</object>
 								</object>
 								<object class="sizeritem">
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 									<border>4</border>
 									<object class="wxTextCtrl" name="txtName">
 										<value></value>
@@ -54,7 +54,7 @@
 									</object>
 								</object>
 								<object class="sizeritem">
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 									<border>4</border>
 									<object class="wxTextCtrl" name="txtID">
 										<value></value>
@@ -72,7 +72,7 @@
 								</object>
 								<object class="sizeritem">
 									<option>0</option>
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 									<border>4</border>
 									<object class="wxCheckBox" name="chkEnabled">
 										<label></label>
@@ -124,7 +124,7 @@
 									</object>
 								</object>
 								<object class="sizeritem">
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 									<border>4</border>
 									<object class="wxTextCtrl" name="txtCron">
 										<value></value>
@@ -142,7 +142,7 @@
 								</object>
 								<object class="sizeritem">
 									<option>0</option>
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 									<border>4</border>
 									<object class="wxTextCtrl" name="txtNextrun">
 										<value></value>
@@ -161,7 +161,7 @@
 								</object>
 								<object class="sizeritem">
 									<option>0</option>
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+									<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 									<border>4</border>
 									<object class="wxTextCtrl" name="txtLastrun">
 										<style>wxTE_READONLY</style>
@@ -180,7 +180,7 @@
 								</object>
 								<object class="sizeritem">
 									<option>0</option>
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+									<flag>wxEXPAND|wxALL</flag>
 									<border>4</border>
 									<object class="wxTextCtrl" name="txtComment">
 										<style>wxTE_MULTILINE</style>
@@ -211,7 +211,7 @@
 								</object>
 								<object class="sizeritem">
 									<option>0</option>
-									<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxEXPAND</flag>
 									<border>0</border>
 									<object class="wxFlexGridSizer">
 										<rows>0</rows>

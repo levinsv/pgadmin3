@@ -208,6 +208,8 @@ class CursorCellRenderer : public wxGridCellStringRenderer
                 clr = grid.GetSelectionBackground();
             else
                 clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
+				
+				
             dc.SetBrush( wxBrush(clr, wxSOLID) );
         }
         else
