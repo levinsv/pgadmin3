@@ -30,7 +30,7 @@
                 </object>
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtName"/>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -42,7 +42,7 @@
                 </object>
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtOID"/>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -56,7 +56,7 @@
                   <object class="ctlComboBox" name="cbOwner">
                     <content/>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -71,7 +71,7 @@
                     <content/>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -85,7 +85,7 @@
                   <object class="wxTextCtrl" name="txtComment">
                     <style>wxTE_MULTILINE</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -100,7 +100,7 @@
                     <content/>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -123,7 +123,7 @@
                 </object>
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtArguments"/>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -138,7 +138,7 @@
                     <content/>
                     <style>wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -153,7 +153,7 @@
                     <content/>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -185,7 +185,7 @@
                     <selection>0</selection>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -205,7 +205,7 @@
                     <selection>0</selection>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -219,7 +219,7 @@
                   <object class="wxCheckBox" name="chkSetof">
                     <label></label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -233,7 +233,7 @@
                   <object class="wxCheckBox" name="chkStrict">
                     <label></label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -247,7 +247,7 @@
                   <object class="wxCheckBox" name="chkSecureDefiner">
                     <label></label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -261,7 +261,7 @@
                   <object class="wxCheckBox" name="chkWindow">
                     <label></label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -275,7 +275,7 @@
                   <object class="wxTextCtrl" name="txtCost">
                     <style></style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -289,7 +289,7 @@
                   <object class="wxTextCtrl" name="txtRows">
                     <style></style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -303,7 +303,7 @@
                   <object class="wxCheckBox" name="chkLeakProof">
                     <label></label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -335,7 +335,7 @@
                         <content/>
                         <style>wxCB_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+                      <flag>wxEXPAND</flag>
                     </object>
                     <object class="sizeritem">
                       <object class="wxStaticText" name="stMode">
@@ -379,7 +379,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtArgName"/>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+                      <flag>wxEXPAND</flag>
                     </object>
                     <object class="sizeritem">
                       <object class="wxStaticText" name="stArgDefVal">
@@ -389,7 +389,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtArgDefVal"/>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+                      <flag>wxEXPAND</flag>
                     </object>
                     <cols>2</cols>
                     <vgap>4</vgap>
@@ -457,7 +457,7 @@
                       <object class="wxTextCtrl" name="txtObjectFile">
                         <size>135,-1d</size>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -471,7 +471,7 @@
                       <object class="wxTextCtrl" name="txtLinkSymbol">
                         <size>135,-1d</size>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
@@ -548,7 +548,7 @@
                         <content/>
                         <style>wxCB_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -566,15 +566,15 @@
                         <growablecols>0,1</growablecols>
                         <object class="sizeritem">
                           <object class="wxTextCtrl" name="txtValue"/>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                          <flag>wxEXPAND</flag>
                         </object>
                         <object class="sizeritem">
                           <object class="wxCheckBox" name="chkValue">
                             <label></label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                          <flag>wxEXPAND</flag>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                        <flag>wxEXPAND</flag>
                       </object>
                       <flag>wxALL|wxGROW</flag>
                       <border>4</border>

@@ -66,6 +66,9 @@ frmHbaConfig::frmHbaConfig(frmMain *parent, pgServer *server)
 		SetTitle(BACE_TITLE + txt);
 
 		wxString str;
+		if (conn->BackendMinimumVersion(10, 0)) {
+			str = conn->ExecuteScalar(wxT("SELECT pg_read_file('") + serverFileName + wxT("') "));
+		} else 
 		str = conn->ExecuteScalar(wxT("SELECT pg_file_read('") + serverFileName + wxT("', 0, ")
 		                          wxT("pg_file_length('") + serverFileName + wxT("'))"));
 

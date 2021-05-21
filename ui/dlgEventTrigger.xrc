@@ -27,7 +27,7 @@
 								</object>
 								<object class="sizeritem">
 									<object class="wxTextCtrl" name="txtName" />
-									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 									<border>4</border>
 								</object>
 								<object class="sizeritem">
@@ -39,7 +39,7 @@
 								</object>
 								<object class="sizeritem">
 									<object class="wxTextCtrl" name="txtOID" />
-									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 									<border>4</border>
 								</object>
 								<object class="sizeritem">
@@ -55,7 +55,7 @@
 										<style>wxCB_DROPDOWN</style>
 										<content />
 									</object>
-									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -71,7 +71,7 @@
 										<size>405,313</size>
 										<style>wxTE_MULTILINE</style>
 									</object>
-									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 									<border>4</border>
 								</object>
 							</object>
@@ -97,7 +97,7 @@
 									<object class="wxCheckBox" name="chkEnable">
 										<checked>1</checked>
 									</object>
-									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 									<border>4</border>
 								</object>
 								<object class="sizeritem">
@@ -119,7 +119,7 @@
 										<size>210,38</size>
 										<style>wxRA_SPECIFY_ROWS</style>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -135,7 +135,7 @@
 										<style>wxCB_DROPDOWN</style>
 										<content />
 									</object>
-									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 									<border>4</border>
 								</object>
 								<object class="sizeritem">
@@ -156,7 +156,7 @@
 										<size>333,38</size>
 										<style>wxRA_SPECIFY_ROWS</style>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -173,7 +173,7 @@
 										<size>374,187</size>
 										<style>wxTE_MULTILINE</style>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>4</border>
 								</object>
 							</object>
@@ -181,7 +181,7 @@
 						<label>Definition</label>
 					</object>
 				</object>
-				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>3</border>
 			</object>
 			<object class="sizeritem">
@@ -192,7 +192,7 @@
 						<object class="wxButton" name="wxID_HELP">
 							<label>Help</label>
 						</object>
-						<flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP</flag>
+						<flag>wxALL|wxEXPAND</flag>
 						<border>3</border>
 					</object>
 					<object class="spacer">
@@ -204,24 +204,24 @@
 							<label>&amp;OK</label>
 							<default>1</default>
 						</object>
-						<flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP</flag>
+						<flag>wxALL|wxEXPAND</flag>
 						<border>3</border>
 					</object>
 					<object class="sizeritem">
 						<object class="wxButton" name="wxID_CANCEL">
 							<label>&amp;Cancel</label>
 						</object>
-						<flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP</flag>
+						<flag>wxALL|wxEXPAND</flag>
 						<border>3</border>
 					</object>
 				</object>
-				<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP</flag>
+				<flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
 			</object>
 				<object class="sizeritem">
 					<object class="wxStatusBar" name="unkStatusBar">
 					<style>wxST_SIZEGRIP</style>
 					</object>
-				   <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+				   <flag>wxEXPAND</flag>
 				   <border>3</border>
 			  </object>
 		</object>

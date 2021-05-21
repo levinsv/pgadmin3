@@ -23,7 +23,7 @@
             <object class="wxTextCtrl" name="txtFind">
               <tooltip>Enter the string to search for</tooltip>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
@@ -32,7 +32,7 @@
               <default>1</default>
               <tooltip>Find the specified text</tooltip>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
@@ -46,7 +46,7 @@
             <object class="wxTextCtrl" name="txtReplace">
               <tooltip>Enter the replacement text</tooltip>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
@@ -54,7 +54,7 @@
               <label>&amp;Replace</label>
               <tooltip>Find and replace the specified text</tooltip>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="spacer">
@@ -73,11 +73,11 @@
               <label>Replace &amp;All</label>
               <tooltip>Find and replace all occurrences of the specified text</tooltip>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -138,7 +138,7 @@
                 <border>4</border>
               </object>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="sizeritem">
@@ -176,14 +176,14 @@
                 <border>4</border>
               </object>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>4</border>
           </object>
           <object class="spacer">
             <size>0,0d</size>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>4</border>
       </object>
       <object class="sizeritem">
@@ -202,7 +202,7 @@
             <border>4</border>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+        <flag>wxEXPAND</flag>
       </object>
     </object>
   </object>

@@ -32,7 +32,7 @@
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                     <content/>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -45,7 +45,7 @@
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtReceiver">
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -60,14 +60,14 @@
                     <content/>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
               </object>
             </object>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+        <flag>wxEXPAND|wxALL</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">

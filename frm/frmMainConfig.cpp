@@ -72,8 +72,12 @@ frmMainConfig::frmMainConfig(frmMain *parent, pgServer *server)
 		SetTitle(BCE_TITLE + txt);
 
 		wxString str;
-		str = conn->ExecuteScalar(wxT("SELECT pg_file_read('") + serverFileName + wxT("', 0, ")
-		                          wxT("pg_file_length('") + serverFileName + wxT("'))"));
+		if (conn->BackendMinimumVersion(10, 0)) {
+			str = conn->ExecuteScalar(wxT("SELECT pg_read_file('") + serverFileName + wxT("') "));
+		}
+		else
+			str = conn->ExecuteScalar(wxT("SELECT pg_file_read('") + serverFileName + wxT("', 0, ")
+				wxT("pg_file_length('") + serverFileName + wxT("'))"));
 
 		DisplayFile(str);
 
@@ -503,7 +507,7 @@ void frmMainConfig::DisplayFile(const wxString &str)
 	FillList(wxT("stats_command_string"), wxT("track_activities"));      // Statistics / Query and Index Statistics Collector
 	FillList(wxT("log_executor_stats"));        // Statistics / Monitoring
 	FillList(wxT("fsync"));                     // Write-Ahead Log / Settings
-	FillList(wxT("checkpoint_segments"));       // Write-Ahead Log / Checkpoints
+	//FillList(wxT("checkpoint_segments"));       // Write-Ahead Log / Checkpoints
 	if (versionRetVal && versionNum <= 8.4)
 		FillList(wxT("add_missing_from"));          // Version and Platform Compatibility / Previous PostgreSQL Version
 	FillList(wxT("transform_null_equals"));     // Version and Platform Compatibility / Other Platforms and Clients

@@ -343,7 +343,7 @@ const wxChar *pgHbaConnectTypeStrings[] =
 
 
 // must match enum pgHbaMethod!!!
-const wxChar *pgHbaMethodStrings[] =
+const wxChar* pgHbaMethodStrings[] =
 {
 	wxT("trust"),
 	wxT("reject"),
@@ -360,6 +360,7 @@ const wxChar *pgHbaMethodStrings[] =
 	wxT("cert"),
 	wxT("peer"),
 	wxT("radius"),
+	wxT("scram-sha-256"),
 	0
 };
 
@@ -484,8 +485,8 @@ void pgHbaConfigLine::Init(const wxString &line)
 		}
 		if (!hasCidr)
 		{
-			SkipSpace(p4);
-			SkipNonspace(p4);
+			//SkipSpace(p4);
+			//SkipNonspace(p4);
 		}
 
 		ipaddress = line.Mid(p3 - line.c_str(), p4 - p3);

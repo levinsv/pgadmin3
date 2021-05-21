@@ -31,7 +31,7 @@
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtName">
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -45,7 +45,7 @@
                   <object class="wxTextCtrl" name="txtID"> 
                     <style>wxTE_READONLY</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -60,7 +60,7 @@
                     <checked>1</checked>
                     <label></label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -80,17 +80,17 @@
                       <object class="wxCalendarBox" name="calStart">
                         <style>wxDP_ALLOWNONE|wxDP_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
                       <object class="wxTimeSpinCtrl" name="timStart">
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                  <flag>wxEXPAND</flag>
                 </object>
                 <object class="sizeritem">
                   <object class="wxStaticText" name="stEnd">
@@ -109,17 +109,17 @@
                       <object class="wxCalendarBox" name="calEnd">
                         <style>wxDP_ALLOWNONE|wxDP_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
                       <object class="wxTimeSpinCtrl" name="timEnd">
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                  <flag>wxEXPAND</flag>
                 </object>
                 <object class="sizeritem">
                   <object class="wxStaticText" name="stComment">
@@ -132,7 +132,7 @@
                   <object class="wxTextCtrl" name="txtComment">
                     <style>wxTE_MULTILINE</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -174,7 +174,7 @@
                       <item>Saturday</item>
                     </content>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -229,7 +229,7 @@
                       <item>Last day</item>
                     </content>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -263,7 +263,7 @@
                       <item>December</item>
                     </content>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -297,7 +297,7 @@
                     <size>-1,100d</size>
                     <content/>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -318,7 +318,7 @@
                   <object class="wxCheckListBox" name="chkMinutes">
                     <content/>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -337,7 +337,7 @@
                   <object class="wxListCtrl" name="lstExceptions">
                     <style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -357,7 +357,7 @@
                       <object class="wxCalendarBox" name="calException">
                         <style>wxDP_ALLOWNONE|wxDP_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -370,11 +370,11 @@
                     <object class="sizeritem">
                       <object class="wxTimeSpinCtrl" name="timException">
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                  <flag>wxEXPAND</flag>
                 </object>
                 <object class="sizeritem">
                   <object class="wxFlexGridSizer">
@@ -407,13 +407,13 @@
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                  <flag>wxEXPAND</flag>
                 </object>
               </object>
             </object>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+        <flag>wxEXPAND|wxALL</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -452,7 +452,7 @@
         <object class="wxStatusBar" name="unkStatusBar">
           <style>wxST_SIZEGRIP</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+        <flag>wxEXPAND</flag>
         <border>3</border>
       </object>
     </object>

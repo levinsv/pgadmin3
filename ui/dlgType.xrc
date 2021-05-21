@@ -31,7 +31,7 @@
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtName">
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -44,7 +44,7 @@
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtOID">
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -59,7 +59,7 @@
                     <content/>
                     <style>wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -74,7 +74,7 @@
                     <content/>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -88,7 +88,7 @@
                   <object class="wxTextCtrl" name="txtComment">
                     <style>wxTE_MULTILINE</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -103,7 +103,7 @@
                     <content/>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -136,7 +136,7 @@
                     <dimension>1</dimension>
                     <style>wxRA_SPECIFY_COLS</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -163,7 +163,7 @@
                       <object class="wxListCtrl" name="lstMembers">
                         <style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -182,7 +182,7 @@
                         <object class="sizeritem">
                           <object class="wxTextCtrl" name="txtMembername">
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
@@ -197,7 +197,7 @@
                             <content/>
                             <style>wxCB_DROPDOWN</style>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
@@ -210,7 +210,7 @@
                         <object class="sizeritem">
                           <object class="wxTextCtrl" name="txtLength">
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
@@ -223,7 +223,7 @@
                         <object class="sizeritem">
                           <object class="wxTextCtrl" name="txtPrecision">
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
@@ -238,11 +238,11 @@
                             <content/>
                             <style>wxCB_DROPDOWN</style>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -274,7 +274,7 @@
                     </object>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -291,7 +291,7 @@
                           <size>200,155d</size>
                           <style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                       <object class="sizeritem">
@@ -310,11 +310,11 @@
                           <object class="sizeritem">
                             <object class="wxTextCtrl" name="txtLabel">
                             </object>
-                            <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                             <border>4</border>
                           </object>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                       <object class="sizeritem">
@@ -348,12 +348,12 @@
                             <border>4</border>
                           </object>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -387,7 +387,7 @@
                                       <content/>
                                       <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -402,7 +402,7 @@
                                       <content/>
                                       <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
 
@@ -429,7 +429,7 @@
                                   	<content/>
                                   	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -444,7 +444,7 @@
                                       <content/>
                                       <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -459,7 +459,7 @@
                                   	<content/>
                                   	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -474,7 +474,7 @@
                                   	<content/>
                                   	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -487,7 +487,7 @@
                                   <object class="sizeritem">
                                     <object class="wxTextCtrl" name="txtIntLength">
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -502,7 +502,7 @@
                                       <label></label>
                                       <checked>1</checked>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -515,7 +515,7 @@
                                   <object class="sizeritem">
                                     <object class="wxTextCtrl" name="txtDefault">
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -530,7 +530,7 @@
                                   	<content/>
                                   	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -560,7 +560,7 @@
                                   	</content>
                                   	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                     </object>
-                                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                     <border>4</border>
                                   </object>
                                   <object class="sizeritem">
@@ -600,7 +600,7 @@
                                           <content/>
                                           <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                         </object>
-                                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                         <border>4</border>
                                       </object>
                                       <object class="sizeritem">
@@ -613,7 +613,7 @@
                                       <object class="sizeritem">
                                         <object class="wxTextCtrl" name="txtDelimiter">
                                         </object>
-                                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                         <border>4</border>
                                       </object>
                                       <object class="sizeritem">
@@ -634,7 +634,7 @@
                                           </content>
                                           <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                         </object>
-                                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                         <border>4</border>
                                       </object>
                                       <object class="sizeritem">
@@ -651,7 +651,7 @@
                                           <selection>0</selection>
                                           <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                                         </object>
-                                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                                         <border>4</border>
                                       </object>
                                       <object class="sizeritem">
@@ -686,12 +686,12 @@
                             </object>
                           </object>
                         </object>
-						<flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+						<flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 						<border>4</border>
                       </object>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -713,7 +713,7 @@
                           <content/>
                           <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                       <object class="sizeritem">
@@ -728,7 +728,7 @@
                           <content/>
                           <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                       <object class="sizeritem">
@@ -743,7 +743,7 @@
                       	<content/>
                       	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                       <object class="sizeritem">
@@ -758,7 +758,7 @@
                           <content/>
                           <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                       <object class="sizeritem">
@@ -773,19 +773,19 @@
                       	<content/>
                       	<style>wxCB_READONLY|wxCB_DROPDOWN</style>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                         <border>4</border>
                       </object>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
               </object>
             </object>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+        <flag>wxEXPAND|wxALL</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -824,7 +824,7 @@
         <object class="wxStatusBar" name="unkStatusBar">
           <style>wxST_SIZEGRIP</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+        <flag>wxEXPAND</flag>
         <border>3</border>
       </object>
     </object>

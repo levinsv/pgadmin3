@@ -93,7 +93,7 @@
           <growablerows>0</growablerows>
           <growablecols>2</growablecols>
         </object>
-        <flag>wxTOP|wxLEFT|wxRIGHT|wxGROW|wxALIGN_CENTRE</flag>
+        <flag>wxTOP|wxLEFT|wxRIGHT|wxGROW</flag>
         <border>5</border>
       </object>
       <object class="sizeritem">

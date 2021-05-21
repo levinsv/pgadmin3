@@ -18,7 +18,7 @@
 			        <size>100,225d</size>
               <style>wxTR_HAS_BUTTONS|wxSIMPLE_BORDER|wxTR_HIDE_ROOT</style>
             </object>
-            <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+            <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
             <border>3</border>
           </object>
           <object class="sizeritem">
@@ -47,7 +47,7 @@
                       <object class="wxTextCtrl" name="txtPgHelpPath">
                         <tooltip>Enter the path or URL to the PostgreSQL documentation</tooltip>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -59,7 +59,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtEdbHelpPath"/>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -71,7 +71,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtGpHelpPath"/>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -83,12 +83,12 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtSlonyHelpPath"/>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
@@ -111,7 +111,7 @@
                         <content/>
                         <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -123,12 +123,12 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtSystemSchemas"/>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
@@ -144,26 +144,26 @@
                       <object class="wxStaticText" name="stDatabaseObjects">
                         <label>Display the following database objects:</label>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
                       <object class="wxCheckListBox" name="lstDisplay">
                         <content/>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
                       <object class="wxButton" name="btnDefault">
                         <label>&amp;Default</label>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
@@ -183,12 +183,12 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="txtAutoRowCount"/>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
@@ -212,7 +212,7 @@
                         <message>Select directory with Slony-I creation scripts</message>
                         <style>wxDIRP_USE_TEXTCTRL</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -227,7 +227,7 @@
                         <message>Select directory with PostgreSQL utilities</message>
                         <style>wxDIRP_USE_TEXTCTRL</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -242,7 +242,7 @@
                         <message>Select directory with EnterpriseDB utilities</message>
                         <style>wxDIRP_USE_TEXTCTRL</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -257,7 +257,7 @@
                         <message>Select directory with GreenplumDB utilities</message>
                         <style>wxDIRP_USE_TEXTCTRL</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -271,7 +271,7 @@
                       <object class="wxCheckBox" name="chkIgnoreVersion">
                         <label>Ignore server/utility version mismatches</label>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -285,12 +285,12 @@
                       <object class="wxStaticText" name="stVersionMismatchWarning">
                         <label>Warning: Backup or restore operations may fail if the PostgreSQL utilities do not match the server version.</label>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
                 </object>
-                <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                 <border>4</border>
               </object>
               <object class="sizeritem">
@@ -316,11 +316,11 @@
                         </object>
                         <object class="sizeritem">
                           <object class="wxFontPickerCtrl" name="pickerFont"/>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -328,7 +328,7 @@
                         <label>Confirm object deletion</label>
                         <checked>1</checked>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -336,7 +336,7 @@
                         <label>Show System Objects in the treeview</label>
                         <checked>0</checked>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -344,7 +344,7 @@
                         <label>Show users for privileges</label>
                       <checked>0</checked>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -352,7 +352,7 @@
                         <label>Show object properties on double click in treeview</label>
                         <checked>0</checked>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -360,7 +360,7 @@
                         <label>Show NOTICEs</label>
                         <checked>0</checked>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -385,17 +385,17 @@
                             </content>
                             <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
 
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
                 </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -415,7 +415,7 @@
                 </object>
                 <object class="sizeritem">
                   <object class="wxFontPickerCtrl" name="pickerSqlFont"/>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -429,7 +429,7 @@
                   <object class="wxTextCtrl" name="txtMaxColSize">
                     <value>256</value>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -441,7 +441,7 @@
                 </object>
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtIndent"/>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -456,7 +456,7 @@
                     <label></label>
                     <style></style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -471,7 +471,7 @@
                     <label></label>
                     <checked>1</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -486,7 +486,7 @@
                     <label></label>
                     <checked>0</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                   <object class="sizeritem">
@@ -501,7 +501,7 @@
                       <label></label>
                       <checked>1</checked>
                     </object>
-                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                     <border>4</border>
                   </object>
                   <object class="sizeritem">
@@ -515,7 +515,7 @@
                     <object class="wxCheckBox" name="chkKeywordsInUppercase">
                       <label></label>
                     </object>
-                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                     <border>4</border>
                   </object>
                   <object class="sizeritem">
@@ -532,7 +532,7 @@
                       <style>wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
                       <tooltip>A command line utility which reads STDIN and directs output to STDOUT.</tooltip>
                     </object>
-                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                     <border>4</border>
                   </object>
                   <object class="sizeritem">
@@ -547,12 +547,12 @@
                       <label></label>
                       <checked>1</checked>
                     </object>
-                    <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                     <border>4</border>
                   </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -578,21 +578,21 @@
                             <label>Use system background color</label>
                             <style></style>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLCustomBackgroundColour">
                             <label>Custom background</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLBackgroundColour">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
@@ -600,21 +600,21 @@
                             <label>Use system foreground color</label>
                             <style></style>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLCustomForegroundColour">
                             <label>Custom foreground</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLForegroundColour">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="spacer">
@@ -624,22 +624,22 @@
                           <object class="wxStaticText" name="stSQLMarginBackgroundColour">
                             <label>Margin background</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLMarginBackgroundColour">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -656,22 +656,22 @@
                           <object class="wxStaticText" name="stSQLCaretColour">
                             <label>Caret</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLCaretColour">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -688,139 +688,139 @@
                           <object class="wxStaticText" name="stSQLColour1">
                             <label>Multiline comment</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour1">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour6">
                             <label>Double quoted string</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour6">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour2">
                             <label>Single line comment</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour2">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour7">
                             <label>Single quoted string</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour7">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour3">
                             <label>SQL doc</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour3">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour10">
                             <label>Operator</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour10">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour4">
                             <label>Number</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour4">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour11">
                             <label>Identifier</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour11">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="wxStaticText" name="stSQLColour5">
                             <label>Keyword</label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                         <object class="sizeritem">
                           <object class="ctlColourPicker" name="pickerSQLColour5">
                             <size>70,12d</size>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTRE|wxALL</flag>
+                      <flag>wxEXPAND|wxALL</flag>
                       <border>3</border>
                     </object>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -847,7 +847,7 @@
                     </content>
                     <style>wxCB_READONLY|wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -865,7 +865,7 @@
                     </content>
                     <style>wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -885,7 +885,7 @@
                     </content>
                     <style>wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -900,7 +900,7 @@
                     <label></label>
                     <checked>0</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -915,7 +915,7 @@
                     <label></label>
                     <checked>0</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -930,7 +930,7 @@
                     <label></label>
                     <checked>0</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -945,12 +945,12 @@
                     <label></label>
                     <checked>0</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>                  
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -965,7 +965,7 @@
                   <object class="wxCheckBox" name="chkUnicodeFile">
                     <label>Read and write Unicode UTF-8 files</label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -973,7 +973,7 @@
                     <label>Write BOM for UTF files</label>
                     <checked>1</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -981,12 +981,12 @@
                     <label>Do not prompt for unsaved files on exit</label>
                     <checked>0</checked>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1009,12 +1009,12 @@
                     <message>Select file to store favourites queries</message>
                     <style>wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1037,12 +1037,12 @@
                     <message>Select file to store macros</message>
                     <style>wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1065,21 +1065,21 @@
                     <message>Select file to store queries history</message>
                     <style>wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
                   <object class="wxStaticText" name="lblHistoryMaxQueries">
                     <label>Maximum queries to store in history</label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtHistoryMaxQueries">
                     <value>10</value>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -1093,12 +1093,12 @@
                   <object class="wxTextCtrl" name="txtHistoryMaxQuerySize">
                     <value>100</value>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1113,14 +1113,14 @@
 					  <object class="wxStaticText" name="stIdleProcessColour">
 						<label>Idle Process Colour</label>
 					  </object>
-					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
 					<object class="sizeritem">
 					  <object class="ctlColourPicker" name="pickerIdleProcessColour">
 						<size>70,12d</size>
 					  </object>
-					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
 					<object class="sizeritem">
@@ -1134,7 +1134,7 @@
 					  <object class="ctlColourPicker" name="pickerActiveProcessColour">
 						<size>70,12d</size>
 					  </object>
-					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
 					<object class="sizeritem">
@@ -1148,7 +1148,7 @@
 					  <object class="ctlColourPicker" name="pickerSlowProcessColour">
 						<size>70,12d</size>
 					  </object>
-					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
 					<object class="sizeritem">
@@ -1162,7 +1162,7 @@
 					  <object class="ctlColourPicker" name="pickerBlockedProcessColour">
 						<size>70,12d</size>
 					  </object>
-					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
 					<object class="sizeritem">
@@ -1176,12 +1176,12 @@
 					  <object class="ctlColourPicker" name="pickerBlockedbyProcessColour">
 						<size>70,12d</size>
 					  </object>
-					  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1207,11 +1207,11 @@
                         </object>
                         <object class="sizeritem">
                           <object class="wxFontPickerCtrl" name="pickerFontDD"/>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                   </object>
@@ -1234,15 +1234,15 @@
                     <value>100</value>
                     <tooltip>Maximums rows to retrieve into output window; 0 = unlimited</tooltip>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1257,19 +1257,19 @@
                   <object class="wxCheckBox" name="chkSuppressHints">
                     <label>Do not show guru hints; I'm one myself</label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
                   <object class="wxCheckBox" name="chkResetHints">
                     <label>Reset guru hints</label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
             <object class="sizeritem">
@@ -1284,7 +1284,7 @@
                   <object class="wxStaticText" name="lblLogfile">
                     <label>Logfile (%ID will be replaced with the Process ID)</label>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -1293,7 +1293,7 @@
                     <style>wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
                     <tooltip>Enter a filename to write application logs to.</tooltip>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -1311,12 +1311,12 @@
                     <style>wxRA_SPECIFY_COLS</style>
                     <tooltip>Select the level of detail to record in the logfile.</tooltip>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 </object>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+              <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
               <border>4</border>
             </object>
           </object>
@@ -1324,7 +1324,7 @@
             <border>3</border>
           </object>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+        <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -1365,7 +1365,7 @@
         <object class="wxStatusBar" name="unkStatusBar">
           <style>wxST_SIZEGRIP</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+        <flag>wxEXPAND</flag>
         <border>3</border>
       </object>
     </object>

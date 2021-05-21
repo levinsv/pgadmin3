@@ -287,9 +287,9 @@ private:
 	wxColour GetServerColour(pgConn *connection);
 
 	bool relatesToWindow(wxWindow *which, wxWindow *related);
-
+	void fileMarkerActive(bool addOrRemove, wxString& sqlTabName);
 	// Methods related to SQL tabs
-	void SqlBookAddPage();
+	void SqlBookAddPage(wxString& title);
 	bool SqlBookRemovePage();
 	bool SqlBookCanChangePage();
 	void SqlBookSetAutoIndent(bool b);

@@ -16,6 +16,7 @@
 #include <wx/hashmap.h>
 
 
+
 class pgSet;
 class pgConn;
 
@@ -89,6 +90,7 @@ public:
 		PGC_CERT,
 		PGC_PEER,
 		PGC_RADIUS,
+		PGC_SCRAM_SHA_256,
 		PGC_INVALIDMETHOD
 	};
 

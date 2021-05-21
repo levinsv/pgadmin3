@@ -1144,9 +1144,10 @@ void frmEditGrid::OnOptions(wxCommandEvent &event)
 		}
 	}
 
-	dlgEditGridOptions *winOptions = new dlgEditGridOptions(this, connection, tableName, sqlGrid);
-	if (winOptions->ShowModal())
+	dlgEditGridOptions winOptions(this, connection, tableName, sqlGrid);
+	if (winOptions.ShowModal())
 		Go();
+
 }
 
 

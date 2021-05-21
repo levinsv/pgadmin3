@@ -697,7 +697,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			// Now, reset the position, and clear the selection
 			SetCurrentPos(GetCurrentPos() + rpl2.Length());
 			SetSelection(GetCurrentPos(), GetCurrentPos());
-
+			break;
 		}
 		}
 		}
@@ -1344,16 +1344,34 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 	else
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), spaceidx + 1, what.Len() + 1, m_database);
 	wxString wxRet;
-	if (tab_ret == NULL || tab_ret[0] == '\0'){
+	if ((tab_ret == NULL || tab_ret[0] == '\0')&&(what.Right(1)>' ')){
 			int l=0;
-			for (int kk=what.Len()-2;kk>=0;kk--) {
+			wxString alias;
+			wxString fld,tmp;
+			bool fl = true;
+			for (int kk=what.Len()-1;kk>=0;kk--) {
 				//char c=myStringChars.data[kk];
-				if ( what[kk]<'0') break;
-				l++;
+				if (what[kk] <= ' ') {
+					for (wxString::reverse_iterator it = tmp.rbegin(); it != tmp.rend(); ++it)
+					{
+						alias.Append(*it);
+					}
+					break;
+				}
+				if (what[kk] == '.' && fl) {
+					fl = false;
+					for (wxString::reverse_iterator it = tmp.rbegin(); it != tmp.rend(); ++it)
+					{
+						fld.Append(*it);
+					}
+					tmp = wxEmptyString;
+					continue;
+				}
+				tmp += what[kk];
 			}
 			wxString f_name;
-			if (l>0) {
-				wxString alias=what.substr(what.Len()-1-l,l);
+			if (!fl && !alias.IsEmpty()) {
+				
 				wxString lst=list_table;
 				wxString table;
 				//alias.Replace(wxT("."), wxT(""));
@@ -1381,11 +1399,16 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 					p++;
 				}
 				if (found) {
+					wxString flt="";
+					if (!fld.IsEmpty()) flt = " and a.attname ~ " + qtConnString(fld);
 				wxString sql=wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") +qtConnString(table)
-						+wxT(") and a.attisdropped IS FALSE and a.attnum>=0 order by 1");
+						+wxT(") and a.attisdropped IS FALSE and a.attnum>=0 ")+flt
+						+wxT(" order by 1");
 				//pgSet *res = m_database->ExecuteSet(sql);
 				prev= m_database->ExecuteScalar(sql);
-				AutoCompShow(0, prev);
+				int l2 = 0;
+				if (!fld.IsEmpty()) l2 = fld.Len();
+				AutoCompShow(l2, prev);
 				return;
 				}
 				//list_table.Find(alias	

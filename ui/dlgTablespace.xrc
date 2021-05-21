@@ -33,7 +33,7 @@
                   <object class="wxTextCtrl" name="txtName">
                     <pos>70,5d</pos>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -45,7 +45,7 @@
                 </object>
                 <object class="sizeritem">
                   <object class="wxTextCtrl" name="txtOID"/>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -62,7 +62,7 @@
                     <pos>70,35d</pos>
                     <style>wxCB_DROPDOWN</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -78,7 +78,7 @@
                     <pos>70,50d</pos>
                     <style>wxTE_MULTILINE</style>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                  <flag>wxEXPAND|wxALL</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -104,7 +104,7 @@
                   <object class="wxTextCtrl" name="txtLocation">
                     <pos>70,20d</pos>
                   </object>
-                  <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                   <border>4</border>
                 </object>
               </object>
@@ -124,7 +124,7 @@
                     <pos>5,6d</pos>
                     <style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
                   </object>
-                  <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+                  <flag>wxALL|wxGROW</flag>
                   <border>4</border>
                 </object>
                 <object class="sizeritem">
@@ -149,7 +149,7 @@
                       <border>4</border>
                     </object>
                   </object>
-                  <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+                  <flag>wxALL|wxGROW</flag>
                   <border>3</border>
                 </object>
                 <object class="sizeritem">
@@ -170,7 +170,7 @@
                         <content/>
                         <style>wxCB_DROPDOWN</style>
                       </object>
-                      <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
@@ -189,17 +189,17 @@
                         <object class="sizeritem">
                           <object class="wxTextCtrl" name="txtValue">
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                          <flag>wxEXPAND</flag>
                         </object>
                         <object class="sizeritem">
                           <object class="wxCheckBox" name="chkValue">
                             <label></label>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                          <flag>wxEXPAND</flag>
                         </object>
-                        <flag>wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+                        <flag>wxEXPAND</flag>
                       </object>
-                      <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+                      <flag>wxALL|wxGROW</flag>
                       <border>4</border>
                     </object>
                   </object>
@@ -209,7 +209,7 @@
             </object>
           </object>
         </object>
-        <flag>wxALL|wxGROW|wxALIGN_CENTRE</flag>
+        <flag>wxALL|wxGROW</flag>
         <border>3</border>
       </object>
       <object class="sizeritem">
@@ -248,7 +248,7 @@
         <object class="wxStatusBar" name="unkStatusBar">
           <style>wxST_SIZEGRIP</style>
         </object>
-        <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+        <flag>wxEXPAND</flag>
         <border>3</border>
       </object>
     </object>
