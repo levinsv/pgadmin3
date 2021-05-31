@@ -240,6 +240,10 @@ pgObject *pgTextSearchConfigurationFactory::CreateObjects(pgCollection *collecti
 
 					maps->MoveNext();
 				}
+				if (tokenToAdd.Length() > 0 )
+				{
+					config->GetTokens().Add(tokenToAdd);
+				}
 
 				delete maps;
 			}
