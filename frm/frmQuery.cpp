@@ -777,13 +777,13 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxString pref=_conn->GetDbname();
 
 	bool modeUnicode = settings->GetUnicodeFile();
-	wxString activePage;
+	wxArrayString activePage;
 	wxString f = wxFindFirstFile(tempDir+wxT("*.a"));
      while ( !f.empty() )
      {
 		 filename=f.AfterLast('\\').BeforeLast('.');
 		 if (filename.BeforeFirst('.') == "_active") {
-			 activePage = filename.AfterFirst('.');
+			 activePage.Add(filename.AfterFirst('.'));
 		 }
 		 if ((f.AfterLast('\\').StartsWith(pref+wxT("."))||(filename.BeforeLast('.').IsEmpty()))) {
 			wxUtfFile file(f, wxFile::read, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
@@ -830,8 +830,9 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		 //outputPane->GetPageText(curpage) == _("History");
 		 for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
 			 wxString textpage = sqlQueryBook->GetPageText(i);
-			 if (textpage ==activePage) {
+			 if (wxNOT_FOUND !=activePage.Index(textpage)) {
 				 sqlQueryBook->SetSelection(i);
+				 break;
 				 //sqlQueryBook->ChangeSelection(i);
 				 //if (sqlQueryBook->GetSelection()!=i) sqlQueryBook->SetSelection(i);
 			 }
@@ -4160,8 +4161,9 @@ void frmQuery::fileMarkerActive(bool addOrRemove, wxString &sqlTabName) {
 	
 	wxString fn = tempDir + wxT("_active.") + tabname + ".a";
 	//if (sqlTabName.Right(1)=='*' ) tabname=
-	if (addOrRemove) 
-		wxUtfFile file(fn, wxFile::write, wxFONTENCODING_UTF8);
+	if (addOrRemove)
+		//wxUtfFile file(fn, wxFile::write, wxFONTENCODING_UTF8);
+		wxFile file(fn, wxFile::write);
 	else
 		if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
 
