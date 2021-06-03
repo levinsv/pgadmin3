@@ -198,13 +198,14 @@ void ctlTree::OnMouse(wxMouseEvent& event)
 		else {
 		if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT && (item==GetSelection())) {
 			wxRect r;
-			wxClientDC dc(this);
 			GetBoundingRect(item, r, true);
 			r.width = r.x-19;
 			r.x = r.x - 19;
+			if (r.x < 10) return;
 			wxTreeItemId prev;
 			wxTreeItemId itemParent = item;
 			wxImageList *list=this->GetImageList();
+			wxClientDC dc(this);
 			bool ex = false;
 			while (!ex) {
 				//ex = true;
@@ -214,17 +215,17 @@ void ctlTree::OnMouse(wxMouseEvent& event)
 				if (!itemParent.IsOk()) break;
 				r.x = r.x - 19;
 				//if (r.x >= pt.x) ex = false;
-				
-					dc.SetClippingRegion(r.x + 1-19, r.y + 1,
+				int image = this->GetItemImage(itemParent);
+				if (image >= 0) {
+					dc.SetClippingRegion(r.x + 1 - 19, r.y + 1,
 						16, 16);
-					int image = this->GetItemImage(itemParent);
 					list->Draw(image, dc,
-						r.x + 1-19,
+						r.x + 1 - 19,
 						r.y + 1,
 						wxIMAGELIST_DRAW_TRANSPARENT
 					);
 					dc.DestroyClippingRegion();
-				
+				}
 			}
 //			dc.SetBrush(*wxRED);
 //			dc.SetPen(*wxTRANSPARENT_PEN);
