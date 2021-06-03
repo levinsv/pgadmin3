@@ -15,13 +15,13 @@
 // App headers
 #include "pgAdmin3.h"
 #include "ctl/ctlTree.h"
-
 #include "schema/pgObject.h"
 #include "schema/pgCollection.h"
 #include "schema/pgServer.h"
 
 BEGIN_EVENT_TABLE(ctlTree, wxTreeCtrl)
 	EVT_CHAR(ctlTree::OnChar)
+	EVT_MOUSE_EVENTS(ctlTree::OnMouse)
 END_EVENT_TABLE()
 
 
@@ -143,7 +143,101 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 
 	return id;
 }
+wxTreeItemId ctlTree::GetVerticalItem(wxPoint& pt) {
+	int flags = 0;
+	wxTreeItemId item = DoTreeHitTest(pt, flags);
+	if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT) {
+		if (item) {
+			wxRect r;
+			wxTreeItemId itemParent = item;
+			GetBoundingRect(itemParent, r, true);
+			r.x = r.x - 19;
+			wxTreeItemId prev;
+			bool ex = false;
+			while (!ex) {
+				ex = true;
+				prev = itemParent;
+				itemParent = GetItemParent(itemParent);
+				//this->ScrollTo(itemParent);
+				r.x = r.x - 19;
+				if (r.x >= pt.x) ex = false;
+			}
+			if (prev) return (prev);
+		}
+		//wxTreeEvent	nevent(wxEVT_TREE_ITEM_MIDDLE_CLICK, this, item);
+		//nevent.m_pointDrag = CalcScrolledPosition(pt);
+		//event.Skip(!GetEventHandler()->ProcessEvent(nevent));
+		
+	}
+	return NULL;
+}
+void ctlTree::OnMouse(wxMouseEvent& event)
+{
+	wxPoint pt = event.GetPosition();
+	int flags = 0;
+	wxTreeItemId item = DoTreeHitTest(pt, flags);
+	if (event.LeftDown())
+		{
+			if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT) {
+				if (item) {
+					wxRect r;
+					wxTreeItemId itemParent=item;
+					GetBoundingRect(itemParent, r, false);
+					wxTreeItemId prev;
+					prev = GetVerticalItem(pt);
+					if (prev) SelectItem(prev);
+					return;
+				}
+				//wxTreeEvent	nevent(wxEVT_TREE_ITEM_MIDDLE_CLICK, this, item);
+				//nevent.m_pointDrag = CalcScrolledPosition(pt);
+				//event.Skip(!GetEventHandler()->ProcessEvent(nevent));
+				return;
+			}
+			
+		}
+		else {
+		if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT && (item==GetSelection())) {
+			wxRect r;
+			wxClientDC dc(this);
+			GetBoundingRect(item, r, true);
+			r.width = r.x-19;
+			r.x = r.x - 19;
+			wxTreeItemId prev;
+			wxTreeItemId itemParent = item;
+			wxImageList *list=this->GetImageList();
+			bool ex = false;
+			while (!ex) {
+				//ex = true;
+				prev = itemParent;
+				itemParent = GetItemParent(itemParent);
+				//this->ScrollTo(itemParent);
+				if (!itemParent.IsOk()) break;
+				r.x = r.x - 19;
+				//if (r.x >= pt.x) ex = false;
+				
+					dc.SetClippingRegion(r.x + 1-19, r.y + 1,
+						16, 16);
+					int image = this->GetItemImage(itemParent);
+					list->Draw(image, dc,
+						r.x + 1-19,
+						r.y + 1,
+						wxIMAGELIST_DRAW_TRANSPARENT
+					);
+					dc.DestroyClippingRegion();
+				
+			}
+//			dc.SetBrush(*wxRED);
+//			dc.SetPen(*wxTRANSPARENT_PEN);
+//			dc.DrawRectangle(r);
+			Update();
+			return;
 
+		}
+
+		}
+		event.Skip();
+
+}
 void ctlTree::OnChar(wxKeyEvent &event)
 {
 	int keyCode = event.GetKeyCode();

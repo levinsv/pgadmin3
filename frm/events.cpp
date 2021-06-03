@@ -74,6 +74,7 @@ BEGIN_EVENT_TABLE(frmMain, pgFrame)
 	EVT_TREE_ITEM_COLLAPSING(CTL_BROWSER,   frmMain::OnCollapse)
 	EVT_TREE_ITEM_ACTIVATED(CTL_BROWSER,    frmMain::OnSelActivated)
 	EVT_TREE_ITEM_RIGHT_CLICK(CTL_BROWSER,  frmMain::OnSelRightClick)
+	EVT_TREE_ITEM_GETTOOLTIP(CTL_BROWSER,   frmMain::OnBrowserToolTip)
 	EVT_STC_UPDATEUI(CTL_SQLPANE,           frmMain::OnPositionStc)
 	EVT_CLOSE(                              frmMain::OnClose)
 
@@ -818,7 +819,10 @@ void frmMain::OnContextMenu(wxCommandEvent &event)
 
 }
 
+void frmMain::OnBrowserToolTip(wxTreeEvent& event)
+{
 
+}
 ////////////////////////////////////////////////////////////////////////////////
 // This handler will display a popup menu for the item at the mouse position
 ////////////////////////////////////////////////////////////////////////////////

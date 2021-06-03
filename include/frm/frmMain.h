@@ -259,6 +259,7 @@ private:
 	void OnTreeKeyDown(wxTreeEvent &event);
 	void OnSelActivated(wxTreeEvent &event);
 	void OnSelRightClick(wxTreeEvent &event);
+	void OnBrowserToolTip(wxTreeEvent& event);
 	void OnCollapse(wxTreeEvent &event);
 	void OnExpand(wxTreeEvent &event);
 	void OnClose(wxCloseEvent &event);

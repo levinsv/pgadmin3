@@ -42,10 +42,12 @@ public:
 	wxTreeItemId FindItem(const wxTreeItemId &item, const wxString &str, bool full = false);
 	void NavigateTree(int keyCode);
 	virtual ~ctlTree();
-
+	void OnMouse(wxMouseEvent& ev);
+	wxTreeItemId GetVerticalItem(wxPoint& pt);
 	DECLARE_EVENT_TABLE()
 
 private:
+
 	void OnChar(wxKeyEvent &event);
 	wxString m_findPrefix;
 	ctlTreeFindTimer *m_findTimer;
