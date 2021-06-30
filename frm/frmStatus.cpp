@@ -2480,7 +2480,7 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 	// changed to return the csv format log files, we should handle it.
 
 	bool csv_log_format = filename.Right(4) == wxT(".csv");
-
+	
 	if (csv_log_format && savedPartialLine.length() > 0)
 	{
 		if (read == 0)  // Starting at beginning of log file
@@ -2488,7 +2488,7 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 		else
 			line = savedPartialLine;
 	}
-	wxString funcname = "pg_read_file(";
+	wxString funcname = "pg_read_binary_file(";
 	if (!settings->GetASUTPstyle()) funcname = "pg_file_read(";
 	while (len > read)
 	{
@@ -2500,24 +2500,73 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 			connection->IsAlive();
 			return;
 		}
-		char *raw = set->GetCharPtr(0);
+		
+		char *raw1 = set->GetCharPtr(0);
 
-		if (!raw || !*raw)
+		if (!raw1 || !*raw1)
 		{
 			delete set;
 			break;
 		}
-
-		read += strlen(raw);
-
-		wxString str;
-		str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
-		//if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
-		//	str = line + wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8);
-		//else {
-		//	str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
-		//}
+		char* raw;
+		unsigned char m[50001];
+		if (settings->GetASUTPstyle()) {
 			
+			raw =( char *) &m[0];
+			unsigned char c;
+			unsigned char* startChar;
+			int pos = 0;
+			raw1 = raw1 + 2;
+			int utf8charLen = 0;
+			while (*raw1!=0) {
+				c = *raw1;
+				c = c - '0';
+				if (c > 9) c = *raw1 - 'a' + 10;
+				raw1++;
+				m[pos] = c << 4;
+				c = *raw1 - '0';
+				if (c > 9) c = *raw1 - 'a' + 10;
+				c = c | m[pos];
+				m[pos] =  c;
+				// check utf-8 char
+				if (utf8charLen == 0) {
+					startChar = &m[pos];
+					if(c >> 7 == 0)
+						utf8charLen = 1;
+					else if (c >> 5 == 0x6)
+							utf8charLen = 2;
+					else if (c >> 4 == 0xE)
+							utf8charLen = 3;
+					else if (c >> 5 == 0x1E)
+							utf8charLen = 4;
+					else
+							utf8charLen=0;
+					// bad utf8 format
+				}
+				pos++;
+				raw1++;
+				utf8charLen--;
+			}
+			// 
+			if (utf8charLen != 0) {
+				//read = startChar - &m[0];
+				// remove bad utf-8 char
+				*startChar = 0;
+			} else 
+				m[pos] = 0;
+		} else {
+			raw = raw1;
+		}
+			read += strlen(raw);
+
+			wxString str;
+			str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
+			//if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
+			//	str = line + wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8);
+			//else {
+			//	str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
+			//}
+		
 
 		delete set;
 
