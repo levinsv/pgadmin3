@@ -666,12 +666,19 @@ public:
 };
 
 
+class disconnectServerFactoryAll : public contextActionFactory
+{
+public:
+	disconnectServerFactoryAll(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar);
+	wxWindow *StartDialog(frmMain *form, pgObject *obj);
+	bool CheckEnable(pgObject *obj);
+};
 class disconnectServerFactory : public contextActionFactory
 {
 public:
-	disconnectServerFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar);
-	wxWindow *StartDialog(frmMain *form, pgObject *obj);
-	bool CheckEnable(pgObject *obj);
+	disconnectServerFactory(menuFactoryList* list, wxMenu* mnu, ctlMenuToolbar* toolbar);
+	wxWindow* StartDialog(frmMain* form, pgObject* obj);
+	bool CheckEnable(pgObject* obj);
 };
 
 class reloadconfServiceFactory : public contextActionFactory

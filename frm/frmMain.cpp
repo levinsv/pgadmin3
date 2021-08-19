@@ -63,6 +63,7 @@
 #include "frm/frmReport.h"
 #include "frm/frmMaintenance.h"
 #include "frm/frmStatus.h"
+#include "frm/frmLog.h"
 #include "frm/frmPassword.h"
 #ifdef DATABASEDESIGNER
 #include "frm/frmDatabaseDesigner.h"
@@ -109,7 +110,7 @@ frmMain::frmMain(const wxString &title)
 	lastPluginUtility = NULL;
 	pluginUtilityCount = 0;
 	m_refreshing = false;
-
+	Logfrm = NULL;
 	dlgName = wxT("frmMain");
 	SetMinSize(wxSize(600, 450));
 	RestorePosition(50, 50, 750, 550, 600, 450);
@@ -375,6 +376,7 @@ void frmMain::CreateMenus()
 
 	new connectServerFactory(menuFactories, toolsMenu, 0);
 	new disconnectServerFactory(menuFactories, toolsMenu, 0);
+	new disconnectServerFactoryAll(menuFactories, toolsMenu, 0);
 	new disconnectDatabaseFactory(menuFactories, toolsMenu, 0);
 
 	new startServiceFactory(menuFactories, toolsMenu, 0);
@@ -448,6 +450,7 @@ void frmMain::CreateMenus()
 
 	new backupFactory(menuFactories, toolsMenu, 0);
 	new backupGlobalsFactory(menuFactories, toolsMenu, 0);
+	new LogFactory(menuFactories, cfgMenu, 0);
 	new backupServerFactory(menuFactories, toolsMenu, 0);
 	new restoreFactory(menuFactories, toolsMenu, 0);
 	new importFactory(menuFactories, toolsMenu, 0);

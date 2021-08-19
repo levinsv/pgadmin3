@@ -24,6 +24,7 @@
 #include "frm/frmQuery.h"
 #include "dlg/dlgClasses.h"
 #include "utils/factory.h"
+#include "frm/frmLog.h"
 
 //
 // This number MUST be incremented if changing any of the default perspectives
@@ -41,6 +42,7 @@
 #endif
 #endif
 class pgServer;
+class Logfrm;
 class pgServerCollection;
 class ctlSQLBox;
 class ctlTree;
@@ -94,7 +96,6 @@ class frmMain : public pgFrame
 public:
 	frmMain(const wxString &title);
 	~frmMain();
-
 	void OnAction(wxCommandEvent &ev);
 	void OnReport(wxCommandEvent &ev);
 	wxString GetHelpPage() const;
@@ -191,12 +192,14 @@ public:
 	void ObjectBrowserRefreshing(bool refresh)
 	{
 		m_refreshing = refresh;
-	}
-
+	};
+	
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 	void OnSSHTunnelEvent(wxCommandEvent &event);
 #endif
 
+	public:
+		frmLog* Logfrm;
 private:
 	wxAuiManager manager;
 	ctlTree *browser;
