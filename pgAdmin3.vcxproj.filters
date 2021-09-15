@@ -251,6 +251,9 @@
     <Filter Include="include\pro_scheduler">
       <UniqueIdentifier>{bc8bb60a-46b2-4f26-b86f-f711fcc2a385}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\log">
+      <UniqueIdentifier>{e2f5428c-112b-47e2-8394-cf4a5c1a8d8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="agent\dlgJob.cpp">
@@ -1635,6 +1638,18 @@
     <ClCompile Include="dlg\dlgProJob.cpp">
       <Filter>dlg</Filter>
     </ClCompile>
+    <ClCompile Include="frm\frmLog.cpp">
+      <Filter>frm</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\log\Storage.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\log\StorageModel.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\log\MyDataViewCtrl.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -2153,6 +2168,36 @@
     </None>
     <None Include="ui\dlgMoveTablespace.xrc">
       <Filter>ui</Filter>
+    </None>
+    <None Include="include\log\error_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\errorl_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\fatal_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\filter_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\log_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\null.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\panic_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\user_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\war_xpm.xpm">
+      <Filter>include\log</Filter>
+    </None>
+    <None Include="include\log\wx_small.xpm">
+      <Filter>include\log</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -3490,6 +3535,18 @@
     </ClInclude>
     <ClInclude Include="include\dlg\dlgProJob.h">
       <Filter>include\dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="include\frm\frmLog.h">
+      <Filter>include\frm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\log\Storage.h">
+      <Filter>include\log</Filter>
+    </ClInclude>
+    <ClInclude Include="include\log\StorageModel.h">
+      <Filter>include\log</Filter>
+    </ClInclude>
+    <ClInclude Include="include\log\MyDataViewCtrl.h">
+      <Filter>include\log</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

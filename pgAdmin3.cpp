@@ -54,6 +54,7 @@
 #include "frm/frmConfig.h"
 #include "frm/frmQuery.h"
 #include "frm/frmStatus.h"
+#include "frm/frmLog.h"
 #ifdef DATABASEDESIGNER
 #include "frm/frmDatabaseDesigner.h"
 #endif
@@ -281,6 +282,7 @@ bool pgAdmin3::OnInit()
 		{wxCMD_LINE_SWITCH, "h", "help", _("show this help message, and quit"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 		{wxCMD_LINE_OPTION, "s", "server", _("auto-connect to specified server"), wxCMD_LINE_VAL_STRING},
 		{wxCMD_LINE_SWITCH, "S", "serverstatus", _("open server status window"), wxCMD_LINE_VAL_NONE},
+		{wxCMD_LINE_SWITCH, "L", "log window", _("open server log window"), wxCMD_LINE_VAL_NONE},
 		{wxCMD_LINE_OPTION, "Sc", "serverstatusconnect", _("connect server status window to database"), wxCMD_LINE_VAL_STRING},
 		{wxCMD_LINE_SWITCH, "q", "query", _("open query tool"), wxCMD_LINE_VAL_NONE},
 		{wxCMD_LINE_OPTION, "qc", "queryconnect", _("connect query tool to database"), wxCMD_LINE_VAL_STRING},
@@ -575,10 +577,11 @@ bool pgAdmin3::OnInit()
 			}
 			if (!conn)
 				return false;
-
-			wxString txt = _("Server Status - ") + conn->GetName();
-			frmStatus *fq = new frmStatus(NULL, txt, conn);
-			fq->Go();
+			
+				wxString txt = _("Server Status - ") + conn->GetName();
+				frmStatus* fq = new frmStatus(NULL, txt, conn);
+				fq->Go();
+			
 		}
 
 #ifdef DATABASEDESIGNER
@@ -793,6 +796,14 @@ bool pgAdmin3::OnInit()
 			if (cmdParser.Found(wxT("s"), &str))
 			{
 				pgServer *srv = winMain->ConnectToServer(str, !cmdParser.Found(wxT("q")));
+				if (srv && cmdParser.Found(wxT("L"))) {
+					//PgConn* newcon = srv->GetConnection()->Duplicate("Log conn");
+					wxString txt = _("Log - ") + srv->GetConnection()->GetName();
+					winMain->Logfrm = new frmLog(winMain, txt, srv);
+					winMain->Logfrm->Go();
+
+				}
+
 				if (srv && cmdParser.Found(wxT("q")))
 				{
 					pgConn *conn;

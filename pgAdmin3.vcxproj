@@ -905,6 +905,7 @@
     <ClCompile Include="frm\frmHbaConfig.cpp" />
     <ClCompile Include="frm\frmHint.cpp" />
     <ClCompile Include="frm\frmImport.cpp" />
+    <ClCompile Include="frm\frmLog.cpp" />
     <ClCompile Include="frm\frmMain.cpp" />
     <ClCompile Include="frm\frmMainConfig.cpp" />
     <ClCompile Include="frm\frmMaintenance.cpp" />
@@ -1012,6 +1013,9 @@
     <ClCompile Include="utils\diff_match_patch.cc" />
     <ClCompile Include="utils\factory.cpp" />
     <ClCompile Include="utils\favourites.cpp" />
+    <ClCompile Include="utils\log\MyDataViewCtrl.cpp" />
+    <ClCompile Include="utils\log\Storage.cpp" />
+    <ClCompile Include="utils\log\StorageModel.cpp" />
     <ClCompile Include="utils\macros.cpp" />
     <ClCompile Include="utils\misc.cpp" />
     <ClCompile Include="utils\pgconfig.cpp" />
@@ -1353,6 +1357,16 @@
     <None Include="db\module.mk" />
     <None Include="dlg\module.mk" />
     <None Include="frm\module.mk" />
+    <None Include="include\log\errorl_xpm.xpm" />
+    <None Include="include\log\error_xpm.xpm" />
+    <None Include="include\log\fatal_xpm.xpm" />
+    <None Include="include\log\filter_xpm.xpm" />
+    <None Include="include\log\log_xpm.xpm" />
+    <None Include="include\log\null.xpm" />
+    <None Include="include\log\panic_xpm.xpm" />
+    <None Include="include\log\user_xpm.xpm" />
+    <None Include="include\log\war_xpm.xpm" />
+    <None Include="include\log\wx_small.xpm" />
     <None Include="include\module.mk" />
     <None Include="include\utils\module.mk" />
     <None Include="include\ctl\module.mk" />
@@ -1528,6 +1542,10 @@
     <ClInclude Include="include\copyright.h" />
     <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
+    <ClInclude Include="include\frm\frmLog.h" />
+    <ClInclude Include="include\log\MyDataViewCtrl.h" />
+    <ClInclude Include="include\log\Storage.h" />
+    <ClInclude Include="include\log\StorageModel.h" />
     <ClInclude Include="include\pgAdmin3.h" />
     <ClInclude Include="include\postgres.h" />
     <ClInclude Include="include\precomp.h" />

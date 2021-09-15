@@ -548,7 +548,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT(" WHERE proname IN ('pg_tablespace_size', 'pg_file_read', 'pg_logfile_rotate',")
 		    wxT(                  " 'pg_postmaster_starttime', 'pg_terminate_backend', 'pg_reload_conf',")
 		    wxT(                  " 'pgstattuple', 'pgstatindex','bt_index_parent_check')\n")
-		    wxT("   AND nspname IN ('pg_catalog', 'public')");
+		    wxT("   AND nspname IN ('pg_catalog', 'public')")
+		    wxT(" union all select current_setting('log_destination'),555,null,null,null");
 
 		pgSet *set = ExecuteSet(sql);
 
@@ -579,7 +580,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_PGSTATINDEX] = true;
 				else if (proname == wxT("bt_index_parent_check") && pronargs == 2 )
 					features[FEATURE_PGCHECKINDEX] = true;
-
+				else if (proname == wxT("csvlog") && pronargs == 555)
+					features[FEATURE_CSVLOG] = true;
 				set->MoveNext();
 			}
 			delete set;

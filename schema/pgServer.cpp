@@ -2170,6 +2170,67 @@ bool disconnectServerFactory::CheckEnable(pgObject *obj)
 	return false;
 }
 
+disconnectServerFactoryAll::disconnectServerFactoryAll(menuFactoryList* list, wxMenu* mnu, ctlMenuToolbar* toolbar) : contextActionFactory(list)
+{
+	mnu->Append(id, _("Disconnec&t all servers"), _("Disconnect from all servers."));
+}
+
+
+wxWindow* disconnectServerFactoryAll::StartDialog(frmMain* form, pgObject* obj)
+{
+
+	wxTreeItemIdValue foldercookie, servercookie;
+	wxTreeItemId folderitem, serveritem;
+	pgObject* object;
+	pgServer* server;
+	folderitem = form->GetBrowser()->GetFirstChild(form->GetBrowser()->GetRootItem(), foldercookie);
+	while (folderitem)
+	{
+		if (form->GetBrowser()->ItemHasChildren(folderitem))
+		{
+			serveritem = form->GetBrowser()->GetFirstChild(folderitem, servercookie);
+			while (serveritem)
+			{
+				object = form->GetBrowser()->GetObject(serveritem);
+				if (object && object->IsCreatedBy(serverFactory))
+				{
+					if (CheckEnable(object)) {
+						if (object->CheckOpenDialogs(form->GetBrowser(), serveritem))
+						{
+							wxString msg = _("There are properties dialogues open for one or more objects belonging to a database which will be disconnected. Please close the properties dialogues and try again.");
+							wxMessageBox(msg, _("Cannot disconnect database"), wxICON_WARNING | wxOK);
+						}
+						else
+						{
+							server = (pgServer*)object;
+							server->Disconnect(form);
+							server->UpdateIcon(form->GetBrowser());
+							form->GetBrowser()->DeleteChildren(object->GetId());
+							form->execSelChange(object->GetId(), true);
+						}
+					}
+				}
+				serveritem = form->GetBrowser()->GetNextChild(folderitem, servercookie);
+			}
+		}
+		folderitem = form->GetBrowser()->GetNextChild(form->GetBrowser()->GetRootItem(), foldercookie);
+	}
+
+
+	return 0;
+}
+
+
+bool disconnectServerFactoryAll::CheckEnable(pgObject* obj)
+{
+	if (obj && obj->IsCreatedBy(serverFactory))
+		return ((pgServer*)obj)->GetConnected();
+
+	return false;
+}
+
+
+
 reloadconfServiceFactory::reloadconfServiceFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {
 	mnu->Append(id, _("Reload configuration"), _("Reload configuration"));
