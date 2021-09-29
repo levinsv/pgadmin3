@@ -56,6 +56,7 @@ public:
 	void SetRowGroup(int row);
 	GroupRows *grp;
 	int generatesql; // 0 -нет, 1 - insert , 2 - in_list
+	wxString sqlquerytext;
 	WX_DECLARE_STRING_HASH_MAP( int, ColKeySizeHashMap );
 
 	DECLARE_DYNAMIC_CLASS(ctlSQLGrid)
