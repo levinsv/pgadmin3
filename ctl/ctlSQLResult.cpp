@@ -330,7 +330,88 @@ wxString ctlSQLResult::OnGetItemText(long item, long col) const
 	}
 	return wxEmptyString;
 }
+wxString ctlSQLResult::CheckSelColumnDate()
+{
+	size_t i;
+	wxString ss = wxEmptyString;
+	if (GetSelectedCols().GetCount()) {
+		wxArrayInt cols = GetSelectedCols();
+		size_t numRows = GetNumberRows();
+		int err = 0;
+		int noformat = 0;
+		int dtType = -1;
+		//AppendColumnHeader(str, cols);
+			//str.Append(GetExportLine(i, cols));
+			for (size_t col = 0; col < cols.Count(); col++)
+			{
+				int cl = cols[col];
+				bool isDt = false;
+				switch (colTypClasses.Item(cl))
+				{
+				case PGTYPCLASS_DATE:
+					isDt= true;
+				}
+				wxDateTime dt((time_t)-1);
+				wxDateTime dt_prev;
+				wxTimeSpan sp,tmp;
+				bool parseDT = false;
+				int k = 0;
+				for (i = 0; i < numRows; i++)
+				{
+					if (!isDt) break;
+					wxString text = GetCellValue(i, cl);
+					if (GetRowSize(i) > 0) {
 
+						if (dtType == -1) {
+							if (dt.ParseISOCombined(text, ' ')) {
+								dtType = 0;
+							}
+							else if (dt.ParseDateTime(text)) {
+								dtType = 1;
+							}
+
+
+						}
+						if (dtType>=0) {
+							parseDT = false;
+							if (dtType == 0 && dt.ParseISOCombined(text, ' ')) parseDT = true; 
+							if (dtType == 1 && dt.ParseDateTime(text)) parseDT = true;
+							if (parseDT) {
+								if (k == 0) { dt_prev = dt; k++; continue; }
+								tmp = dt - dt_prev;
+								if (k == 1) { sp = tmp; dt_prev = dt; k++; continue; }
+								if (tmp.GetMilliseconds() != sp.GetMilliseconds()) {
+									wxGridCellAttr* pAttr = new wxGridCellAttr;
+									
+									pAttr->SetBackgroundColour(*wxYELLOW);
+									SetRowAttr(i, pAttr);
+									err++;
+								}
+								dt_prev = dt;
+							}
+							else noformat++;
+						};
+						k++;
+					};
+					if (tmp.GetDays()>0) ss = tmp.Format("delta Days %D Hours:%H Min:%M Sec:%S");
+					else if (tmp.GetHours() > 0) ss = tmp.Format("delta Hours:%H Min:%M Sec:%S");
+						else if (tmp.GetMinutes() > 0) ss = tmp.Format("delta Min:%M Sec:%S");
+							else if (tmp.GetSeconds() > 0) ss = tmp.Format("delta Sec:%S");
+							else ss = tmp.Format("delta MSec:%l");
+
+					
+				}
+			}
+			
+			if (dtType==-1) ss= wxString::Format("No timestamp(date) column type",err);
+			else {
+				ss = wxString::Format("Unsequence rows: %d,bad format rows: %d,%s", err, noformat,ss);
+
+			}
+			
+	}
+	return ss;
+}
 wxString ctlSQLResult::SummaryColumn()
 {
 			//ce=cells.Item(0);

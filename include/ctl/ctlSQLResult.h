@@ -47,6 +47,7 @@ public:
 
 	wxString OnGetItemText(long item, long col) const;
 	wxString SummaryColumn();
+	wxString CheckSelColumnDate();
 	void ClearFilter();
 	bool IsColText(int col);
 	bool hasRowNumber()
@@ -75,7 +76,6 @@ public:
 	wxArrayString colNames;
 	wxArrayString colTypes;
 	wxArrayLong colTypClasses;
-	wxString sqlquerytext;
 private:
 	pgQueryThread *thread;
 	pgConn *conn;

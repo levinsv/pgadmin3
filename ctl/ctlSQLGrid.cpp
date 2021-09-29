@@ -372,6 +372,43 @@ int ctlSQLGrid::Copy(int gensql)
 	int copied = 0;
 	size_t i;
 	generatesql=gensql;
+	//sqlResultTable* t = (sqlResultTable*)GetTable();
+	wxString sql = sqlquerytext.Lower();
+	int j = 0;
+	wxChar c;
+	wxString tn=wxEmptyString;
+	while ((j = sql.find("from", j)) > -1) {
+		j = j + 4;
+		c = sql[j];
+		i = j;
+		while (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+			i++;
+			c = sql[i];
+		}
+		j = i;
+		if (c == '(') {
+			continue;
+		}
+		while (c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != ',' && c != '(' && c != ')') {
+			j++;
+			if (sql.Len() == j) break;
+			c = sql[j];
+		}
+		tn = sql.SubString(i,j-1); // table name
+		if (sql.Len() == j) break;
+		j = j+1;
+		i = j;
+		if (sql.Len() == j) break;
+		c = sql[j];
+		while (c > ' ' && c != ',' && c != '(' && c != ')') {
+			j++;
+			if (sql.Len() == j) break;
+			c = sql[j];
+		}
+		if (j>i) tn = sql.SubString(i, j - 1); // alias name
+		break;
+	}
+
 	if (gensql == 2) linedelim = ",";
 	else if(gensql == 3) linedelim = " or ";
 
@@ -385,6 +422,7 @@ int ctlSQLGrid::Copy(int gensql)
 		{
 			tmp=GetExportLine(rows.Item(i));
 			if (tmp.IsEmpty()) continue;
+			if (!tn.IsEmpty() && (generatesql == 1)) tmp.Replace("tbl", tn, false);
 			str.Append(tmp);
 			if (i < rows.GetCount() - 1 && (generatesql > 1)) str.Append(linedelim);
 			if (rows.GetCount() > 1)
@@ -402,7 +440,9 @@ int ctlSQLGrid::Copy(int gensql)
 
 		for (i = 0 ; i < numRows ; i++)
 		{
-			str.Append(GetExportLine(i, cols));
+			tmp = GetExportLine(i, cols);
+			if (!tn.IsEmpty() && (generatesql == 1)) tmp.Replace("tbl", tn, false);
+			str.Append(tmp);
 			if (i<(numRows-1) && (generatesql > 1)) str.Append(linedelim);
 			if (numRows > 1)
 				str.Append(END_OF_LINE);
@@ -434,8 +474,9 @@ int ctlSQLGrid::Copy(int gensql)
 			{
 				for (i = y1; i <= y2; i++)
 				{
-
-					str.Append(GetExportLine(i, x1, x2));
+					tmp = GetExportLine(i, x1, x2);
+					if (!tn.IsEmpty() && (generatesql==1)) tmp.Replace("tbl", tn, false);
+					str.Append(tmp);
 					if (i < y2 && (generatesql > 1)) str.Append(linedelim);
 					if (y2 > y1)
 						str.Append(END_OF_LINE);
@@ -505,8 +546,9 @@ int ctlSQLGrid::Copy(int gensql)
 			col = GetGridCursorCol();
 
 			AppendColumnHeader(str, col, col);
-
-			str.Append(GetExportLine(row, col, col));
+			tmp = GetExportLine(row, col, col);
+			if (!tn.IsEmpty() && (generatesql == 1)) tmp.Replace("tbl", tn, false);
+			str.Append(tmp);
 			copied = 1;
 		}
 	}
