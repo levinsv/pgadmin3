@@ -15,7 +15,7 @@
 #include "schema/pgServer.h"
 
 
-class pgproJobFactory : public pgServerObjFactory
+class pgproJobFactory : public pgDatabaseObjFactory
 {
 public:
 	pgproJobFactory();
@@ -36,7 +36,7 @@ protected:
 };
 extern pgproJobFactory projobFactory;
 
-class pgproJob : public pgServerObject
+class pgproJob : public pgDatabaseObject
 {
 public:
 	pgproJob(const wxString &newName = wxT(""));
@@ -378,10 +378,10 @@ protected:
 };
 
 
-class pgproJobCollection : public pgServerObjCollection
+class pgproJobCollection : public pgDatabaseObjCollection
 {
 public:
-	pgproJobCollection(pgaFactory *factory, pgServer *sv);
+	pgproJobCollection(pgaFactory *factory, pgDatabase *db);
 	wxString GetTranslatedMessage(int kindOfMessage) const;
 };
 

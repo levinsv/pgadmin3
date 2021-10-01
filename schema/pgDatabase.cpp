@@ -29,6 +29,7 @@
 #include "slony/slCluster.h"
 #include "frm/frmHint.h"
 #include "frm/frmReport.h"
+#include "pro_scheduler/pgproJob.h"
 
 
 pgDatabase::pgDatabase(const wxString &newName)
@@ -641,6 +642,17 @@ void pgDatabase::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *pr
 					browser->AppendCollection(this, synonymFactory);
 			if (settings->GetDisplayOption(_("Schemas")))
 				browser->AppendCollection(this, schemaFactory);
+			if (settings->GetDisplayOption(_("pgpro_scheduler")))
+			{
+				wxString exists = connection()->ExecuteScalar(
+					wxT("select true ok from pg_extension where extname='pgpro_scheduler'\n"));
+
+				if (!exists.IsNull())
+				{
+					browser->AppendCollection(this, projobFactory);
+				}
+			}
+
 			if (settings->GetDisplayOption(_("Slony-I Clusters")))
 				browser->AppendCollection(this, slClusterFactory);
 

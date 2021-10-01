@@ -22,7 +22,7 @@
 #include "pro_scheduler/pgproJob.h"
 
 pgproJob::pgproJob(const wxString &newName)
-	: pgServerObject(projobFactory, newName)
+	: pgDatabaseObject(projobFactory, newName)
 {
 }
 
@@ -258,7 +258,12 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 			job = new pgproJob(jobs->GetVal(wxT("name")));
 			job->iSetStatus(status);
 			job->iSetOwner(jobs->GetVal(wxT("owner")));
-			job->iSetServer(collection->GetServer());
+			//job->iSetServer(collection->GetServer());
+			pgDatabase* db = collection->GetDatabase();
+			if (db == NULL) {
+				assert(db == NULL);
+			}
+			job->iSetDatabase(collection->GetDatabase());
 			job->iSetRecId(jobs->GetLong(wxT("id")));
 			job->iSetComment(jobs->GetVal(wxT("comments")));
 			
@@ -356,10 +361,10 @@ void pgproJob::ShowStatistics(frmMain *form, ctlListView *statistics)
 
 		wxString wxDTend = DateToAnsiStr(GetFinished());
 		if (wxDTend.IsEmpty()) wxDTend=DateToAnsiStr(wxDateTime::Now());
-		sql=wxT("select log_time,detail critical,message,application_name from pg_log l where l.log_time>'") + DateToAnsiStr(GetStarted())+
+		sql=wxT("select log_time,detail critical,message,hint from pg_log l where l.log_time>'") + DateToAnsiStr(GetStarted())+
 			wxT("'::timestamp - interval '1min' and l.log_time<='")+ wxDTend +
-			wxT("'::timestamp + interval '1min' and hint='")+GetTryName()+wxT("'");
-
+			wxT("'::timestamp + interval '1min' and detail::int>=0");
+		//+GetTryName()+wxT("'");
 		pgSet *stats = GetConnection()->ExecuteSet(sql);
 		wxString critical;
 		wxDateTime startTime;
@@ -391,8 +396,8 @@ bool pgproJob::RunNow()
 }
 
 
-pgproJobCollection::pgproJobCollection(pgaFactory *factory, pgServer *sv)
-	: pgServerObjCollection(factory, sv)
+pgproJobCollection::pgproJobCollection(pgaFactory *factory, pgDatabase *db)
+	: pgDatabaseObjCollection(factory, db)
 {
 }
 
@@ -448,7 +453,7 @@ void pgproJob::SetEnabled(ctlTree *browser, const bool b)
 #include "images/jobrun.pngc"
 
 pgproJobFactory::pgproJobFactory()
-	: pgServerObjFactory(__("pgpro_Scheduler Job"), __("New Job"), __("Create a new Job."), job_png_img)
+	: pgDatabaseObjFactory(__("pgpro_Scheduler Job"), __("New Job"), __("Create a new Job."), job_png_img)
 {
 	metaType = PGM_PROJOB;
 	disabledId = addIcon(jobdisabled_png_img);
@@ -459,7 +464,8 @@ pgproJobFactory::pgproJobFactory()
 
 pgCollection *pgproJobFactory::CreateCollection(pgObject *obj)
 {
-	return new pgproJobCollection(GetCollectionFactory(), (pgServer *)obj);
+	return new pgproJobCollection(GetCollectionFactory(), (pgDatabase *) obj);
+
 }
 
 
