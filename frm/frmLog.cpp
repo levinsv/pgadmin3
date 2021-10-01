@@ -198,7 +198,7 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 		}
 		char* raw;
 		unsigned char m[50001];
-		if (settings->GetASUTPstyle()) {
+		if (settings->GetASUTPstyle()||true) {
 
 			raw = (char*)&m[0];
 			unsigned char c;
