@@ -32,7 +32,6 @@
 #include "schema/pgRole.h"
 #include "schema/gpResQueue.h"
 #include "agent/pgaJob.h"
-#include "pro_scheduler/pgproJob.h"
 #include "utils/utffile.h"
 #include "utils/pgfeatures.h"
 #include "utils/registry.h"
@@ -1129,16 +1128,6 @@ void pgServer::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 
 					if (exists == wxT("t"))
 						browser->AppendCollection(this, jobFactory);
-				}
-			}
-			if (settings->GetDisplayOption(_("pgpro_scheduler")))
-			{
-				wxString exists = conn->ExecuteScalar(
-				                      wxT("select true ok from pg_extension where extname='pgpro_scheduler'\n"));
-
-				if (!exists.IsNull())
-				{
-						browser->AppendCollection(this, projobFactory);
 				}
 			}
 
