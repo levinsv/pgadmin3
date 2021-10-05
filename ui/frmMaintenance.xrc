@@ -28,6 +28,7 @@
                       <item>REINDEX</item>
                       <item>CLUSTER</item>
                       <item>COMPRESS</item>
+                      <item>AMCHECK</item>
                     </content>
                     <selection>0</selection>
                     <style>wxRA_SPECIFY_ROWS</style>

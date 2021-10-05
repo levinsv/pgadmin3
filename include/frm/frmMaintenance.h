@@ -28,7 +28,7 @@ public:
 private:
 	wxString GetHelpPage() const;
 	void OnAction(wxCommandEvent &ev);
-
+	wxString cmdcheck;
 	DECLARE_EVENT_TABLE()
 };
 

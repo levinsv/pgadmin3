@@ -65,6 +65,7 @@ frmMaintenance::frmMaintenance(frmMain *form, pgObject *obj) : ExecutionDialog(f
 	txtMessages->SetMaxLength(0L);
 #endif
 	bool iscomprss = false;
+	wxString cmd;
 	if (object->GetMetaType() == PGM_INDEX || object->GetMetaType() == PGM_PRIMARYKEY || object->GetMetaType() == PGM_UNIQUE)
 	{
 		rbxAction->SetSelection(2);
@@ -74,6 +75,25 @@ frmMaintenance::frmMaintenance(frmMain *form, pgObject *obj) : ExecutionDialog(f
 			wxString ratio = object->GetConnection()->ExecuteScalar("select left((cfs_fragmentation("+object->GetOidStr()+")*100)::text,5)::text");
 			iscomprss = !(ratio == "NaN");
 		}
+		wxString sql = "SELECT \
+			case when(SELECT max(pronargs) FROM pg_proc WHERE proname = 'bt_index_check') = 3 then\
+			'bt_index_check(' || c.oid || ', true,' || i.indisunique || ')'\
+			when(SELECT max(pronargs) FROM pg_proc WHERE proname = 'bt_index_check') = 2 then\
+			'bt_index_check(' || c.oid || ', true)'\
+		else\
+			''\
+			end\
+			FROM pg_index i\
+			JOIN pg_opclass op ON i.indclass[0] = op.oid\
+			JOIN pg_am am ON op.opcmethod = am.oid\
+			JOIN pg_class c ON i.indexrelid = c.oid\
+			JOIN pg_namespace n ON c.relnamespace = n.oid\
+			WHERE am.amname = 'btree'\
+			AND c.relpersistence != 't'\
+			AND c.relkind = 'i' AND i.indisready AND i.indisvalid and c.oid = "+object->GetOidStr();
+			cmd = object->GetConnection()->ExecuteScalar(sql);
+			cmdcheck = cmd;
+
 	}
 	if (object->GetMetaType() == PGM_TABLE) {
 		pgTable* t = (pgTable *)object;
@@ -81,6 +101,7 @@ frmMaintenance::frmMaintenance(frmMain *form, pgObject *obj) : ExecutionDialog(f
 
 	}
 	rbxAction->Enable(4, iscomprss);
+	rbxAction->Enable(5, !cmd.IsEmpty());
 	wxCommandEvent ev;
 	OnAction(ev);
 }
@@ -138,6 +159,11 @@ void frmMaintenance::OnAction(wxCommandEvent &ev)
 		chkVerbose->SetValue(true);
 		chkVerbose->Enable(true);
 	}
+	bool isAmcheck = (rbxAction->GetSelection() == 5);
+	if (isAmcheck) {
+
+	}
+
 }
 
 
@@ -238,6 +264,13 @@ wxString frmMaintenance::GetSql()
 				wxString strindex= object->GetConnection()->ExecuteScalar("select string_agg('cfs_gc_relation('||indexrelid::text||')',',') from pg_index i where indrelid=" + object->GetOidStr() + " and cfs_fragmentation(indexrelid)  between 0.01 and 1;");
 				if (strindex.Len() > 0) sql += ","+strindex;
 			}
+			break;
+		}
+		case 5: // amchek
+		{
+			sql = wxT("SET client_min_messages = DEBUG1;select ");
+			sql += cmdcheck;
+				//wxString strindex = object->GetConnection()->ExecuteScalar("select string_agg('cfs_gc_relation('||indexrelid::text||')',',') from pg_index i where indrelid=" + object->GetOidStr() + " and cfs_fragmentation(indexrelid)  between 0.01 and 1;");
 			break;
 		}
 	}

@@ -403,7 +403,7 @@ pgObject *pgTriggerFactory::CreateObjects(pgCollection *coll, ctlTree *browser, 
 	}
 
 	wxString trig_sql;
-	trig_sql = wxT("SELECT t.oid, t.xmin, t.*, relname, CASE WHEN relkind = 'r' THEN TRUE ELSE FALSE END AS parentistable, ")+ref+
+	trig_sql = wxT("SELECT t.oid, t.xmin, encode(t.tgargs,'escape') tgargsE, t.*, relname, CASE WHEN relkind = 'r' THEN TRUE ELSE FALSE END AS parentistable, ")+ref+
 	           wxT("  nspname, des.description, l.lanname, p.prosrc, \n")
 	           wxT("  COALESCE(substring(pg_get_triggerdef(t.oid), 'WHEN (.*) EXECUTE PROCEDURE'), substring(pg_get_triggerdef(t.oid), 'WHEN (.*)  \\$trigger')) AS whenclause\n")
 	           wxT("  FROM pg_trigger t\n")
@@ -491,7 +491,7 @@ pgObject *pgTriggerFactory::CreateObjects(pgCollection *coll, ctlTree *browser, 
 			trigger->iSetQuotedFullTable(collection->GetDatabase()->GetQuotedSchemaPrefix(triggers->GetVal(wxT("nspname"))) + qtIdent(triggers->GetVal(wxT("relname"))));
 			wxString arglist = wxEmptyString;
 			if (triggers->GetLong(wxT("tgnargs")) > 0)
-				arglist = triggers->GetVal(wxT("tgargs"));
+				arglist = triggers->GetVal(wxT("tgargse"));
 			wxString args = wxEmptyString;
 
 			while (!arglist.IsEmpty())
