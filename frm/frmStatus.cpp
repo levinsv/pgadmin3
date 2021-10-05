@@ -1657,14 +1657,13 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 	if (connection->BackendMinimumVersion(10, 0))
 	{
 		q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
-		wxString xact="";
-		if (!track_commit_timestamp) 
+		wxString xact = "";
+		if (!track_commit_timestamp)
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: -1'||' s' xminlag,-1 xminslotdelta\n");
 		else if (isrecovery) 
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
 		else
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
-		
 		q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid\n");
 		q += wxT("LEFT JOIN pg_replication_slots sl ON p.pid=sl.active_pid ");
 		iswalsend = true;
