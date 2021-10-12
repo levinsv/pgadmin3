@@ -1653,18 +1653,54 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 		q += wxT("false");
 	}
 	q += wxT("AS slowquery\n");
+	wxString progress13="(select format('%s %s',phase,pr) progress_info,pid from (\
+		select case phase\
+		when 'scanning heap' then\
+		Round(100 * heap_blks_scanned / greatest(heap_blks_total, 1), 1) || '%'\
+	else\
+		Round(100 * heap_blks_vacuumed / greatest(heap_blks_total, 1), 1) || '%'\
+		end pr\
+		, phase, pid from pg_stat_progress_vacuum\
+		union all\
+		select \
+		Round(100 * backup_streamed / greatest(backup_total, backup_streamed,1)) || '% (' || pg_size_pretty(backup_streamed) || ')'\
+		pr\
+		, phase, pid from pg_stat_progress_basebackup\
+		union all\
+		select case phase\
+		when 'writing new heap' then\
+		Round(100 * heap_tuples_written / greatest(heap_tuples_scanned, 1), 1) || '%'\
+	else\
+		pg_size_pretty(heap_tuples_scanned) || ' rows'\
+		end pr\
+		, phase, pid from pg_stat_progress_cluster\
+		union all\
+		select\
+		round(100 * sample_blks_scanned / greatest(sample_blks_total, 1), 2) || '%' pr\
+		, phase, pid from pg_stat_progress_analyze\
+		union all\
+		select Round(100 * blocks_done / greatest(blocks_total, 1), 1) || '%' pr\
+		, phase, pid from pg_stat_progress_create_index\
+		) v) v\
+		";
 	bool iswalsend = false;
 	if (connection->BackendMinimumVersion(10, 0))
 	{
-		q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
-		wxString xact = "";
+		if (connection->BackendMinimumVersion(13, 0))
+			q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info\n");
+			else
+			q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
+
 		if (!track_commit_timestamp)
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: -1'||' s' xminlag,-1 xminslotdelta\n");
 		else if (isrecovery) 
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
 		else
 			q += wxT(",coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta\n");
-		q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid\n");
+		if (connection->BackendMinimumVersion(13, 0))
+			q += "FROM pg_stat_activity p LEFT JOIN "+progress13+" ON p.pid=v.pid\n";
+		else
+			q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid\n");
 		q += wxT("LEFT JOIN pg_replication_slots sl ON p.pid=sl.active_pid ");
 		iswalsend = true;
 		//backend_type
@@ -1713,23 +1749,29 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				wxString app_name = dataSet1->GetVal(wxT("application_name"));
 				if (connection->BackendMinimumVersion(9, 6))
 				{
-					wxString heap_blks_total = dataSet1->GetVal(wxT("heap_blks_total"));
-					if (!heap_blks_total.IsEmpty()) {
-						wxString heap_blks_vacuumed = dataSet1->GetVal(wxT("heap_blks_vacuumed"));
-						wxString heap_blks_scanned = dataSet1->GetVal(wxT("heap_blks_scanned"));
-						wxString phase = dataSet1->GetVal(wxT("phase"));
-						double total;
-						double vac=0;
-						double proc;
-						heap_blks_vacuumed.ToDouble(&vac);
-						if (!phase.CmpNoCase(wxT("scanning heap"))) {
-							heap_blks_scanned.ToDouble(&vac);
+					if (connection->BackendMinimumVersion(13, 0)) {
+						wxString progress_info = dataSet1->GetVal(wxT("progress_info"));
+						if (!progress_info.IsEmpty()) app_name = progress_info;
+					} else
+					{
+						wxString heap_blks_total = dataSet1->GetVal(wxT("heap_blks_total"));
+						if (!heap_blks_total.IsEmpty()) {
+							wxString heap_blks_vacuumed = dataSet1->GetVal(wxT("heap_blks_vacuumed"));
+							wxString heap_blks_scanned = dataSet1->GetVal(wxT("heap_blks_scanned"));
+							wxString phase = dataSet1->GetVal(wxT("phase"));
+							double total;
+							double vac = 0;
+							double proc;
+							heap_blks_vacuumed.ToDouble(&vac);
+							if (!phase.CmpNoCase(wxT("scanning heap"))) {
+								heap_blks_scanned.ToDouble(&vac);
+							}
+							heap_blks_total.ToDouble(&total);
+							proc = vac * 100 / total;
+							wxString str;
+							str.Printf(wxT("%s %5.2f%%"), phase, proc);
+							app_name = str;
 						}
-						heap_blks_total.ToDouble(&total);
-						proc=vac*100/total;
-						wxString str;
-						str.Printf(wxT("%s %5.2f%%"), phase, proc);
-						app_name=str;
 					}
 					if (!slinfo.IsEmpty()) app_name += slinfo;
 				}
