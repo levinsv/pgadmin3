@@ -341,6 +341,9 @@ wxString Storage::get_field(Line& l, MyConst::colField col) {
     case MyConst::colField::logbtype:
         return l.text.substr(l.logbtype.s, l.logbtype.l);
         break;
+    case MyConst::colField::logSERVER:
+        return l.text.substr(l.logSERVER.s, l.logSERVER.l);
+        break;
     default:
         break;
     }
@@ -434,6 +437,9 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
         wxString logType = tk.GetNextToken();
         st.logbtype = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logType.Len()) };
         t += logType;
+        logCursorpos = GetHost();
+        st.logSERVER = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logCursorpos.Len()) };
+        t += logCursorpos;
         //fields.Add(logType);
         //st.logType = { t.Len(),logType.Len() };
         //t += logType;

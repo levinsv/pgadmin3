@@ -186,7 +186,8 @@ private:
 	wxArrayInt rowsGroup, end;
 	wxArrayDouble run;
 };
-
+//#define TEST_wxGridCellAutoWrapStringRenderer
+#ifndef TEST_wxGridCellAutoWrapStringRenderer
 class CursorCellRenderer : public wxGridCellStringRenderer
       {
       public:
@@ -197,46 +198,75 @@ class CursorCellRenderer : public wxGridCellStringRenderer
 			attr.GetAlignment(&hAlign, &vAlign);
             //////////////////////////////////////////////////////////////////////////////
             //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
-    dc.SetBackgroundMode( wxSOLID );
-	wxString text=grid.GetCellValue(row, col);
-    // grey out fields if the grid is disabled
-    if ( grid.IsEnabled() )
-    {
-        if ( isSelected )
-        {
-            wxColour clr;
-            if ( wxWindow::FindFocus() == grid.GetGridWindow() )
-                clr = grid.GetSelectionBackground();
-            else
-                clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
+			dc.SetBackgroundMode( wxSOLID );
+			wxString text=grid.GetCellValue(row, col);
+			// grey out fields if the grid is disabled
+			if ( grid.IsEnabled() )
+			{
+				if ( isSelected )
+				{
+					wxColour clr;
+					if ( wxWindow::FindFocus() == grid.GetGridWindow() )
+						clr = grid.GetSelectionBackground();
+					else
+						clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
 				
 				
-            dc.SetBrush( wxBrush(clr, wxSOLID) );
-        }
-        else
-        {
-			wxColor color;
-			color.Set(239, 228, 176);
-			if (text.Find(wxT('\n'))!=wxNOT_FOUND ) 
-				dc.SetBrush( wxBrush(color, wxSOLID) );
+					dc.SetBrush( wxBrush(clr, wxSOLID) );
+				}
+				else
+				{
+					wxColor color;
+					color.Set(239, 228, 176);
+					if (text.Find(wxT('\n'))!=wxNOT_FOUND ) 
+						dc.SetBrush( wxBrush(color, wxSOLID) );
+					else
+						dc.SetBrush( wxBrush(attr.GetBackgroundColour(), wxSOLID) );
+				}
+			}
 			else
-				dc.SetBrush( wxBrush(attr.GetBackgroundColour(), wxSOLID) );
-        }
-    }
-    else
-    {
-        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE), wxSOLID));
-    }
+			{
+				dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE), wxSOLID));
+			}
 
-    dc.SetPen( *wxTRANSPARENT_PEN );
-    dc.DrawRectangle(rect);
+			dc.SetPen( *wxTRANSPARENT_PEN );
+			dc.DrawRectangle(rect);
 
             //////////////////////////////////////////////////////////////////////////////
 			SetTextColoursAndFont(grid, attr, dc, isSelected);
 			grid.DrawTextRectangle(dc, text,
                            rect, hAlign, vAlign);
          }
+#else
+class CursorCellRenderer : public wxGridCellAutoWrapStringRenderer
+{
+public:
+	virtual void Draw(wxGrid& grid,
+			 wxGridCellAttr& attr,
+			 wxDC& dc,
+			 const wxRect& rectCell,
+			 int row, int col,
+			 bool isSelected) {
+			 bool f = false;
+			 wxString text = grid.GetCellValue(row, col);
+			 wxColor prev;
+			 if (!isSelected) {
+				 wxColor color;
+				 color.Set(239, 228, 176);
+				 if (text.Find(wxT('\n')) != wxNOT_FOUND)
+				 {
+					 //dc.SetBrush(wxBrush(color, wxSOLID));
+					 prev = attr.GetBackgroundColour();
+					 attr.SetBackgroundColour(color);
+					 f = true;
+				 }
+				 
+			 }
 
+			 wxGridCellAutoWrapStringRenderer::Draw(grid, attr, dc, rectCell, row, col, isSelected);
+			 if (f) attr.SetBackgroundColour(prev);
+		 }
+#endif
       };
 
 #endif

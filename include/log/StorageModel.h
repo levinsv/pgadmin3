@@ -23,6 +23,7 @@ public:
         Col_Hint,
         Col_Detail,
         Col_Message,
+        Col_Server,
         Col_Max
     };
 

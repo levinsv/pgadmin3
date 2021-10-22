@@ -8,3 +8,4 @@ Release/*
 *.7z
 *.bsc
 *.pdb
+include/svnversion.h

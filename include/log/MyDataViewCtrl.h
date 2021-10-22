@@ -30,6 +30,7 @@ public:
     void AddRow(wxString csvtext);
     void OnMouseMove(wxMouseEvent& event);
     void OnKEY_DOWN(wxKeyEvent& event);
+    void OnKEY_UP(wxKeyEvent& event);
 #ifdef MYTEST
     void OnTimer(wxTimerEvent& event);
 #endif

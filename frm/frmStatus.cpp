@@ -220,6 +220,10 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 				initquery = wxT("SET log_statement='none';SET log_duration='off';SET log_min_duration_statement=-1;");
 			else
 				initquery = wxT("SET log_statement='off';SET log_duration='off';SET log_min_duration_statement=-1;");
+#ifndef _DEBUG
+			initquery += wxT("set log_min_messages = FATAL;");
+#endif // !_DEBUG
+
 			connection->ExecuteVoid(initquery, false);
 		}
 		//pg_is_in_recovery()
