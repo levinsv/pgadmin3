@@ -130,8 +130,12 @@ void frmLog::getFilename() {
 	wxString namepage;
 	for (size_t i = 0;i< conArray.GetCount(); i++) {
 
+		if (!namepage.IsEmpty()) namepage += ",";
 
-		if (!conArray[i].conn->IsAlive()) continue;
+		if (!conArray[i].conn->IsAlive()) {
+			namepage += "-"+conArray[i].conn->GetDbname();
+			continue;
+		}
 		set = conArray[i].conn->ExecuteSet(
 			wxT("select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n")
 			wxT("  FROM pg_ls_logdir()  where name ~ '.csv' ORDER BY modification DESC"));
@@ -140,7 +144,6 @@ void frmLog::getFilename() {
 
 			//logfileTimestamp = set->GetDateTime(wxT("filetime"));
 			len[i] = set->GetLong(wxT("len"));
-			if (!namepage.IsEmpty()) namepage += ",";
 			namepage += conArray[i].conn->GetDbname();
 			m_storage_model->getStorage()->SetHost(conArray[i].conn->GetHostName());
 
@@ -417,7 +420,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
         wxDefaultSize,  wxDV_VARIABLE_LINE_HEIGHT | wxDV_HORIZ_RULES | wxDV_VERT_RULES);
     my_view->GetMainWindow()->Bind(wxEVT_MOTION, &MyDataViewCtrl::OnMouseMove, my_view);
     my_view->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &MyDataViewCtrl::OnKEY_DOWN, my_view);
-    my_view->GetMainWindow()->Bind(wxEVT_KEY_UP, &MyDataViewCtrl::OnKEY_DOWN, my_view);
+    my_view->GetMainWindow()->Bind(wxEVT_KEY_UP, &MyDataViewCtrl::OnKEY_UP, my_view);
     my_view->Bind(wxEVT_DATAVIEW_COLUMN_HEADER_CLICK, &MyDataViewCtrl::OnEVT_DATAVIEW_COLUMN_HEADER_CLICK, my_view);
     my_view->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &MyDataViewCtrl::OnEVT_DATAVIEW_SELECTION_CHANGED, my_view);
     my_view->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MyDataViewCtrl::OnContextMenu, my_view);

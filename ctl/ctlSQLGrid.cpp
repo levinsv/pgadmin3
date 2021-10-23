@@ -849,6 +849,8 @@ wxSize ctlSQLGrid::GetBestSize(int row, int col)
 	{
 		wxClientDC dc(GetGridWindow());
 		size = renderer->GetBestSize(*this, *attr, dc, row, col);
+		int h =	renderer->GetBestHeight(*this, *attr, dc, row, col, size.GetWidth());
+		size.SetHeight(h);
 		renderer->DecRef();
 	}
 

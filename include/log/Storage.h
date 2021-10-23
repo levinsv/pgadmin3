@@ -26,6 +26,7 @@ namespace MyConst {
 		logHint,
 		logappname,
 		logbtype,
+		logSERVER,
 		Col_Max
 	};
 	enum iconIndex {
@@ -67,6 +68,7 @@ struct Line {
 	ps logHint = { 0,0 };
 	ps logappname = { 0,0 };
 	ps logbtype = { 0,0 };
+	ps logSERVER = { 0,0 };
 	wxString text;
 };
 struct LineFilter {

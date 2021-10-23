@@ -132,8 +132,15 @@ void MyDataViewCtrl::ViewGroup(bool view) {
 void MyDataViewCtrl::AddRow(wxString csvtext) {
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
     wxDataViewItem select;
-    if (HasSelection()) select = GetSelection();
-    
+    if (HasSelection()) {
+        //select = GetSelection();
+        if (GetSelectedItemsCount() == 1) {
+            wxDataViewItemArray sel;
+            GetSelections(sel);
+            if (sel.size()>0) select = sel[0];
+        }
+        
+    }
 
     if (m->Prepend(csvtext)) {
         if (!select.IsOk()) return;
@@ -396,11 +403,93 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_COLUMN_HEADER_CLICK(wxDataViewEvent& event) 
 
     event.Skip(true);
 }
+void MyDataViewCtrl::OnKEY_UP(wxKeyEvent& event) {
+    // goto next state code
+    int go = 0;
+    if (event.GetKeyCode() == WXK_DOWN) {
+        go = 1;
+    }
+    if (event.GetKeyCode() == WXK_UP) {
+        go = -1;
+    }
+    bool reverse = false;
+    int currrow = -1;
+    wxDataViewItem item;
+    //find next state != current state
+    if ((event.GetModifiers() & wxMOD_ALT) == wxMOD_ALT) {
+        reverse = true;
+        item = this->GetCurrentItem();
+    }
+    //find next state == current state
+    if ((event.GetModifiers() & wxMOD_SHIFT) == wxMOD_SHIFT) {
+        item = this->GetCurrentItem();
+    }
+    if (item.IsOk() && (go != 0)) {
+
+
+        StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
+        Storage* sta = m->getStorage();
+        wxVariant v, t;
+
+        int r = m->GetRow(item);
+        if (r != -1) {
+            m->GetValueByRow(v, r, 0);
+        }
+        else return;
+        int cnt = m->GetRowCount();
+        wxDataViewIconText ic;
+        ic << v;
+        wxString str = ic.GetText();
+
+        for (;;) {
+            r = r + go;
+            if (r < 0 || r >= cnt) break;
+            m->GetValueByRow(t, r, 0);
+            ic << t;
+            bool rez = ic.GetText() == str;
+            if (reverse) rez = !rez;
+            if (rez)
+            {
+                item = m->GetItem(r);
+                this->SetCurrentItem(item);
+                EnsureVisible(item);
+                break;
+            }
+        }
+        event.Skip(true);
+        return;
+    }
+
+}
 void MyDataViewCtrl::OnKEY_DOWN(wxKeyEvent& event) {
     if ((event.GetModifiers() & wxMOD_CONTROL) == wxMOD_CONTROL) {
         modctrl = true;
     }
     else modctrl = false;
+    int go = 0;
+    if (event.GetKeyCode() == WXK_DOWN) {
+        go = 1;
+    }
+    if (event.GetKeyCode() == WXK_UP) {
+        go = -1;
+    }
+    bool reverse = false;
+    int currrow = -1;
+    wxDataViewItem item;
+    //find next state != current state
+    if ((event.GetModifiers() & wxMOD_ALT) == wxMOD_ALT) {
+        reverse = true;
+        item = this->GetCurrentItem();
+    }
+    //find next state == current state
+    if ((event.GetModifiers() & wxMOD_SHIFT) == wxMOD_SHIFT) {
+        item = this->GetCurrentItem();
+    }
+    if (item.IsOk() && (go != 0)) {
+        event.Skip(false);
+        return;
+    }
+
     event.Skip(true);
 
 }

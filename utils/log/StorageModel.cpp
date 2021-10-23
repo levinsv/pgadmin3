@@ -268,7 +268,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_LogTime),
             StorageModel::Col_LogTime,
             wxCOL_WIDTH_AUTOSIZE,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_LogTime] = MyConst::colField::logtime;
@@ -278,7 +278,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_User),
             StorageModel::Col_User,
             wxCOL_WIDTH_AUTOSIZE,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_User] = MyConst::colField::loguser;
@@ -287,7 +287,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_Db),
             StorageModel::Col_Db,
             30,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_Db] = MyConst::colField::logdb;
@@ -296,7 +296,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_PID),
             StorageModel::Col_PID,
             60,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_PID] = MyConst::colField::logpid;
@@ -305,7 +305,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_Host),
             StorageModel::Col_Host,
             90,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_Host] = MyConst::colField::loghost;
@@ -314,7 +314,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_App),
             StorageModel::Col_App,
             100,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_App] = MyConst::colField::logappname;
@@ -323,7 +323,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_Hint),
             StorageModel::Col_Hint,
             90,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_Hint] = MyConst::colField::logHint;
@@ -332,7 +332,7 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_Detail),
             StorageModel::Col_Detail,
             60,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_Detail] = MyConst::colField::logDetail;
@@ -342,10 +342,19 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
             new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_Message),
             StorageModel::Col_Message,
             wxCOL_WIDTH_AUTOSIZE,
-            wxALIGN_LEFT,
+            wxALIGN_NOT,
             wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
         ));
     colmap[StorageModel::Col_Message] = MyConst::colField::logMessage;
+    ctrl->AppendColumn(
+        new wxDataViewColumn("Server",
+            new MyCustomRendererText(wxDATAVIEW_CELL_EDITABLE, StorageModel::Col_Server),
+            StorageModel::Col_Server,
+            wxCOL_WIDTH_AUTOSIZE,
+            wxALIGN_NOT,
+            wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE
+        ));
+    colmap[StorageModel::Col_Server] = MyConst::colField::logSERVER;
 
 
 }
@@ -368,6 +377,7 @@ StorageModel::StorageModel(MyDataViewCtrl* view) :
 bool StorageModel::setFilter(int col, wxString val, int flags, MyDataViewCtrl* view) {
 
     bool r = store->SetFilter(colmap[col], val, flags);
+    m_view->UnselectAll();
     Reset(store->getCountFilter());
     if (col != -1) {
         wxDataViewColumn* vc = view->GetColumn(col);
@@ -382,6 +392,7 @@ int StorageModel::testFilter(int col, int position = 0) {
 }
 void StorageModel::ApplyFilter() {
     store->ApplyFilter();
+    m_view->UnselectAll();
     Reset(store->getCountFilter());
 }
 
@@ -406,6 +417,8 @@ bool StorageModel::Prepend(const wxString& text)
     IncCountFreq(StorageModel::Col_Hint, store->GetFieldStorage(row, MyConst::colField::logHint, false));
     val = store->GetFieldStorage(row, MyConst::colField::logSqlstate, false);
     IncCountFreq(StorageModel::Col_ToggleIconText, val);
+    val = store->GetFieldStorage(row, MyConst::colField::logSERVER, false);
+    IncCountFreq(StorageModel::Col_Server, val);
 
 
     if (store->ApplyFilter(row)) {
