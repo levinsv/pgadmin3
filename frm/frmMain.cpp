@@ -90,6 +90,8 @@
 #include "schema/pgCheck.h"
 #include "schema/pgDomain.h"
 #include "schema/pgEventTrigger.h"
+#include <wx/msw/ole/automtn.h>
+#include "utils/utffile.h"
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 #include "utils/sshTunnel.h"
@@ -241,6 +243,10 @@ frmMain::frmMain(const wxString &title)
 	browser->Expand(root);
 	browser->SortChildren(root);
 	browser->SetFocus();
+
+
+
+
 }
 
 

@@ -8,6 +8,9 @@
 #include "wx/dataview.h"
 #include "log/Storage.h"
 #include "log/StorageModel.h"
+#include "utils/utffile.h"
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
 
 // ----------------------------------------------------------------------------
 // resources
@@ -385,6 +388,34 @@ bool StorageModel::setFilter(int col, wxString val, int flags, MyDataViewCtrl* v
     }
     return r;
 }
+bool StorageModel::setFilterArray(std::deque<LineFilter> arr,MyDataViewCtrl* view) {
+    bool r=store->SetFilterArray(arr);
+    view->UnselectAll();
+    Reset(store->getCountFilter());
+    setIconFilter(view);
+    return r;
+}
+void StorageModel::setIconFilter(MyDataViewCtrl* view) {
+    bool yesfilter = false;
+    for (int j = 0; j < view->GetColumnCount(); j++) {
+        int colt = 0;
+        yesfilter = false;
+        wxDataViewColumn* vc = view->GetColumn(j);
+        while (colt != -1) {
+            colt = testFilter(j, colt);
+            if (colt >= 0) {
+                //m->DropColFilter(colt);
+                vc->SetBitmap(bitmapflt);
+
+                yesfilter = true;
+                colt++;
+                break;
+            }
+        }
+        if (!yesfilter) vc->SetBitmap(wxNullBitmap);
+    }
+}
+
 int StorageModel::testFilter(int col, int position = 0) {
     int idx = 0;
     idx = store->testFilter(colmap[col], position);

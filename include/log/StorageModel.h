@@ -38,6 +38,8 @@ public:
     bool setFilter(int col, wxString val, int flags, MyDataViewCtrl* view);
     void DropColFilter(int index);
     int testFilter(int col, int position);
+    bool setFilterArray(std::deque<LineFilter> arr, MyDataViewCtrl* view);
+    void setIconFilter(MyDataViewCtrl* view);
     void ApplyFilter();
     bool getGroupFilter()
     {

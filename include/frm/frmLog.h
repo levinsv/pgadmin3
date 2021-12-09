@@ -43,6 +43,7 @@ public:
     }
 
     pgConn* conn;
+    wxDateTime nextrun;
 };
 
 WX_DECLARE_OBJARRAY(RemoteConn2, RemoteConnArray2);
@@ -53,6 +54,13 @@ enum
     ID_CLEAR_ALL_FILTER = 208,
     ID_SET_DETAILGROUP = 209,
     ID_ADD_FILTER = 210,
+    ID_ADD_UFilter=211,
+    ID_DEL_UFilter = 212,
+    ID_CBOX_UFilter = 213,
+    ID_TEXT_UFilter = 214,
+    ID_CBOX_SMART = 215,
+    MNU_SEND_MAIL=216,
+    MNU_FIND_TEXT=217,
     ID_NEXT_MAX
 };
 
@@ -101,6 +109,9 @@ private:
     wxStaticText* status;
     wxCheckBox *group, *detail;
     wxCheckListBox* lb;
+    wxComboBox* listUserFilter;
+    wxComboBox* smart;
+    wxTextCtrl* contentFilter;
     wxObjectDataPtr<StorageModel> m_storage_model;
     wxArrayString logfileName;
     wxArrayString savedPartialLine;
@@ -110,6 +121,13 @@ private:
     void OnSetDetailGroup(wxCommandEvent& event);
     void OnClearAllFilter(wxCommandEvent& event);
     void OnAddFilterIgnore(wxCommandEvent& event);
+    void OnAddUFilter(wxCommandEvent& event);
+    void OnDelUFilter(wxCommandEvent& event);
+    void OnChangeUFilter(wxCommandEvent& event);
+    void OnChangeSmart(wxCommandEvent& event);
+    void OnSendMail(wxCommandEvent& event);
+    void OnFind(wxCommandEvent& event);
+
     void OnSetFocus(wxFocusEvent& event);
     void OnKillFocus(wxFocusEvent& event);
     void OnActivate(wxActivateEvent& event);
