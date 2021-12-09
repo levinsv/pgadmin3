@@ -976,13 +976,20 @@ void pgConn::LogError(const bool quiet)
 {
 	if (conn)
 	{
-		if (quiet)
+		bool abnormal_termination = false;
+		wxString err = GetLastError().Trim();
+		if (err.Find("server closed the connection unexpectedly") >= 0) {
+			//Close();
+			//connStatus = PGCONN_BROKEN;
+			abnormal_termination = true;
+		}
+		if (quiet || abnormal_termination)
 		{
-			wxLogQuietError(wxT("%s"), GetLastError().Trim().c_str());
+			wxLogQuietError(wxT("%s"), err.c_str());
 		}
 		else
 		{
-			wxLogError(wxT("%s"), GetLastError().Trim().c_str());
+			wxLogError(wxT("%s"), err.c_str());
 			IsAlive();
 		}
 	}

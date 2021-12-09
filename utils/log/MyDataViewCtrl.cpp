@@ -176,7 +176,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_SELECTION_CHANGED(wxDataViewEvent& event) {
     //wxLogMessage("wxEVT_DATAVIEW_SELECTION_CHANGED, First selected Item row: %d", r);
 
 }
-void MyDataViewCtrl::ClearAllFilter() {
+void MyDataViewCtrl::ClearAllFilter(bool no_apply) {
     int colt = 0;
     int col = 0;
     bool all = false;
@@ -193,7 +193,7 @@ void MyDataViewCtrl::ClearAllFilter() {
                 m->DropColFilter(colt);
                 clear = true;
                 all = true;
-                colt++;
+               // colt++;
             }
         }
         if (clear) {
@@ -204,16 +204,85 @@ void MyDataViewCtrl::ClearAllFilter() {
         }
     }
     if (all) {
-        m->ApplyFilter();
+        if (!no_apply) m->ApplyFilter();
         for (auto i : fCol) {
             wxDataViewColumn* vc = GetColumn(i);
             vc->SetBitmap(wxNullBitmap);
         }
     }
-    wxString l = wxString::Format("rows %d", m->GetRowCount());
-    st->SetLabelText(l);
+    if (!no_apply) {
+        wxString l = wxString::Format("rows %d", m->GetRowCount());
+        st->SetLabelText(l);
+    }
 }
-void MyDataViewCtrl::AddFilterIgnore() {
+void MyDataViewCtrl::ModUserFilter(wxString FilterName, wxString wxOper, wxComboBox *combo,wxTextCtrl *textctrl) {
+    StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
+    Storage* st = m->getStorage();
+    if (wxOper == "ChangeFilter") {
+        int n= combo->GetSelection();
+        wxString fn = combo->GetString(n);
+        std::deque<LineFilter> rez = st->getFilter(fn);
+        textctrl->Clear();
+        if (rez.size() > 0) {
+            wxString listflt;
+            listflt = st->getFilterString(rez);
+            smart->SetSelection(n);
+            textctrl->AppendText(listflt);
+            if (FilterName != "skipapply") {
+                ClearAllFilter(true);
+                m->setFilterArray(rez, this);
+            }
+        }
+        else { 
+            textctrl->AppendText("");
+            ClearAllFilter(false);
+        }
+
+    }
+    if (wxOper == "RemoveFilter") {
+        wxString txt = combo->GetValue();
+        if (!txt.IsEmpty()) {
+            st->removeFilter(txt);
+            textctrl->Clear();
+            int n = combo->GetSelection();
+            combo->Delete(n);
+            combo->SetValue("");
+            ClearAllFilter(false);
+
+        }
+    }
+    if (wxOper == "AddUserFilter") {
+        if (!FilterName.IsEmpty()) {
+            
+            AddFilterIgnore(FilterName);
+            st->saveFilters();
+            wxOper = "Init";
+        }
+
+    }
+    if (wxOper == "Init") {
+        wxArrayString arr;
+        
+        int j = st->getFilterNames(arr);
+        if (j > 0) {
+            combo->Clear();
+            combo->Append(arr);
+            smart->Append(arr);
+            combo->SelectNone();
+            if (!FilterName.IsEmpty()) {
+                int n = combo->FindString(FilterName);
+                if (n >= 0) {
+                    combo->SetSelection(n);
+                    smart->SetSelection(n);
+                    ModUserFilter("skipapply", "ChangeFilter", combo, textctrl);
+                }
+            }
+        }
+    }
+
+
+}
+void MyDataViewCtrl::AddFilterIgnore(wxString Fname) {
     int colt = 0;
     int col = 0;
     bool all = false;
@@ -222,6 +291,7 @@ void MyDataViewCtrl::AddFilterIgnore() {
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
     Storage* st = m->getStorage();
     wxString text;
+    
     for (int j = 0; j < GetColumnCount(); j++) {
         col = j;
         clear = false;
@@ -231,7 +301,8 @@ void MyDataViewCtrl::AddFilterIgnore() {
             if (colt >= 0) {
                 //m->DropColFilter(colt);
                 wxString expr=st->GetStringFilterExpr(colt,true);
-                st->addLineFilterStr(expr);
+                st->addLineFilterStr(expr,Fname);
+                Fname = "";
                 text = text + expr + "\r\n";
                 all = true;
                 colt++;
@@ -240,8 +311,8 @@ void MyDataViewCtrl::AddFilterIgnore() {
     }
 
     if (all) {
-        st->addLineFilterStr("");
-        wxMessageBox("Create load filter\r\n\r\n"+text, _("Warning"), wxICON_INFORMATION | wxOK);
+        st->addLineFilterStr("","");
+        wxMessageBox("Create filter\r\n\r\n"+text, _("Warning"), wxICON_INFORMATION | wxOK);
 
     }
     else {
@@ -270,8 +341,8 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event) {
                 if (expr == label || all) {
                     m->DropColFilter(colt);
                     clear = true;
-                }
-                colt++;
+                } else
+                    colt++;
             }
         }
         if (clear) {
@@ -405,6 +476,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_COLUMN_HEADER_CLICK(wxDataViewEvent& event) 
 }
 void MyDataViewCtrl::OnKEY_UP(wxKeyEvent& event) {
     // goto next state code
+    modctrl = false;
     int go = 0;
     if (event.GetKeyCode() == WXK_DOWN) {
         go = 1;

@@ -23,9 +23,10 @@
 #include "ctl/ctlAuiNotebook.h"
 #include "utils/csvfiles.h"
 #include "log/StorageModel.h"
+#include "utils/utffile.h"
 
 #include <wx/arrimpl.cpp>
-
+#include <wx/msw/ole/automtn.h>
 
 
 
@@ -34,10 +35,16 @@ WX_DEFINE_OBJARRAY(RemoteConnArray2);
 
 wxBEGIN_EVENT_TABLE(frmLog, pgFrame)
 // test
+EVT_MENU(MNU_FIND_TEXT, frmLog::OnFind)
+EVT_MENU(MNU_SEND_MAIL, frmLog::OnSendMail)
 EVT_CHECKBOX(ID_SET_GROUP, frmLog::OnSetGroup)
 EVT_CHECKBOX(ID_SET_DETAILGROUP, frmLog::OnSetDetailGroup)
 EVT_BUTTON(ID_CLEAR_ALL_FILTER, frmLog::OnClearAllFilter)
 EVT_BUTTON(ID_ADD_FILTER, frmLog::OnAddFilterIgnore)
+EVT_BUTTON(ID_ADD_UFilter, frmLog::OnAddUFilter)
+EVT_BUTTON(ID_DEL_UFilter, frmLog::OnDelUFilter)
+EVT_COMBOBOX(ID_CBOX_UFilter, frmLog::OnChangeUFilter)
+EVT_COMBOBOX(ID_CBOX_SMART, frmLog::OnChangeSmart)
 EVT_SET_FOCUS(frmLog::OnSetFocus)
 EVT_KILL_FOCUS(frmLog::OnKillFocus)
 EVT_ACTIVATE(frmLog::OnActivate)
@@ -65,11 +72,120 @@ void frmLog::OnKillFocus(wxFocusEvent& event) {
 // Class declarations
 void frmLog::OnClearAllFilter(wxCommandEvent& event) {
 
-    my_view->ClearAllFilter();
+	my_view->ClearAllFilter(false);
 }
 void frmLog::OnAddFilterIgnore(wxCommandEvent& event) {
+	wxString Fname = "LoadSkip";
+	my_view->ModUserFilter(Fname, "AddUserFilter", listUserFilter, contentFilter);
+	//my_view->AddFilterIgnore(Fname);
+}
+void frmLog::OnAddUFilter(wxCommandEvent& event) {
+	wxString txt = listUserFilter->GetValue();
+	my_view->ModUserFilter(txt, "AddUserFilter", listUserFilter, contentFilter);
 
-	my_view->AddFilterIgnore();
+}
+void frmLog::OnDelUFilter(wxCommandEvent& event) {
+	my_view->ModUserFilter("", "RemoveFilter", listUserFilter, contentFilter);
+}
+void frmLog::OnChangeUFilter(wxCommandEvent& event) {
+	if (event.GetSelection() >= 0) {
+		my_view->ModUserFilter("", "ChangeFilter", listUserFilter, contentFilter);
+	}
+}
+void frmLog::OnChangeSmart(wxCommandEvent& event) {
+	int n = event.GetSelection();
+	if (n >= 0) {
+		listUserFilter->SetSelection(n);
+		my_view->ModUserFilter("", "ChangeFilter", listUserFilter, contentFilter);
+	}
+}
+wxString escapeHtml(wxString text) {
+	text.Replace("&", "&amp;");
+	text.Replace("<", "&lt;");
+	text.Replace(">", "&gt;");
+	text.Replace("\n", "&para;<br>");
+	return text;
+}
+void frmLog::OnSendMail(wxCommandEvent& event) {
+	//wxMessageBox("send mail");
+	wxDataViewItem item;
+	item = my_view->GetCurrentItem();
+	if (!item.IsOk() ) {
+		return;
+	}
+	wxVariant v, t;
+	StorageModel* m = dynamic_cast<StorageModel*>(my_view->GetModel());
+	Storage* st = m->getStorage();
+	wxArrayString a;
+	int r = m->GetRow(item);
+	if (r != -1) {
+		a=st->GetAllFields(r, st->IsFilter());
+	}
+	else return;
+
+	wxString str = "";
+#ifdef DEBUG
+	wxString fn = "C:\\Users\\lsv\\Source\\Repos\\pgadmin64\\pgadmin\\x64\\Debug_(3.0)\\testhtml.txt" ;
+#else
+	wxString fn = "testhtml.txt";
+#endif // DEBUG
+	wxUtfFile file(fn, wxFile::read, wxFONTENCODING_UTF8);
+	if (file.IsOpened())
+	{
+		file.Read(str);
+		file.Close();
+		wxStringTokenizer tk(str, "\n", wxTOKEN_DEFAULT);
+		wxString cc;
+		wxString to;
+		wxString html;
+		wxString templat;
+		while (tk.HasMoreTokens())
+		{
+			wxString l = tk.GetNextToken();
+			if (l.StartsWith("Cc=")) { cc = l.After('='); continue; }
+			if (l.StartsWith("To=")) { to = l.After('='); continue; }
+			if (l.StartsWith("<tr>")) {
+				wxString le;
+				wxString r;
+				for (int i = 0; i < a.Count(); i++) {
+					templat = l;
+					le = escapeHtml(a[i++]);
+					r = escapeHtml(a[i]);
+					int co = templat.Replace("$1", le);
+					co += templat.Replace("$2", r);
+					html.Append(templat);
+				}
+				continue;
+			}
+			html.Append(l);
+		}
+		wxAutomationObject oObject;
+		if (oObject.GetInstance("Outlook.Application")) {
+			wxAutomationObject msg;
+			wxVariant n[1];
+			wxString strI;
+			int i = 0;
+			strI << i;
+			n[0] = wxVariant(strI);
+			bool rez = oObject.GetObject(msg, "CreateItem", 1, n);
+			if (rez) {
+				//oObject.PutProperty("Visible", true);
+				msg.PutProperty("Subject", "Ошибка ");
+				msg.PutProperty("BodyFormat", 2);
+				msg.PutProperty("To", to);
+				//msg.PutProperty("BCC", "Балашов Игорь Николаевич <Balashov_IN@surgutneftegas.ru>; Иванов Артем Геннадьевич <Ivanov_AG13@surgutneftegas.ru>");
+				msg.PutProperty("Cc", cc);
+				msg.PutProperty("HTMLBody", html);
+				msg.CallMethod("Display");
+			}
+			//oObject.PutProperty("ActiveCell.Font.Bold", @true);
+
+		}
+
+	}
+}
+void frmLog::OnFind(wxCommandEvent& event) {
+
 }
 void frmLog::OnSetGroup(wxCommandEvent& event)
 {
@@ -133,8 +249,22 @@ void frmLog::getFilename() {
 		if (!namepage.IsEmpty()) namepage += ",";
 
 		if (!conArray[i].conn->IsAlive()) {
-			namepage += "-"+conArray[i].conn->GetDbname();
-			continue;
+			wxDateTime n = wxDateTime::Now();
+			if (conArray[i].nextrun < n) {
+				if (!conArray[i].conn->Reconnect())
+				{
+					wxTimeSpan sp(0, 5);
+					conArray[i].nextrun = wxDateTime::Now() + sp;
+					namepage += "-" + conArray[i].conn->GetDbname();
+					continue;
+				}
+			}
+			else {
+				namepage += "?" + conArray[i].conn->GetDbname();
+				continue;
+			}
+
+			
 		}
 		set = conArray[i].conn->ExecuteSet(
 			wxT("select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n")
@@ -252,7 +382,8 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 		}
 		int l= strlen(raw);
 		logfileLength += l;
-		status->SetLabelText(wxString::Format("Load bytes %ld", logfileLength));
+		wxString host = conn->GetHostName();
+		status->SetLabelText(wxString::Format("%s Load bytes %ld", host,logfileLength));
 		wxString str;
 		str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
 		//if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
@@ -411,7 +542,13 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 	idefRed = wxIcon(log_red_xpm);
 	seticon(false);
 	mainForm = form;
-	
+	// Setup accelerators
+	wxAcceleratorEntry entries[2];
+	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
+	entries[1].Set(wxACCEL_CTRL, (int)'S', MNU_SEND_MAIL);
+	wxAcceleratorTable accel(2, entries);
+	SetAcceleratorTable(accel);
+
     m_notebook = new wxNotebook( this, wxID_ANY );
 
     wxPanel* testPanel = new wxPanel(m_notebook, wxID_ANY);
@@ -466,12 +603,21 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
     sSizer->Add(new wxButton(testPanel, ID_CLEAR_ALL_FILTER, "Clear All Filter"), border1);
     //sSizer->Add(new wxButton(testPanel, ID_DELETE_SEL, "Delete selected"), border);
 	sSizer->Add(new wxButton(testPanel, ID_ADD_FILTER, "Add Filter Ignore"), border1);
+	smart = new wxComboBox(testPanel, ID_CBOX_SMART, wxT(""), wxDefaultPosition, wxDefaultSize, 0, NULL, 0);
+	//smart->SetWindowStyle(smart->GetWindowStyle()|wxCB_READONLY);
 	
+	smart->SetMinSize(wxSize(300,-1));
+	//listUserFilter = new wxComboBox(testPanel, ID_CBOX_UFilter, wxT("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0);
+	sSizer->Add(smart, border1);
+	my_view->smart = smart;
 
     zeroPanelSz->Add(sSizer);
     testPanel->SetSizerAndFit(zeroPanelSz);
 
     m_notebook->AddPage(testPanel, "Log");
+	wxBoxSizer* setingSZ = new wxBoxSizer(wxHORIZONTAL);
+	setingSZ->Add(m_notebook);
+
 	wxPanel* settingPanel = new wxPanel(m_notebook, wxID_ANY);
 	lb = new wxCheckListBox(settingPanel,wxID_ANY);
 	wxTreeItemIdValue foldercookie, servercookie;
@@ -523,9 +669,39 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 		
 	}
 
-	wxSizer* zeroPanelSz2 = new wxBoxSizer(wxVERTICAL);
+	wxSizer* zeroPanelSz2 = new wxBoxSizer(wxHORIZONTAL);
 	lb->SetMinSize(wxSize(-1, 200));
 	zeroPanelSz2->Add(lb, 1, wxGROW | wxALL, 5);
+
+	wxPanel *m_panel2 = new wxPanel(settingPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+
+	zeroPanelSz2->Add(m_panel2, 1, wxEXPAND | wxALL, 5);
+
+	wxBoxSizer* bSizer3;
+	bSizer3 = new wxBoxSizer(wxVERTICAL);
+
+	wxBoxSizer* bSizer2;
+	bSizer2 = new wxBoxSizer(wxHORIZONTAL);
+	listUserFilter = new wxComboBox(m_panel2, ID_CBOX_UFilter, wxT("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0);
+	bSizer2->Add(listUserFilter, 1, wxALL | wxEXPAND, 2);
+	wxButton *m_button1 = new wxButton(m_panel2, ID_ADD_UFilter, wxT("Add"), wxDefaultPosition, wxDefaultSize, 0);
+	m_button1->SetMaxSize(wxSize(30, -1));
+	bSizer2->Add(m_button1, 0, wxALL, 2);
+	wxButton *m_button2 = new wxButton(m_panel2, ID_DEL_UFilter, wxT("Del"), wxDefaultPosition, wxDefaultSize, 0);
+	m_button2->SetMaxSize(wxSize(30, -1));
+	bSizer2->Add(m_button2, 0, wxALL, 2);
+	bSizer3->Add(bSizer2, 0, wxEXPAND, 5);
+
+	wxBoxSizer* bSizer5;
+	bSizer5 = new wxBoxSizer(wxVERTICAL);
+
+	contentFilter = new wxTextCtrl(m_panel2, ID_TEXT_UFilter, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+	bSizer5->Add(contentFilter, 1, wxALL | wxEXPAND, 2);
+	bSizer3->Add(bSizer5, 1, wxEXPAND, 2);
+	m_panel2->SetSizer(bSizer3);
+
+	//listUserFilter->Bind();
+	
 	settingPanel->SetSizerAndFit(zeroPanelSz2);
 	m_notebook->AddPage(settingPanel, "Settings");
 
@@ -533,6 +709,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 	settings->Read(dlgName + "/Mode",&b, false);
 	group->SetValue(b);
 	my_view->setGroupMode(b);
+	my_view->ModUserFilter("","Init", listUserFilter, contentFilter);
 //	if (mainForm) getFilename();
 	m_timer.Start(timerInterval);
 }

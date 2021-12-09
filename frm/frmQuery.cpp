@@ -692,7 +692,10 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	viewMenu->Check(MNU_TOOLBAR, manager.GetPane(wxT("toolBar")).IsShown());
 	viewMenu->Check(MNU_OUTPUTPANE, manager.GetPane(wxT("outputPane")).IsShown());
 	viewMenu->Check(MNU_SCRATCHPAD, manager.GetPane(wxT("scratchPad")).IsShown());
-
+	wxAuiPaneInfo &pn = manager.GetPane(wxT("outputPane"));
+	if (!pn.HasMaximizeButton()) {
+		pn.MaximizeButton(true);
+	}
 	// tell the manager to "commit" all the changes just made
 	manager.Update();
 

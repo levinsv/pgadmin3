@@ -75,6 +75,7 @@ struct LineFilter {
 	int col;
 	int flags;
 	wxString val;
+	wxString NameFilter;
 };
 
 class Storage
@@ -103,10 +104,11 @@ public:
 	// приминить фильтр для строки или для все строк хранилища
 	// true если строка не отфильтровалась (видна)
 	bool ApplyFilter(int row = -1);
+	int SetFilterArray(std::deque<LineFilter> arr);
 	wxString getStrGroup(wxString source);
 	int testFilter(MyConst::colField col, int position);
 	wxString GetStringFilterExpr(int positionArrayFilter,bool addNumCol=false);
-	void addLineFilterStr(wxString strflt);
+	void addLineFilterStr(wxString strflt,wxString fn);
 	wxString _strwhere(int flags);
 	void saveFilters();
 	wxString LineFilterToStr(LineFilter& lf);
@@ -140,18 +142,23 @@ public:
 	bool IsAddGroupNew() {
 		return faddgroup;
 	};
+	std::deque<LineFilter> getFilter(wxString FilterName);
+	wxString getFilterString(std::deque<LineFilter> arr);
+	int getFilterNames(wxArrayString& arr);
+	void removeFilter(wxString FilterName);
+
 	int getLastRowIndex() { return m_cacheIndex; }
 	// всего строк в хранилище
 	int getCountStore();
 	int getCountFilter();
 	int getCountGroup(int row);
 	int GetTotalCountGroup(int rowfilter);
-
+	wxArrayString GetAllFields(int row, bool isfilter);
 private:
 	bool checkFilter(Line& l);
 	Line getLineParse(const wxString& str, bool csv = false);
 	wxString get_field(Line& l, MyConst::colField col);
-	LineFilter getLineFilter(wxString strflt);
+	LineFilter getLineFilter(wxString strflt,wxString fn);
 	void getLineToCache(int row, bool filter = true);
 	bool CompareFilterLine(int row, bool filter);
 
@@ -180,6 +187,7 @@ private:
 	int rowsadd;
 	int rowsignore;
 	wxColor bgErr[MyConst::iconIndex::MAX_COL];
+	wxString colname[MyConst::colField::Col_Max];
 	wxString currhost;
 };
 

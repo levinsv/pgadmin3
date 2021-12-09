@@ -12,7 +12,7 @@ int Storage::getCountFilter() {
     if (cnt == 0 && !IsFilter()) cnt = getCountStore();
     return cnt;
 }
-LineFilter Storage::getLineFilter(wxString strflt) {
+LineFilter Storage::getLineFilter(wxString strflt,wxString fn) {
     LineFilter lf;
     lf.col = -1;
     if (strflt.IsEmpty()) {
@@ -28,6 +28,7 @@ LineFilter Storage::getLineFilter(wxString strflt) {
     if (l[i] == '~') flags = flags | FL_CONTAINS;
     lf.flags = flags;
     lf.val = val;
+    lf.NameFilter = fn;
     return lf;
 }
 wxString Storage::_strwhere(int flags) {
@@ -44,9 +45,17 @@ wxString Storage::LineFilterToStr(LineFilter& lf) {
     expr = wxString::Format("%d:%s", lf.col, expr);
     return expr;
 }
+wxString Storage::getFilterString(std::deque<LineFilter> arr) {
+    wxString str;
+    for (auto fl : arr) {
+        if (!str.IsEmpty()) str += "\n";
+        if (fl.col != -1) str += LineFilterToStr(fl);
+    }
+    return str;
+}
 
-void Storage::addLineFilterStr(wxString strflt) {
-    LineFilter lf = getLineFilter(strflt);
+void Storage::addLineFilterStr(wxString strflt,wxString fn) {
+    LineFilter lf = getLineFilter(strflt,fn);
     filterload.push_back(lf);
 }
 Storage::Storage() {
@@ -57,6 +66,22 @@ Storage::Storage() {
     bgErr[MyConst::iconIndex::error] = wxColor(220, 150, 150);
     bgErr[MyConst::iconIndex::fatal] = wxColor(209, 100, 100);
     bgErr[MyConst::iconIndex::panic] = wxColor(246, 10, 10);
+    colname[MyConst::colField::logappname] = "Application Name";
+    colname[MyConst::colField::loguser] = "User db";
+    colname[MyConst::colField::logbtype] = "Backend Type";
+    colname[MyConst::colField::logdb] = "Db name";
+    colname[MyConst::colField::logDetail] = "Detail";
+    colname[MyConst::colField::logHint] = "Hint";
+    colname[MyConst::colField::loghost] = "Client Host";
+    colname[MyConst::colField::logpid] = "Pid Server process";
+    colname[MyConst::colField::logMessage] = "Message";
+    colname[MyConst::colField::logSERVER] = "DB host";
+    colname[MyConst::colField::logSessiontime] = "Session time";
+    colname[MyConst::colField::logSeverity] = "Severity";
+    colname[MyConst::colField::logSqlstate] = "Sql state";
+    colname[MyConst::colField::logtag] = "Tag";
+    colname[MyConst::colField::logtime] = "Time";
+    
 
     // load filter
     wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\");
@@ -69,21 +94,85 @@ Storage::Storage() {
             file.Read(str);
             file.Close();
             wxStringTokenizer tk(str, "\n", wxTOKEN_RET_EMPTY_ALL);
-            
+            wxString Fname = wxEmptyString;
             bool end = false;
             LineFilter lf;
+            int cc = 1;
             while (tk.HasMoreTokens())
             {
                 wxString l = tk.GetNextToken();
-                if (end && l.IsEmpty()) continue;
-                 addLineFilterStr(l);
-                end = l.IsEmpty();
+                if (end && l.IsEmpty()) {  continue; };
+                if ((!l.IsEmpty()) && (l[0] == '#')) {
+                    Fname = l.substr(1);
+                    if (Fname.Contains("LoadSkip")) Fname = wxString::Format("LoadSkip %d", cc++);
+                    continue;
+                }
+                if (end && Fname.IsEmpty()) Fname = wxString::Format("LoadSkip %d",cc++);
+                 addLineFilterStr(l,Fname);
+                 Fname = wxEmptyString;
+                 end = l.IsEmpty();
             }
-            if (!end) addLineFilterStr("");
+            if (!end) addLineFilterStr("","");
 
         }
 
     }
+}
+void Storage::removeFilter(wxString FilterName) {
+
+    bool add = false;
+    int j = 0;
+    int p = 0;
+    for (auto fl : filterload) {
+        if (!fl.NameFilter.IsEmpty())
+            if (fl.NameFilter == FilterName)
+            {
+                add = true;
+            }
+        if (add) j++;
+        if (add && fl.col == -1) break;
+        if (!add) p++;
+    }
+    int l = 0;
+    for (auto i = filterload.begin(); i != filterload.end(); )
+    {
+        if (l == p) {
+            for (int y = 0; y < j; y++) i = filterload.erase(i);
+            break;
+        }
+        l++;
+
+    }
+}
+std::deque<LineFilter> Storage::getFilter(wxString FilterName) {
+    std::deque<LineFilter> rez;
+    bool add = false;
+    for (auto fl : filterload) {
+        if (add && fl.col == -1) break;
+
+        if (!fl.NameFilter.IsEmpty())
+            if (fl.NameFilter==FilterName)
+            {
+                add = true;
+            }
+        if (add) rez.push_back(fl);
+
+    }
+    return rez;
+}
+int Storage::getFilterNames(wxArrayString& arr) {
+    std::deque<LineFilter> rez;
+    bool add = false;
+    int i = 0;
+    for (auto fl : filterload) {
+
+        if (!fl.NameFilter.IsEmpty())
+            {
+                arr.Add(fl.NameFilter);
+                i++;
+            }
+    }
+    return i;
 }
 void Storage::saveFilters() {
     if (filterload.size() == 0) return;
@@ -94,6 +183,9 @@ void Storage::saveFilters() {
     {
         wxString text;
         for (auto lf:filterload) {
+            if (!lf.NameFilter.IsEmpty()) {
+                text.Append("#"+lf.NameFilter+"\n");
+            }
             wxString s = LineFilterToStr(lf);
 
             if (!s.IsEmpty()) text.Append(s);
@@ -121,9 +213,16 @@ wxColor& Storage::GetBgColorLine(int rowvisual) {
     return bgErr[i];
 }
 void Storage::DropColFilter(int index) {
-    fCol.RemoveAt(index);
-    fVal.RemoveAt(index);
-    fFlags.RemoveAt(index);
+    if (index == -1) {
+        fCol.Clear();
+        fVal.Clear();
+        fFlags.Clear();
+    }
+    else {
+        fCol.RemoveAt(index);
+        fVal.RemoveAt(index);
+        fFlags.RemoveAt(index);
+    }
     // оставшиеся фильтры будут применены по всему storage
     frows.clear();
 }
@@ -184,7 +283,7 @@ bool Storage::CompareFilterLine(int row, bool filter) {
             return true;
         }
 
-        if (!faddgroup) return false;
+if (!faddgroup) return false;
 
     }
     return true;
@@ -282,7 +381,19 @@ bool Storage::ApplyFilter(int row) {
     faddgroup = false;
     return f;
 }
+int Storage::SetFilterArray(std::deque<LineFilter> arr) {
+    for (auto fl: arr) {
+        if (fl.col != -1) {
+            fCol.Add(fl.col);
+            fVal.Add(fl.val);
+            fFlags.Add(fl.flags);
+        }
 
+    }
+    ApplyFilter();
+    return frows.size();
+
+}
 int Storage::SetFilter(int col, wxString& val, int flags) {
     fCol.Add(col);
     fVal.Add(val);
@@ -293,6 +404,17 @@ int Storage::SetFilter(int col, wxString& val, int flags) {
 wxString Storage::GetField(int row, MyConst::colField col) {
     return GetFieldStorage(row, col, IsFilter());
 }
+wxArrayString Storage::GetAllFields(int row,bool isfilter) {
+    wxArrayString a;
+    wxString f;
+    for (int i = 0; i < MyConst::colField::Col_Max;i++) {
+        f= GetFieldStorage(row, (MyConst::colField) i, isfilter);
+        a.Add(colname[i]);
+        a.Add(f);
+    }
+    return a;
+}
+
 wxString Storage::get_field(Line& l, MyConst::colField col) {
     wxString val;
     switch (col)
@@ -392,8 +514,8 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
         st.logtag = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logTag.Len()) };
         t += logTag;
         wxString logSessiontime = tk.GetNextToken();
-        st.loghost = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logHost.Len()) };
-        t += logHost;
+        st.logSessiontime = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logSessiontime.Len()) };
+        t += logSessiontime;
 
         wxString logVXid = tk.GetNextToken();
         wxString logTransaction = tk.GetNextToken();
@@ -529,7 +651,14 @@ bool Storage::checkFilter(Line& l) {
         bool rez=true;
         int last = filterload.size() - 1;
         int i = 0;
+        int cc = 0;
+        //int line = 0;
+        //bool skip = false;
         for (auto fl:filterload) {
+            if (!fl.NameFilter.IsEmpty())
+                if (!fl.NameFilter.Contains("LoadSkip")) rez= false;
+
+
             if (fl.col == -1) {
                 if (rez || (last==i)) break;
                 rez = true;
@@ -544,11 +673,13 @@ bool Storage::checkFilter(Line& l) {
                     else
                         rez = sf.Contains(fl.val);
                     if (reverse)  rez = !rez;
+                    cc++;
                 }
             }
             i++;
 
         }
+        if (cc == 0) return false;
         return rez;
     }
     return false;

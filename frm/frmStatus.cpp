@@ -210,14 +210,12 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	logFormatKnown = false;
 
 	// Only superusers can set these parameters...
-	pgUser *user = new pgUser(connection->GetUser());
-	if (user)
-	{
-		if (user->GetSuperuser())
+	
+		if (connection->IsSuperuser())
 		{
 			// Make the connection quiet on the logs
 			if (connection->BackendMinimumVersion(8, 0))
-				initquery = wxT("SET log_statement='none';SET log_duration='off';SET log_min_duration_statement=-1;");
+				initquery = wxT("SET log_statement='none';SET log_duration='off';SET log_min_duration_statement=-1;SET statement_timeout=10000;");
 			else
 				initquery = wxT("SET log_statement='off';SET log_duration='off';SET log_min_duration_statement=-1;");
 #ifndef _DEBUG
@@ -232,8 +230,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 		isrecovery = (v == wxT("t"));
 		v = connection->ExecuteScalar(wxT("select current_setting('track_commit_timestamp')"));
 		track_commit_timestamp = (v == wxT("on"));
-		delete user;
-	}
+	
 
 	// Notify wxAUI which frame to use
 	manager.SetManagedWindow(this);

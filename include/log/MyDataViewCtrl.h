@@ -25,8 +25,10 @@ public:
     void setSettingString(wxString setstr);
     void setGroupMode(bool mode);
     void ViewGroup(bool view);
-    void ClearAllFilter();
-    void AddFilterIgnore();
+    void ClearAllFilter(bool no_apply);
+    
+    void ModUserFilter(wxString FilterName, wxString wxOper, wxComboBox* combo, wxTextCtrl* textctrl);
+    void AddFilterIgnore(wxString Fname);
     void AddRow(wxString csvtext);
     void OnMouseMove(wxMouseEvent& event);
     void OnKEY_DOWN(wxKeyEvent& event);
@@ -39,6 +41,7 @@ public:
     void OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event);
     void OnEVT_DATAVIEW_SELECTION_CHANGED(wxDataViewEvent& event);
     void OnContextMenu(wxDataViewEvent& event);
+    wxComboBox* smart;
     DECLARE_EVENT_TABLE()
 
 private:
@@ -46,6 +49,7 @@ private:
     wxDataViewItem selectRowGroup;
     bool modctrl = false;
     wxStaticText* st;
+    
     //bool visibleEndLine = false;
 #ifdef MYTEST
     int linenumber = -1;
