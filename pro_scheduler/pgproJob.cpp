@@ -363,7 +363,7 @@ void pgproJob::ShowStatistics(frmMain *form, ctlListView *statistics)
 		if (wxDTend.IsEmpty()) wxDTend=DateToAnsiStr(wxDateTime::Now());
 		sql=wxT("select log_time,detail critical,message,hint from pg_log l where l.log_time>'") + DateToAnsiStr(GetStarted())+
 			wxT("'::timestamp - interval '1min' and l.log_time<='")+ wxDTend +
-			wxT("'::timestamp + interval '1min' and detail::int>=0");
+			wxT("'::timestamp + interval '1min' and case when  length(detail)>2 then 20 else detail::int end >=0");
 		//+GetTryName()+wxT("'");
 		pgSet *stats = GetConnection()->ExecuteSet(sql);
 		wxString critical;
