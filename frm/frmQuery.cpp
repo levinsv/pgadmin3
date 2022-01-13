@@ -782,13 +782,20 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	bool modeUnicode = settings->GetUnicodeFile();
 	wxArrayString activePage;
-	wxString f = wxFindFirstFile(tempDir+wxT("*.a"));
+	wxString f = wxFindFirstFile(tempDir + wxT("*.a"));
+	while (!f.empty())
+	{
+		filename = f.AfterLast('\\').BeforeLast('.');
+		if (filename.BeforeFirst('.') == "_active") {
+			activePage.Add(filename.AfterFirst('.'));
+			//wxLogInfo(wxT("frmQuery::_active file marker: name=[%s] pref=[%s]"), filename.AfterFirst('.'), pref);
+		}
+		f = wxFindNextFile();
+	}
+	f = wxFindFirstFile(tempDir+wxT("*.a"));
      while ( !f.empty() )
      {
 		 filename=f.AfterLast('\\').BeforeLast('.');
-		 if (filename.BeforeFirst('.') == "_active") {
-			 activePage.Add(filename.AfterFirst('.'));
-		 }
 		 if ((f.AfterLast('\\').StartsWith(pref+wxT("."))||(filename.BeforeLast('.').IsEmpty()))) {
 			wxUtfFile file(f, wxFile::read, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
 			if (file.IsOpened()) {
@@ -832,15 +839,23 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	 if (!activePage.IsEmpty()) {
 		 //activePage
 		 //outputPane->GetPageText(curpage) == _("History");
+		 
+		 int ii = -1;
 		 for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
 			 wxString textpage = sqlQueryBook->GetPageText(i);
 			 if (wxNOT_FOUND !=activePage.Index(textpage)) {
-				 sqlQueryBook->SetSelection(i);
-				 break;
+				 if (textpage.BeforeFirst('.') == pref) {
+					 ii = i;
+					 break;
+				 }
+				 else
+					 ii = i;
 				 //sqlQueryBook->ChangeSelection(i);
 				 //if (sqlQueryBook->GetSelection()!=i) sqlQueryBook->SetSelection(i);
 			 }
 		 }
+		 if (ii!=-1) sqlQueryBook->SetSelection(ii);
+		 //wxLogInfo(wxT("frmQuery::select tab: name=[%s] index=[%d]"), sqlQueryBook->GetPageText(ii), ii);
 	 }
 	//for (int i=1;i<15;i++) 
 	//{
@@ -4180,8 +4195,20 @@ void frmQuery::fileMarkerActive(bool addOrRemove, wxString &sqlTabName) {
 	wxString fn = tempDir + wxT("_active.") + tabname + ".a";
 	//if (sqlTabName.Right(1)=='*' ) tabname=
 	if (addOrRemove)
+	{
 		//wxUtfFile file(fn, wxFile::write, wxFONTENCODING_UTF8);
 		wxFile file(fn, wxFile::write);
+		// remove any ohher files
+
+		for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
+			wxString textpage = sqlQueryBook->GetPageText(i);
+			if (tabname != textpage)
+			{
+				textpage = tempDir + "_active." + textpage + ".a";
+				if (wxFileName::FileExists(textpage)) wxRemoveFile(textpage);
+			}
+		}
+	}
 	else
 		if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
 
@@ -4333,9 +4360,11 @@ void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 			wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
 			wxString filename=sqlQuery->GetTitle(false);
 			wxRemoveFile(tempDir+filename+wxT(".a"));
+			wxRemoveFile(tempDir + "_active."+filename + wxT(".a"));
 			wxString nt=dialog.GetValue();
 			sqlQuery->SetTitle(nt);
 			SqlBookUpdatePageTitle();
+			fileMarkerActive(true, nt);
 			//sqlQueryBook->GetPage(curpage)->
 			SaveTempFile();
 		}
