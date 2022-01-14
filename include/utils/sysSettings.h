@@ -873,6 +873,7 @@ private:
 	bool moveLongValue(const wxChar *oldKey, const wxChar *newKey, int index = -1);
 
 	wxFileConfig *defaultSettings;
+	wxString appName;
 };
 
 #endif

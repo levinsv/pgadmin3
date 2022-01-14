@@ -31,6 +31,7 @@
 #include "utils/misc.h"
 sysSettings::sysSettings(const wxString &name) : wxConfig(name)
 {
+	appName = name;
 	// Open the default settings file
 	defaultSettings = NULL;
 	if (!settingsIni.IsEmpty())
@@ -62,7 +63,11 @@ sysSettings::sysSettings(const wxString &name) : wxConfig(name)
 
 sysSettings::~sysSettings()
 {
+	wxRegKey key(wxRegKey::HKCU, "Software\\"+appName);
 
+	wxString fn= wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\autoSaveConfig.reg");
+	if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
+	key.Export(fn);
 	if(defaultSettings)
 	{
 		delete defaultSettings;
