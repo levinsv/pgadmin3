@@ -127,7 +127,7 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 #ifdef DEBUG
 	wxString fn = "C:\\Users\\lsv\\Source\\Repos\\pgadmin64\\pgadmin\\x64\\Debug_(3.0)\\testhtml.txt" ;
 #else
-	wxString fn = "testhtml.txt";
+	wxString fn = "mail.template";
 #endif // DEBUG
 	wxUtfFile file(fn, wxFile::read, wxFONTENCODING_UTF8);
 	if (file.IsOpened())
@@ -547,6 +547,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, (int)'S', MNU_SEND_MAIL);
 	wxAcceleratorTable accel(2, entries);
+	SetAcceleratorTable(accel);
 	SetAcceleratorTable(accel);
 
     m_notebook = new wxNotebook( this, wxID_ANY );

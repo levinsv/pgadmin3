@@ -533,8 +533,6 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
         //fields.Add(logMessage);
         wxString logDetail = tk.GetNextToken();
         //fields.Add(logDetail);
-        st.logDetail = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logDetail.Len()) };
-        t += logDetail;
         wxString logHint = tk.GetNextToken();
         //fields.Add(logHint);
         wxString logQuery = tk.GetNextToken();
@@ -544,6 +542,12 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
         wxString logCursorpos = tk.GetNextToken();
         if (!logDebug.IsEmpty() && logHint.IsEmpty())
             logHint = logDebug;
+        if (!logContext.IsEmpty() && logDetail.IsEmpty())
+            logDetail = logContext;
+
+        st.logDetail = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logDetail.Len()) };
+        t += logDetail;
+
         st.logHint = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logHint.Len()) };
         t += logHint;
         st.logMessage = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logMessage.Len()) };
