@@ -3464,7 +3464,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 
 				// Set an indicator on the error word (break on any kind of bracket, a space or full stop)
 				int sPos = errPos + selStart - 1, wEnd = 1;
-				sqlQueryExec->StartStyling(sPos, wxSTC_INDICS_MASK);
+				//sqlQueryExec->StartStyling(sPos, wxSTC_INDICS_MASK);
 				int c = sqlQueryExec->GetCharAt(sPos + wEnd);
 				size_t len = sqlQueryExec->GetText().Length();
 				while(c != ' ' && c != '(' && c != '{' && c != '[' && c != '.' &&
@@ -3473,7 +3473,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 					wEnd++;
 					c = sqlQueryExec->GetCharAt(sPos + wEnd);
 				}
-				sqlQueryExec->SetStyling(wEnd, wxSTC_INDIC0_MASK);
+				//sqlQueryExec->SetStyling(wEnd, wxSTC_INDIC0_MASK);
 
 				int line = 0, maxLine = sqlQueryExec->GetLineCount();
 				while (line < maxLine && sqlQueryExec->GetLineEndPosition(line) < errPos + selStart + 1)
