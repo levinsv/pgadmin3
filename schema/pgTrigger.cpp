@@ -204,7 +204,9 @@ wxString pgTrigger::GetSql(ctlTree *browser)
 		}
 		else
 		{
-			sql += wxT("\n  EXECUTE PROCEDURE ") + triggerFunction->GetQuotedFullIdentifier()
+			wxString keyword = "PROCEDURE ";
+			if (GetConnection()->BackendMinimumVersion(11, 0)) keyword = "FUNCTION ";
+			sql += wxT("\n  EXECUTE ") + keyword + triggerFunction->GetQuotedFullIdentifier()
 			       + wxT("(") + GetArguments() + wxT(")")
 			       + wxT(";\n");
 		}
@@ -405,7 +407,7 @@ pgObject *pgTriggerFactory::CreateObjects(pgCollection *coll, ctlTree *browser, 
 	wxString trig_sql;
 	trig_sql = wxT("SELECT t.oid, t.xmin, encode(t.tgargs,'escape') tgargsE, t.*, relname, CASE WHEN relkind = 'r' THEN TRUE ELSE FALSE END AS parentistable, ")+ref+
 	           wxT("  nspname, des.description, l.lanname, p.prosrc, \n")
-	           wxT("  COALESCE(substring(pg_get_triggerdef(t.oid), 'WHEN (.*) EXECUTE PROCEDURE'), substring(pg_get_triggerdef(t.oid), 'WHEN (.*)  \\$trigger')) AS whenclause\n")
+	           wxT("  COALESCE(substring(pg_get_triggerdef(t.oid), 'WHEN (.*) EXECUTE FUNCTION'),substring(pg_get_triggerdef(t.oid), 'WHEN (.*) EXECUTE PROCEDURE'), substring(pg_get_triggerdef(t.oid), 'WHEN (.*)  \\$trigger')) AS whenclause\n")
 	           wxT("  FROM pg_trigger t\n")
 	           wxT("  JOIN pg_class cl ON cl.oid=tgrelid\n")
 	           wxT("  JOIN pg_namespace na ON na.oid=relnamespace\n")
