@@ -2414,6 +2414,7 @@ int frmQuery::GetLineEndingStyle()
 
 void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 {
+	if (!mainForm) return;
 	//parent->SetCurrentNode(parent->GetBrowser()->GetRootItem(), path);
 	pgObject *obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
 	pgFunction *fun=(pgFunction *)obj;//obj->Show
@@ -4253,6 +4254,7 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			sqlQuery->SetFocus();
 			if (sqlQueryBook->GetPageCount() > 1) fileMarkerActive(true, sqlQueryBook->GetPageText(sqlQueryBook->GetSelection()));
 			//wxMessageBox(wxT("OnSqlBookPageChanged "));
+			updateMenu(false);
 			wxTheApp->Yield(true);
 		}
 	}
