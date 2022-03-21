@@ -130,6 +130,7 @@ private:
 
     void OnSetFocus(wxFocusEvent& event);
     void OnKillFocus(wxFocusEvent& event);
+    void OnClose(wxCloseEvent& event);
     void OnActivate(wxActivateEvent& event);
     void OnTimer(wxTimerEvent& event);
     void seticon(bool errflag);
