@@ -46,6 +46,7 @@ EVT_BUTTON(ID_DEL_UFilter, frmLog::OnDelUFilter)
 EVT_COMBOBOX(ID_CBOX_UFilter, frmLog::OnChangeUFilter)
 EVT_COMBOBOX(ID_CBOX_SMART, frmLog::OnChangeSmart)
 EVT_SET_FOCUS(frmLog::OnSetFocus)
+EVT_CLOSE(frmLog::OnClose)
 EVT_KILL_FOCUS(frmLog::OnKillFocus)
 EVT_ACTIVATE(frmLog::OnActivate)
 wxEND_EVENT_TABLE()
@@ -67,6 +68,17 @@ void frmLog::OnKillFocus(wxFocusEvent& event) {
 	m_storage_model->getStorage()->SetErrMsgFlag(false);
 	seticon(false);
 
+}
+void frmLog::OnClose(wxCloseEvent& event) {
+	if (event.CanVeto()&& detail->IsChecked())
+	{
+		my_view->setGroupMode(true);
+		detail->SetValue(false);
+	//detail->Enable(event.IsChecked());
+		event.Veto();
+		return;
+	}
+	event.Skip();
 }
 
 // Class declarations
