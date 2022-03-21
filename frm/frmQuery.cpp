@@ -83,7 +83,7 @@
 #include "images/query_rollback.pngc"
 #include "images/help.pngc"
 #include "images/gqbJoin.pngc"
-
+#include <map>
 #define CTRLID_CONNECTION       4200
 #define CTRLID_DATABASELABEL    4201
 #define CTL_SQLQUERYBOOK        4202
@@ -349,7 +349,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	fileMenu->Append(MNU_NEWSQLTAB, _("New SQL &tab\tCtrl-T"), _("Open a new query tab"));
 
 	fileMenu->AppendSeparator();
-	fileMenu->Append(MNU_EXPORT, _("&Export..."),  _("Export data to file"));
+	fileMenu->Append(MNU_EXPORT, _("&Export...\tAlt+E"),  _("Export data to file"));
 	fileMenu->Append(MNU_QUICKREPORT, _("&Quick report..."),  _("Run a quick report..."));
 	fileMenu->AppendSeparator();
 	fileMenu->Append(MNU_RECENT, _("&Recent files"), recentFileMenu);
@@ -478,27 +478,83 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	queryMenu->Check(MNU_TIMING, settings->GetExplainTiming());
 
 	UpdateRecentFiles();
+#define USER_KEY_DEF 15
+	wxAcceleratorEntry entries[16+ USER_KEY_DEF];
+	std::map<std::string, int> mapping;
+	mapping["MNU_EXECFILE"] = MNU_EXECFILE;
+	mapping["MNU_EXECPGS"] = MNU_EXECPGS;
+	mapping["MNU_EXECUTE"] = MNU_EXECUTE;
+	mapping["MNU_EXECUTE_2"] = MNU_EXECUTE_2;
+	mapping["MNU_EXPLAIN"] = MNU_EXPLAIN;
+	mapping["MNU_NEWSQLTAB"] = MNU_NEWSQLTAB;
+	mapping["MNU_EXPLAINANALYZE"] = MNU_EXPLAINANALYZE;
+	mapping["MNU_EXIT"] = MNU_EXIT;
+	mapping["MNU_EXPORT"] = MNU_EXPORT;
+	mapping["MNU_EXTERNALFORMAT"] = MNU_EXTERNALFORMAT;
+	mapping["MNU_COMMENT_TEXT"] = MNU_COMMENT_TEXT;
+	mapping["MNU_UNCOMMENT_TEXT"] = MNU_UNCOMMENT_TEXT;
+	mapping["MNU_DOROLLBACK"] = MNU_DOROLLBACK;
+	mapping["MNU_DOCOMMIT"] = MNU_DOCOMMIT;
+	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\keymap.txt");
+	
+	int idx = 0;
+	if (wxFileName::FileExists(tempDir) )
+	{
+		wxUtfFile filer(tempDir, wxFile::read, wxFONTENCODING_UTF8);
+		filer.IsOpened();
+		wxString str = "";
+		filer.Read(str);
+		filer.Close();
+		wxStringTokenizer tk(str, "\n\r", wxTOKEN_DEFAULT);
+		int d = 0;
+		while (tk.HasMoreTokens())
+		{
+			d++;
+			wxString l = tk.GetNextToken();
+			wxString mnu = l.BeforeFirst(' ');
+			wxString cmdkey = l.AfterLast(' ');
+			if (l.IsEmpty()) continue;
+			if (idx >= (USER_KEY_DEF)) break;
+			int imnu = 0;
+			auto f = mapping.find(std::string(mnu.mb_str()));
+			if (f== mapping.end()) {
+				std::string s="";
+				for (auto& t : mapping)
+					s += t.first + ",";
+				wxLogError(wxT("frmQuery::keymap.txt file : line=[%d] menu=[%s] bad menu name. Possible value(%s) "), d, mnu,wxString(s) );
+				continue;
+			}
+			imnu = f->second;
+			if (entries[idx].FromString(cmdkey)) {
+				entries[idx].Set(entries[idx].GetFlags(), entries[idx].GetKeyCode(), imnu);
+				wxLogInfo(wxT("frmQuery::keymap.txt file : line=[%d] menu=[%d] key=[%s] "), d, imnu, entries[idx].ToString());
+			}
+			else
+			{
+				wxLogError(wxT("frmQuery::keymap.txt file : line=[%d] menu=[%s] key=[%s] bad key. Ignore this line"), d, mnu, cmdkey);
+				continue;
+			}
+			idx++;
+		}
+	}
+	entries[idx++].Set(wxACCEL_CTRL, (int)'E', MNU_EXECUTE);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'O', MNU_OPEN);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'S', MNU_SAVE);
+	entries[idx++].Set(wxACCEL_CMD, (int)'S', MNU_SAVE);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'R', MNU_REPLACE);
+	entries[idx++].Set(wxACCEL_NORMAL, WXK_F8, MNU_EXECUTE);
+	entries[idx++].Set(wxACCEL_NORMAL, WXK_F7, MNU_EXPLAIN);
+	entries[idx++].Set(wxACCEL_ALT, WXK_PAUSE, MNU_CANCEL);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'A', MNU_SELECTALL);
+	entries[idx++].Set(wxACCEL_CMD, (int)'A', MNU_SELECTALL);
+	entries[idx++].Set(wxACCEL_NORMAL, WXK_F1, MNU_HELP);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'N', MNU_NEW);
+	entries[idx++].Set(wxACCEL_NORMAL, WXK_F6, MNU_EXECPGS);
+	entries[idx++].Set(wxACCEL_NORMAL, WXK_F5, MNU_EXECFILE);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'T', MNU_NEWSQLTAB);
 
-	wxAcceleratorEntry entries[16];
-
-	entries[0].Set(wxACCEL_CTRL,                (int)'E',      MNU_EXECUTE);
-	entries[1].Set(wxACCEL_CTRL,                (int)'O',      MNU_OPEN);
-	entries[2].Set(wxACCEL_CTRL,                (int)'S',      MNU_SAVE);
-	entries[3].Set(wxACCEL_CMD,                 (int)'S',      MNU_SAVE);
-	entries[4].Set(wxACCEL_CTRL,                (int)'F',      MNU_FIND);
-	entries[5].Set(wxACCEL_CTRL,                (int)'R',      MNU_REPLACE);
-	entries[6].Set(wxACCEL_NORMAL,              WXK_F8,        MNU_EXECUTE);
-	entries[7].Set(wxACCEL_NORMAL,              WXK_F7,        MNU_EXPLAIN);
-	entries[8].Set(wxACCEL_ALT,                 WXK_PAUSE,     MNU_CANCEL);
-	entries[9].Set(wxACCEL_CTRL,                (int)'A',       MNU_SELECTALL);
-	entries[10].Set(wxACCEL_CMD,                (int)'A',       MNU_SELECTALL);
-	entries[11].Set(wxACCEL_NORMAL,              WXK_F1,        MNU_HELP);
-	entries[12].Set(wxACCEL_CTRL,               (int)'N',      MNU_NEW);
-	entries[13].Set(wxACCEL_NORMAL,             WXK_F6,        MNU_EXECPGS);
-	entries[14].Set(wxACCEL_NORMAL,             WXK_F5,        MNU_EXECFILE);
-	entries[15].Set(wxACCEL_CTRL,               (int)'T',      MNU_NEWSQLTAB);
-
-	wxAcceleratorTable accel(16, entries);
+	wxAcceleratorTable accel(idx, entries);
 	SetAcceleratorTable(accel);
 
 	queryMenu->Enable(MNU_CANCEL, false);
@@ -771,9 +827,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		// load  temp file
 	wxString str;
 	wxString filename;
-	
-	wxString tempDir=wxStandardPaths::Get().GetUserConfigDir()+wxT("\\postgresql\\recovery\\");
-	
+	tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\recovery\\");
 	if (!wxDirExists(tempDir)) {
 		wxFileName dn = tempDir;
 		dn.Mkdir();
