@@ -43,6 +43,7 @@ wxString pgscriptKeywords = wxT(" assert break columns continue date datetime fi
 BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_KEY_DOWN(ctlSQLBox::OnKeyDown)
 	EVT_MENU(MNU_FIND, ctlSQLBox::OnSearchReplace)
+	EVT_MENU(MNU_COPY, ctlSQLBox::OnCopy)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
 //	EVT_ERASE_BACKGROUND(ctlSQLBox::OnBackGround)
@@ -192,10 +193,11 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetFoldFlags(16);
 
 	// Setup accelerators
-	wxAcceleratorEntry entries[2];
+	wxAcceleratorEntry entries[3];
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, WXK_SPACE, MNU_AUTOCOMPLETE);
-	wxAcceleratorTable accel(2, entries);
+	entries[0].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
+	wxAcceleratorTable accel(3, entries);
 	SetAcceleratorTable(accel);
 
 	// Autocompletion configuration
@@ -482,6 +484,9 @@ void ctlSQLBox::SetAutoReplaceList(queryMacroList *autorep) {
 void ctlSQLBox::SetDefFunction(wxArrayString &name, wxArrayString &def) {
 	m_name=&name;
 	m_def=&def;
+}
+void ctlSQLBox::OnCopy(wxCommandEvent& ev) {
+	Copy();
 }
 
 void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
@@ -1296,14 +1301,14 @@ void ctlSQLBox::Copy() {
 				l=1;
 				if (!selText[k].IsAscii()) l++;
 				int s=0;
-				if (selText[k].GetValue()==9) s=5;
-				if (selText[k].GetValue()==32) s=1;
+				char c = selText[k].GetValue();
+				if (c == '\r') { startp = startp + l; k++; continue; };
+				if (c == '\n') { str += wxT("<br>"); startp = startp + l; k++; continue; };
+				if (c==9) s=5;
+				if (c==32) s=1;
 				if (s>0) for (int tt=0;tt<s;tt++) str+=wxT("&nbsp;");
 				         else str+=selText[k];
-
-				if (str.EndsWith(wxT("\r\n"))) str+=wxT("<br>"); 
-				startp=startp+l;
-				k++;
+				startp=startp+l; k++;
 			}
 			str=str+wxT("</font></div>");
 			

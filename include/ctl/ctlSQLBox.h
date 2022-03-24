@@ -55,6 +55,7 @@ public:
 	void OnKeyDown(wxKeyEvent &event);
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
+	void OnCopy(wxCommandEvent& ev);
 	void OnKillFocus(wxFocusEvent &event);
 //	void OnBackGround(wxEraseEvent &event);
 	void SetQueryBook(ctlAuiNotebook *query_book);
