@@ -196,7 +196,7 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	wxAcceleratorEntry entries[3];
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, WXK_SPACE, MNU_AUTOCOMPLETE);
-	entries[0].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
+	entries[2].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
 	wxAcceleratorTable accel(3, entries);
 	SetAcceleratorTable(accel);
 
