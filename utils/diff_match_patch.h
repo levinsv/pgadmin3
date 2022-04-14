@@ -19,8 +19,11 @@
  * Diff Match and Patch
  * http://code.google.com/p/google-diff-match-patch/
  */
+#if WIN32
 #include "pgadmin3.h"
-
+#else
+#include "pgAdmin3.h"
+#endif
 #ifndef DIFF_MATCH_PATCH_H_
 #define DIFF_MATCH_PATCH_H_
 

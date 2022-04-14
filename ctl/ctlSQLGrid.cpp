@@ -486,7 +486,7 @@ int ctlSQLGrid::Copy(int gensql)
 			copied = copied + (y2 - y1 + 1);
 		}
 		if (generatesql > 1) {
-			auto &g = m.getmap();
+			auto g = m.getmap();
 			wxArrayInt cols;
 			int maxr = g.size();
 			int i = 1;
@@ -522,7 +522,7 @@ int ctlSQLGrid::Copy(int gensql)
 				{
 					wxGridCellCoords& coords = cord[n];
 					//wxString msg;
-					//msg.Printf(wxT("Координаты выбраных ячеек row=%d col=%d.\n"), coords.GetRow(), coords.GetCol());
+					//msg.Printf(wxT("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ row=%d col=%d.\n"), coords.GetRow(), coords.GetCol());
 					//wxMessageBox(msg, wxT("About coord"), wxOK | wxICON_INFORMATION, this);
 					int r = coords.GetRow();
 					if (r == curr_row) {
@@ -876,7 +876,7 @@ int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
 			//
 			lastnode=0;
 			if (text.at(p)=='-') {
-				// посчитаем время работы узла
+				// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 					double m=1;
 					// ->  Nested Loop  (cost=205.13..273.44 rows=4 width=188) (actual time=13.157..13.157 rows=0 loops=1)
 					wxRegEx foundstr(wxT("actual time=.*?\\.\\.([0-9.]+).*?loops=([0-9]+)\\)"),wxRE_ADVANCED);
@@ -899,7 +899,7 @@ int recurse(ctlSQLGrid *g, int pos,int row, double &transfer) {
 			continue;
 		} if (p<pos) {
 			// end level
-			// leveltime содержит время сумаррное время работы узлов этого уровня
+			// leveltime пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			transfer=leveltime;
 			return row;
 		} if (p>pos) {
