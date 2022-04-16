@@ -20,3 +20,4 @@ x64/Release_(3.0)/*.txt
 *.pdb
 ctl/ctlMonitorWidget.cpp
 include/ctl/ctlMonitorWidget.h
+build/*

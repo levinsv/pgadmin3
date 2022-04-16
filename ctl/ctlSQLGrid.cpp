@@ -405,28 +405,43 @@ int ctlSQLGrid::Copy(int gensql)
 			if (sql.Len() == j) break;
 			c = sql[j];
 		}
-		if (j>i) tn = sql.SubString(i, j - 1); // alias name
+		if (j > i) {
+			wxString al = sql.SubString(i, j - 1); // alias name
+			if (al.StartsWith("where")
+				|| al.StartsWith("order")
+				|| al.StartsWith("limit")
+				) break;
+			tn = al;
+		}
 		break;
 	}
 
 	if (gensql == 2) linedelim = ",";
 	else if(gensql == 3) linedelim = " or ";
+	int lenrow = 0;
 
 	if (GetSelectedRows().GetCount())
 	{
 		AppendColumnHeader(str, 0, (GetNumberCols() - 1));
 
 		wxArrayInt rows = GetSelectedRows();
-
 		for (i = 0 ; i < rows.GetCount() ; i++)
 		{
 			tmp=GetExportLine(rows.Item(i));
+			lenrow += tmp.Len()+linedelim.Len();
 			if (tmp.IsEmpty()) continue;
 			if (!tn.IsEmpty() && (generatesql == 1)) tmp.Replace("tbl", tn, false);
 			str.Append(tmp);
 			if (i < rows.GetCount() - 1 && (generatesql > 1)) str.Append(linedelim);
 			if (rows.GetCount() > 1)
-				str.Append(END_OF_LINE);
+			{
+				bool delim = true;
+				if ((generatesql > 1) && (lenrow < 50))
+					delim = false;
+				else 
+					{ lenrow = 0;}
+				if (delim) str.Append(END_OF_LINE);
+			}
 		}
 
 		copied = rows.GetCount();
@@ -441,11 +456,21 @@ int ctlSQLGrid::Copy(int gensql)
 		for (i = 0 ; i < numRows ; i++)
 		{
 			tmp = GetExportLine(i, cols);
+			lenrow += tmp.Len() + linedelim.Len();
 			if (!tn.IsEmpty() && (generatesql == 1)) tmp.Replace("tbl", tn, false);
 			str.Append(tmp);
 			if (i<(numRows-1) && (generatesql > 1)) str.Append(linedelim);
 			if (numRows > 1)
-				str.Append(END_OF_LINE);
+			{
+				bool delim = true;
+				if ((generatesql > 1) && (lenrow < 50))
+					delim = false;
+				else
+				{
+					lenrow = 0;
+				}
+				if (delim) str.Append(END_OF_LINE);
+			}
 		}
 		copied = numRows;
 	}
@@ -475,11 +500,21 @@ int ctlSQLGrid::Copy(int gensql)
 				for (i = y1; i <= y2; i++)
 				{
 					tmp = GetExportLine(i, x1, x2);
+					lenrow += tmp.Len() + linedelim.Len();
 					if (!tn.IsEmpty() && (generatesql==1)) tmp.Replace("tbl", tn, false);
 					str.Append(tmp);
 					if (i < y2 && (generatesql > 1)) str.Append(linedelim);
 					if (y2 > y1)
-						str.Append(END_OF_LINE);
+					{
+						bool delim = true;
+						if ((generatesql > 1) && (lenrow < 50))
+							delim = false;
+						else
+						{
+							lenrow = 0;
+						}
+						if (delim) str.Append(END_OF_LINE);
+					}
 				}
 				
 			}
@@ -533,10 +568,21 @@ int ctlSQLGrid::Copy(int gensql)
 				}
 				colsNum.Sort(compare_int);
 				if (generatesql == 2) AppendColumnHeader(str, colsNum);
-				str.Append(GetExportLine(curr_row, colsNum));
+				tmp = GetExportLine(curr_row, colsNum);
+				str.Append(tmp);
+				lenrow += tmp.Len() + linedelim.Len();
 				if ((next_row != 1000000000) && (generatesql == 3)) str.Append(linedelim);
 				if ((next_row != 1000000000) && (generatesql == 2)) str.Append(") or ");
-				str.Append(END_OF_LINE);
+				{
+					bool delim = true;
+					if ((generatesql > 1) && (lenrow < 50))
+						delim = false;
+					else
+					{
+						lenrow = 0;
+					}
+					if (delim) str.Append(END_OF_LINE);
+				}
 				curr_row = next_row;
 				copied++;
 			}
