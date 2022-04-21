@@ -99,10 +99,10 @@ public:
 		rowsignore = 0;
 	};
 	wxColor& GetBgColorLine(int row);
-	// ��������� ������� �� �������
+	// установка фильтра на колонку
 	int SetFilter(int colfld, wxString& val, int flags);
-	// ��������� ������ ��� ������ ��� ��� ��� ����� ���������
-	// true ���� ������ �� ��������������� (�����)
+	// приминить фильтр для строки или для все строк хранилища
+	// true если строка не отфильтровалась (видна)
 	bool ApplyFilter(int row = -1);
 	int SetFilterArray(std::deque<LineFilter> arr);
 	wxString getStrGroup(wxString source);
@@ -148,7 +148,7 @@ public:
 	void removeFilter(wxString FilterName);
 
 	int getLastRowIndex() { return m_cacheIndex; }
-	// ����� ����� � ���������
+	// всего строк в хранилище
 	int getCountStore();
 	int getCountFilter();
 	int getCountGroup(int row);
@@ -173,9 +173,9 @@ private:
 	wxArrayInt fCol;
 	wxArrayInt fFlags;
 	wxArrayString fVal;
-	// ������� ������.
+	// признак ошибок.
 	bool err_msg;
-	// ����� ����������� 
+	// режим группировки 
 	bool groupFilterUse = false;
 	bool faddgroup = false;
 	int prevRow = -1;

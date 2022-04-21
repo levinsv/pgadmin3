@@ -94,7 +94,7 @@ public:
 			_mon[j] = true;
 		}
 	}
-	// �������� ������ ���������� �������� ��� -1 ���� ��� ��� ���.
+	// получить индекс следующего элемента или -1 если его уже нет.
 	int getnext(bool array[],int len,int pos, int direct) {
 		//int len = sizeof(array) / sizeof(array[0]);
 		int mi = pos;
@@ -111,10 +111,10 @@ public:
 			}
 		} while (!array[mi]);
 
-		// ���������� -1 ���� ��� ���������� ��������.
+		// возвращает -1 если нет слудующего элемента.
 		return mi;
 	}
-	// �������� ������ ������/��������� ��������
+	// получить индекс первый/последний элемента
 	int getfirst(bool array[], int len, int direct) {
 		int mi = -1;
 		if (direct == -1) mi = len ;
@@ -166,7 +166,7 @@ public:
 					}
 					else d = nextp;
 					// day next 
-					// �������� ������������ wdays
+					// проверим соответствие wdays
 					wxDateTime tmp((wxDateTime::wxDateTime_t) d + 1, (wxDateTime::Month) mon, y, (wxDateTime::wxDateTime_t)h, (wxDateTime::wxDateTime_t)mi);
 					novalid = !tmp.IsValid();
 					wd = tmp.GetWeekDay();

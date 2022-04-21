@@ -377,7 +377,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event) {
     }
 
 }
-// ������ ������ �� ������
+// правая кнопка на ячейке
 void MyDataViewCtrl::OnContextMenu(wxDataViewEvent& event) {
     //wxString title = m_music_model->GetTitle(event.GetItem());
     //wxLogMessage("wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, Item: %s", title);

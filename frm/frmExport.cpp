@@ -347,7 +347,7 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 								xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"String\">")+xmltext+wxT("</Data></Cell>");
 						break;
 					case PGTYPCLASS_DATE:
-						//type=wxT("����-��-�� ��:��:��");
+						//
 						xmltext=xmltext.BeforeFirst('+');
 						if (xmltext.Replace(wxT(" "),wxT("T"))==0) {
 							xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"String\">")+xmltext+wxT("</Data></Cell>");

@@ -2883,7 +2883,7 @@ void frmQuery::SelectQuery() {
 		e=p & 65535;
 		querys=new wxString[1];
 		querys[0]=sqlQuery->GetTextRange(s, e);
-		// ������� ������ ������� ����� ���������
+		// группы серверов/Серверы/serverN/Datebases/dbname
 		sqlQuery->SetSelection(s,e);
 	}
 	delete [] q;

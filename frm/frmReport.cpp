@@ -1322,7 +1322,7 @@ void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayStrin
 		  }
 		  //obj->ShowTreeDetail(browser);
 		  //obj->ShowTree(parent,browser);
-		  // ���� ���� ������� ������� � ��� ������� �� ���������
+		  // если надо объекто сложный и сас состоит из коллекций
 		if ((obj->GetMetaType()==PGM_SCHEMA
 			||obj->GetMetaType()==PGM_DATABASE
 			||obj->GetMetaType()==PGM_TABLE
@@ -1332,8 +1332,8 @@ void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayStrin
 						//obj->ShowTree(parent,browser);
 		} else
 		{
-			if (obj->GetMetaType()==PGM_VIEW) obj->ShowTreeDetail(browser); // ������ ��� ���� ����� �������� ���� � ���������
-			if (obj->GetMetaType()==PGM_EVENTTRIGGER)  // �������� ���� � ��������� �� ��������
+			if (obj->GetMetaType() == PGM_VIEW) obj->ShowTreeDetail(browser); // только для того чтобы получить инфу о триггерах
+			if (obj->GetMetaType() == PGM_EVENTTRIGGER)  // получаем инфу о тригеррах по событиям
 				obj->ShowTreeDetail(browser);
 		}
 		}
@@ -1350,7 +1350,7 @@ void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayStrin
 				  wxTreeItemId Item2 = browser->GetItemParent(obj->GetId());
 				  obj=browser->GetObject(Item2); // Schemes
 				  if (obj && obj->GetMetaType()==PGM_SCHEMA&& !obj->IsCollection()) {
-					  rec=false; // �� �������� ���� �� ���. �������� � �������, � �� ������ �� �������
+					  rec=false; // не собираем инфу по сек. таблицам и секциям, и во внутрь не заходим
 					  obj=browser->GetObject(child);
 					  obj->ShowTreeDetail(browser);
 				  } else obj=browser->GetObject(child);
@@ -1375,7 +1375,7 @@ void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayStrin
 					srcpath.Replace(expandedNodes[1],expandedNodes[3],false);
 					MyHashSQL::iterator it=h_path.find(srcpath);
 					if (h_path.end()==it) {
-						// �� ������� � ������ ��
+						// не найдено в первой БД
 
 						if (s!=wxEmptyString) {
 							sq =new SQL(wxEmptyString,srcpath);
@@ -1460,20 +1460,21 @@ wxWindow *reportCompareFactory::StartDialog(frmMain *form, pgObject *obj)
 			p_db=obj->GetServer()->GetDatabaseName();
 
 	if (p3<0) {
-		// ������ ������
+		// select server
 		//if (wxMessageBox(wxString::Format("Path = %s ,GetName() = %s, isCollection = %d",
 		//	                                    path.c_str(), obj->GetTypeName().c_str(), obj->IsCollection()), _("Close"), wxYES_NO | wxICON_QUESTION) != wxYES)
 		//{
 		//	return 0;
 		//}
-//������ ��������/�������/PostgreSQL 9.6
-// ���������� ������ ���������� �������� ��
-		p_server_obj=path.substr(p2); // � /������N/
+//Группы серверов/Серверы/PostgreSQL 9.6
+// используем первую попавшуюся открытую БД
+		p_server_obj = path.substr(p2); // с /серверN/
 
-	} else
+	}
+	else
 	{
-//	������ ��������/�������/PostgreSQL 9.6/���� ������/postgres
-	p_server_obj=path.substr(p2,p3-p2); // � /������N/
+		//	Группы серверов/Серверы/PostgreSQL 9.6/Базы данных/postgres
+		p_server_obj=path.substr(p2,p3-p2); // � /������N/
 	}
 	wxString p_db_replace=_("Databases")+"/"+p_db+"/";
 	wxString p_server_replace=_("Servers")+p_server_obj;
@@ -1497,14 +1498,14 @@ wxString trg_server_replace;
 				{
 					trg_server_replace=browser->GetItemText(server->GetId()).BeforeFirst('(').Trim();
 					if (srvitem!=server->GetId() && server->GetConnected()) {
-						// ���� ���������� �� ����� ����� ������ � ��������
+						// наше соединение не нужно нужно другое и активное
 						pgCollection *coll = browser->FindCollection(databaseFactory, server->GetId());
 						if (coll)
 						{
 							treeObjectIterator dbs(browser, coll);
 							while ((db = (pgDatabase *)dbs.GetNextObject()) != 0)
 							{
-								// ���� �������� ��
+								// есть открытая БД
 								lastdb=db;
 								if (db->GetConnected()) {
 
@@ -1535,15 +1536,15 @@ if (lastdb!=NULL) {
 			newpath.Replace(p_server_replace,trg_server_replace,false);
 			newpath.Replace(p_db_replace,trg_db_replace,false);
 			if (!parent->SetCurrentNode(parent->GetBrowser()->GetRootItem(),newpath)) {
-				msg.Printf("�� ������� ����� ������ %s � ������ ��.",newpath);
+				msg.Printf("Not found object %s in other DB.",newpath);
 				wxMessageBox(msg, _("Error"), wxOK | wxICON_INFORMATION);
 				return 0;
 			}
 			trgobj=browser->GetObject(browser->GetSelection());
 } else
 {
-		msg="��� ������ ������������� ���������� , ��������� �� ��������.";
-//		msg.Printf("� ������������� ���������� %s, ��� ���������� ��.",browser->GetItemText(lastdb->GetServer()->GetId()).BeforeFirst('(').Trim());
+		msg="Not open connecting, compare stop.";
+		//		msg.Printf("В установленном соединении %s, нет подходящих БД.",browser->GetItemText(lastdb->GetServer()->GetId()).BeforeFirst('(').Trim());
 	wxMessageBox(msg, _("Error"), wxOK | wxICON_INFORMATION);
 	return 0;
 }
@@ -1556,7 +1557,7 @@ time_t timer=wxDateTime::GetTimeNow();
 wxWindowDisabler disableAll;
 {
 #ifndef DEBUG
-			wxBusyInfo waiting(wxString::Format(" ����� �������� �� Path = %s ,��������� ������ = %s",
+			wxBusyInfo waiting(wxString::Format(" Reading source DB Path = %s ,Start object = %s",
 			                                    browser->GetItemText(obj->GetServer()->GetId()).c_str(), obj->GetName().c_str(),parent));
 			// Give the UI a chance to redraw
 			wxSafeYield();
@@ -1576,7 +1577,7 @@ wxSafeYield();
 //	return 0;
 
 {
-			wxBusyInfo waiting(wxString::Format(" ����� ������ �� Path = %s\n��������� ������ = %s",
+			wxBusyInfo waiting(wxString::Format(" Reading target DB Path = %s\n, Start object = %s",
 			                                    browser->GetItemText(trgobj->GetId()).c_str(), trgobj->GetName().c_str(),parent));
 			// Give the UI a chance to redraw
 			wxSafeYield();
@@ -1695,7 +1696,7 @@ MyListSql::iterator iter2;
 	}
 	//
 {
-			wxBusyInfo waiting(wxString::Format(" ����� �������� ...",0));
+			wxBusyInfo waiting(wxString::Format(" Search for differences ...",0));
 			// Give the UI a chance to redraw
 			wxSafeYield();
 			wxMilliSleep(50);
@@ -1781,14 +1782,14 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 	  std::wstring t;
 	  std::wstring tableline;
 	  int rline=1,lline=1;
-	  std::list<Diff>::const_iterator it; // ��������� ��������
-	  it = diffs.begin(); // ����������� ��� ������ ������
+	  std::list<Diff>::const_iterator it; // объявляем итератор
+	  it = diffs.begin(); // присваиваем ему начало списка
 	  Diff aDiff;
-	  bool modify=false;
-	  bool oneline=false;
-	  nstart=0;
-    while (it != diffs.end()) // ���� �������� �� ��������� �����
-    {
+	  bool modify = false;
+	  bool oneline = false;
+	  nstart = 0;
+	  while (it != diffs.end()) // пока итератор не достигнет конца
+	  {
 		aDiff=*it;
 	    tex=aDiff.text;
 		nstart=0;
@@ -1796,18 +1797,20 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 			pos=tex.find('\n',nstart);
 			if (pos==-1) {t.assign(tex,nstart,tex.length());nstart=tex.length();} else {t.assign(tex,nstart,pos-nstart);nstart=pos;}
 			if (t.length()>0) {
-				// ��� �� ��� ���� ������
-				if (aDiff.operation==Operation::INSERT) cur_r+=L"<span class=\"differencei\">"+t+L"</span>";
-				if (aDiff.operation==Operation::DELETE) cur_l+=L"<span class=\"differenced\">"+t+L"</span>";
-				if (aDiff.operation==Operation::EQUAL) {
-					cur_r+=t;
-					cur_l+=t;
-				} else modify=true;
-				// ���� �� �������� ������� ������ ������� ��� ��� �� ���� ������
-				oneline=true;
-			} else
+				// это всё ещё одна строка
+				if (aDiff.operation == Operation::INSERT) cur_r += L"<span class=\"differencei\">" + t + L"</span>";
+				if (aDiff.operation == Operation::DELETE) cur_l += L"<span class=\"differenced\">" + t + L"</span>";
+				if (aDiff.operation == Operation::EQUAL) {
+					cur_r += t;
+					cur_l += t;
+				}
+				else modify = true;
+				// пока не встретим перевод строки считаем что это всё одна строка
+				oneline = true;
+			}
+			else
 			{
-				// ����� �� �������� \n
+				// дошли до перевода \n
 				nstart=pos+1;
 				ncur_l=std::to_wstring(lline);
 				ncur_l=L""; ncur_r=L"";
@@ -1835,7 +1838,7 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 //				if (( (ncur_r.empty()&&(!ncur_l.empty()))
 //					||(ncur_l.empty()&&(!ncur_r.empty()))
 //					)&&(!modify)) modify=true;
-				// ��������� �������
+				// create columns
 				//left
 					tableline+=L"<tr><td class=\"diff_next\" onclick=\"c(this)\"></td>";
 					 tableline+= modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">"+ncur_l+"</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">"+ncur_l+"</td>";
@@ -1863,7 +1866,7 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 				modify=false;
 				oneline=false;
 			}
-		} // ���� �� ������� ������ ������ Diff
+		} // цикл по строкам внутри одного Diff
 	  ++it;
 	  }
 #ifdef _DEBUG
@@ -1877,7 +1880,7 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 	}
 
 wxString report;
-	report.Append(wxString::Format(" �������\n%s\n",tableline));
+	report.Append(wxString::Format(" Table\n%s\n",tableline));
 	file.Write(report, wxConvUTF8);
 	file.Close();
 
@@ -1903,10 +1906,10 @@ wxString reportCompareFactory::printlvl(int element,int lvl,ArraySQL &list, wxHa
 		wxString tid=wxString::Format("id%d",e);
 		wxString rlist=HtmlEntities(name);
 		wxString cdiff=wxEmptyString;
-		// ������� ��������
-		countdiffline=0;
-		if (sq.sql.length()+sq.sql2.length()>0) {
-			// ��� ���������� ������� ������� �����������
+		// таблица различий
+		countdiffline = 0;
+		if (sq.sql.length() + sq.sql2.length() > 0) {
+			// для одинаковых не будем таблицу формировать
 			std::wstring t1=sq.sql.wc_str();
 			std::wstring t2(sq.sql2.wc_str());
 			t1.erase(std::remove(t1.begin(), t1.end(), '\r'), t1.end());
@@ -1929,7 +1932,7 @@ wxString reportCompareFactory::printlvl(int element,int lvl,ArraySQL &list, wxHa
 			}
 		}
 
-		// ������ ��������
+		// список объектов
 		child=(wxArrayInt *)htab.Get(key);
 		r=rowlist;
 		r.Replace("$rowlist$",rlist+cdiff);

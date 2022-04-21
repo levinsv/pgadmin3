@@ -1145,7 +1145,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			}
 		}
 	}
-	// ���������  ������ select
+	// position select
 	pos=tmp;
 	wxString keyword;
 	wxString ident;

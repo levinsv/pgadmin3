@@ -184,10 +184,10 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 			bool rez = oObject.GetObject(msg, "CreateItem", 1, n);
 			if (rez) {
 				//oObject.PutProperty("Visible", true);
-				msg.PutProperty("Subject", "������ ");
+				msg.PutProperty("Subject", "Error ");
 				msg.PutProperty("BodyFormat", 2);
 				msg.PutProperty("To", to);
-				//msg.PutProperty("BCC", "������� ����� ���������� <Balashov_IN@surgutneftegas.ru>; ������ ����� ����������� <Ivanov_AG13@surgutneftegas.ru>");
+				//
 				msg.PutProperty("Cc", cc);
 				msg.PutProperty("HTMLBody", html);
 				msg.CallMethod("Display");

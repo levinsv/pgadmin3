@@ -20,7 +20,13 @@
  * http://code.google.com/p/google-diff-match-patch/
  */
 
+// this line need comment for Linux 
+#include "pgadmin3.h"
+#ifndef __WXMSW__
 #include "utils/diff_match_patch.h"
+#endif
+
+
 
 typedef std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>
     UnicodeEncoder;
