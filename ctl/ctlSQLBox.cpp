@@ -1019,7 +1019,12 @@ long ctlSQLBox::SelectQuery(int startposition)
 			pend=pos;
 			break;
 		}
+		#ifdef WIN32
 		int i=IsDBCSLeadByte(ch)? 2 : 1;
+		#else
+		int i=1;
+		if (ch>255) i=2;
+		#endif
 		pos=pos+i;
 		}
 		
@@ -1036,7 +1041,12 @@ long ctlSQLBox::SelectQuery(int startposition)
 			break;
 		}
 		if (ch>' ') pstart=pos;
+		#ifdef WIN32
 		int i=IsDBCSLeadByte(ch)? 2 : 1;
+		#else
+		int i=1;
+		if (ch>255) i=2;
+		#endif
 		pos=pos-i;
 
 	}
@@ -1135,7 +1145,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			}
 		}
 	}
-	// получение  позици select
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  пїЅпїЅпїЅпїЅпїЅпїЅ select
 	pos=tmp;
 	wxString keyword;
 	wxString ident;
@@ -1542,7 +1552,7 @@ CharacterRange ctlSQLBox::RegexFindText(int minPos, int maxPos, const wxString &
 	wxWX2MBbuf buf = text.mb_str(wxConvUTF8);
 	ft.lpstrText = (char *)(const char *)buf;
 
-//не компилировалась с wx 2.8.12
+//пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ wx 2.8.12
 	if (SendMsg(2150, wxSTC_FIND_REGEXP, (long)&ft) == -1)
 	{
 		ft.chrgText.cpMin = -1;

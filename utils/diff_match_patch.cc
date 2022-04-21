@@ -20,7 +20,7 @@
  * http://code.google.com/p/google-diff-match-patch/
  */
 
-#include "pgAdmin3.h"
+#include "utils/diff_match_patch.h"
 
 typedef std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>
     UnicodeEncoder;

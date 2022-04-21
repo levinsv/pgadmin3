@@ -20,7 +20,9 @@
 #include "ctl/ctlSQLResult.h"
 #include <wx/wx.h>
 #include <wx/clipbrd.h>
+#ifdef WIN32
 #include <wx/msw/ole/automtn.h>
+#endif
 
 #define txtFilename     CTRL_TEXT("txtFilename")
 #define btnOK           CTRL_BUTTON("wxID_OK")
@@ -287,7 +289,6 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 	colCount = grid->GetNumberCols();
 	rowCount = grid->NumRows();
 	line=InitXml(colCount,rowCount+1);
-    wxAutomationObject excelObject; 
 		line += wxT("<Row>\n");
 		for (col = 0 ; col < colCount ; col++)
 		{
@@ -346,7 +347,7 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 								xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"String\">")+xmltext+wxT("</Data></Cell>");
 						break;
 					case PGTYPCLASS_DATE:
-						//type=wxT("ÃÃÃÃ-ÌÌ-ÄÄ ÷÷:ìì:ññ");
+						//type=wxT("ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½-ï¿½ï¿½ ï¿½ï¿½:ï¿½ï¿½:ï¿½ï¿½");
 						xmltext=xmltext.BeforeFirst('+');
 						if (xmltext.Replace(wxT(" "),wxT("T"))==0) {
 							xmltext=wxT("<Cell ss:StyleID=\"")+style+wxT("\"><Data ss:Type=\"String\">")+xmltext+wxT("</Data></Cell>");
@@ -385,12 +386,15 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 		  ;
 	file.Write(line, wxConvUTF8);
 	file.Close();
+#ifdef WIN32	
+    wxAutomationObject excelObject; 
 	if (excelObject.CreateInstance(wxT("Excel.Application"))) {
 		 //excelObject.GetObject(xlbook,wxT("Workbooks.Add"));
 		excelObject.CallMethod(wxT("Workbooks.Open"), fn);
 	excelObject.PutProperty(_T("VISIBLE"), true);
 	return true;
 	}
+#endif
 	return false;
 	 
 }

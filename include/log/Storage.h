@@ -86,7 +86,7 @@ public:
 	wxString GetFieldStorage(int row, MyConst::colField col, bool filter);
 	Storage();
 	int GetSeverityIndex(int row);
-	void SetHost(wxString& host) { currhost = host; };
+	void SetHost(const wxString& host) { currhost = host; };
 	wxString GetHost() { return currhost; };
 	void SetErrMsgFlag(bool flag) { err_msg = flag; };
 	bool GetErrMsgFlag() { return err_msg; };
@@ -99,10 +99,10 @@ public:
 		rowsignore = 0;
 	};
 	wxColor& GetBgColorLine(int row);
-	// установка фильтра на колонку
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	int SetFilter(int colfld, wxString& val, int flags);
-	// приминить фильтр для строки или для все строк хранилища
-	// true если строка не отфильтровалась (видна)
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ)
 	bool ApplyFilter(int row = -1);
 	int SetFilterArray(std::deque<LineFilter> arr);
 	wxString getStrGroup(wxString source);
@@ -148,7 +148,7 @@ public:
 	void removeFilter(wxString FilterName);
 
 	int getLastRowIndex() { return m_cacheIndex; }
-	// всего строк в хранилище
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	int getCountStore();
 	int getCountFilter();
 	int getCountGroup(int row);
@@ -173,9 +173,9 @@ private:
 	wxArrayInt fCol;
 	wxArrayInt fFlags;
 	wxArrayString fVal;
-	// признак ошибок.
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 	bool err_msg;
-	// режим группировки 
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
 	bool groupFilterUse = false;
 	bool faddgroup = false;
 	int prevRow = -1;

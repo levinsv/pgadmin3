@@ -50,7 +50,7 @@ public:
 	wxString GetSql(ctlTree *browser);
 	bool NeedRefresh();
 
-	void iSetSched(int cron, wxString &mi, wxString& h, wxString& d, wxString& wd, wxString& mon)
+	void iSetSched(int cron, const wxString &mi, const wxString& h, const wxString& d, const wxString& wd,const  wxString& mon)
 	{
 		for (int i = 0; i < 60; i++) _mi[i] = false;
 		for (int i = 0; i < 24; i++) _h[i] = false;
@@ -94,7 +94,7 @@ public:
 			_mon[j] = true;
 		}
 	}
-	// получить индекс следующего элемента или -1 если его уже нет.
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ -1 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ.
 	int getnext(bool array[],int len,int pos, int direct) {
 		//int len = sizeof(array) / sizeof(array[0]);
 		int mi = pos;
@@ -111,10 +111,10 @@ public:
 			}
 		} while (!array[mi]);
 
-		// возвращает -1 если нет слудующего элемента.
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ -1 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 		return mi;
 	}
-	// получить индекс первый/последний элемента
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	int getfirst(bool array[], int len, int direct) {
 		int mi = -1;
 		if (direct == -1) mi = len ;
@@ -166,7 +166,7 @@ public:
 					}
 					else d = nextp;
 					// day next 
-					// проверим соответствие wdays
+					// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ wdays
 					wxDateTime tmp((wxDateTime::wxDateTime_t) d + 1, (wxDateTime::Month) mon, y, (wxDateTime::wxDateTime_t)h, (wxDateTime::wxDateTime_t)mi);
 					novalid = !tmp.IsValid();
 					wd = tmp.GetWeekDay();

@@ -30,7 +30,7 @@ BEGIN_EVENT_TABLE(ctlSQLGrid, wxGrid)
 	EVT_GRID_COL_SIZE(ctlSQLGrid::OnGridColSize)
 	EVT_GRID_LABEL_LEFT_CLICK(ctlSQLGrid::OnLabelClick)
 	EVT_GRID_CELL_RIGHT_CLICK(  ctlSQLGrid::OnCellRightClick)
-	EVT_PAINT( ctlSQLGrid::OnPaint )
+	//EVT_PAINT( ctlSQLGrid::OnPaint )
 END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(ctlSQLGrid, wxGrid)

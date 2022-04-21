@@ -135,7 +135,7 @@ int dlgProJob::Go(bool modal)
 
 	return dlgProperty::Go(modal);
 }
-void fillarray(wxArrayString &arr,wxString &src)
+void fillarray(wxArrayString &arr,const wxString &src)
 {
 	int l = src.Length();
 	wxUniChar ln = '\n';
@@ -226,7 +226,7 @@ void dlgProJob::CheckChange()
 	}
 }
 
-wxString dlgProJob::StrAttribute(const wxString &name,wxString &value)
+wxString dlgProJob::StrAttribute(const wxString &name,const wxString &value)
 {
 	wxString tmp = value;
 	//tmp.Replace("\'", "\'\'");

@@ -84,7 +84,7 @@ Storage::Storage() {
     
 
     // load filter
-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\");
+    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator();
     
     wxString f = tempDir + "filter_load.txt";
     if (wxFileExists(f)) {
@@ -223,7 +223,7 @@ void Storage::DropColFilter(int index) {
         fVal.RemoveAt(index);
         fFlags.RemoveAt(index);
     }
-    // оставшиеся фильтры будут применены по всему storage
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ storage
     frows.clear();
 }
 wxString Storage::GetStringFilterExpr(int positionArrayFilter,bool addNumCol) {
@@ -267,18 +267,18 @@ bool Storage::CompareFilterLine(int row, bool filter) {
             return false;
         }
     }
-    // Показываем строку только если она стала новой группой
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if (IsGroupFilter())
     {
-        // если проверяем не добавленную строку то никаих проверок
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (filter) return true;
 
-        // в детальном режиме новые группы не показываем
+        // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (faddgroup && detailGroup != -1) return false;
-        // Если это не детальная информация то тоже не показываем
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (detailGroup != -1 && detailGroup == prevRow && !filter) {
-            // новая строка попадает в детальную группу
-            // сдвинем вершину на новую строку
+            // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             detailGroup = row;
             return true;
         }
@@ -288,7 +288,7 @@ if (!faddgroup) return false;
     }
     return true;
 }
-//номер строка из из отфильтрованных
+//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void Storage::setDetailGroupRow(int rowGroup) {
     if (IsGroupFilter()) {
         // 
@@ -296,7 +296,7 @@ void Storage::setDetailGroupRow(int rowGroup) {
     }
     else detailGroup = -1;
 }
-// для указанной строки проверяем из strage (без фильтра)
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ strage (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 bool Storage::ApplyFilter(int row) {
     //if (!IsFilter()) return true;
     if (row != -1) {
@@ -310,9 +310,9 @@ bool Storage::ApplyFilter(int row) {
         }
         if (detailGroup != -1) return false;
         if (IsGroupFilter()) {
-            // подменить в фильтре строк на новую 
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 
             for (int i = 0; i < frows.size(); i++) {
-                // тут потенциальная проблема производительности
+                // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 if (frows[i] != prevRow) continue;
                 frows[i] = row;
                 return false;
@@ -327,7 +327,7 @@ bool Storage::ApplyFilter(int row) {
     bool f = false;
     faddgroup = true;
     if (IsGroupFilter()) {
-        // при включенном GroupFilter смотрим только строки hashKeyToRow
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ GroupFilter пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ hashKeyToRow
         frows.clear();
         MyHashToRow::iterator it;
         for (it = hashKeyToRow.begin(); it != hashKeyToRow.end(); ++it)
@@ -354,7 +354,7 @@ bool Storage::ApplyFilter(int row) {
 
     }
     if (frows.size() > 0) {
-        // набор фильтра изменился перепроверим отфильтрованные строки ещё раз
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
         std::deque<int> tmp;
         for (int i = 0; i < frows.size(); i++) {
             if (CompareFilterLine(i, true)) {
@@ -369,7 +369,7 @@ bool Storage::ApplyFilter(int row) {
     }
     else
     {
-        // набор фильтроывнных строк пустой проверим все строки на соответствие фильтру
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         for (int i = 0; i < storage.size(); i++) {
             if (CompareFilterLine(i, false)) {
                 frows.push_back(i);
@@ -582,7 +582,7 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
     }
     return st;
 }
-// получение обобщенной ключевой строки
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 wxString Storage::getStrGroup(wxString source) {
     int i = 0;
     int l = source.Length();

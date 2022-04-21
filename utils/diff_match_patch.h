@@ -22,7 +22,7 @@
 #if WIN32
 #include "pgadmin3.h"
 #else
-#include "pgAdmin3.h"
+//#include "pgAdmin3.h"
 #endif
 #ifndef DIFF_MATCH_PATCH_H_
 #define DIFF_MATCH_PATCH_H_
