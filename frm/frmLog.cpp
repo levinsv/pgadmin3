@@ -26,8 +26,9 @@
 #include "utils/utffile.h"
 
 #include <wx/arrimpl.cpp>
+#ifdef WIN32
 #include <wx/msw/ole/automtn.h>
-
+#endif
 
 
 WX_DEFINE_OBJARRAY(RemoteConnArray2);
@@ -171,6 +172,7 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 			}
 			html.Append(l);
 		}
+		#ifdef WIN32
 		wxAutomationObject oObject;
 		if (oObject.GetInstance("Outlook.Application")) {
 			wxAutomationObject msg;
@@ -182,10 +184,10 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 			bool rez = oObject.GetObject(msg, "CreateItem", 1, n);
 			if (rez) {
 				//oObject.PutProperty("Visible", true);
-				msg.PutProperty("Subject", "Ошибка ");
+				msg.PutProperty("Subject", "Error ");
 				msg.PutProperty("BodyFormat", 2);
 				msg.PutProperty("To", to);
-				//msg.PutProperty("BCC", "Балашов Игорь Николаевич <Balashov_IN@surgutneftegas.ru>; Иванов Артем Геннадьевич <Ivanov_AG13@surgutneftegas.ru>");
+				//
 				msg.PutProperty("Cc", cc);
 				msg.PutProperty("HTMLBody", html);
 				msg.CallMethod("Display");
@@ -193,7 +195,7 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 			//oObject.PutProperty("ActiveCell.Font.Bold", @true);
 
 		}
-
+		#endif
 	}
 }
 void frmLog::OnFind(wxCommandEvent& event) {

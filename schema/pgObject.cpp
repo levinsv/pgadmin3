@@ -2101,7 +2101,7 @@ wxString pgObject::GetSqlReCreate(frmMain *form, pgObject *obj)
         wxString line;
 		ctlTree *browser=form->GetBrowser();
 		wxString databasePath = form->GetNodePath(obj->GetDatabase()->GetId());
-// получение правила и от него уже зависимости будем раскручивать
+		// РїРѕР»СѓС‡РµРЅРёРµ РїСЂР°РІРёР»Р° Рё РѕС‚ РЅРµРіРѕ СѓР¶Рµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё Р±СѓРґРµРј СЂР°СЃРєСЂСѓС‡РёРІР°С‚СЊ
         int colcount = 0;
         pgSetIterator set(GetConnection(),
                 wxT("WITH RECURSIVE t(lvl,classid,objid,type_child) AS (\n")
@@ -2175,7 +2175,7 @@ if (1==0) {
 			}
 }
 	wxString findobj=wxT(",");
-	wxString dropblock=wxT("-- Удаление зависимых объектов\n");
+	wxString dropblock=wxT("-- \n");
 	wxString createblock=wxEmptyString;
         while (set.RowsLeft())
         {
@@ -2266,7 +2266,7 @@ if (1==0) {
 								}
 							}
 						if ( id.IsOk() ) {
-							// найден нужный элемнт
+							// РЅР°Р№РґРµРЅ РЅСѓР¶РЅС‹Р№ СЌР»РµРјРЅС‚
 							pgObject *db=(pgTable *) browser->GetItemData(id);
 							if (kind=='r') {
 								// "table constraint"
@@ -2291,7 +2291,7 @@ if (1==0) {
 								
 							}
 						} else {
-							// не найдет в дереве элемент с указанным именем
+							// РЅРµ РЅР°Р№РґРµС‚ РІ РґРµСЂРµРІРµ СЌР»РµРјРµРЅС‚ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёРјРµРЅРµРј
 
 						}
 						findobj=findobj+table+wxT(".")+refname+wxT(",");
@@ -2330,6 +2330,6 @@ if (1==0) {
 
         }
 
-		sql+=dropblock+wxT("\n\n\n")+wxT("-- Создание зависимых объектов(в обратном порядке)\n")+createblock;
+		sql+=dropblock+wxT("\n\n\n")+wxT("-- Create depends objects (reverse order))\n")+createblock;
 	return sql;
 }

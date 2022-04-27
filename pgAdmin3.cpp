@@ -276,13 +276,13 @@ bool pgAdmin3::OnInit()
 
 	static const wxCmdLineEntryDesc cmdLineDesc[] =
 	{
-#if wxCHECK_VERSION(2, 9, 0)
+#if wxCHECK_VERSION(3, 0, 0)
 		// wxCmdLineEntryDesc is one of the few places in 2.9 where wxT()s have any effect...they break the build
 		{wxCMD_LINE_SWITCH, "v", "version", _("show the version, and quit"), wxCMD_LINE_VAL_NONE},
 		{wxCMD_LINE_SWITCH, "h", "help", _("show this help message, and quit"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 		{wxCMD_LINE_OPTION, "s", "server", _("auto-connect to specified server"), wxCMD_LINE_VAL_STRING},
 		{wxCMD_LINE_SWITCH, "S", "serverstatus", _("open server status window"), wxCMD_LINE_VAL_NONE},
-		{wxCMD_LINE_SWITCH, "L", "log window", _("open server log window"), wxCMD_LINE_VAL_NONE},
+		{wxCMD_LINE_SWITCH, "L", "logwindow", _("open server log window"), wxCMD_LINE_VAL_NONE},
 		{wxCMD_LINE_OPTION, "Sc", "serverstatusconnect", _("connect server status window to database"), wxCMD_LINE_VAL_STRING},
 		{wxCMD_LINE_SWITCH, "q", "query", _("open query tool"), wxCMD_LINE_VAL_NONE},
 		{wxCMD_LINE_OPTION, "qc", "queryconnect", _("connect query tool to database"), wxCMD_LINE_VAL_STRING},

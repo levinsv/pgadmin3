@@ -185,6 +185,7 @@ private:
 
 	void OnChangeStc(wxStyledTextEvent &event);
 	void OnPositionStc(wxStyledTextEvent &event);
+	void DoUpdatePositionStc(const wxStyledTextEvent &event);
 	void OnLabelRightClick(wxGridEvent &event);
 	void OnCellLeftDClick(wxGridEvent &event);
 	void OnClose(wxCloseEvent &event);
@@ -288,7 +289,7 @@ private:
 	wxColour GetServerColour(pgConn *connection);
 
 	bool relatesToWindow(wxWindow *which, wxWindow *related);
-	void fileMarkerActive(bool addOrRemove, wxString& sqlTabName);
+	void fileMarkerActive(bool addOrRemove, const wxString& sqlTabName);
 	// Methods related to SQL tabs
 	void SqlBookAddPage(wxString& title);
 	bool SqlBookRemovePage();

@@ -19,8 +19,6 @@
  * Diff Match and Patch
  * http://code.google.com/p/google-diff-match-patch/
  */
-#include "pgadmin3.h"
-
 #ifndef DIFF_MATCH_PATCH_H_
 #define DIFF_MATCH_PATCH_H_
 

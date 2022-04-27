@@ -10,6 +10,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef WX_PRECOMP
+#ifdef __cplusplus
 
 #include "copyright.h"
 #include "pgAdmin3.h"
@@ -246,5 +247,5 @@
 #include "utils/sysProcess.h"
 #include "utils/sysSettings.h"
 #include "utils/utffile.h"
-
+#endif
 #endif

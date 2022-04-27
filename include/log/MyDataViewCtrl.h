@@ -1,5 +1,5 @@
 #pragma once
-#include "wx\dataview.h"
+#include "wx/dataview.h"
 #include "wx/wx.h"
 #include "Storage.h"
 class MyDataViewCtrl :

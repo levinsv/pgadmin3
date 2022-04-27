@@ -11,8 +11,9 @@
 
 #ifndef PGADMIN3_H
 #define PGADMIN3_H
+#ifdef WIN32
 #include "../utils/diff_match_patch.h"
-
+#endif
 
 // wxWindows headers
 #include <wx/wx.h>
@@ -70,7 +71,10 @@ const wxString GP_MAX_VERSION_T = wxT("8.3");
 
 // The registry file
 #ifndef __WXMSW__
+#define sepPath '/'
 #define REGISTRY_FILE wxT("/etc/postgres-reg.ini")
+#else
+#define sepPath '\\'
 #endif
 
 // Some redefines for modern Microsoft compilers

@@ -51,7 +51,7 @@ public:
         ApplyFilter();
     }
     void BuildColumns(MyDataViewCtrl* ctrl);
-    void IncCountFreq(int col, wxString &val) {
+    void IncCountFreq(int col, const wxString &val) {
         MyHashCount::const_iterator it = freqValues[col].find(val);
         int cnt=0;
         if (it != freqValues[col].end()) 

@@ -30,6 +30,11 @@
  */
 #define PG_KEYWORD(a,b,c) {a,c},
 const ScanKeyword ScanKeywords[] = {
+#ifdef WIN32
+
+#else
+#define PG_KEYWORD(a,b,c,d) {a,c},
+#endif
 #include <parser/kwlist.h>
 };
 const int NumScanKeywords = lengthof(ScanKeywords);

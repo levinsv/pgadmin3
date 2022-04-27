@@ -90,7 +90,9 @@
 #include "schema/pgCheck.h"
 #include "schema/pgDomain.h"
 #include "schema/pgEventTrigger.h"
+#ifdef WIN32
 #include <wx/msw/ole/automtn.h>
+#endif
 #include "utils/utffile.h"
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
@@ -239,7 +241,9 @@ frmMain::frmMain(const wxString &title)
 
 	// Load servers
 	RetrieveServers();
-
+#ifndef WIN32
+	if (!currentObject) currentObject=serversObj;
+#endif
 	browser->Expand(root);
 	browser->SortChildren(root);
 	browser->SetFocus();

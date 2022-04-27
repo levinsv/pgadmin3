@@ -63,11 +63,13 @@ sysSettings::sysSettings(const wxString &name) : wxConfig(name)
 
 sysSettings::~sysSettings()
 {
+	#ifdef WIN32
 	wxRegKey key(wxRegKey::HKCU, "Software\\"+appName);
 
 	wxString fn= wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\autoSaveConfig.reg");
 	if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
 	key.Export(fn);
+	#endif
 	if(defaultSettings)
 	{
 		delete defaultSettings;

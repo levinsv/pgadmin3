@@ -226,7 +226,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 		}
 		//pg_is_in_recovery()
 		wxString v = connection->ExecuteScalar(wxT("select pg_is_in_recovery()"));
-
+		
 		isrecovery = (v == wxT("t"));
 		v = connection->ExecuteScalar(wxT("select current_setting('track_commit_timestamp')"));
 		track_commit_timestamp = (v == wxT("on"));
@@ -313,7 +313,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 
 	// Set up toolbar
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER);
-	toolBar->SetToolBitmapSize(wxSize(16, 16));
+	toolBar->SetToolBitmapSize(FromDIP(wxSize(32, 32)));
 	toolBar->AddTool(MNU_REFRESH, wxEmptyString, *readdata_png_bmp, _("Refresh"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
 	toolBar->AddTool(MNU_COPY, wxEmptyString, *clip_copy_png_bmp, _("Copy selected text to clipboard"), wxITEM_NORMAL);
@@ -392,7 +392,6 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	wxString perspective;
 	settings->Read(wxT("frmStatus/Perspective-") + wxString(FRMSTATUS_PERSPECTIVE_VER), &perspective, FRMSTATUS_DEFAULT_PERSPECTIVE);
 	manager.LoadPerspective(perspective, true);
-
 	// Reset the captions for the current language
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
 	manager.GetPane(wxT("Activity")).Caption(_("Activity"));
@@ -690,7 +689,7 @@ void frmStatus::AddStatusPane()
 		statusList->GetColumn(col, item);
 
 		// Reinitialize column's width
-		settings->Read(wxT("frmStatus/StatusPane_") + item.GetText() + wxT("_Width"), &savedwidth, item.GetWidth());
+		settings->Read(wxT("frmStatus/StatusPane_") + item.GetText() + wxT("_Width"), &savedwidth, statusList->GetColumnWidth(col));
 		if (savedwidth > 0)
 			statusList->SetColumnWidth(col, savedwidth);
 		else
@@ -713,7 +712,6 @@ void frmStatus::AddStatusPane()
 	// Initialize sort order
 	statusSortColumn = 1;
 	statusSortOrder = wxT("ASC");
-
 	// Create the timer
 	statusTimer = new wxTimer(this, TIMER_STATUS_ID);
 }
@@ -1915,7 +1913,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			long item = -1;
 			item = statusList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 			if (item>=row) statusList->Focus(row-1);
-			statusList->DeleteItem(row);
+			if (statusList->GetItemCount()>row) statusList->DeleteItem(row);
 		}
 		statusList->Thaw();
 		wxListEvent ev;
@@ -3716,7 +3714,7 @@ void frmStatus::OnRightClickStatusItem(wxListEvent& event)
 {
 	int row = event.GetIndex();
 	//wxString txt = event.GetText();
-	
+	if ((row<0) || (row>=statusList->GetItemCount())) return;
 	wxRect r;
 	//statusList->GetItemRect(row, r);
 	wxString ss = wxEmptyString;
@@ -3724,7 +3722,7 @@ void frmStatus::OnRightClickStatusItem(wxListEvent& event)
 	for (int cc = 0; cc < statusList->GetColumnCount();cc++) {
 		statusList->GetSubItemRect(row, cc, r, wxLIST_RECT_BOUNDS);
 		if (r.Contains(event.GetPoint())) {
-			ss = wxString::Format("\rBounding rect of item %ld column %d is (%d, %d)-(%d, %d)", row,cc, r.x, r.y, r.x + r.width, r.y + r.height);
+			ss = wxString::Format("\rBounding rect of item %d column %d is (%d, %d)-(%d, %d)", row,cc, r.x, r.y, r.x + r.width, r.y + r.height);
 			col = cc;
 			break;
 		}
@@ -3761,6 +3759,7 @@ void frmStatus::OnClearFilter(wxCommandEvent& event) {
 void frmStatus::OnSortStatusGrid(wxListEvent &event)
 {
 	// Get the information for the SQL ORDER BY
+	if (event.GetColumn()<0) return;
 	if (statusSortColumn == event.GetColumn() + 1)
 	{
 		if (statusSortOrder == wxT("ASC"))

@@ -20,9 +20,8 @@
 // Copyright text
 #include "copyright.h"
 #include "version.h"
-#include "svnversion.h"
 
-#define VERSION_WITH_DATE_AND_SVN       wxT("Version ") VERSION_STR wxT(" (") __TDATE__ wxT(", rev: ") wxT(VERSION_SVN) wxT(")")
+#define VERSION_WITH_DATE_AND_SVN       wxT("Version ") VERSION_STR wxT(" (") __TDATE__ wxT(", rev: ") wxT("") wxT(")")
 
 
 BEGIN_EVENT_TABLE(frmAbout, wxFrame)

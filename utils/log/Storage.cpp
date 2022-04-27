@@ -84,7 +84,7 @@ Storage::Storage() {
     
 
     // load filter
-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\");
+    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator();
     
     wxString f = tempDir + "filter_load.txt";
     if (wxFileExists(f)) {
@@ -223,7 +223,7 @@ void Storage::DropColFilter(int index) {
         fVal.RemoveAt(index);
         fFlags.RemoveAt(index);
     }
-    // оставшиеся фильтры будут применены по всему storage
+    // РѕСЃС‚Р°РІС€РёРµСЃСЏ С„РёР»СЊС‚СЂС‹ Р±СѓРґСѓС‚ РїСЂРёРјРµРЅРµРЅС‹ РїРѕ РІСЃРµРјСѓ storage
     frows.clear();
 }
 wxString Storage::GetStringFilterExpr(int positionArrayFilter,bool addNumCol) {
@@ -267,18 +267,18 @@ bool Storage::CompareFilterLine(int row, bool filter) {
             return false;
         }
     }
-    // Показываем строку только если она стала новой группой
+    // РџРѕРєР°Р·С‹РІР°РµРј СЃС‚СЂРѕРєСѓ С‚РѕР»СЊРєРѕ РµСЃР»Рё РѕРЅР° СЃС‚Р°Р»Р° РЅРѕРІРѕР№ РіСЂСѓРїРїРѕР№
     if (IsGroupFilter())
     {
-        // если проверяем не добавленную строку то никаих проверок
+        // РµСЃР»Рё РїСЂРѕРІРµСЂСЏРµРј РЅРµ РґРѕР±Р°РІР»РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ С‚Рѕ РЅРёРєР°РёС… РїСЂРѕРІРµСЂРѕРє
         if (filter) return true;
 
-        // в детальном режиме новые группы не показываем
+        // РІ РґРµС‚Р°Р»СЊРЅРѕРј СЂРµР¶РёРјРµ РЅРѕРІС‹Рµ РіСЂСѓРїРїС‹ РЅРµ РїРѕРєР°Р·С‹РІР°РµРј
         if (faddgroup && detailGroup != -1) return false;
-        // Если это не детальная информация то тоже не показываем
+        // Р•СЃР»Рё СЌС‚Рѕ РЅРµ РґРµС‚Р°Р»СЊРЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ С‚Рѕ С‚РѕР¶Рµ РЅРµ РїРѕРєР°Р·С‹РІР°РµРј
         if (detailGroup != -1 && detailGroup == prevRow && !filter) {
-            // новая строка попадает в детальную группу
-            // сдвинем вершину на новую строку
+            // РЅРѕРІР°СЏ СЃС‚СЂРѕРєР° РїРѕРїР°РґР°РµС‚ РІ РґРµС‚Р°Р»СЊРЅСѓСЋ РіСЂСѓРїРїСѓ
+            // СЃРґРІРёРЅРµРј РІРµСЂС€РёРЅСѓ РЅР° РЅРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ
             detailGroup = row;
             return true;
         }
@@ -288,7 +288,7 @@ if (!faddgroup) return false;
     }
     return true;
 }
-//номер строка из из отфильтрованных
+//РЅРѕРјРµСЂ СЃС‚СЂРѕРєР° РёР· РёР· РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРЅС‹С…
 void Storage::setDetailGroupRow(int rowGroup) {
     if (IsGroupFilter()) {
         // 
@@ -296,7 +296,7 @@ void Storage::setDetailGroupRow(int rowGroup) {
     }
     else detailGroup = -1;
 }
-// для указанной строки проверяем из strage (без фильтра)
+// РґР»СЏ СѓРєР°Р·Р°РЅРЅРѕР№ СЃС‚СЂРѕРєРё РїСЂРѕРІРµСЂСЏРµРј РёР· strage (Р±РµР· С„РёР»СЊС‚СЂР°)
 bool Storage::ApplyFilter(int row) {
     //if (!IsFilter()) return true;
     if (row != -1) {
@@ -310,9 +310,9 @@ bool Storage::ApplyFilter(int row) {
         }
         if (detailGroup != -1) return false;
         if (IsGroupFilter()) {
-            // подменить в фильтре строк на новую 
+            // РїРѕРґРјРµРЅРёС‚СЊ РІ С„РёР»СЊС‚СЂРµ СЃС‚СЂРѕРє РЅР° РЅРѕРІСѓСЋ 
             for (int i = 0; i < frows.size(); i++) {
-                // тут потенциальная проблема производительности
+                // С‚СѓС‚ РїРѕС‚РµРЅС†РёР°Р»СЊРЅР°СЏ РїСЂРѕР±Р»РµРјР° РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё
                 if (frows[i] != prevRow) continue;
                 frows[i] = row;
                 return false;
@@ -327,7 +327,7 @@ bool Storage::ApplyFilter(int row) {
     bool f = false;
     faddgroup = true;
     if (IsGroupFilter()) {
-        // при включенном GroupFilter смотрим только строки hashKeyToRow
+        // РїСЂРё РІРєР»СЋС‡РµРЅРЅРѕРј GroupFilter СЃРјРѕС‚СЂРёРј С‚РѕР»СЊРєРѕ СЃС‚СЂРѕРєРё hashKeyToRow
         frows.clear();
         MyHashToRow::iterator it;
         for (it = hashKeyToRow.begin(); it != hashKeyToRow.end(); ++it)
@@ -354,7 +354,7 @@ bool Storage::ApplyFilter(int row) {
 
     }
     if (frows.size() > 0) {
-        // набор фильтра изменился перепроверим отфильтрованные строки ещё раз
+        // РЅР°Р±РѕСЂ С„РёР»СЊС‚СЂР° РёР·РјРµРЅРёР»СЃСЏ РїРµСЂРµРїСЂРѕРІРµСЂРёРј РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРЅС‹Рµ СЃС‚СЂРѕРєРё РµС‰С‘ СЂР°Р·
         std::deque<int> tmp;
         for (int i = 0; i < frows.size(); i++) {
             if (CompareFilterLine(i, true)) {
@@ -369,7 +369,7 @@ bool Storage::ApplyFilter(int row) {
     }
     else
     {
-        // набор фильтроывнных строк пустой проверим все строки на соответствие фильтру
+        // РЅР°Р±РѕСЂ С„РёР»СЊС‚СЂРѕС‹РІРЅРЅС‹С… СЃС‚СЂРѕРє РїСѓСЃС‚РѕР№ РїСЂРѕРІРµСЂРёРј РІСЃРµ СЃС‚СЂРѕРєРё РЅР° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ С„РёР»СЊС‚СЂСѓ
         for (int i = 0; i < storage.size(); i++) {
             if (CompareFilterLine(i, false)) {
                 frows.push_back(i);
@@ -582,7 +582,7 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
     }
     return st;
 }
-// получение обобщенной ключевой строки
+// РїРѕР»СѓС‡РµРЅРёРµ РѕР±РѕР±С‰РµРЅРЅРѕР№ РєР»СЋС‡РµРІРѕР№ СЃС‚СЂРѕРєРё
 wxString Storage::getStrGroup(wxString source) {
     int i = 0;
     int l = source.Length();

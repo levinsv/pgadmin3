@@ -32,7 +32,7 @@ private:
 	pgproJob *job;
 	wxString oldsrc;
 	ctlComboBox* cbRunas;
-	wxString StrAttribute(const wxString& name, wxString& value);
+	wxString StrAttribute(const wxString& name, const wxString& value);
 	void append(wxString& str, const wxString& delimiter, const wxString& what);
 	void OnChangeName(wxCommandEvent &ev);
 	void OnSelChangeCmds(wxListEvent& ev);

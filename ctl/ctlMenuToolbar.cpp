@@ -108,8 +108,15 @@ void ctlMenuButton::DoProcessLeftClick(wxMouseEvent &event)
 		menu_pos.x = 0;
 		menu_pos.y = button_size.GetHeight();
 	}
-
+	#ifdef WIN32
 	DoPopupMenu(m_menu, menu_pos.x, menu_pos.y);
+	#else
+	wxMenuBar* pMenuBar = winMain->GetMenuBar();
+	if(m_menu->IsAttached()) m_menu->Detach();
+	PopupMenu(m_menu,wxPoint(menu_pos.x, menu_pos.y));
+	m_menu->Attach(pMenuBar);
+	#endif	 	
+	
 }
 
 

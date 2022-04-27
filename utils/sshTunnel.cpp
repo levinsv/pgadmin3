@@ -20,6 +20,7 @@
 #include "frm/frmMain.h"
 
 #pragma comment (lib, "Ws2_32.lib")
+#if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 
 typedef const char *(*inet_ntop_t) (int af, const void *src, char *dst, socklen_t size);
 
@@ -628,3 +629,4 @@ void LogSSHTunnelErrors(const wxString &msg, const int &id, struct _LIBSSH2_SESS
 
 	g_SSHThreadMutex.Unlock();
 }
+#endif

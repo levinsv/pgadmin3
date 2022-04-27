@@ -55,7 +55,7 @@ public:
 	wxString GetRowLabelValue( int row );
 	void SetRowGroup(int row);
 	GroupRows *grp;
-	int generatesql; // 0 -нет, 1 - insert , 2 - in_list
+	int generatesql; // 0 -пїЅпїЅпїЅ, 1 - insert , 2 - in_list
 	wxString sqlquerytext;
 	WX_DECLARE_STRING_HASH_MAP( int, ColKeySizeHashMap );
 
@@ -95,7 +95,7 @@ public:
 		// default group open
 		rowsGroup[rowgroup]=-rowgroup;
 		//beg[rowgroup]=rowgroup;
-		wxASSERT(lastrowgroup>end.Count()," out of bounds");
+		wxASSERT_MSG(lastrowgroup>end.Count()," out of bounds");
 		end[rowgroup]=lastrowgroup;
 		run[rowgroup]=actualtime;
 	};

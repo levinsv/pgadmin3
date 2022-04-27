@@ -325,8 +325,12 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event) {
     wxMenu* mi = static_cast<wxMenu*>(event.GetEventObject());
     wxString label = mi->GetLabelText(id);
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
-
+    #ifdef WIN32
     int col = (int)mi->GetClientData();
+    #else
+    long nc=(long)mi->GetClientData();
+    int col= nc & 0xFFFF;
+    #endif
     if (id > 100) {
         int colt = 0;
         bool clear = false;
@@ -373,7 +377,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event) {
     }
 
 }
-// ïðàâàÿ êíîïêà íà ÿ÷åéêå
+// Ð¿Ñ€Ð°Ð²Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° Ð½Ð° ÑÑ‡ÐµÐ¹ÐºÐµ
 void MyDataViewCtrl::OnContextMenu(wxDataViewEvent& event) {
     //wxString title = m_music_model->GetTitle(event.GetItem());
     //wxLogMessage("wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, Item: %s", title);
@@ -580,15 +584,19 @@ void MyDataViewCtrl::OnMouseMove(wxMouseEvent& event) {
     wxString position;
     //position = wxString::Format("x=%d y=%d", logPos.x, logPos.y);
     //wxLogMessage("Mouse pos %s", position);
-    wxHeaderCtrl* const header = GenericGetHeader();
     int dy = 0;
     wxSize sz;
+    #ifdef WIN32
+    wxHeaderCtrl* const header = GenericGetHeader();
     if (header) {
         sz = header->GetSize();
         //header->Refresh();
         dy = sz.GetHeight();
     }
     mc.y += dy;
+    #else
+    mc.y+=18; // only linux compile
+    #endif
     wxDataViewItem item;
     wxDataViewColumn* column;
 
