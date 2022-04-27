@@ -3921,7 +3921,7 @@ void frmStatus::OnChgColSizeQuerystateGrid(wxListEvent &event)
 
 serverStatusFactory::serverStatusFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : actionFactory(list)
 {
-	mnu->Append(id, _("&Server Status"), _("Displays the current database status."));
+	mnu->Append(id, _("&Server Status\tCtrl-S"), _("Displays the current database status."));
 }
 
 
