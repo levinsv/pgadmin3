@@ -18,10 +18,7 @@ x64/Release_(3.0)/*.txt
 *.7z
 *.bsc
 *.pdb
-<<<<<<< HEAD
 include/svnversion.h
-=======
 ctl/ctlMonitorWidget.cpp
 include/ctl/ctlMonitorWidget.h
->>>>>>> 51a33c6e2f6064e45b405e8e935a5629421460ae
 build/*

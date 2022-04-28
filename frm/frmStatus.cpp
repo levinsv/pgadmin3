@@ -391,11 +391,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	// Now load the layout
 	wxString perspective;
 	settings->Read(wxT("frmStatus/Perspective-") + wxString(FRMSTATUS_PERSPECTIVE_VER), &perspective, FRMSTATUS_DEFAULT_PERSPECTIVE);
-<<<<<<< HEAD
 	manager.LoadPerspective(perspective, true);
-=======
-//	manager.LoadPerspective(perspective, true);
->>>>>>> 51a33c6e2f6064e45b405e8e935a5629421460ae
 	// Reset the captions for the current language
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
 	manager.GetPane(wxT("Activity")).Caption(_("Activity"));
