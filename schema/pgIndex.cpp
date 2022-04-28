@@ -201,7 +201,7 @@ void pgIndexBase::ReadColumnDetails()
 					        wxT("  CASE WHEN (o.opcdefault = FALSE) THEN o.opcname ELSE null END AS opcname\n");
 					if (GetConnection()->BackendMinimumVersion(9, 1))
 						query += wxT(",\n  coll.collname, nspc.nspname as collnspname\n");
-					if (GetConnection()->BackendMinimumVersion(10, 0))
+					if (GetConnection()->BackendMinimumVersion(11, 0))
 						query += ","+ NumToStr(i)+" <= i.indnkeyatts AS is_key\n"; 
 						else query += ",true AS is_key\n";
 
