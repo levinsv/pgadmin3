@@ -1,6 +1,16 @@
 Debug/*
-x64/*
+x64/Debug_(3.0)/*
 Release/*
+Debug_(3.0)/*
+x64/Release_(3.0)/*.sbr
+x64/Release_(3.0)/*.log
+x64/Release_(3.0)/*.sbr
+x64/Release_(3.0)/*.obj
+x64/Release_(3.0)/*.tlog
+x64/Release_(3.0)/*.res
+x64/Release_(3.0)/*.sbr
+x64/Release_(3.0)/*.ilk
+x64/Release_(3.0)/*.txt
 *.sbr
 *.obj
 *.cod
@@ -8,5 +18,10 @@ Release/*
 *.7z
 *.bsc
 *.pdb
+<<<<<<< HEAD
 include/svnversion.h
+=======
+ctl/ctlMonitorWidget.cpp
+include/ctl/ctlMonitorWidget.h
+>>>>>>> 51a33c6e2f6064e45b405e8e935a5629421460ae
 build/*
