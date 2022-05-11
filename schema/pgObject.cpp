@@ -246,7 +246,7 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
 	statistics->ClearAll();
 	statistics->AddColumn(_("Table Name"));
 	if (hasSize)
-		statistics->AddColumn(_("Size"));
+		statistics->AddColumn(_("Size"), wxLIST_AUTOSIZE);
 	if (obj->GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"));
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
