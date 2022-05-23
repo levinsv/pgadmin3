@@ -570,7 +570,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER);
 
-	toolBar->SetToolBitmapSize(wxSize(20, 20));
+	toolBar->SetToolBitmapSize(wxSize(22, 22));
 
 	toolBar->AddTool(MNU_NEWSQLTAB, wxEmptyString, *file_new_png_bmp, _("New SQL tab"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_OPEN, wxEmptyString, *file_open_png_bmp, _("Open file"), wxITEM_NORMAL);
@@ -607,7 +607,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	cbConnection->Append(_("<new connection>"), wxNullBitmap, (void *) NULL);
 	//CTL_BUTTONTRANSACTION
 	btnModeTransaction = new wxButton(this, CTL_BUTTONTRANSACTION, "A",wxDefaultPosition,wxSize(-1, -1),wxMINIMIZE_BOX);
-	btnModeTransaction->SetMaxSize(wxSize(22,22));
+	btnModeTransaction->SetMaxSize(wxSize(24,24));
 //	btnModeTransaction->Enable(true);
 	wxFont stdFont = settings->GetSystemFont();
 	wxFont boldFont = stdFont;
