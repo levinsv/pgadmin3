@@ -20,6 +20,8 @@
 #include "ctl/ctlSQLResult.h"
 #include "utils/sysSettings.h"
 #include "frm/frmExport.h"
+#include "frm/mathplot.h"
+#include "frm/frmPlot.h"
 
 
 
@@ -411,6 +413,202 @@ wxString ctlSQLResult::CheckSelColumnDate()
 			
 	}
 	return ss;
+}
+wxDateTime parseDT(int &fmttype,const wxString dtStr) {
+	wxDateTime dt((time_t)-1);
+	if (fmttype == -1) {
+		if (dt.ParseISOCombined(dtStr, ' ')) {
+			fmttype = 0;
+		}
+		else if (dt.ParseDateTime(dtStr)) {
+			fmttype = 1;
+		} else fmttype = -1;
+		return dt;
+	}
+	else if (fmttype == 0) {
+		if (dt.ParseISOCombined(dtStr, ' ')) return dt;
+		else {
+			fmttype = -1;
+			return parseDT(fmttype,dtStr);
+		}
+		
+	}
+	else if (fmttype == 1) {
+		if (dt.ParseDateTime(dtStr)) return dt;
+		else {
+			fmttype = -1;
+			return parseDT(fmttype, dtStr);
+		}
+	}
+	return dt;
+}
+wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
+	wxArrayInt cols;
+	wxArrayString leg;
+	wxArrayInt colsY;
+	if (IsSelection()) {
+			unsigned int i;
+			int row, col;
+			wxGridCellCoordsArray cells = GetSelectedCells();
+			for (i = 0; i < cells.Count(); i++) {
+				//clearCellData(cells[i].GetRow(), cells[i].GetCol());
+				//cols.Add(cells[i].GetCol());
+			}
+			wxGridCellCoordsArray topLeft = GetSelectionBlockTopLeft();
+			wxGridCellCoordsArray bottomRight = GetSelectionBlockBottomRight();
+			for (i = 0; i < topLeft.Count(); i++) {
+				//for (row = topLeft[i].GetRow(); row <= bottomRight[i].GetRow(); row++)
+				{
+					for (col = topLeft[i].GetCol(); col <= bottomRight[i].GetCol(); col++) {
+						//clearCellData(row, col);
+						cols.Add(col);
+					}
+				}
+			}
+			wxArrayInt cls = GetSelectedCols();
+			for (i = 0; i < cls.Count(); i++) {
+				if (cols.Index(cls[i])== wxNOT_FOUND) cols.Add(cls[i]);
+//				for (row = 1; row < GetNumberRows(); row++) {
+//					clearCellData(row, cols[i]);
+//				}
+			}
+	}
+	else { 
+		return "not select cells or columns";
+	}
+
+	if (cols.Count()>0) {
+		//cols = GetSelectedCols();
+		if (cols.Count() < 3) {
+			wxMessageBox("The number of selected columns must be more than 2\nExample: LXY or XYYYY...", "Plot");
+			return "";
+		}
+	}
+	int idx = 0;
+	int cl1 = cols[idx];
+	int legC = -1;
+	int xC = -1;
+	int typeAxisX = mpX_DATETIME;
+	// Leg col
+	if (colTypClasses.Item(cl1) == PGTYPCLASS_STRING) { legC = cl1; idx++; }
+	cl1 = cols[idx];
+	// X col
+	wxString xA, yA;
+	xA = ctlSQLGrid::GetColumnName(cl1);
+	if (colTypClasses.Item(cl1) == PGTYPCLASS_DATE) { xC = cl1; idx++; }
+		else if (colTypClasses.Item(cl1) == PGTYPCLASS_NUMERIC) { xC = cl1; typeAxisX = mpX_NORMAL; idx++; }
+	if (xC == -1) { wxMessageBox("The value type of column X must be a date or a number", "Plot"); return ""; }
+	// Y cols
+	for (size_t col = idx; col < cols.Count(); col++)
+	{
+		int cl = cols[col];
+		if (colTypClasses.Item(cl) == PGTYPCLASS_NUMERIC) {
+			if (legC == -1) {
+				
+			}
+			colsY.Add(cl);
+			leg.Add(ctlSQLGrid::GetColumnName(cl));
+		}
+		else {
+			wxMessageBox("The values of column Y must be numeric", "Plot");
+			return "";
+		}
+	}
+	if (legC != -1)  yA = leg[0]; else yA = "Value";
+	//frmQuery* q = &parent;
+	frmPlot* frame = new frmPlot(parent,"Plot");
+	frame->ClearAndSetAxis(xA, typeAxisX, yA);
+	// Rows read
+	size_t numRows = GetNumberRows();
+	wxString lg,currLg;
+
+	if (legC !=-1) {
+		// 3 cols
+		std::vector<double> x,y;
+		int fmttype = -1;
+		wxDateTime dt;
+		for (int i = 0; i < numRows; i++)
+		{
+			if (GetRowSize(i) == 0) continue;
+			currLg= GetCellValue(i, legC);
+			if (lg != currLg && !lg.IsEmpty()) {
+				frame->AddSeries(lg, x, y);
+				lg = wxEmptyString;
+			}
+			if (lg.IsEmpty()) {
+				x.clear();
+				y.clear();
+				lg = currLg;
+			}
+			//str.Append(GetExportLine(i, cols));
+			wxString xVal = GetCellValue(i, xC);
+			wxString yVal = GetCellValue(i, colsY[0]);
+			double xv, yv;
+			//yv=wxAtof(yVal);
+			if (!yVal.ToCDouble(&yv)) { yVal.ToDouble(&yv); /* error! */ }
+			if (typeAxisX == mpX_DATETIME) {
+				dt = parseDT(fmttype, xVal);
+				if (fmttype == -1) {
+					wxString temp = wxString::Format("The values of column X must be timestamp [row: %d,col: %d]",i+1, colsY[0]);
+					wxMessageBox(temp, "Plot");
+					return "";
+				}
+				xv = (double)dt.GetTicks();
+			}
+			else
+			{
+				if (!xVal.ToCDouble(&xv)) { xVal.ToDouble(&xv); /* error! */ }
+			}
+			x.push_back(xv);
+			y.push_back(yv);
+		}
+		frame->AddSeries(lg, x, y);
+
+	}
+	else {
+		std::vector<double> x, y;
+		int fmttype = -1;
+		wxDateTime dt;
+		bool first = true;
+		for (size_t col = 0; col < colsY.Count(); col++)
+		{
+			lg = leg[col];
+			int ccol = colsY[col];
+			for (int i = 0; i < numRows; i++)
+			{
+				if (GetRowSize(i) == 0) continue;
+				//str.Append(GetExportLine(i, cols));
+				wxString yVal = GetCellValue(i, ccol);
+				double xv, yv;
+				if (!yVal.ToCDouble(&yv)) { yVal.ToDouble(&yv); /* error! */ }
+				if (first) {
+					wxString xVal = GetCellValue(i, xC);
+					if (typeAxisX == mpX_DATETIME) {
+						dt = parseDT(fmttype, xVal);
+						if (fmttype == -1) {
+							wxString temp = wxString::Format("The values of column X must be timestamp [row: %d,col: %d]", i, colsY[0]);
+							wxMessageBox(temp, "Plot");
+							return "";
+						}
+						xv = (double)dt.GetTicks();
+					}
+					else
+					{
+						if (!xVal.ToCDouble(&xv)) { xVal.ToDouble(&xv); /* error! */ }
+					}
+					x.push_back(xv);
+				}
+				y.push_back(yv);
+
+			}
+			frame->AddSeries(lg, x, y);
+			y.clear();
+			first = false;
+		}
+	}
+	frame->Go();
+	return "plot draw";
+
 }
 wxString ctlSQLResult::SummaryColumn()
 {

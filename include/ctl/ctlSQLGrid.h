@@ -45,6 +45,7 @@ public:
 		isSort=flag;
 	};
 
+	wxString GetColumnName(int colNum);
 	wxSize GetBestSize(int row, int col);
 	void OnLabelDoubleClick(wxGridEvent &event);
 	void OnLabelClick(wxGridEvent &event);
@@ -67,7 +68,6 @@ private:
 	void OnMouseWheel(wxMouseEvent &event);
 	void OnGridColSize(wxGridSizeEvent &event);
 	void DrawColLabel( wxDC& dc, int col );
-	wxString GetColumnName(int colNum);
 	wxString GetColKeyValue(int col);
 	void AppendColumnHeader(wxString &str, int start, int end);
 	void AppendColumnHeader(wxString &str, wxArrayInt columns);

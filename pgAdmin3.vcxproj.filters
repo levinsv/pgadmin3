@@ -1650,6 +1650,12 @@
     <ClCompile Include="utils\log\MyDataViewCtrl.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="frm\frmPlot.cpp">
+      <Filter>frm</Filter>
+    </ClCompile>
+    <ClCompile Include="frm\mathplot.cpp">
+      <Filter>frm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -3547,6 +3553,12 @@
     </ClInclude>
     <ClInclude Include="include\log\MyDataViewCtrl.h">
       <Filter>include\log</Filter>
+    </ClInclude>
+    <ClInclude Include="include\frm\frmPlot.h">
+      <Filter>include\frm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\frm\mathplot.h">
+      <Filter>include\frm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

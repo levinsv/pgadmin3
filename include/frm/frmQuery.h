@@ -219,6 +219,7 @@ private:
 	void OnCopy_WhereList(wxCommandEvent& event);
 	void OnClear_Filter(wxCommandEvent &event);
 	void OnCheck_Column_Date(wxCommandEvent& ev);
+	void OnAutoColsPlot(wxCommandEvent& ev);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);

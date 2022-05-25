@@ -19,6 +19,7 @@
 #include "db/pgConn.h"
 #include "ctlSQLGrid.h"
 #include "frm/frmExport.h"
+#include "frm/frmQuery.h"
 
 #define CTLSQL_RUNNING 100  // must be greater than ExecStatusType PGRES_xxx values
 
@@ -47,6 +48,7 @@ public:
 
 	wxString OnGetItemText(long item, long col) const;
 	wxString SummaryColumn();
+	wxString AutoColsPlot(int flags,frmQuery *parent);
 	wxString CheckSelColumnDate();
 	void ClearFilter();
 	bool IsColText(int col);

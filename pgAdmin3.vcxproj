@@ -912,11 +912,13 @@
     <ClCompile Include="frm\frmOptions.cpp" />
     <ClCompile Include="frm\frmPassword.cpp" />
     <ClCompile Include="frm\frmPgpassConfig.cpp" />
+    <ClCompile Include="frm\frmPlot.cpp" />
     <ClCompile Include="frm\frmQuery.cpp" />
     <ClCompile Include="frm\frmReport.cpp" />
     <ClCompile Include="frm\frmRestore.cpp" />
     <ClCompile Include="frm\frmSplash.cpp" />
     <ClCompile Include="frm\frmStatus.cpp" />
+    <ClCompile Include="frm\mathplot.cpp" />
     <ClCompile Include="frm\plugins.cpp" />
     <ClCompile Include="pro_scheduler\pgproJob.cpp" />
     <ClCompile Include="schema\edbPackage.cpp" />
@@ -1549,6 +1551,8 @@
     <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
     <ClInclude Include="include\frm\frmLog.h" />
+    <ClInclude Include="include\frm\frmPlot.h" />
+    <ClInclude Include="include\frm\mathplot.h" />
     <ClInclude Include="include\log\MyDataViewCtrl.h" />
     <ClInclude Include="include\log\Storage.h" />
     <ClInclude Include="include\log\StorageModel.h" />
