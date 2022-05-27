@@ -58,7 +58,7 @@
 #define mpSCROLL_NUM_PIXELS_PER_LINE 10
 
 // See doxygen comments.
-double mpWindow::zoomIncrementalFactor = 1.5;
+double mpWindow::zoomIncrementalFactor = 1.2;
 
 //-----------------------------------------------------------------------------
 // mpLayer
@@ -180,13 +180,15 @@ void mpInfoCoords::UpdateInfo(mpWindow &w, wxEvent &event) {
     int mouseY = ((wxMouseEvent &)event).GetY();
     double xx=w.p2x(mouseX);
     double yy=w.p2y(mouseY);
-    double tx,ty;
+    double tx=0,ty=0;
     double dd;
     
     wxCoord sx,sy;
     wxString namel;
+    int size_vec;
     for (unsigned int p = 0; p < w.CountAllLayers(); p++) {
-      mpFXYVector *ly = reinterpret_cast<mpFXYVector*>(w.GetLayer(p));
+      mpFXYVector *ly = dynamic_cast<mpFXYVector*>(w.GetLayer(p));
+      if (ly == NULL) continue;
       if ((ly->GetLayerType() == mpLAYER_PLOT) && (ly->IsVisible())) {
           tx=xx;ty=yy;
           double d=ly->GetDistance(tx,ty);
@@ -195,7 +197,9 @@ void mpInfoCoords::UpdateInfo(mpWindow &w, wxEvent &event) {
           dd=sqrt((double)(sx-mouseX)*(double)(sx-mouseX)+(double)(sy-mouseY)*(double)(sy-mouseY));
           if (dd<4) 
           {
-            namel=ly->GetName();
+            size_vec = ly->GetSize();
+            namel.Printf("%s\nNumber points: %d",ly->GetName(),size_vec);
+            size_vec = ly->GetSize();
             mouseX=1;
             break;
           }
@@ -213,6 +217,7 @@ void mpInfoCoords::UpdateInfo(mpWindow &w, wxEvent &event) {
             wxString s = xaxis->GetLabelTextValue(x);
             wxString xname = xaxis->GetName();
             wxString yname = yaxis->GetName();
+            
             toolTipContent.Printf(_("%s\n%s = %s\n%s = %f"), namel,xname,s,yname, ty);
             wxTipWindow** ptr = NULL;
             wxRect rectBounds(sx, sy, 5, 5);
@@ -550,17 +555,46 @@ void mpFXY::UpdateViewBoundary(wxCoord xnew, wxCoord ynew) {
   minDrawY = (minDrawY < ynew) ? minDrawY : ynew;
   // drawnPoints++;
 }
+void drawInRectText(wxDC &dc, wxString text,wxRect out,int align) {
+    wxCoord tx, ty;
+    dc.GetMultiLineTextExtent(text, &tx, &ty);
+    wxRect in(0,0,tx,ty);
+    int angle = 0;
+    //if ((ix2 - ix) < ty) continue;
+    if (out.width < tx) {
+        angle = 90;
+        in.SetWidth(ty);
+        in.SetHeight(tx);
+        in = in.CenterIn(out);
+        in.y = in.y + tx;
+        if (in.y > (out.y+out.height)) in.y = out.y + out.height;
+        if (align == wxALIGN_TOP) {
+            in.y = out.y + tx+15;
+        }
+    }
+    else
+    {
+        in = in.CenterIn(out);
+        if (align == wxALIGN_TOP) {
+            in.y = out.y + ty;
+        }
+    }
+    dc.DrawRotatedText(text, in.x, in.y, angle);
 
+}
 void mpFXY::Plot(wxDC &dc, mpWindow &w) {
   if (m_visible) {
+    mpFXYVector *v= dynamic_cast<mpFXYVector*>(this);
+    bool isBar = false;
+    if (v != NULL) isBar = v->IsLegendBar();
+
     int wsimb = m_pen.GetWidth();
-      if (IsSelect()) {
+      if (IsSelect() && !isBar) {
         wxPen pensel(m_pen);
         pensel.SetWidth(wsimb * 2);
         dc.SetPen(pensel);
       }
       else {
-
           dc.SetPen(m_pen);
       }
     dc.SetBrush(m_brush);
@@ -569,10 +603,10 @@ void mpFXY::Plot(wxDC &dc, mpWindow &w) {
     // positioning
     Rewind();
     GetNextXY(x, y);
-    maxDrawX = x;
-    minDrawX = x;
-    maxDrawY = y;
-    minDrawY = y;
+    maxDrawX = 0;
+    minDrawX = 10000000000;
+    maxDrawY = 0;
+    minDrawY = 10000000000;
     // drawnPoints = 0;
     Rewind();
 
@@ -588,7 +622,41 @@ void mpFXY::Plot(wxDC &dc, mpWindow &w) {
     if (!m_continuous) {
       // for some reason DrawPoint does not use the current pen,
       // so we use DrawLine for fat pens
-      if (m_pen.GetWidth() <= 1) {
+      if (isBar) {
+          double widthbar = 0.9;
+          int ix2,iy2;
+          iy2 = w.y2p(0);
+          dc.SetFont(m_font);
+          if (iy2 > maxYpx)  iy2 = maxYpx;
+          bool viewY = false;
+          while (GetNextXY(x, y)) {
+              ix = w.x2p(x- widthbar/2);
+              ix2 = w.x2p(x + widthbar / 2);
+              iy = w.y2p(y);
+              viewY = false;
+              if (iy < minYpx) { iy = minYpx; viewY = true; }
+              if (ix2 > endPx) ix2 = endPx;
+              if (ix < startPx) ix = startPx;
+              if (ix2 < startPx|| ix>endPx) continue;
+              if (m_drawOutsideMargins || ((ix >= startPx) && (ix <= endPx) &&
+                  (iy >= minYpx) && (iy <= maxYpx))) {
+                  dc.DrawRectangle(ix, iy, ix2 - ix, iy2 - iy);
+                  UpdateViewBoundary(ix, iy);
+                  wxCoord tx, ty;
+                  wxString s = v->GetLegendBar();
+                  
+
+                  wxRect rectBig(ix,iy, ix2 - ix, iy2 - iy);
+                  wxRect rectSmall(0, 0, tx, ty);
+                  drawInRectText(dc,s,rectBig,wxALIGN_CENTER);
+                  if (viewY) {
+                      s.Printf("%f",y);
+                      drawInRectText(dc, s, rectBig, wxALIGN_TOP);
+                  }
+              };
+          }
+
+      } else if (m_pen.GetWidth() <= 1) {
         while (GetNextXY(x, y)) {
           ix = w.x2p(x);
           iy = w.y2p(y);
@@ -923,11 +991,7 @@ void mpScaleX::Plot(wxDC &dc, mpWindow &w) {
 
     // double n = floor( (w.GetPosX() - (double)extend / w.GetScaleX()) / step )
     // * step ;
-    double n0 =
-        floor(
-            (w.GetPosX() /* - (double)(extend - w.GetMarginLeft() - w.GetMarginRight())/ w.GetScaleX() */) /
-            step) *
-        step;
+    double n0 =floor((w.GetPosX() /* - (double)(extend - w.GetMarginLeft() - w.GetMarginRight())/ w.GetScaleX() */) /step) * step;
     double n = 0;
 #ifdef MATHPLOT_DO_LOGGING
     wxLogMessage(wxT("mpScaleX::Plot: dig: %f , step: %f, end: %f, n: %f"), dig,
@@ -1325,6 +1389,10 @@ EVT_LEFT_UP(mpWindow::OnMouseLeftRelease)
 EVT_MENU(mpID_CENTER, mpWindow::OnCenter)
 EVT_MENU(mpID_FIT, mpWindow::OnFit)
 EVT_MENU(mpID_ZOOM_IN, mpWindow::OnZoomIn)
+EVT_MENU(mpID_ZOOM_INX, mpWindow::OnZoomInX)
+EVT_MENU(mpID_ZOOM_INX, mpWindow::OnZoomInY)
+EVT_MENU(mpID_ZOOM_OUTX, mpWindow::OnZoomOutX)
+EVT_MENU(mpID_ZOOM_OUTX, mpWindow::OnZoomOutY)
 EVT_MENU(mpID_ZOOM_OUT, mpWindow::OnZoomOut)
 EVT_MENU(mpID_LOCKASPECT, mpWindow::OnLockAspect)
 EVT_MENU(mpID_HELP_MOUSE, mpWindow::OnMouseHelp)
@@ -1776,6 +1844,18 @@ void mpWindow::ZoomOut(const wxPoint &centerPoint) {
                prior_layer_x, prior_layer_y, p2x(c.x), p2y(c.y));
 #endif
   UpdateAll();
+}
+void mpWindow::OnZoomInX(wxCommandEvent& WXUNUSED(event)) {
+    ZoomInX();
+}
+void mpWindow::OnZoomInY(wxCommandEvent& WXUNUSED(event)) {
+    ZoomInY();
+}
+void mpWindow::OnZoomOutX(wxCommandEvent& WXUNUSED(event)) {
+    ZoomOutX();
+}
+void mpWindow::OnZoomOutY(wxCommandEvent& WXUNUSED(event)) {
+    ZoomOutY();
 }
 
 void mpWindow::ZoomInX() {
@@ -2566,6 +2646,7 @@ bool mpFXYVector::GetNextXY(double &x, double &y) {
     return FALSE;
   else {
     x = m_xs[m_index];
+    if (m_leg.size() > 0) m_current_leg = m_leg[m_index];
     y = m_ys[m_index++];
     return m_index <= m_xs.size();
   }
@@ -2574,6 +2655,10 @@ bool mpFXYVector::GetNextXY(double &x, double &y) {
 void mpFXYVector::Clear() {
   m_xs.clear();
   m_ys.clear();
+  m_leg.clear();
+}
+int mpFXYVector::GetSize() {
+    return m_xs.size();
 }
 double mpFXYVector::GetDistance(double &x,double &y) {
     std::vector<double>::const_iterator itX;
@@ -2593,7 +2678,15 @@ double mpFXYVector::GetDistance(double &x,double &y) {
     return minD;
 
 }
+void mpFXYVector::SetLegendBar(const std::vector<wxString>& leg) {
+    if (leg.size() != m_ys.size()) {
+        wxLogError(
+            _("wxMathPlot error: X and Y vector are not of the same length!"));
+        return;
+    }
+    m_leg = leg;
 
+}
 void mpFXYVector::SetData(const std::vector<double> &xs,
                           const std::vector<double> &ys) {
   // Check if the data vectora are of the same size

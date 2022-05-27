@@ -446,6 +446,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	wxArrayInt cols;
 	wxArrayString leg;
 	wxArrayInt colsY;
+	wxString rez="Draw plot";
 	if (IsSelection()) {
 			unsigned int i;
 			int row, col;
@@ -476,11 +477,45 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	else { 
 		return "not select cells or columns";
 	}
+	std::vector<wxString> lbar;
+	size_t numRows = GetNumberRows();
 
 	if (cols.Count()>0) {
+		int idx = 0;
+		int cl1 = cols[idx];
+		int legC = -1;
+		int xC = -1;
 		//cols = GetSelectedCols();
+		if (cols.Count() == 2) {
+			legC = cl1; idx++;
+			cl1 = cols[idx];
+			if (colTypClasses.Item(cl1) != PGTYPCLASS_NUMERIC) { 
+				wxMessageBox("The number of selected column 2 needed Number type\nExample: LY", "Plot");
+				return "";
+			}
+			std::vector<double> x, y;
+			double xv=0, yv;
+			for (int i = 0; i < numRows; i++)
+			{
+				if (GetRowSize(i) == 0) continue;
+				//str.Append(GetExportLine(i, cols));
+				wxString yVal = GetCellValue(i, cl1);
+				if (!yVal.ToCDouble(&yv)) { yVal.ToDouble(&yv); /* error! */ }
+				x.push_back(xv);
+				y.push_back(yv);
+				xv++;
+				lbar.push_back(GetCellValue(i, legC));
+			}
+			frmPlot* frame = new frmPlot(parent, "Plot Bar");
+			frame->ClearAndSetAxis(ctlSQLGrid::GetColumnName(legC), mpX_NORMAL, ctlSQLGrid::GetColumnName(cl1));
+			frame->AddSeries("Bar", x, y, lbar);
+			frame->Go();
+			return rez;
+
+		}
 		if (cols.Count() < 3) {
-			wxMessageBox("The number of selected columns must be more than 2\nExample: LXY or XYYYY...", "Plot");
+
+			wxMessageBox("The number of selected columns must be more than 1\nExample: LXY or XYYYY...", "Plot");
 			return "";
 		}
 	}
@@ -519,9 +554,9 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	frmPlot* frame = new frmPlot(parent,"Plot");
 	frame->ClearAndSetAxis(xA, typeAxisX, yA);
 	// Rows read
-	size_t numRows = GetNumberRows();
+	
 	wxString lg,currLg;
-
+	
 	if (legC !=-1) {
 		// 3 cols
 		std::vector<double> x,y;
@@ -532,7 +567,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 			if (GetRowSize(i) == 0) continue;
 			currLg= GetCellValue(i, legC);
 			if (lg != currLg && !lg.IsEmpty()) {
-				frame->AddSeries(lg, x, y);
+				if (x.size()>0) frame->AddSeries(lg, x, y,lbar);
 				lg = wxEmptyString;
 			}
 			if (lg.IsEmpty()) {
@@ -550,8 +585,9 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 				dt = parseDT(fmttype, xVal);
 				if (fmttype == -1) {
 					wxString temp = wxString::Format("The values of column X must be timestamp [row: %d,col: %d]",i+1, colsY[0]);
-					wxMessageBox(temp, "Plot");
-					return "";
+					rez = temp;
+					//wxMessageBox(temp, "Plot");
+					continue;
 				}
 				xv = (double)dt.GetTicks();
 			}
@@ -562,7 +598,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 			x.push_back(xv);
 			y.push_back(yv);
 		}
-		frame->AddSeries(lg, x, y);
+		frame->AddSeries(lg, x, y,lbar);
 
 	}
 	else {
@@ -601,13 +637,13 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 				y.push_back(yv);
 
 			}
-			frame->AddSeries(lg, x, y);
+			frame->AddSeries(lg, x, y,lbar);
 			y.clear();
 			first = false;
 		}
 	}
 	frame->Go();
-	return "plot draw";
+	return rez;
 
 }
 wxString ctlSQLResult::SummaryColumn()

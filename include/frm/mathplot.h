@@ -122,6 +122,10 @@ enum {
   mpID_FIT = 2000, //!< Fit view to match bounding box of all layers
   mpID_ZOOM_IN,    //!< Zoom into view at clickposition / window center
   mpID_ZOOM_OUT,   //!< Zoom out
+  mpID_ZOOM_INX,
+  mpID_ZOOM_INY,
+  mpID_ZOOM_OUTX,
+  mpID_ZOOM_OUTY,
   mpID_CENTER,     //!< Center view on click position
   mpID_LOCKASPECT, //!< Lock x/y scaling aspect
   mpID_HELP_MOUSE  //!< Shows information about the mouse commands
@@ -661,6 +665,14 @@ public:
       @param y Returns Y value
   */
   virtual bool GetNextXY(double &x, double &y) = 0;
+
+  /** Get legend value for N.
+      Override this function in your implementation.
+      @param x Returns X value
+      @param y Returns Y value
+  */
+  virtual wxString GetLegendBar() = 0;
+  
 
   /** Layer plot handler.
       This implementation will plot the locus in the visible area and
@@ -1315,6 +1327,18 @@ public:
           @return reference to axis colour used in theme */
   const wxColour &GetAxesColour() { return m_axColour; };
 
+  void OnCenter(wxCommandEvent& event);       //!< Context menu handler
+  void OnFit(wxCommandEvent& event);          //!< Context menu handler
+  void OnZoomIn(wxCommandEvent& event);       //!< Context menu handler
+  void OnZoomOut(wxCommandEvent& event);      //!< Context menu handler
+  void OnZoomInX(wxCommandEvent& WXUNUSED(event));
+  void OnZoomInY(wxCommandEvent& WXUNUSED(event));
+  void OnZoomOutX(wxCommandEvent& WXUNUSED(event));
+  void OnZoomOutY(wxCommandEvent& WXUNUSED(event));
+  void OnScrollThumbTrack(
+      wxScrollWinEvent& event); //!< Scroll thumb on scroll bar moving
+
+  void OnLockAspect(wxCommandEvent& event);   //!< Context menu handler
 protected:
   void OnPaint(
       wxPaintEvent &event); //!< Paint handler, will plot all attached layers
@@ -1328,11 +1352,6 @@ protected:
                                               //when the user drags with the
                                               //right button or just "clicks"
                                               //for the menu
-  void OnCenter(wxCommandEvent &event);       //!< Context menu handler
-  void OnFit(wxCommandEvent &event);          //!< Context menu handler
-  void OnZoomIn(wxCommandEvent &event);       //!< Context menu handler
-  void OnZoomOut(wxCommandEvent &event);      //!< Context menu handler
-  void OnLockAspect(wxCommandEvent &event);   //!< Context menu handler
   void OnMouseHelp(wxCommandEvent &event);    //!< Context menu handler
   void OnMouseWheel(wxMouseEvent &event);     //!< Mouse handler for the wheel
   void OnMouseMove(
@@ -1341,8 +1360,6 @@ protected:
   OnMouseLeftDown(wxMouseEvent &event); //!< Mouse left click (for rect zoom)
   void
   OnMouseLeftRelease(wxMouseEvent &event); //!< Mouse left click (for rect zoom)
-  void OnScrollThumbTrack(
-      wxScrollWinEvent &event); //!< Scroll thumb on scroll bar moving
   void OnScrollPageUp(wxScrollWinEvent &event);   //!< Scroll page up
   void OnScrollPageDown(wxScrollWinEvent &event); //!< Scroll page down
   void OnScrollLineUp(wxScrollWinEvent &event);   //!< Scroll line up
@@ -1451,17 +1468,24 @@ public:
     * @sa Clear
   */
   void SetData(const std::vector<double> &xs, const std::vector<double> &ys);
-
+  void SetLegendBar(const std::vector<wxString>& leg);
+  bool IsLegendBar() { return m_leg.size() > 0; }
+  wxString GetLegendBar() {
+      return m_current_leg
+          ;
+  }
   /** Clears all the data, leaving the layer empty.
     * @sa SetData
     */
   void Clear();
   double GetDistance(double &x,double &y);
+  int GetSize();
 protected:
   /** The internal copy of the set of data to draw.
     */
   std::vector<double> m_xs, m_ys;
-
+  std::vector<wxString> m_leg;
+  wxString m_current_leg;
   /** The internal counter for the "GetNextXY" interface
     */
   size_t m_index;

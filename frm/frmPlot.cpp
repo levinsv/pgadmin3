@@ -10,10 +10,10 @@ enum {
 	ID_ALIGN_X_AXIS,
 	ID_ALIGN_Y_AXIS,
 	ID_TOGGLE_GRID,
-	ID_TOGGLE_SCROLLBARS,
+	ID_COPY_SCREEN,
 	ID_TOGGLE_INFO,
 	ID_SAVE_SCREENSHOT,
-	ID_TOGGLE_LISSAJOUX,
+	ID_TOGGLE_SHOW_SERIES,
 	ID_TOGGLE_SHOW_SIMBOL,
 	ID_TOGGLE_COSINE,
 	ID_BLACK_THEME
@@ -73,13 +73,22 @@ EVT_MENU(mpID_FIT, frmPlot::OnFit)
 EVT_MENU(ID_ALIGN_X_AXIS, frmPlot::OnAlignXAxis)
 EVT_MENU(ID_ALIGN_Y_AXIS, frmPlot::OnAlignYAxis)
 EVT_MENU(ID_TOGGLE_GRID, frmPlot::OnToggleGrid)
-EVT_MENU(ID_TOGGLE_SCROLLBARS, frmPlot::OnCopy)
+EVT_MENU(ID_COPY_SCREEN, frmPlot::OnCopy)
 EVT_MENU(ID_TOGGLE_INFO, frmPlot::OnToggleInfoLayer)
 EVT_MENU(ID_SAVE_SCREENSHOT, frmPlot::OnSaveScreenshot)
 EVT_MENU(ID_BLACK_THEME, frmPlot::OnBlackTheme)
-EVT_MENU(ID_TOGGLE_LISSAJOUX, frmPlot::OnToggleLissajoux)
+EVT_MENU(ID_TOGGLE_SHOW_SERIES, frmPlot::OnToggleShowSeries)
 EVT_MENU(ID_TOGGLE_SHOW_SIMBOL, frmPlot::OnToggleShowSimbol)
 EVT_MENU(ID_TOGGLE_COSINE, frmPlot::OnToggleCosine)
+EVT_MENU(mpID_CENTER, frmPlot::OnCenter)
+EVT_MENU(mpID_ZOOM_IN, frmPlot::OnZoomIn)
+EVT_MENU(mpID_ZOOM_INX, frmPlot::OnZoomInX)
+EVT_MENU(mpID_ZOOM_INY, frmPlot::OnZoomInY)
+EVT_MENU(mpID_ZOOM_OUTX, frmPlot::OnZoomOutX)
+EVT_MENU(mpID_ZOOM_OUTY, frmPlot::OnZoomOutY)
+EVT_MENU(mpID_ZOOM_OUT, frmPlot::OnZoomOut)
+EVT_MENU(mpID_LOCKASPECT, frmPlot::OnLockAspect)
+EVT_KEY_DOWN(frmPlot::OnKEY_DOWN)
 EVT_CLOSE(frmPlot::OnClose)
 wxEND_EVENT_TABLE()
 
@@ -99,7 +108,7 @@ frmPlot::frmPlot(frmQuery* parent, const wxString& _title) : pgFrame(parent, _ti
 	file_menu->Append(ID_PRINT_PREVIEW, wxT("Print Pre&view..."));
 	file_menu->Append(ID_PRINT, wxT("&Print..."));
 	file_menu->Append(ID_SAVE_SCREENSHOT, wxT("Save screenshot"));
-    file_menu->Append(ID_TOGGLE_SCROLLBARS, wxT("Copy clipboard screenshot\tCtrl+C"));
+    file_menu->Append(ID_COPY_SCREEN, wxT("Copy clipboard screenshot\tCtrl+C"));
     
 	file_menu->AppendSeparator();
 	file_menu->Append(ID_ABOUT, wxT("&About..."));
@@ -108,20 +117,28 @@ frmPlot::frmPlot(frmQuery* parent, const wxString& _title) : pgFrame(parent, _ti
 	view_menu->Append(mpID_FIT, wxT("&Fit bounding box"), wxT("Set plot view to show all items"));
 	view_menu->Append(mpID_ZOOM_IN, wxT("Zoom in"), wxT("Zoom in plot view."));
 	view_menu->Append(mpID_ZOOM_OUT, wxT("Zoom out"), wxT("Zoom out plot view."));
+    view_menu->AppendCheckItem(mpID_LOCKASPECT, _("Lock aspect"),_("Lock horizontal and vertical zoom aspect."));
+    view_menu->AppendSeparator();
+
+    view_menu->Append(mpID_ZOOM_INX, wxT("Zoom in X axis\tKP_Add"), wxT("Zoom in plot view X axis."));
+    view_menu->Append(mpID_ZOOM_OUTX, wxT("Zoom out X axis\tKP_Subtract"), wxT("Zoom out plot view X axis."));
+    view_menu->Append(mpID_ZOOM_INY, wxT("Zoom in Y axis\tCtrl+KP_Add"), wxT("Zoom in plot view Y axis."));
+    view_menu->Append(mpID_ZOOM_OUTY, wxT("Zoom out Y axis\tCtrl+KP_Subtract"), wxT("Zoom out plot view Y axis."));
+
 	view_menu->AppendSeparator();
 	view_menu->Append(ID_ALIGN_X_AXIS, wxT("Switch &X axis align"));
 	view_menu->Append(ID_ALIGN_Y_AXIS, wxT("Switch &Y axis align"));
 	view_menu->AppendCheckItem(ID_TOGGLE_GRID, wxT("Toggle grid/ticks"));
-	//view_menu->AppendCheckItem( ID_TOGGLE_SCROLLBARS, wxT("Show Scroll Bars"));
+	//view_menu->AppendCheckItem( ID_COPY_SCREEN, wxT("Show Scroll Bars"));
 	view_menu->AppendCheckItem(ID_TOGGLE_INFO, wxT("Show overlay info box"));
     view_menu->Check(ID_TOGGLE_INFO, true);
 	view_menu->AppendCheckItem(ID_BLACK_THEME, wxT("Switch to black background theme"));
 
-	//show_menu->AppendCheckItem(ID_TOGGLE_LISSAJOUX, wxT("Lissajoux"));
+	show_menu->AppendCheckItem(ID_TOGGLE_SHOW_SERIES, wxT("Show name series"));
 	show_menu->AppendCheckItem(ID_TOGGLE_SHOW_SIMBOL, wxT("Show Simbol"));
 	//show_menu->AppendCheckItem(ID_TOGGLE_COSINE, wxT("Cosine"));
 	// Start with all plots visible
-	//show_menu->Check(ID_TOGGLE_LISSAJOUX, true);
+	show_menu->Check(ID_TOGGLE_SHOW_SERIES, false);
 	show_menu->Check(ID_TOGGLE_SHOW_SIMBOL, true);
 	//show_menu->Check(ID_TOGGLE_COSINE, true);
 
@@ -135,9 +152,10 @@ frmPlot::frmPlot(frmQuery* parent, const wxString& _title) : pgFrame(parent, _ti
 	mpLayer* l;
 
 	m_plot = new mpWindow(this, -1, wxPoint(0, 0), wxSize(100, 100), wxSUNKEN_BORDER);
-
+    
 	m_plot->SetMargins(30, 100, 50, 100);
 	wxBoxSizer* topsizer = new wxBoxSizer(wxVERTICAL);
+    m_plot->Bind(wxEVT_KEY_DOWN, &frmPlot::OnKEY_DOWN, this);
 
 	topsizer->Add(m_plot, 1, wxEXPAND);
 //	topsizer->Add(m_log, 0, wxEXPAND);
@@ -184,23 +202,24 @@ void frmPlot::ClearAndSetAxis(wxString XtextAxis, unsigned int X_labelType, wxSt
     yaxis->SetFont(graphFont);
     xaxis->SetDrawOutsideMargins(false);
     yaxis->SetDrawOutsideMargins(false);
-    m_plot->AddLayer(xaxis);
-    m_plot->AddLayer(yaxis);
-    m_plot->AddLayer(nfo = new mpInfoCoords(wxRect(80, 20, 10, 10), wxTRANSPARENT_BRUSH)); //&hatch));
-    nfo->SetVisible(true);
+    m_plot->AddLayer(xaxis); // 0
+    m_plot->AddLayer(yaxis); // 1
+    m_plot->AddLayer(nfo = new mpInfoCoords(wxRect(80, 80, 10, 10), wxTRANSPARENT_BRUSH)); //&hatch));
+    nfo->SetVisible(true); // 2
     //wxBrush hatch2(wxColour(163,208,212), wxSOLID);
     mpInfoLegend* leg;
     m_plot->AddLayer(leg = new mpInfoLegend(wxRect(20, 20, 40, 40), wxTRANSPARENT_BRUSH)); //&hatch2));
-    leg->SetVisible(true);
+    leg->SetVisible(true); // 3
     leg->SetDrawOutsideMargins(false);
     indexColor = 0;
     //m_plot->Fit();
 }
 
-void frmPlot::AddSeries(const wxString legend, const std::vector<double>& x, const std::vector<double>& y)
+void frmPlot::AddSeries(const wxString legend, const std::vector<double>& x, const std::vector<double>& y, const std::vector<wxString>& l)
 {
     mpFXYVector* vectorLayer = new mpFXYVector(legend);
     vectorLayer->SetData(x, y);
+    if (l.size()>0) vectorLayer->SetLegendBar(l);
     vectorLayer->SetContinuity(true);
     size_t n;
     wxColourDesc cc;
@@ -212,17 +231,71 @@ void frmPlot::AddSeries(const wxString legend, const std::vector<double>& x, con
          //= new wxColour(cc.name);
     }
     if (indexColor >= WXSIZEOF(colors)) cc.name = L"#000000";
-
-    wxPen vectorpen(wxColour(cc.name), 2, wxPENSTYLE_SOLID);
-
-    vectorLayer->SetPen(vectorpen);
     vectorLayer->SetDrawOutsideMargins(false);
-    vectorLayer->ShowName(false);
     vectorLayer->ShowSimbol(true);
+    if (vectorLayer->IsLegendBar()) {
+        wxPen vectorpen(wxColour(cc.name), 1, wxPENSTYLE_SOLID);
+        wxBrush br(wxColour(cc.name));
+        vectorLayer->SetPen(vectorpen);
+        vectorLayer->ShowName(false);
+        vectorLayer->SetBrush(br);
+        vectorLayer->SetContinuity(false);
+    }
+    else
+    {
+        wxPen vectorpen(wxColour(cc.name), 2, wxPENSTYLE_SOLID);
+        vectorLayer->SetPen(vectorpen);
+        vectorLayer->ShowName(false);
+    }
     m_plot->AddLayer(vectorLayer);
     //m_plot->Fit();
 }
+void frmPlot::OnKEY_DOWN(wxKeyEvent& event) {
+    //void OnScrollThumbTrack(wxScrollWinEvent & event);
+    bool modctrl;
+    if ((event.GetModifiers() & wxMOD_CONTROL) == wxMOD_CONTROL) {
+        modctrl = true;
+    }
+    else modctrl = false;
+    int go = 0;
+    int orient = wxHORIZONTAL;
+    if (event.GetKeyCode() == WXK_DOWN) {
+        go =-( m_plot->GetScrY() - m_plot->GetMarginTop() - m_plot->GetMarginBottom());
+        orient = wxVERTICAL;
+    }
+    if (event.GetKeyCode() == WXK_UP) {
+        go = (m_plot->GetScrY() - m_plot->GetMarginTop() - m_plot->GetMarginBottom());
+        orient = wxVERTICAL;
+    }
+    if (event.GetKeyCode() == WXK_LEFT) {
+        go = -(m_plot->GetScrX()-m_plot->GetMarginRight() - m_plot->GetMarginLeft());
+    }
+    if (event.GetKeyCode() == WXK_RIGHT) {
+        go = m_plot->GetScrX()-m_plot->GetMarginRight() - m_plot->GetMarginLeft();
+    }
 
+    if ((go != 0)) {
+
+        wxScrollWinEvent evt(wxEVT_NULL, go ,orient);
+        double npos;
+        if (orient == wxHORIZONTAL) {
+            npos = m_plot->GetPosX() + (double)go / m_plot->GetScaleX();
+                //m_plot->OnScrollThumbTrack(evt);
+                m_plot->SetPosX(npos);
+        }
+        else {
+            npos = m_plot->GetPosY() + (double)go / m_plot->GetScaleY();
+            //m_plot->OnScrollThumbTrack(evt);
+            m_plot->SetPosY(npos);
+
+        }
+        event.Skip(false);
+        return;
+    }
+
+    event.Skip(true);
+
+}
 void frmPlot::OnFit(wxCommandEvent& WXUNUSED(event))
 {
     m_plot->Fit();
@@ -379,9 +452,18 @@ void frmPlot::OnSaveScreenshot(wxCommandEvent& event)
     event.Skip();
 }
 
-void frmPlot::OnToggleLissajoux(wxCommandEvent& event)
+void frmPlot::OnToggleShowSeries(wxCommandEvent& event)
 {
-    m_plot->SetLayerVisible(wxT("Lissajoux"), event.IsChecked());
+    bool v = event.IsChecked();
+    for (unsigned int p = 4; p < m_plot->CountAllLayers(); p++) {
+        mpFXYVector* ly = dynamic_cast<mpFXYVector*>(m_plot->GetLayer(p));
+        if (ly == NULL) continue;
+        if ((ly->GetLayerType() == mpLAYER_PLOT) && (ly->IsVisible())) {
+            ly->ShowName(v);
+        }
+    }
+    //m_plot->SetLayerVisible(wxT("Lissajoux"), event.IsChecked());
+    m_plot->UpdateAll();
 }
 
 void frmPlot::OnToggleShowSimbol(wxCommandEvent& event)

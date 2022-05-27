@@ -2172,7 +2172,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_COPY, _("&Copy"), _("Copy selected cells to clipboard."));
 	xmenu->Append(MNU_PASTE, _("&Paste"), _("Paste data from the clipboard."));
 	xmenu->Append(MNU_DELETE, _("&Delete"), _("Delete selected rows."));
-	xmenu->Append(MNU_AUTOCOLSPLOT, _("Draw plot LXY or XYYY..."), _("Draw plot LXY or XYYY..."));
+	xmenu->Append(MNU_AUTOCOLSPLOT, _("Draw plot LY(bar) or LXY or XYYY..."), _("Draw plot LY(bar) LXY or XYYY..."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
 	xmenu->Append(MNU_CHECK_COLUMN_DATE, _("Check the sequence of dates"), _("Check the sequence of dates"));
 	xmenu->Append(MNU_COPY_INSERT, _("Copy Insert format"), _("Copy Insert format."));
