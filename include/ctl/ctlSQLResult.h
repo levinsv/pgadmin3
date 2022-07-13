@@ -50,6 +50,7 @@ public:
 	wxString SummaryColumn();
 	wxString AutoColsPlot(int flags,frmQuery *parent);
 	wxString CheckSelColumnDate();
+	wxString CopySelColumnNameType();
 	void ClearFilter();
 	bool IsColText(int col);
 	bool hasRowNumber()

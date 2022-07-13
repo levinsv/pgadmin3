@@ -124,6 +124,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_COPY_WHERELIST,	frmQuery::OnCopy_WhereList)
 	EVT_MENU(MNU_CLEAR_FILTER,      frmQuery::OnClear_Filter)
 	EVT_MENU(MNU_CHECK_COLUMN_DATE, frmQuery::OnCheck_Column_Date)
+	EVT_MENU(MNU_COPY_LISTCOLTYPE,  frmQuery::OnCopy_NameTypeCols)
 	EVT_MENU(MNU_AUTOCOLSPLOT,      frmQuery::OnAutoColsPlot)
 	EVT_MENU(MNU_FIND,              frmQuery::OnSearchReplace)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
@@ -2172,18 +2173,23 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_COPY, _("&Copy"), _("Copy selected cells to clipboard."));
 	xmenu->Append(MNU_PASTE, _("&Paste"), _("Paste data from the clipboard."));
 	xmenu->Append(MNU_DELETE, _("&Delete"), _("Delete selected rows."));
+	xmenu->AppendSeparator();
+	xmenu->Append(MNU_COPY_INSERT, _("Copy Insert format"), _("Copy Insert format."));
+	xmenu->Append(MNU_COPY_LISTCOLTYPE, _("List columns header"), _("Copy list columns header"));
+	xmenu->Append(MNU_COPY_INLIST, _("IN list format copy"), _("Copy In list format."));
+	xmenu->Append(MNU_COPY_WHERELIST, _("WHERE list format copy"), _("Copy where list format."));
+	xmenu->AppendSeparator();
 	xmenu->Append(MNU_AUTOCOLSPLOT, _("Draw plot LY(bar) or LXY or XYYY..."), _("Draw plot LY(bar) LXY or XYYY..."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
 	xmenu->Append(MNU_CHECK_COLUMN_DATE, _("Check the sequence of dates"), _("Check the sequence of dates"));
-	xmenu->Append(MNU_COPY_INSERT, _("Copy Insert format"), _("Copy Insert format."));
-	xmenu->Append(MNU_COPY_INLIST, _("IN LIST format copy"), _("Copy In list format."));
-	xmenu->Append(MNU_COPY_WHERELIST, _("WHERE LIST format copy"), _("Copy where list format."));
 	xmenu->Append(MNU_CLEAR_FILTER, _("Clear filter"), _("Clear filter"));
 	bool selcol = sqlResult->GetSelectedCols().GetCount() > 0;
 	xmenu->Enable(MNU_CHECK_COLUMN_DATE, selcol);
+	xmenu->Enable(MNU_COPY_LISTCOLTYPE, selcol);
 	xmenu->Enable(MNU_AUTOCOLSPLOT, sqlResult->IsSelection());
 	xmenu->Enable(MNU_SUMMARY_COL, sqlResult->IsSelection());
 	xmenu->Enable(MNU_COPY_INLIST, sqlResult->IsSelection());
+
 	xmenu->Enable(MNU_COPY_WHERELIST, sqlResult->IsSelection());
 	
 	if ((rows.GetCount()))
@@ -2249,6 +2255,15 @@ void frmQuery::OnClear_Filter(wxCommandEvent &ev)
 		sqlResult->ClearFilter();
 		SetStatusText(s, STATUSPOS_MSGS);
 		isfilterresult=false;
+	}
+}
+
+void frmQuery::OnCopy_NameTypeCols(wxCommandEvent& ev)
+{
+	//	if (currentControl() == sqlResult)
+	{
+		wxString s = sqlResult->CopySelColumnNameType();
+		SetStatusText(s, STATUSPOS_MSGS);
 	}
 }
 void frmQuery::OnCheck_Column_Date(wxCommandEvent& ev)

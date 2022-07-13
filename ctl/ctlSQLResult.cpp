@@ -332,6 +332,36 @@ wxString ctlSQLResult::OnGetItemText(long item, long col) const
 	}
 	return wxEmptyString;
 }
+wxString ctlSQLResult::CopySelColumnNameType()
+{
+	size_t i;
+	wxString ss = wxEmptyString;
+	if (GetSelectedCols().GetCount()) {
+		wxArrayInt cols = GetSelectedCols();
+		int err = 0;
+		int noformat = 0;
+		int dtType = -1;
+		//AppendColumnHeader(str, cols);
+			//str.Append(GetExportLine(i, cols));
+		for (size_t col = 0; col < cols.Count(); col++)
+		{
+			int cl = cols[col];
+			bool isDt = false;
+			wxString colName = colNames.Item(cl);
+			wxString colType = colTypes.Item(cl);
+			if (!ss.IsEmpty()) ss.Append(", ");
+			ss.Append(colName + " " + colType);
+
+		}
+	}
+	if (wxTheClipboard->Open())
+	{
+		wxTheClipboard->SetData(new wxTextDataObject(ss));
+		wxTheClipboard->Close();
+	}
+
+	return ss;
+}
 wxString ctlSQLResult::CheckSelColumnDate()
 {
 	size_t i;
