@@ -74,6 +74,8 @@ public:
 	void ResultsFinished();
 	void OnGridSelect(wxGridRangeSelectEvent &event);
 	void OnGridColSort(wxGridEvent& event);
+	void OnKeyChar(wxKeyEvent& event);
+	void OnKeyUp(wxKeyEvent& event);
 	wxString SetFilter(int row,int col,bool reverse);
 
 	wxArrayString colNames;
@@ -83,6 +85,7 @@ private:
 	pgQueryThread *thread;
 	pgConn *conn;
 	bool rowcountSuppressed;
+	wxTextCtrl* m_win_s;
 };
 
 class sqlResultTable : public wxGridStringTable//wxGridTableBase

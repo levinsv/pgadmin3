@@ -61,6 +61,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetCellHighlightColour(wxColor(0, 0, 0));
 	grp=NULL;
 	isSort=false;
+	searchStr = "";
 	Connect(wxID_ANY, wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(ctlSQLGrid::OnLabelDoubleClick));
 }
 #include "wx/renderer.h"

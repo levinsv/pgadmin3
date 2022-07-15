@@ -38,6 +38,9 @@ ctlSQLResult::ctlSQLResult(wxWindow *parent, pgConn *_conn, wxWindowID id, const
 	cg=GetGridLineColour();
 	Connect(wxID_ANY, wxEVT_GRID_RANGE_SELECT, wxGridRangeSelectEventHandler(ctlSQLResult::OnGridSelect));
 	Connect(wxID_ANY, wxEVT_GRID_COL_SORT, wxGridEventHandler(ctlSQLResult::OnGridColSort));
+	Connect(wxID_ANY, wxEVT_KEY_UP, wxCharEventHandler(ctlSQLResult::OnKeyUp));
+	Connect(wxID_ANY, wxEVT_CHAR, wxCharEventHandler(ctlSQLResult::OnKeyChar));
+	m_win_s = NULL;
 }
 
 
@@ -753,6 +756,98 @@ wxString ctlSQLResult::SummaryColumn()
 		wxString result;
 	    result.Printf(wxT("%f"), sum);
 		return result;
+}
+void ctlSQLResult::OnKeyUp(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_ESCAPE && this->searchStr.Len() > 0) {
+		OnKeyChar(event);
+		event.Skip(false);
+		return;
+	}
+	if (event.GetKeyCode() == WXK_SPACE && this->searchStr.Len()>0) {
+		OnKeyChar(event);
+		event.Skip(false);
+		return;
+	}
+	if (event.GetKeyCode() == WXK_RETURN && this->searchStr.Len() > 0) {
+		OnKeyChar(event);
+		event.Skip(false);
+		return;
+	}
+
+	event.Skip();
+}
+void ctlSQLResult::OnKeyChar(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_RETURN) {
+		sqlResultTable* t = (sqlResultTable*)GetTable();
+		if (!(thread && thread->DataValid())) {  return ; }
+		//wxString fltval=GetCellValue(row,col);
+		wxString text;
+		int colS = GetGridCursorCol();
+		int rowS= GetGridCursorRow();
+		wxString fltval = this->searchStr;
+		bool eq;
+		size_t numRows = GetNumberRows();
+		size_t numCols = GetNumberCols();
+		int all = 0, show = 0, hide = 0;
+		for (size_t i = rowS; i < numRows; i++)
+		{
+			//str.Append(GetExportLine(i, cols));
+			//SetRowSize(i,sizerow);
+			if (GetRowSize(i) == 0) continue;
+			for (int col = 0; col < numCols; col++)
+			{
+				if ((t->GetValueFast(i, col).Find(fltval) != wxNOT_FOUND)) {
+					MakeCellVisible(i, col);
+					SetGridCursor(i, col);
+					return;
+				}
+
+			}
+		}
+	}
+	if (event.GetKeyCode() == WXK_BACK) {
+		this->searchStr=this->searchStr.RemoveLast();
+		m_win_s->SetValue(this->searchStr);
+		Refresh();
+	}
+	if (event.GetKeyCode() == WXK_ESCAPE) {
+		this->searchStr = "";
+		if (m_win_s != NULL) {
+			m_win_s->Destroy();
+			m_win_s = NULL;
+		}
+		Refresh();
+
+	}
+	else
+	{
+		wxChar uc = event.GetUnicodeKey();
+		if (uc != WXK_NONE) {
+			if (uc >= 32) {
+				this->searchStr.Append(uc);
+				if (this->searchStr.Len() == 1) {
+					if (m_win_s == NULL) {
+						int colS = GetGridCursorCol();
+						wxWindow* t = this->GetGridColLabelWindow();
+
+						wxRect r = CellToRect(0, colS);
+						r.y = 0;
+						m_win_s = new wxTextCtrl(t, wxID_ANY, "",
+							r.GetPosition(),
+							r.GetSize(),
+							wxTE_PROCESS_ENTER);
+						//|wxTE_READONLY
+						m_win_s->SetInsertionPointEnd();
+
+					}
+				}
+				m_win_s->SetValue(this->searchStr);
+				Refresh();
+			}
+			
+		}
+	}
+	event.Skip();
 }
 void ctlSQLResult::OnGridColSort(wxGridEvent& event)
     {

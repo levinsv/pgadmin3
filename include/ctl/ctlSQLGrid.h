@@ -58,6 +58,9 @@ public:
 	GroupRows *grp;
 	int generatesql; // 0 -���, 1 - insert , 2 - in_list
 	wxString sqlquerytext;
+	// Fast searh
+	wxString searchStr;
+
 	WX_DECLARE_STRING_HASH_MAP( int, ColKeySizeHashMap );
 
 	DECLARE_DYNAMIC_CLASS(ctlSQLGrid)
@@ -195,6 +198,7 @@ class CursorCellRenderer : public wxGridCellStringRenderer
                const wxRect& rect, int row, int col, bool isSelected)
          {
 			int hAlign, vAlign;
+			int sPos=-1;
 			attr.GetAlignment(&hAlign, &vAlign);
             //////////////////////////////////////////////////////////////////////////////
             //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
@@ -218,7 +222,7 @@ class CursorCellRenderer : public wxGridCellStringRenderer
 				{
 					wxColor color;
 					color.Set(239, 228, 176);
-					if (text.Find(wxT('\n'))!=wxNOT_FOUND ) 
+					if (sPos=text.Find(wxT('\n'))!=wxNOT_FOUND ) 
 						dc.SetBrush( wxBrush(color, wxSOLID) );
 					else
 						dc.SetBrush( wxBrush(attr.GetBackgroundColour(), wxSOLID) );
@@ -231,9 +235,54 @@ class CursorCellRenderer : public wxGridCellStringRenderer
 
 			dc.SetPen( *wxTRANSPARENT_PEN );
 			dc.DrawRectangle(rect);
-
             //////////////////////////////////////////////////////////////////////////////
 			SetTextColoursAndFont(grid, attr, dc, isSelected);
+			ctlSQLGrid* ctrl = static_cast<ctlSQLGrid*>(&grid);
+			if (!ctrl->searchStr.IsEmpty()) {
+				if (sPos == -1) sPos = text.Len();
+				int pp;
+
+				pp = text.Find(ctrl->searchStr);
+				if (pp >= 0) {
+					wxArrayString lines;
+					grid.StringToLines(text, lines);
+					wxRect r;
+					r.y = rect.y;
+					dc.SetBrush(*wxYELLOW_BRUSH);
+					size_t nLines = lines.GetCount();
+					for (size_t l = 0; l < nLines; l++)
+					{
+						const wxString& line = lines[l];
+						pp = line.Find(ctrl->searchStr);
+						if (line.empty() || (pp==-1))
+						{
+							r.y += dc.GetCharHeight();
+							continue;
+						}
+					
+					int lineWidth, lineWidthP, lineHeight,start=0;
+					wxString pref;
+					if (hAlign == wxALIGN_RIGHT) {
+						start = pp + ctrl->searchStr.Len();
+						pref = line.substr(start);
+					} else 
+						pref = line.substr(start, pp);
+
+					dc.GetTextExtent(pref, &lineWidthP, &lineHeight);
+					r.x=rect.x+lineWidthP;
+					pref= line.substr(pp, ctrl->searchStr.Len());
+					dc.GetTextExtent(pref, &lineWidth, &lineHeight);
+					r.width = lineWidth;
+					r.height = lineHeight;
+					if (hAlign == wxALIGN_RIGHT) r.x = rect.x + (rect.width - lineWidth- lineWidthP);
+					if (!(r.y < (rect.y + rect.height)))  { r.y = rect.y + rect.height - 5; r.height = 5; }
+					if (!((r.x < (rect.x + rect.width)))) { r.x = rect.x + rect.width - 5; r.width = 5; }
+					dc.DrawRoundedRectangle(r, 3);
+					break;
+					}
+				}
+			}
+
 			grid.DrawTextRectangle(dc, text,
                            rect, hAlign, vAlign);
          }
