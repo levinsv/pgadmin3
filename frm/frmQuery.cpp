@@ -2441,6 +2441,7 @@ void frmQuery::OnSave(wxCommandEvent &event)
 		setExtendedTitle();
 		UpdateRecentFiles();
 		SqlBookUpdatePageTitle();
+		sqlQuery->SetFilename(filename);
 	}
 	else
 	{
@@ -2942,6 +2943,7 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 		if (!updateFromGqb(true))
 			return;
 	}
+	CheckModificationFile();
 	SaveTempFile();
 	wxString query = sqlQuery->GetSelectedText();
 	if (query.IsNull())
@@ -4307,6 +4309,15 @@ void frmQuery::fileMarkerActive(bool addOrRemove, const wxString &sqlTabName) {
 		if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
 
 }
+void frmQuery::CheckModificationFile() {
+	if (sqlQuery!=NULL && sqlQuery->IsFileModification()) {
+		if (wxMessageBox("File " + sqlQuery->GetFilename() + " has been changed.\nReload file?",
+			"Reload sql file",
+			wxICON_EXCLAMATION | wxYES_NO) == wxYES)
+			OpenLastFile();
+
+	}
+}
 void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 {
 	// Try to always keep sqlQuery variable pointing to the currently selected SQLBox.
@@ -4347,6 +4358,9 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			sqlQuery->SetFocus();
 			if (sqlQueryBook->GetPageCount() > 1) fileMarkerActive(true, sqlQueryBook->GetPageText(sqlQueryBook->GetSelection()));
 			//wxMessageBox(wxT("OnSqlBookPageChanged "));
+			
+			CheckModificationFile();
+
 			updateMenu(false);
 			wxTheApp->Yield(true);
 		}

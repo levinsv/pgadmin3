@@ -311,6 +311,7 @@ private:
 	void OnSqlBookPageClose(wxAuiNotebookEvent &event);
 	void OnSqlBookPageClosed(wxAuiNotebookEvent &event);
 	void OnSqlBookPageChanged(wxAuiNotebookEvent &event);
+	void CheckModificationFile();
 	void OnSqlBookPageChanging(wxAuiNotebookEvent &event);
 	void OnSqlBookTabRDown(wxAuiNotebookEvent &event);
 	void OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event);

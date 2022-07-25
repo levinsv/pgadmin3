@@ -91,6 +91,7 @@ public:
 	void SetOrigin(int origin);
 	int GetOrigin();
 	void SetFilename(wxString &filename);
+	bool IsFileModification();
 	wxString GetFilename();
 	void SetTitle(wxString &title);
 	wxString GetTitle(bool withChangeInd = true);
@@ -125,6 +126,7 @@ private:
 
 	// Variables to track info per SQL box
 	wxString m_filename;
+	time_t time_file_mod;
 	wxString m_title;
 	wxString m_changestr;
 	bool m_changed;

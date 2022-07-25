@@ -68,6 +68,7 @@ ctlSQLBox::ctlSQLBox()
 	m_autocompDisabled = false;
 	process = 0;
 	processID = 0;
+	m_filename = wxEmptyString;
 }
 
 
@@ -238,10 +239,18 @@ int ctlSQLBox::GetOrigin()
 {
 	return m_origin;
 }
+bool ctlSQLBox::IsFileModification()
+{
+	if (!m_filename.IsEmpty()) {
+		return time_file_mod != wxFileModificationTime(m_filename);
+	}
+	return false;
+}
 
 void ctlSQLBox::SetFilename(wxString &filename)
 {
 	m_filename = filename;
+	time_file_mod = wxFileModificationTime(filename);
 	UpdateTitle();
 }
 
