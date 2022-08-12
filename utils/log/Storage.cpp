@@ -544,7 +544,64 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
             logHint = logDebug;
         if (!logContext.IsEmpty() && logDetail.IsEmpty())
             logDetail = logContext;
-
+        if (!logContext.IsEmpty()&& (logContext.BeforeFirst('=').AfterFirst(':')==" $1 ")) {
+            // bind parameter parse
+            int idx = logContext.Find(':');
+            // unnamed portal with parameters: $1 = '15558430', $2 = '70469'
+            #define FIND_DOLLS     1
+            #define FIND_QUOTES    2
+            #define FIND_OUTQUOTES 3
+            #define NUM_PARAMETER  4
+            int mode = FIND_DOLLS;
+            wxString nstr;
+            int n = 0;
+            wxArrayString arS;
+            for (int j = idx+1; j < logContext.Len(); j++) {
+                wxChar c = logContext[j];
+                if (mode == FIND_DOLLS ) {
+                    if (c == '$') mode = NUM_PARAMETER;
+                    
+                    continue;
+                }
+                if (mode == NUM_PARAMETER) {
+                    if (c != '=') continue;
+                    j = j + 2;
+                    nstr = "";
+                    n++;
+                    if (logContext[j]=='\'') mode = FIND_OUTQUOTES;
+                    else
+                    {
+                        // NULL
+                        arS.Add("NULL");
+                        mode = FIND_DOLLS;
+                    }
+                    
+                    continue;
+                }
+                if (mode == FIND_OUTQUOTES) {
+                    
+                    if (c != '\'') {
+                        nstr.Append(c);
+                        continue;
+                    }
+                    if (((j + 1) < logContext.Len()) && logContext[j + 1] == '\'') {
+                        j++;
+                        nstr.Append(c);
+                        nstr.Append(c);
+                        continue;
+                    }
+                    mode = FIND_DOLLS;
+                    arS.Add("'"+nstr+"'");
+                    continue;
+                }
+            }
+            // replace $N in query
+            int c = 0;
+            for (int k = arS.GetCount() - 1; k >= 0; k--) {
+                c=c+logDebug.Replace(wxString::Format("$%d",k+1), arS[k]);
+            }
+            if (c>0) logHint = logDebug;
+        }
         st.logDetail = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logDetail.Len()) };
         t += logDetail;
 
