@@ -61,6 +61,7 @@ enum
     ID_CBOX_SMART = 215,
     MNU_SEND_MAIL=216,
     MNU_FIND_TEXT=217,
+    ID_HELP_LOG=218,
     ID_NEXT_MAX
 };
 
@@ -127,6 +128,7 @@ private:
     void OnChangeSmart(wxCommandEvent& event);
     void OnSendMail(wxCommandEvent& event);
     void OnFind(wxCommandEvent& event);
+    void OnHelp(wxCommandEvent& event);
 
     void OnSetFocus(wxFocusEvent& event);
     void OnKillFocus(wxFocusEvent& event);

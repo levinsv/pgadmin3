@@ -44,6 +44,7 @@ EVT_BUTTON(ID_CLEAR_ALL_FILTER, frmLog::OnClearAllFilter)
 EVT_BUTTON(ID_ADD_FILTER, frmLog::OnAddFilterIgnore)
 EVT_BUTTON(ID_ADD_UFilter, frmLog::OnAddUFilter)
 EVT_BUTTON(ID_DEL_UFilter, frmLog::OnDelUFilter)
+EVT_BUTTON(ID_HELP_LOG, frmLog::OnHelp)
 EVT_COMBOBOX(ID_CBOX_UFilter, frmLog::OnChangeUFilter)
 EVT_COMBOBOX(ID_CBOX_SMART, frmLog::OnChangeSmart)
 EVT_SET_FOCUS(frmLog::OnSetFocus)
@@ -201,6 +202,24 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 void frmLog::OnFind(wxCommandEvent& event) {
 
 }
+void frmLog::OnHelp(wxCommandEvent& event) {
+
+	wxMessageBox(wxString::FromUTF8("Для включения фильтра нужно:\n"
+		" Щелкнуть правой кнопкой мыши по полю.Для инверсии фильтра нужно удерживать Ctrl.\n"
+		" Выбрать значение в контекстном меню заголовка колонки.\n"
+		" Там отображаются 20 самых частых значения в колонке с указанием количества этих значений.\n"
+		" Ввести в поле значения для фильтра, выделить это значение и нажать Enter.\n"
+		" Для фильтра используется только выделенный текст.\n"
+		" Такой фильтр будет работать на поиск выделенного вхождения в поле.\n"
+		" Если в выделенной строке первым символом будет \"!\" то фильтр инверсируется.\n"
+		"\n"
+		"Shift+KeyUP,Shift+KeyDOWN - переход на запись с тем же sql_state.\n"
+		"Alt+KeyUP,Alt+KeyDOWN     - переход на запись с другим sql_state.\n"
+		"Ctrl + S                  - отправка строки лога по почте Outlook. \n"
+		"                          Шаблон письма в файле mail.template в первых двух строках шаблона можно указать адреса которые будут подставляться в письмо.\n"
+	));
+}
+
 void frmLog::OnSetGroup(wxCommandEvent& event)
 {
     //wxDataViewColumn* const col = m_ctrl[Page_List]->GetColumn(0);
@@ -618,6 +637,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
     sSizer->Add(new wxButton(testPanel, ID_CLEAR_ALL_FILTER, "Clear All Filter"), border1);
     //sSizer->Add(new wxButton(testPanel, ID_DELETE_SEL, "Delete selected"), border);
 	sSizer->Add(new wxButton(testPanel, ID_ADD_FILTER, "Add Filter Ignore"), border1);
+	sSizer->Add(new wxButton(testPanel, ID_HELP_LOG, "Help"), border1);
 	smart = new wxComboBox(testPanel, ID_CBOX_SMART, wxT(""), wxDefaultPosition, wxDefaultSize, 0, NULL, 0);
 	//smart->SetWindowStyle(smart->GetWindowStyle()|wxCB_READONLY);
 	
