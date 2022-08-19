@@ -405,13 +405,13 @@ void pgSchemaBase::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *
 
 		if (GetConnection()->BackendMinimumVersion(9, 0))
 		{
-			m_defPrivsOnTables = GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='r'"));
-			m_defPrivsOnSeqs   = GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='S'"));
-			m_defPrivsOnFuncs  = GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='f'"));
+			m_defPrivsOnTables = GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='r'"));
+			m_defPrivsOnSeqs   = GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='S'"));
+			m_defPrivsOnFuncs  = GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='f'"));
 		}
 		if (GetConnection()->BackendMinimumVersion(9, 2))
 		{
-			m_defPrivsOnTypes = GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='T'"));
+			m_defPrivsOnTypes = GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = ") + GetOidStr() + wxT(" AND defaclobjtype='T'"));
 		}
 	}
 
@@ -632,13 +632,13 @@ pgObject *pgSchemaBaseFactory::CreateObjects(pgCollection *collection, ctlTree *
 
 				if (collection->GetDatabase()->BackendMinimumVersion(9, 0))
 				{
-					schema->iSetDefPrivsOnTables(collection->GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='r'"))));
-					schema->iSetDefPrivsOnSeqs(collection->GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='S'"))));
-					schema->iSetDefPrivsOnFuncs(collection->GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='f'"))));
+					schema->iSetDefPrivsOnTables(collection->GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='r'"))));
+					schema->iSetDefPrivsOnSeqs(collection->GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='S'"))));
+					schema->iSetDefPrivsOnFuncs(collection->GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='f'"))));
 				}
 				if (collection->GetDatabase()->BackendMinimumVersion(9, 2))
 				{
-					schema->iSetDefPrivsOnTypes(collection->GetConnection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='T'"))));
+					schema->iSetDefPrivsOnTypes(collection->GetConnection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = " + schema->GetOidStr() + wxT(" AND defaclobjtype='T'"))));
 				}
 
 				if (collection->GetDatabase()->BackendMinimumVersion(9, 1))

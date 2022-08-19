@@ -202,13 +202,13 @@ int pgDatabase::Connect()
 
 		if (connection()->BackendMinimumVersion(9, 0))
 		{
-			m_defPrivsOnTables = connection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='r'"));
-			m_defPrivsOnSeqs   = connection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='S'"));
-			m_defPrivsOnFuncs  = connection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='f'"));
+			m_defPrivsOnTables = connection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='r'"));
+			m_defPrivsOnSeqs   = connection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='S'"));
+			m_defPrivsOnFuncs  = connection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='f'"));
 		}
 		if (connection()->BackendMinimumVersion(9, 2))
 		{
-			m_defPrivsOnTypes = connection()->ExecuteScalar(wxT("SELECT defaclacl FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='T'"));
+			m_defPrivsOnTypes = connection()->ExecuteScalar(wxT("SELECT array_agg(array_to_string(defaclacl,',')) FROM pg_catalog.pg_default_acl dacl WHERE dacl.defaclnamespace = 0::OID AND defaclobjtype='T'"));
 		}
 
 		connected = true;
