@@ -68,11 +68,13 @@ wxString dlgEventTrigger::GetSql()
 		else if (!chkEnable->GetValue())
 			sql += wxT("ALTER EVENT TRIGGER ") + qtIdent(name) + wxT(" DISABLE ;\n\n");
 	}
+	wxString tmp = eventTrigger->GetEventName().Lower();
+	tmp.Replace("_", " ");
 
 	if (!eventTrigger ||
 	        (
 	            cbFunction->GetValue() != (eventTrigger->GetFunction()) ||
-	            rdbEvents->GetStringSelection().Lower() != (eventTrigger->GetEventName().Lower()) ||
+	            rdbEvents->GetStringSelection().Lower() != (tmp) ||
 	            txtWhen->GetValue() != (eventTrigger->GetWhen())
 	        )
 	   )
@@ -144,9 +146,9 @@ int dlgEventTrigger::Go(bool modal)
 		else
 			rdbEnableStatus->Disable();
 
-		if(eventTrigger->GetEventName().Lower() == wxT("ddl command start"))
+		if(eventTrigger->GetEventName().Lower() == wxT("ddl_command_start"))
 			rdbEvents->SetSelection(0);
-		else if(eventTrigger->GetEventName().Lower() == wxT("ddl command end"))
+		else if(eventTrigger->GetEventName().Lower() == wxT("ddl_command_end"))
 			rdbEvents->SetSelection(1);
 		else
 			rdbEvents->SetSelection(2);
@@ -210,12 +212,14 @@ void dlgEventTrigger::CheckChange()
 
 	if (eventTrigger)
 	{
+		wxString tmp= eventTrigger->GetEventName().Lower();
+		tmp.Replace("_", " ");
 		EnableOK(enable &&
 		         (txtComment->GetValue() != eventTrigger->GetComment() ||
 		          txtName->GetValue() != eventTrigger->GetName() ||
 		          txtWhen->GetValue() != eventTrigger->GetWhen() ||
 		          chkEnable->GetValue() != eventTrigger->GetEnabled() ||
-		          rdbEvents->GetStringSelection().Lower() != eventTrigger->GetEventName().Lower() ||
+		          rdbEvents->GetStringSelection().Lower() != tmp ||
 		          rdbEnableStatus->GetStringSelection().Lower() != eventTrigger->GetEnableStatus().Lower() ||
 		          !function.IsEmpty() ||
 		          !owner.IsEmpty()

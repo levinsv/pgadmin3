@@ -48,7 +48,7 @@ pgObject *pgEventTriggerFactory::CreateObjects(pgCollection *collection, ctlTree
 	wxString sql;
 	pgEventTrigger *eventTrigger = 0;
 
-	sql = wxT("SELECT e.oid, e.xmin, e.evtname AS name, REPLACE(e.evtevent, '_', ' ') AS eventname, pg_catalog.pg_get_userbyid(e.evtowner) AS eventowner, ")
+	sql = wxT("SELECT e.oid, e.xmin, e.evtname AS name, e.evtevent AS eventname, pg_catalog.pg_get_userbyid(e.evtowner) AS eventowner, ")
 	      wxT(" CASE e.evtenabled WHEN 'O' THEN 'enabled' WHEN 'R' THEN 'replica' WHEN 'A' THEN 'always' WHEN 'D' THEN 'disabled' END AS enabled, ")
 	      wxT(" e.evtfoid AS eventfuncoid, e.evtfoid::regproc AS eventfunname, array_to_string(array(select quote_literal(x) from unnest(evttags) as t(x)), ', ') AS when, ")
 	      wxT(" pg_catalog.obj_description(e.oid, 'pg_event_trigger') AS comment, ")
