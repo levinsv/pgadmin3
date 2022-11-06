@@ -101,6 +101,14 @@ public:
 	{
 		isUnique = b;
 	}
+	void iSetIsUniqueNullsnotdistinct(const bool b)
+	{
+		isNullsnotdistinct = b;
+	}
+	bool GetIsUniqueNullsnotdistinct() const
+	{
+		return isNullsnotdistinct;
+	}
 	bool GetIsExclude() const
 	{
 		return isExclude;
@@ -298,7 +306,7 @@ private:
 	wxString procName, procNamespace, procArgs, procArgTypeList, typedColumns, quotedTypedColumns, operatorClasses, operatorClassList;
 	long columnCount;
 	wxArrayString columnList, ordersArray, nullsArray, opclassesArray, collationsArray;
-	bool isUnique, isPrimary, isExclude, isClustered, isValid;
+	bool isUnique, isPrimary, isExclude, isClustered, isValid, isNullsnotdistinct;
 	bool deferrable, deferred, showExtendedStatistics;
 	OID relTableOid, tablespaceOid;
 	wxString fillFactor;

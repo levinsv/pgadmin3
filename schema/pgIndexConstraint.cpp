@@ -106,7 +106,9 @@ bool pgIndexConstraint::DropObject(wxFrame *frame, ctlTree *browser, bool cascad
 wxString pgIndexConstraint::GetDefinition()
 {
 	wxString sql = wxEmptyString;
-
+	if (GetIsUniqueNullsnotdistinct()) {
+		sql += wxT(" NULLS NOT DISTINCT ");
+	}
 	if (wxString(GetTypeName()).Upper() == wxT("EXCLUDE"))
 		sql += wxT("\n  USING ") + GetIndexType() + wxT(" ");
 

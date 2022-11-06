@@ -132,6 +132,10 @@ wxString pgIndexBase::GetCreate()
 	str += wxT(")");
 
 	if (!colInclude.IsEmpty()) str += "\n  INCLUDE (" + colInclude + ")";
+	if (GetIsUniqueNullsnotdistinct()) {
+		str += "\n  NULLS NOT DISTINCT";
+	}
+
 //	if (GetConnection()->BackendMinimumVersion(8, 2) && GetFillFactor().Length() > 0)
 //		str += wxT("\n  WITH (FILLFACTOR=") + GetFillFactor() + wxT(")");
 	if (GetConnection()->BackendMinimumVersion(8, 2) && GetRelOptions().Length() > 0)
@@ -622,6 +626,10 @@ pgObject *pgIndexBaseFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 	        wxT("       pg_get_expr(indpred, indrelid") + collection->GetDatabase()->GetPrettyOption() + wxT(") as indconstraint, contype, condeferrable, condeferred, amname, array_to_string(cls.reloptions, ',') reloptions\n");
 	if (collection->GetConnection()->BackendMinimumVersion(8, 2))
 		query += wxT(", substring(array_to_string(cls.reloptions, ',') from 'fillfactor=([0-9]*)') AS fillfactor \n");
+	if (collection->GetConnection()->BackendMinimumVersion(15, 0))
+		query += wxT(",indnullsnotdistinct \n");
+	   else
+		query += wxT(",false indnullsnotdistinct \n");
 	query += wxT("  FROM pg_index idx\n")
 	         wxT("  JOIN pg_class cls ON cls.oid=indexrelid\n")
 	         wxT("  JOIN pg_class tab ON tab.oid=indrelid\n")
@@ -667,6 +675,8 @@ pgObject *pgIndexBaseFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			index->iSetIsClustered(indexes->GetBool(wxT("indisclustered")));
 			index->iSetIsValid(indexes->GetBool(wxT("indisvalid")));
 			index->iSetIsUnique(indexes->GetBool(wxT("indisunique")));
+			index->iSetIsUniqueNullsnotdistinct(indexes->GetBool(wxT("indnullsnotdistinct")));
+			
 			index->iSetIsPrimary(indexes->GetBool(wxT("indisprimary")));
 			index->iSetIsExclude(*(indexes->GetCharPtr(wxT("contype"))) == 'x');
 			index->iSetColumnNumbers(indexes->GetVal(wxT("indkey")));

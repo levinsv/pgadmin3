@@ -128,6 +128,9 @@ wxString pgForeignKey::GetDefinition()
 
 	sql += wxT("\n      ON UPDATE ") + GetOnUpdate()
 	       +  wxT(" ON DELETE ") + GetOnDelete();
+	if (!GetConfdelsetcols().IsEmpty())
+		sql += wxT("(") + GetQuotedConfdelsetcols() + wxT(")");
+
 	if (GetDeferrable())
 	{
 		sql += wxT(" DEFERRABLE INITIALLY ");
@@ -190,7 +193,27 @@ void pgForeignKey::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *
 		wxStringTokenizer c1l(GetConkey(), wxT(","));
 		wxStringTokenizer c2l(GetConfkey(), wxT(","));
 		wxString c1, c2;
-
+		// resolve column names for column confdelsetcols PG15
+		wxStringTokenizer d1(GetConfdelsetcols(), wxT(","));
+		while (d1.HasMoreTokens()) {
+			c1 = d1.GetNextToken();
+			pgSet* set = ExecuteSet(
+				wxT("SELECT a1.attname as conattname\n")
+				wxT("  FROM pg_attribute a1\n")
+				wxT(" WHERE a1.attrelid=") + NumToStr(table->GetOid()) + wxT("::oid") + wxT(" AND a1.attnum=") + c1 + wxT("\n")
+				);
+			if (set)
+			{
+				if (!fkDelColumns.IsNull())
+				{
+					fkDelColumns += wxT(", ");
+					quotedFkDelColumns += wxT(", ");
+				}
+				fkDelColumns += set->GetVal(0);
+				quotedFkDelColumns += qtIdent(set->GetVal(0));
+				delete set;
+			}
+		}
 		// resolve column names
 		while (c1l.HasMoreTokens())
 		{
@@ -288,6 +311,8 @@ pgObject *pgForeignKeyFactory::CreateObjects(pgCollection *coll, ctlTree *browse
 	sql = wxT("SELECT ct.oid, conname, condeferrable, condeferred, confupdtype, confdeltype, confmatchtype, ")
 	      wxT("conkey, confkey, confrelid, nl.nspname as fknsp, cl.relname as fktab, ")
 	      wxT("nr.nspname as refnsp, cr.relname as reftab, description");
+	if (collection->GetDatabase()->BackendMinimumVersion(15, 0))
+		sql += wxT(", confdelsetcols");
 	if (collection->GetDatabase()->BackendMinimumVersion(9, 1))
 		sql += wxT(", convalidated");
 	sql += wxT("\n  FROM pg_constraint ct\n")
@@ -321,21 +346,21 @@ pgObject *pgForeignKeyFactory::CreateObjects(pgCollection *coll, ctlTree *browse
 			wxString onDel = foreignKeys->GetVal(wxT("confdeltype"));
 			wxString match = foreignKeys->GetVal(wxT("confmatchtype"));
 			foreignKey->iSetOnUpdate(
-			    onUpd.IsSameAs('a') ? wxT("NO ACTION") :
-			    onUpd.IsSameAs('r') ? wxT("RESTRICT") :
-			    onUpd.IsSameAs('c') ? wxT("CASCADE") :
-			    onUpd.IsSameAs('d') ? wxT("SET DEFAULT") :
-			    onUpd.IsSameAs('n') ? wxT("SET NULL") : wxT("Unknown"));
+				onUpd.IsSameAs('a') ? wxT("NO ACTION") :
+				onUpd.IsSameAs('r') ? wxT("RESTRICT") :
+				onUpd.IsSameAs('c') ? wxT("CASCADE") :
+				onUpd.IsSameAs('d') ? wxT("SET DEFAULT") :
+				onUpd.IsSameAs('n') ? wxT("SET NULL") : wxT("Unknown"));
 			foreignKey->iSetOnDelete(
-			    onDel.IsSameAs('a') ? wxT("NO ACTION") :
-			    onDel.IsSameAs('r') ? wxT("RESTRICT") :
-			    onDel.IsSameAs('c') ? wxT("CASCADE") :
-			    onDel.IsSameAs('d') ? wxT("SET DEFAULT") :
-			    onDel.IsSameAs('n') ? wxT("SET NULL") : wxT("Unknown"));
+				onDel.IsSameAs('a') ? wxT("NO ACTION") :
+				onDel.IsSameAs('r') ? wxT("RESTRICT") :
+				onDel.IsSameAs('c') ? wxT("CASCADE") :
+				onDel.IsSameAs('d') ? wxT("SET DEFAULT") :
+				onDel.IsSameAs('n') ? wxT("SET NULL") : wxT("Unknown"));
 			foreignKey->iSetMatch(
-			    match.IsSameAs('f') ? wxT("FULL") :
-			    match.IsSameAs('s') ? wxT("SIMPLE") :
-			    match.IsSameAs('u') ? wxT("SIMPLE") : wxT("Unknown"));
+				match.IsSameAs('f') ? wxT("FULL") :
+				match.IsSameAs('s') ? wxT("SIMPLE") :
+				match.IsSameAs('u') ? wxT("SIMPLE") : wxT("Unknown"));
 
 			wxString cn = foreignKeys->GetVal(wxT("conkey"));
 			cn = cn.Mid(1, cn.Length() - 2);
@@ -343,7 +368,11 @@ pgObject *pgForeignKeyFactory::CreateObjects(pgCollection *coll, ctlTree *browse
 			cn = foreignKeys->GetVal(wxT("confkey"));
 			cn = cn.Mid(1, cn.Length() - 2);
 			foreignKey->iSetConfkey(cn);
-
+			if (collection->GetDatabase()->BackendMinimumVersion(15, 0)) {
+				cn = foreignKeys->GetVal(wxT("confdelsetcols"));
+				cn = cn.Mid(1, cn.Length() - 2);
+				foreignKey->iSetConfdelsetcols(cn);
+			}
 			foreignKey->iSetDeferrable(foreignKeys->GetBool(wxT("condeferrable")));
 			foreignKey->iSetDeferred(foreignKeys->GetBool(wxT("condeferred")));
 

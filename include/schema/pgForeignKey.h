@@ -110,6 +110,20 @@ public:
 	{
 		confkey = s;
 	}
+	wxString GetConfdelsetcols() const
+	{
+		return confdelsetcols;
+	}
+	wxString GetQuotedConfdelsetcols() const
+	{
+		return quotedFkDelColumns;
+	}
+
+	void iSetConfdelsetcols(const wxString& s)
+	{
+		confdelsetcols = s;
+	}
+	
 	bool GetDeferrable() const
 	{
 		return deferrable;
@@ -200,9 +214,10 @@ public:
 	void Validate(frmMain *form);
 
 private:
-	wxString onUpdate, onDelete, conkey, confkey,
+	wxString onUpdate, onDelete, conkey, confkey, confdelsetcols,
 	         fkTable, fkSchema, references, refSchema;
 	wxString fkColumns, refColumns, quotedFkColumns, quotedRefColumns, coveringIndex, match;
+	wxString fkDelColumns, quotedFkDelColumns;
 	bool deferrable, deferred, valid;
 	OID relTableOid;
 };
