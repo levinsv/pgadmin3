@@ -21,7 +21,7 @@
 #include "copyright.h"
 #include "version.h"
 
-#define VERSION_WITH_DATE_AND_SVN       wxT("Version ") VERSION_STR wxT(" (") __TDATE__ wxT(", rev: ") wxT("") wxT(")")
+#define VERSION_WITH_DATE_AND_SVN       wxT("Version ") VERSION_STR wxT(" (") __TDATE__ wxT("") wxT("") wxT(")")
 
 
 BEGIN_EVENT_TABLE(frmAbout, wxFrame)
