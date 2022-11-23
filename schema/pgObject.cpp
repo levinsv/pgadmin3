@@ -248,13 +248,13 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
 	if (hasSize)
 		statistics->AddColumn(_("Size"), wxLIST_AUTOSIZE);
 	if (obj->GetConnection()->GetIsPgProEnt()) statistics->AddColumn(_("CFS %"), wxLIST_AUTOSIZE);
+	statistics->AddColumn(_("Live tuples"));
 	statistics->AddColumn(_("Tuples inserted"));
 	statistics->AddColumn(_("Tuples updated"));
 	statistics->AddColumn(_("Tuples deleted"));
 	if (obj->GetConnection()->BackendMinimumVersion(8, 3))
 	{
 		statistics->AddColumn(_("Tuples HOT updated"));
-		statistics->AddColumn(_("Live tuples"));
 		statistics->AddColumn(_("Dead tuples"));
 	}
 	if (obj->GetConnection()->BackendMinimumVersion(8, 2))
@@ -322,6 +322,8 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autovacuum")));
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_analyze")));
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("last_autoanalyze")));
+				if (stats->GetVal(wxT("last_analyze")).IsEmpty() && stats->GetVal(wxT("last_autoanalyze")).IsEmpty())
+					statistics->SetItemBackgroundColour(pos, wxColour(wxT("#EEAAAA")));
 			}
 			if (obj->GetConnection()->BackendMinimumVersion(9, 1))
 			{
