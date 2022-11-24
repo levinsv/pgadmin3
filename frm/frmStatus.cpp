@@ -47,6 +47,7 @@
 #include "images/sortfilterclear.pngc"
 #include "images/down.pngc"
 #include "images/up.pngc"
+#include "images/server_status.pngc"
 
 
 #include "db/pgConn.h"
@@ -238,7 +239,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 
 	// Set different window's attributes
 	SetTitle(_title);
-	appearanceFactory->SetIcons(this);
+	SetIcon(*server_status_png_ico);
 	RestorePosition(-1, -1, 700, 500, 700, 500);
 	SetMinSize(wxSize(700, 500));
 	SetFont(settings->GetSystemFont());
