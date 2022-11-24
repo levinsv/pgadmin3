@@ -3935,7 +3935,7 @@ wxWindow *serverStatusFactory::StartDialog(frmMain *form, pgObject *obj)
 	pgConn *conn = server->CreateConn(wxEmptyString, 0, applicationname);
 	if (conn)
 	{
-		wxString txt = _("Server Status - ") + server->GetDescription()
+		wxString txt = server->GetDescription()
 		               + wxT(" (") + server->GetName() + wxT(":") + NumToStr((long)server->GetPort()) + wxT(")");
 
 		frmStatus *status = new frmStatus(form, txt, conn);
