@@ -1656,6 +1656,18 @@
     <ClCompile Include="frm\mathplot.cpp">
       <Filter>frm</Filter>
     </ClCompile>
+    <ClCompile Include="utils\json\jsonval.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\json\jsonreader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\json\jsonwriter.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ctl\ctlGitPanel.cpp">
+      <Filter>ctl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -3560,6 +3572,21 @@
     <ClInclude Include="include\frm\mathplot.h">
       <Filter>include\frm</Filter>
     </ClInclude>
+    <ClInclude Include="include\utils\json\json_defs.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\json\jsonreader.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\json\jsonwriter.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\json\jsonval.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\ctlGitPanel.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <png2c Include="include\images\aggregate-sm.png">
@@ -4511,6 +4538,9 @@
       <Filter>include\images</Filter>
     </png2c>
     <png2c Include="include\images\sortfilterclear.png">
+      <Filter>include\images</Filter>
+    </png2c>
+    <png2c Include="include\images\server_status.png">
       <Filter>include\images</Filter>
     </png2c>
   </ItemGroup>

@@ -25,6 +25,7 @@
 #include "dlg/dlgClasses.h"
 #include "utils/factory.h"
 #include "frm/frmLog.h"
+#include "ctl/ctlGitPanel.h"
 
 //
 // This number MUST be incremented if changing any of the default perspectives
@@ -206,6 +207,7 @@ private:
 	ctlListView *properties;
 	ctlListView *statistics;
 	ctlListView *dependents, *dependencies;
+	ctlGitPanel* git;
 	ctlAuiNotebook *listViews;
 	ctlSQLBox *sqlPane;
 	wxMenu *newMenu, *debuggingMenu, *reportMenu, *toolsMenu, *pluginsMenu, *viewMenu,

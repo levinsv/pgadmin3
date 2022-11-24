@@ -247,5 +247,8 @@
 #include "utils/sysProcess.h"
 #include "utils/sysSettings.h"
 #include "utils/utffile.h"
+#include "utils/json/jsonval.h"
+#include "utils/json/jsonreader.h"
+#include "utils/json/jsonwriter.h"
 #endif
 #endif

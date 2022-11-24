@@ -171,6 +171,9 @@ frmMain::frmMain(const wxString &title)
 	statistics = new ctlListView(listViews, CTL_STATVIEW, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER);
 	dependencies = new ctlListView(listViews, CTL_DEPVIEW, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER);
 	dependents = new ctlListView(listViews, CTL_REFVIEW, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER);
+	git = NULL;
+	wxJSONValue cfg=ctlGitPanel::GetConfig();
+	if (!cfg.IsNull()) git = new ctlGitPanel(listViews, this,cfg);
 
 
 
@@ -183,6 +186,9 @@ frmMain::frmMain(const wxString &title)
 	listViews->AddPage(statistics, _("Statistics"));	// NBP_STATISTICS
 	listViews->AddPage(dependencies, _("Dependencies"));    // NBP_DEPENDENCIES
 	listViews->AddPage(dependents, _("Dependents"));	// NBP_DEPENDENTS
+	if (git) {
+		listViews->AddPage(git, _("Git"));	// 
+	}
 
 	properties->SetImageList(imageList, wxIMAGE_LIST_SMALL);
 	statistics->SetImageList(imageList, wxIMAGE_LIST_SMALL);
@@ -816,6 +822,12 @@ void frmMain::ShowObjStatistics(pgObject *data, wxWindow *ctrl)
 		dependents->Freeze();
 		data->ShowDependents(this, dependents);
 		dependents->Thaw();
+	}
+	if ((!ctrl && git &&  git->IsShownOnScreen()) || ctrl == git)
+	{
+
+		//data->ShowDependents(this, dependents);
+		if (git && data) git->ShowPage(data);
 	}
 }
 

@@ -745,6 +745,7 @@
     <ClCompile Include="ctl\ctlColourPicker.cpp" />
     <ClCompile Include="ctl\ctlComboBox.cpp" />
     <ClCompile Include="ctl\ctlDefaultSecurityPanel.cpp" />
+    <ClCompile Include="ctl\ctlGitPanel.cpp" />
     <ClCompile Include="ctl\ctlListView.cpp" />
     <ClCompile Include="ctl\ctlMenuToolbar.cpp" />
     <ClCompile Include="ctl\ctlSeclabelPanel.cpp" />
@@ -1021,6 +1022,9 @@
     </ClCompile>
     <ClCompile Include="utils\factory.cpp" />
     <ClCompile Include="utils\favourites.cpp" />
+    <ClCompile Include="utils\json\jsonreader.cpp" />
+    <ClCompile Include="utils\json\jsonval.cpp" />
+    <ClCompile Include="utils\json\jsonwriter.cpp" />
     <ClCompile Include="utils\log\MyDataViewCtrl.cpp" />
     <ClCompile Include="utils\log\Storage.cpp" />
     <ClCompile Include="utils\log\StorageModel.cpp" />
@@ -1548,6 +1552,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\copyright.h" />
+    <ClInclude Include="include\ctl\ctlGitPanel.h" />
     <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
     <ClInclude Include="include\frm\frmLog.h" />
@@ -1565,6 +1570,10 @@
     <ClInclude Include="include\schema\pgPublication.h" />
     <ClInclude Include="include\schema\pgSubscription.h" />
     <ClInclude Include="include\svnversion.h" />
+    <ClInclude Include="include\utils\json\jsonreader.h" />
+    <ClInclude Include="include\utils\json\jsonval.h" />
+    <ClInclude Include="include\utils\json\jsonwriter.h" />
+    <ClInclude Include="include\utils\json\json_defs.h" />
     <ClInclude Include="include\utils\sshTunnel.h" />
     <ClInclude Include="include\version.h" />
     <ClInclude Include="include\utils\csvfiles.h" />
@@ -2250,6 +2259,7 @@
     <png2c Include="include\images\serverbad-sm.png" />
     <png2c Include="include\images\serverbad.png" />
     <png2c Include="include\images\servers.png" />
+    <png2c Include="include\images\server_status.png" />
     <png2c Include="include\images\setBreak.png" />
     <png2c Include="include\images\slcluster.png" />
     <png2c Include="include\images\slclusters.png" />
