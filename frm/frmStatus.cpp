@@ -1916,7 +1916,16 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			if (item>=row) statusList->Focus(row-1);
 			if (statusList->GetItemCount()>row) statusList->DeleteItem(row);
 		}
+		long r = statusList->GetItemCount();
+		wxString tit = _("Activity") + "(" + NumToStr(r) + ")";
+		wxString old = manager.GetPane(wxT("Activity")).caption;
+		if (tit != old) {
+			manager.GetPane(wxT("Activity")).Caption(tit);
+			manager.Update();
+		}
 		statusList->Thaw();
+		
+		
 		wxListEvent ev;
 		//OnSelStatusItem(ev);
 		statusBar->SetStatusText(_("Done."));
