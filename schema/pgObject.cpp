@@ -307,13 +307,13 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
 			if (hasSize)
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("size")));
 			if (obj->GetConnection()->GetIsPgProEnt()) statistics->SetItem(pos, i++, stats->GetVal(wxT("cfs_ratio")));
+			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_live_tup")));
 			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_ins")));
 			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_upd")));
 			statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_del")));
 			if (obj->GetConnection()->BackendMinimumVersion(8, 3))
 			{
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_tup_hot_upd")));
-				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_live_tup")));
 				statistics->SetItem(pos, i++, stats->GetVal(wxT("n_dead_tup")));
 			}
 			if (obj->GetConnection()->BackendMinimumVersion(8, 2))
