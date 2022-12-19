@@ -687,7 +687,8 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 				f=true;
 			} else {t = GetTextRange(pos-rpl.Length()-1, pos);}
 			//wc = GetTextRange(pos-rpl.Length()-1, pos-rpl.Length()-1);
-			wxChar c = t.GetChar(0);
+			wxChar c='\00';
+			if (t.Len()>0) c = t.GetChar(0);
 			if (!((c >= '0' && c <= '9')) &&
 			        !(c >= 'a' && c  <= 'z') &&
 					!(c >= 'A' && c  <= 'Z') &&
