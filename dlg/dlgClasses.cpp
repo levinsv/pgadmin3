@@ -539,6 +539,7 @@ void ExecutionDialog::OnOK(wxCommandEvent &ev)
 		wxNotebook *nb = CTRL_NOTEBOOK("nbNotebook");
 		if (nb)
 			nb->SetSelection(nb->GetPageCount() - 1);
+		if (txtMessages) txtMessages->AppendText("SQL: "+ sql + wxT("\n"));
 
 		while (thread && thread->IsRunning())
 		{

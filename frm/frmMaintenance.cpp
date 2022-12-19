@@ -29,7 +29,7 @@
 
 
 BEGIN_EVENT_TABLE(frmMaintenance, ExecutionDialog)
-	EVT_RADIOBOX(XRCID("rbxAction"),    frmMaintenance::OnAction)
+EVT_RADIOBOX(XRCID("rbxAction"), frmMaintenance::OnAction)
 END_EVENT_TABLE()
 
 #define nbNotebook              CTRL_NOTEBOOK("nbNotebook")
@@ -45,7 +45,7 @@ END_EVENT_TABLE()
 #define stBitmap                CTRL("stBitmap", wxStaticBitmap)
 
 
-
+int global_sel_pos=-1;
 frmMaintenance::frmMaintenance(frmMain *form, pgObject *obj) : ExecutionDialog(form, obj)
 {
 	SetFont(settings->GetSystemFont());
@@ -102,6 +102,9 @@ frmMaintenance::frmMaintenance(frmMain *form, pgObject *obj) : ExecutionDialog(f
 	}
 	rbxAction->Enable(4, iscomprss);
 	rbxAction->Enable(5, !cmd.IsEmpty());
+	if (global_sel_pos >= 0 && rbxAction->IsItemEnabled(global_sel_pos)) {
+		rbxAction->SetSelection(global_sel_pos);
+	}
 	wxCommandEvent ev;
 	OnAction(ev);
 }
@@ -140,6 +143,7 @@ wxString frmMaintenance::GetHelpPage() const
 void frmMaintenance::OnAction(wxCommandEvent &ev)
 {
 	bool isVacuum = (rbxAction->GetSelection() == 0);
+	global_sel_pos=rbxAction->GetSelection();
 	chkFull->Enable(isVacuum);
 	chkFreeze->Enable(isVacuum);
 	chkAnalyze->Enable(isVacuum);
