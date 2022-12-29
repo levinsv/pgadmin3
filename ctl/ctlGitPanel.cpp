@@ -551,6 +551,11 @@ ctlGitPanel::ctlGitPanel(wxWindow* parent, frmMain* form, wxJSONValue cf) :
         &ctlGitPanel::OnProgressTimer, this);
 
     GetBranchList(true);
+    if (!error_msg.IsEmpty()) {
+        // error connect
+        wxLogError("GitLab connect error.\n%s", error_msg);
+        return;
+    }
 // load pgadmin3.json
     wxString jsonText = GetRepositoryFile("main", "pgadmin3.json");
     if (!jsonText.IsEmpty()) {
@@ -760,6 +765,8 @@ void ctlGitPanel::GetBranchList(bool refresh) {
             break;
         }
     }
+    if (currentDBname.IsEmpty()) return;
+
     if (i >= m_Branch_List_Ctrl->GetCount()) {
         CommandBranch(currentDBname, "create");
         m_Branch_List_Ctrl->Append(currentDBname);
