@@ -258,6 +258,8 @@ private:
 	void OnChangeToLowerCase(wxCommandEvent &event);
 	void OnCommentText(wxCommandEvent &event);
 	void OnUncommentText(wxCommandEvent &event);
+	void OnDoubleText(wxCommandEvent& event);
+	void OnUnDoubleText(wxCommandEvent& event);
 	void OnExternalFormat(wxCommandEvent &event);
 
 	void OnDeleteCurrent(wxCommandEvent &event);

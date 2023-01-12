@@ -78,6 +78,7 @@ public:
 		m_autocompDisabled = on;
 	}
 	bool BlockComment(bool uncomment = false);
+	bool BlockDouble(bool undouble = false);
 	void UpdateLineNumber();
 	wxString ExternalFormat();
 	void AbortProcess();

@@ -787,7 +787,27 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	else
 		event.Skip();
 }
+bool ctlSQLBox::BlockDouble(bool undouble)
+{
+	int start = GetSelectionStart();
 
+	if (!GetSelectedText().IsEmpty())
+	{
+		wxString selection = GetSelectedText();
+		if (!undouble)
+		{
+			selection.Replace("'", "''");
+		}
+		else
+		{
+			selection.Replace("''", "'");
+
+		}
+		ReplaceSelection(selection);
+		SetSelection(start, start + selection.Length());
+	}
+	return true;
+}
 bool ctlSQLBox::BlockComment(bool uncomment)
 {
 	wxString lineEnd;
