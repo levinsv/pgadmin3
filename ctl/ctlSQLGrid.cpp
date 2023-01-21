@@ -30,6 +30,7 @@ BEGIN_EVENT_TABLE(ctlSQLGrid, wxGrid)
 	EVT_GRID_COL_SIZE(ctlSQLGrid::OnGridColSize)
 	EVT_GRID_LABEL_LEFT_CLICK(ctlSQLGrid::OnLabelClick)
 	EVT_GRID_CELL_RIGHT_CLICK(  ctlSQLGrid::OnCellRightClick)
+	EVT_GRID_SELECT_CELL(ctlSQLGrid::OnGridSelectCell)
 	//EVT_PAINT( ctlSQLGrid::OnPaint )
 END_EVENT_TABLE()
 
@@ -66,7 +67,29 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 }
 #include "wx/renderer.h"
 #include "wx/headerctrl.h"
+void ctlSQLGrid::OnGridSelectCell(wxGridEvent &evt) {
+	int row = evt.GetRow();
+	//int col = evt.GetCol();
+	wxGridCellCoords cr = GetGridCursorCoords();
+	if (cr.GetRow() != row && cr.GetRow() != -1) {
+		GetGridRowLabelWindow()->Refresh();
+	}
+}
+void ctlSQLGrid::DrawRowLabel(wxDC& dc, int row) {
+	int c = GetGridCursorRow();
+	if (c!=row) wxGrid::DrawRowLabel(dc, row);
+	else {
+		//wxColour c = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT);
+		wxColour c = GetGridRowLabelWindow()->GetBackgroundColour();
+		wxColour c3(c.Red()+15,c.Green()+15,c.Blue()+15);
+		wxDCBrushChanger setBrush(dc, c3);
+		wxDCPenChanger setPen(dc, *wxTRANSPARENT_PEN);
+		wxRect rect(0, GetRowTop(row), GetRowLabelSize(), GetRowHeight(row));
+		dc.DrawRectangle(rect);
+		wxGrid::DrawRowLabel(dc, row);
+	}
 
+}
 void ctlSQLGrid::DrawColLabel( wxDC& dc, int col ) {
 	wxGrid::DrawColLabel(dc,col);
 	if (!IsSort()) return;

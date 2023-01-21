@@ -48,6 +48,7 @@ public:
 	wxString GetColumnName(int colNum);
 	wxSize GetBestSize(int row, int col);
 	void OnLabelDoubleClick(wxGridEvent &event);
+	void OnGridSelectCell(wxGridEvent& evt);
 	void OnLabelClick(wxGridEvent &event);
 	void OnCellRightClick(wxGridEvent &event);
 	bool FullArrayCollapseRowsPlan(bool clear);
@@ -71,6 +72,7 @@ private:
 	void OnMouseWheel(wxMouseEvent &event);
 	void OnGridColSize(wxGridSizeEvent &event);
 	void DrawColLabel( wxDC& dc, int col );
+	void DrawRowLabel(wxDC& dc, int row);
 	wxString GetColKeyValue(int col);
 	void AppendColumnHeader(wxString &str, int start, int end);
 	void AppendColumnHeader(wxString &str, wxArrayInt columns);
