@@ -2515,6 +2515,7 @@ void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 	if (!mainForm) return;
 	//parent->SetCurrentNode(parent->GetBrowser()->GetRootItem(), path);
 	pgObject *obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
+	if (!obj) return;
 	pgFunction *fun=(pgFunction *)obj;//obj->Show
 	//mainForm.propFactory->StartDialog(mainForm, obj);
 	//showMessage(obj->GetTypeName());
@@ -2540,11 +2541,13 @@ void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 			pgObject *o=mainForm->GetBrowser()->GetObject(matchItem);
 			//mainForm->GetBrowser()->SelectItem(o->GetId());
 			//showMessage(o->GetName().Lower());
+			if (!o) return;
 			if (o->GetName().Lower()==selText.Lower()) {
 				
 				//obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
 				mainForm->execSelChange(matchItem,false);
-				obj=o;
+				//obj=o;
+				obj = mainForm->GetBrowser()->GetObject(matchItem);
 				if (!dlgProperty::EditObjectDialog(mainForm, 0, obj))
 						mainForm->CheckAlive();
 
