@@ -13,7 +13,7 @@
 #endif
 
 #include "pgAdmin3.h"
-#ifdef wxUSE_WEBREQUEST
+#if wxUSE_WEBREQUEST
 
 #include <wx/mstream.h>
 #include <wx/sstream.h>
