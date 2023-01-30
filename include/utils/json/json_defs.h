@@ -7,7 +7,7 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
-
+#if wxUSE_WEBREQUEST
 
 #ifndef _WX_JSON_DEFS_H_
 #define _WX_JSON_DEFS_H_
@@ -207,3 +207,4 @@
 #endif // _WX_JSON_DEFS_H_
 
 
+#endif

@@ -28,6 +28,7 @@ enum
 {
     MARGIN_LINE_NUMBERS
 };
+#if wxUSE_WEBREQUEST
 
 
 class SourceViewDialog : public wxFrame
@@ -113,8 +114,8 @@ public:
         std::wstring t;
         std::wstring tableline;
         int rline = 1, lline = 1;
-        std::list<Diff>::const_iterator it; // объявляем итератор
-        it = diffs.begin(); // присваиваем ему начало списка
+        std::list<Diff>::const_iterator it; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        it = diffs.begin(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         Diff aDiff;
         bool modify = false;
         nstart = 0;
@@ -129,7 +130,7 @@ public:
         ctlR->IndicatorSetStyle(s_indicHighlight, wxSTC_INDIC_ROUNDBOX);
         ctlR->SetIndicatorCurrent(s_indicHighlight);
 
-        while (it != diffs.end()) // пока итератор не достигнет конца
+        while (it != diffs.end()) // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         {
             aDiff = *it;
             tex = aDiff.text;
@@ -139,7 +140,7 @@ public:
                 if (pos == -1) { t.assign(tex, nstart, tex.length()); nstart = tex.length(); }
                 else { t.assign(tex, nstart, pos - nstart); nstart = pos; }
                 if (t.length() > 0) {
-                    // это всё ещё одна строка
+                    // пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                     if (aDiff.operation == Operation::INSERT) { 
                         cur_r += L"<span class=\"differencei\">" + t + L"</span>"; addIndicText(ctlR, t, s_indicHighlight);
                     }
@@ -153,11 +154,11 @@ public:
                         addIndicText(ctlR, t, 0);
                     }
                     else modify = true;
-                    // пока не встретим перевод строки считаем что это всё одна строка
+                    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 }
                 else
                 {
-                    // дошли до перевода \n
+                    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ \n
                     nstart = pos + 1;
                     ncur_l = std::to_wstring(lline);
                     ncur_l = L""; ncur_r = L"";
@@ -215,7 +216,7 @@ public:
                     //
                     modify = false;
                 }
-            } // цикл по строкам внутри одного Diff
+            } // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Diff
             ++it;
         }
 
@@ -1247,8 +1248,8 @@ void ctlGitPanel::GetExpandedChildNodes(wxTreeItemId node, wxArrayString& expand
             }
             else
             {
-                if (obj->GetMetaType() == PGM_VIEW) obj->ShowTreeDetail(browser); // только для того чтобы получить инфу о триггерах
-                if (obj->GetMetaType() == PGM_EVENTTRIGGER)  // получаем инфу о тригеррах по событиям
+                if (obj->GetMetaType() == PGM_VIEW) obj->ShowTreeDetail(browser); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                if (obj->GetMetaType() == PGM_EVENTTRIGGER)  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     obj->ShowTreeDetail(browser);
             }
 
@@ -1264,7 +1265,7 @@ void ctlGitPanel::GetExpandedChildNodes(wxTreeItemId node, wxArrayString& expand
                 wxTreeItemId Item2 = browser->GetItemParent(obj->GetId());
                 obj = browser->GetObject(Item2); // Schemes
                 if (obj && obj->GetMetaType() == PGM_SCHEMA && !obj->IsCollection()) {
-                    rec = false; // не собираем инфу по сек. таблицам и секциям, и во внутрь не заходим
+                    rec = false; // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     obj = browser->GetObject(child);
                     obj->ShowTreeDetail(browser);
                 }
@@ -1282,7 +1283,7 @@ void ctlGitPanel::GetExpandedChildNodes(wxTreeItemId node, wxArrayString& expand
             
             s = obj->GetSql(browser);
             if ((typenam != "Schema" && typenam != "Database")&& !obj->IsCollection()) {
-                //Текст SQL для схемы не учитываем, так как это формально каталог а не файл в Git
+                //пїЅпїЅпїЅпїЅпїЅ SQL пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ Git
                 wxString p = pat + '/' + browser->GetItemText(child).Trim();
                 m_link->SetLabel(p);
                 m_count_db++;
@@ -1422,4 +1423,4 @@ void ctlGitPanel::OnNotebookPageChanged(wxBookCtrlEvent& event)
     //dlg->Show();
 
 }
-
+#endif

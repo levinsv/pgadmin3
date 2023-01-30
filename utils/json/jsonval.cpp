@@ -11,7 +11,8 @@
 #pragma implementation "jsonval.cpp"
 #endif
 
-#include "pgadmin3.h"
+#include "pgAdmin3.h"
+#if wxUSE_WEBREQUEST
 
 // For compilers that support precompilation, includes "wx.h".
 
@@ -3553,3 +3554,4 @@ wxJSONValue::operator = (wxUint64 ui)
 }
 */
 
+#endif

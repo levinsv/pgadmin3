@@ -7,13 +7,13 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
-
 #ifdef __GNUG__
 #pragma implementation "jsonwriter.cpp"
 #endif
 
 
-#include "pgadmin3.h"
+#include "pgAdmin3.h"
+#if wxUSE_WEBREQUEST
 
 #include <wx/sstream.h>
 #include <wx/mstream.h>
@@ -1274,3 +1274,4 @@ wxJSONWriter::IsPunctuation(wxChar ch)
 
 
 
+#endif

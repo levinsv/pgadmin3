@@ -21,7 +21,7 @@
  */
 
 // this line need comment for Linux 
-#include "pgadmin3.h"
+#include "pgAdmin3.h"
 #ifndef __WXMSW__
 #include "utils/diff_match_patch.h"
 #endif

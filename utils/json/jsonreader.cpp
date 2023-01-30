@@ -8,12 +8,12 @@
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
 
-
 #ifdef __GNUG__
 #pragma implementation "jsonreader.cpp"
 #endif
 
-#include "pgadmin3.h"
+#include "pgAdmin3.h"
+#ifdef wxUSE_WEBREQUEST
 
 #include <wx/mstream.h>
 #include <wx/sstream.h>
@@ -2129,3 +2129,4 @@ wxJSONReader::DoStrto_ll(const wxString& str, wxUint64* ui64, wxChar* sign)
 
 
 
+#endif

@@ -7,6 +7,7 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
+#if wxUSE_WEBREQUEST
 
 #if !defined( _WX_JSONVAL_H )
 #define _WX_JSONVAL_H
@@ -436,5 +437,5 @@ public:
 
 
 #endif            // not defined _WX_JSONVAL_H
-
+#endif
 

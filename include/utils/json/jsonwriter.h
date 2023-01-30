@@ -7,6 +7,7 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
+#if wxUSE_WEBREQUEST
 
 #include "pgAdmin3.h"
 
@@ -116,6 +117,7 @@ private:
 
 
 #endif            // not defined _WX_JSONWRITER_H
+#endif
 
 
 

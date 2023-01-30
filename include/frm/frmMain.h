@@ -207,7 +207,9 @@ private:
 	ctlListView *properties;
 	ctlListView *statistics;
 	ctlListView *dependents, *dependencies;
+#if wxUSE_WEBREQUEST
 	ctlGitPanel* git;
+#endif
 	ctlAuiNotebook *listViews;
 	ctlSQLBox *sqlPane;
 	wxMenu *newMenu, *debuggingMenu, *reportMenu, *toolsMenu, *pluginsMenu, *viewMenu,

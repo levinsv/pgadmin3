@@ -1,4 +1,5 @@
 #pragma once
+#if wxUSE_WEBREQUEST
 
 #ifndef _WX_ctlGitPanel_H_
 #define _WX_ctlGitPanel_H_
@@ -87,7 +88,7 @@ private:
     wxButton* m_cancelButton;
     wxStaticBitmap* m_imageStaticBitmap;
     wxWebRequest m_currentRequest;
-
+    
     wxCheckBox* m_postCheckBox;
     wxTextCtrl* m_postContentTypeTextCtrl;
     wxTextCtrl* m_postRequestTextCtrl;
@@ -108,4 +109,5 @@ private:
 
 };
 
+#endif
 #endif

@@ -3,8 +3,8 @@
 --------------
 cmake 3.2
 gcc10-c++
-wxWidgets 3.1.6 (Был собран из исходников https://www.wxwidgets.org/downloads/)
-Postgresql 14
+wxWidgets 3.2 (Был собран из исходников https://www.wxwidgets.org/downloads/)
+Postgresql 15.1
 libxml2
 libxslt
 
@@ -16,6 +16,13 @@ cmake ../
 cmake --build . --config Release --target all -j 3 --
 
 Полученный исполняемый файл pgAdmin3 нужно поместить в каталог оригального pgadmin3
+
+Могут быть проблемы с отсутствующем файлом файлом kwlist.h
+Его можно взять в исходниках Postgresql 15 и положить в include/parser/
+
+Могут быть проблемы с компиляцией JSON парсера.
+Его можно исключить (как и эксперементальную часть с Git) заменой по всем исходникам wxUSE_WEBREQUEST 
+на что бессмысленное например wxUSE_WEBREQUEST5 .
 
 
 ОС для сборки использовал «Альт Рабочая станция» 10
