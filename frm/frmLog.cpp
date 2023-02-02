@@ -24,6 +24,7 @@
 #include "utils/csvfiles.h"
 #include "log/StorageModel.h"
 #include "utils/utffile.h"
+#include "utils/misc.h"
 
 #include <wx/arrimpl.cpp>
 #ifdef WIN32
@@ -113,13 +114,6 @@ void frmLog::OnChangeSmart(wxCommandEvent& event) {
 		my_view->ModUserFilter("", "ChangeFilter", listUserFilter, contentFilter);
 	}
 }
-wxString escapeHtml(wxString text) {
-	text.Replace("&", "&amp;");
-	text.Replace("<", "&lt;");
-	text.Replace(">", "&gt;");
-	text.Replace("\n", "&para;<br>");
-	return text;
-}
 void frmLog::OnSendMail(wxCommandEvent& event) {
 	//wxMessageBox("send mail");
 	wxDataViewItem item;
@@ -163,8 +157,8 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
 				wxString r;
 				for (int i = 0; i < a.Count(); i++) {
 					templat = l;
-					le = escapeHtml(a[i++]);
-					r = escapeHtml(a[i]);
+					le = escapeHtml(a[i++],false);
+					r = escapeHtml(a[i],false);
 					int co = templat.Replace("$1", le);
 					co += templat.Replace("$2", r);
 					html.Append(templat);

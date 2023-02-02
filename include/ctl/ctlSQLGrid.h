@@ -30,6 +30,7 @@ public:
 	{
 		return false;
 	}
+	int CopyTableToHtml(wxString htmlquery);
 	int Copy(int gensql);
 
 	virtual bool CheckRowPresent(int row)

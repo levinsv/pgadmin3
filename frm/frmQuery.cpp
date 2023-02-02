@@ -122,6 +122,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_COPY_INSERT,       frmQuery::OnCopy_Insert)
 	EVT_MENU(MNU_COPY_INLIST,       frmQuery::OnCopy_InList)
 	EVT_MENU(MNU_COPY_WHERELIST,	frmQuery::OnCopy_WhereList)
+	EVT_MENU(MNU_COPY_TABLEHTML,    frmQuery::OnCopy_TableToHtml)
 	EVT_MENU(MNU_CLEAR_FILTER,      frmQuery::OnClear_Filter)
 	EVT_MENU(MNU_CHECK_COLUMN_DATE, frmQuery::OnCheck_Column_Date)
 	EVT_MENU(MNU_COPY_LISTCOLTYPE,  frmQuery::OnCopy_NameTypeCols)
@@ -1695,10 +1696,14 @@ void frmQuery::OnCopy(wxCommandEvent &ev)
 {
 	wxWindow *wnd = currentControl();
 
-	if (wnd == sqlQuery)
+	if (wnd == sqlQuery) {
 		sqlQuery->Copy();
-	else if (wnd == msgResult)
+		SetStatusText("Select query copy.", STATUSPOS_MSGS);
+	}
+	else if (wnd == msgResult) {
 		msgResult->Copy();
+		SetStatusText("select msgResult copy.", STATUSPOS_MSGS);
+	}
 	else if (wnd == msgHistory)
 		msgHistory->Copy();
 	else if (wnd == scratchPad)
@@ -1712,6 +1717,7 @@ void frmQuery::OnCopy(wxCommandEvent &ev)
 			if (obj == sqlResult)
 			{
 				sqlResult->Copy(0);
+				SetStatusText("Result query copy.", STATUSPOS_MSGS);
 				break;
 			}
 			obj = obj->GetParent();
@@ -2182,6 +2188,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_COPY_LISTCOLTYPE, _("List columns header"), _("Copy list columns header"));
 	xmenu->Append(MNU_COPY_INLIST, _("IN list format copy"), _("Copy In list format."));
 	xmenu->Append(MNU_COPY_WHERELIST, _("WHERE list format copy"), _("Copy where list format."));
+	xmenu->Append(MNU_COPY_TABLEHTML, _("Copy table html format"), _("Copy table html format."));
 	xmenu->AppendSeparator();
 	xmenu->Append(MNU_AUTOCOLSPLOT, _("Draw plot LY(bar) or LXY or XYYY..."), _("Draw plot LY(bar) LXY or XYYY..."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
@@ -2190,6 +2197,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	bool selcol = sqlResult->GetSelectedCols().GetCount() > 0;
 	xmenu->Enable(MNU_CHECK_COLUMN_DATE, selcol);
 	xmenu->Enable(MNU_COPY_LISTCOLTYPE, selcol);
+	xmenu->Enable(MNU_COPY_TABLEHTML, selcol);
 	xmenu->Enable(MNU_AUTOCOLSPLOT, sqlResult->IsSelection());
 	xmenu->Enable(MNU_SUMMARY_COL, sqlResult->IsSelection());
 	xmenu->Enable(MNU_COPY_INLIST, sqlResult->IsSelection());
@@ -2236,6 +2244,23 @@ void frmQuery::OnCopy_WhereList(wxCommandEvent& ev)
 	{
 		wxString s = wxT("Where list format copy buffer.");
 		sqlResult->Copy(3);
+		SetStatusText(s, STATUSPOS_MSGS);
+	}
+}
+void frmQuery::OnCopy_TableToHtml(wxCommandEvent& ev)
+{
+	//	if (currentControl() == sqlResult)
+	{
+		wxString s = wxT("Table html format copy buffer.");
+		wxString q = sqlResult->sqlquerytext;
+		if (q.IsEmpty()) return;
+		ctlSQLBox *box = new ctlSQLBox(sqlNotebook, CTL_SQLQUERY, wxDefaultPosition, wxSize(0,0), wxTE_MULTILINE |  wxTE_RICH2);
+		box->SetText(q);
+		box->Colourise(0, box->GetTextLength());
+		wxString html = box->TextToHtml(0, box->GetTextLength());
+		delete box;
+		sqlResult->CopyTableToHtml(html);
+
 		SetStatusText(s, STATUSPOS_MSGS);
 	}
 }

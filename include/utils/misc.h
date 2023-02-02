@@ -100,6 +100,7 @@ extern sysSettings *settings;
 // Conversions
 wxString BoolToStr(bool value);         // english; used for config values
 wxString DateToAnsiStr(const wxDateTime &datetime);
+wxString escapeHtml(wxString text, bool pre);
 
 bool StrToBool(const wxString &value);  // english
 long StrToLong(const wxString &value);

@@ -85,6 +85,13 @@ wxString BoolToStr(bool value)
 	return value ? wxT("true") : wxT("false");
 }
 
+wxString escapeHtml(wxString text, bool pre) {
+	text.Replace("&", "&amp;");
+	text.Replace("<", "&lt;");
+	text.Replace(">", "&gt;");
+	if (!pre) text.Replace("\n", "&para;<br>");
+	return text;
+}
 
 
 bool StrToBool(const wxString &value)

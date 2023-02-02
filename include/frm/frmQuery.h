@@ -217,6 +217,7 @@ private:
 	void OnCopy_Insert(wxCommandEvent &event);
 	void OnCopy_InList(wxCommandEvent& event);
 	void OnCopy_WhereList(wxCommandEvent& event);
+	void OnCopy_TableToHtml(wxCommandEvent& ev);
 	void OnClear_Filter(wxCommandEvent &event);
 	void OnCopy_NameTypeCols(wxCommandEvent& ev);
 	void OnCheck_Column_Date(wxCommandEvent& ev);

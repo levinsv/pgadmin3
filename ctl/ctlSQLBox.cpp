@@ -1293,66 +1293,70 @@ void ctlSQLBox::OnMarginClick(wxStyledTextEvent &event)
 
 	event.Skip();
 }
+wxString ctlSQLBox::TextToHtml(int start, int end) {
+	wxColor frColor[40];
+	wxString str;
+	wxColour frc = settings->GetSQLBoxColourForeground();
+	wxString selText = GetTextRange(start,end);
+	if (settings->GetSQLBoxUseSystemForeground())
+	{
+		frc = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+	}
+
+	for (int i = 0; i < 34; ++i)
+	{
+		frColor[i] = StyleGetForeground(i);
+		if (i > 0 && i < 12)
+			//StyleSetForeground(i, settings->GetSQLBoxColour(i));
+			frColor[i] = StyleGetForeground(i);
+		else
+			frColor[i] = frc;
+
+		//StyleSetBackground(i, bgColor);
+		//StyleSetFont(i, fntSQLBox);
+	}
+	//<h1 style="color:blue;">
+	int endp = end;
+	int startp = start;
+	wxString prevColor = wxEmptyString;
+	wxString tColor;
+	wxFont fntSQLBox = settings->GetSQLFont();
+	wxString fontName = fntSQLBox.GetFaceName();
+	wxString sz;
+	sz.Printf("%d", fntSQLBox.GetPixelSize().GetHeight());
+
+	str = wxT("<div style=\"font-family: ") + fontName + wxT("; font-size: " + sz + "px\"><font>");
+	int k = 0;
+	int l = 1;
+	while (startp < endp) {
+		int st = GetStyleAt(startp);
+		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
+		if (prevColor != tColor) {
+			str = str + wxT("</font><font color=\"") + tColor + wxT("\">");
+			prevColor = tColor;
+		}
+		//str.append(str[k].GetValue());
+		l = 1;
+		if (!selText[k].IsAscii()) l++;
+		int s = 0;
+		char c = selText[k].GetValue();
+		if (c == '\r') { startp = startp + l; k++; continue; };
+		if (c == '\n') { str += wxT("<br>"); startp = startp + l; k++; continue; };
+		if (c == 9) s = 5;
+		if (c == 32) s = 1;
+		if (s > 0) for (int tt = 0; tt < s; tt++) str += wxT("&nbsp;");
+		else str += selText[k];
+		startp = startp + l; k++;
+	}
+	str = str + wxT("</font></div>");
+	return str;
+}
 void ctlSQLBox::Copy() {
 	wxString selText = GetSelectedText();
 	if (!selText.IsEmpty())
 	{
-		wxColor frColor[40];
 		wxString str;
-			wxColour frc = settings->GetSQLBoxColourForeground();
-			if (settings->GetSQLBoxUseSystemForeground())
-			{
-				frc = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-			}
-
-			for (int i = 0; i < 34; ++ i )
-			{
-				frColor[i]=StyleGetForeground(i);
-			if (i > 0 && i < 12)
-				//StyleSetForeground(i, settings->GetSQLBoxColour(i));
-				frColor[i]=StyleGetForeground(i);
-			else
-				frColor[i]=frc;
-
-			//StyleSetBackground(i, bgColor);
-			//StyleSetFont(i, fntSQLBox);
-			}
-			//<h1 style="color:blue;">
-			int endp=GetSelectionEnd();
-			int startp=GetSelectionStart();
-			wxString prevColor=wxEmptyString;
-			wxString tColor;
-			wxFont fntSQLBox = settings->GetSQLFont();
-			wxString fontName = fntSQLBox.GetFaceName();
-			wxString sz;
-			sz.Printf("%d",fntSQLBox.GetPixelSize().GetHeight() );
-			
-			str=wxT("<div style=\"font-family: ")+fontName+wxT("; font-size: "+sz+"px\"><font>");
-			int k=0;
-			int l=1;
-			while (startp<endp) {
-				int st = GetStyleAt(startp);
-				if (st<34) tColor=frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
-				if (prevColor!=tColor) {
-					str=str+wxT("</font><font color=\"")+tColor+wxT("\">");
-					prevColor=tColor;
-				}
-				//str.append(str[k].GetValue());
-				l=1;
-				if (!selText[k].IsAscii()) l++;
-				int s=0;
-				char c = selText[k].GetValue();
-				if (c == '\r') { startp = startp + l; k++; continue; };
-				if (c == '\n') { str += wxT("<br>"); startp = startp + l; k++; continue; };
-				if (c==9) s=5;
-				if (c==32) s=1;
-				if (s>0) for (int tt=0;tt<s;tt++) str+=wxT("&nbsp;");
-				         else str+=selText[k];
-				startp=startp+l; k++;
-			}
-			str=str+wxT("</font></div>");
-			
-
+		str = TextToHtml(GetSelectionStart(), GetSelectionEnd());
 
 		if (wxTheClipboard->Open())
 		{
