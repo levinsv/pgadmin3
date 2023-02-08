@@ -1687,7 +1687,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 	if (connection->BackendMinimumVersion(10, 0))
 	{
 		if (connection->BackendMinimumVersion(13, 0))
-			q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info\n");
+			q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info,case when backend_type='autovacuum launcher' then (select min(xmin::text::bigint) from pg_replication_slots) end av_replica\n");
 			else
 			q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
 
@@ -1701,7 +1701,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			q += "FROM pg_stat_activity p LEFT JOIN "+progress13+" ON p.pid=v.pid\n";
 		else
 			q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid\n");
-		q += wxT("LEFT JOIN pg_replication_slots sl ON p.pid=sl.active_pid ");
+		q += wxT("LEFT JOIN pg_replication_slots sl ON p.pid=sl.active_pid\n");
 		iswalsend = true;
 		//backend_type
 	} else
@@ -1711,7 +1711,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 	// And the rest of the query...
 	
-	q += wxT("ORDER BY ") + NumToStr((long)statusSortColumn) + wxT(" ") + statusSortOrder;
+	q += wxT(" ORDER BY ") + NumToStr((long)statusSortColumn) + wxT(" ") + statusSortOrder;
 
 	pgSet *dataSet1 = connection->ExecuteSet(q);
 	if (dataSet1)
@@ -1804,8 +1804,15 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				{
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xid")));
 					if (!slinfo.IsEmpty())  statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xmin_slot")));
-								   else
-									statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xmin")));
+					else
+					{
+						wxString av_replica;
+						if (iswalsend) av_replica= dataSet1->GetVal(wxT("av_replica"));
+						if (av_replica.IsEmpty())
+							statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xmin")));
+						else
+							statusList->SetItem(row, colpos++, av_replica);
+					}
 				}
 				if (connection->BackendMinimumVersion(9, 6))
 				{
