@@ -207,7 +207,7 @@ private:
 	ctlListView *properties;
 	ctlListView *statistics;
 	ctlListView *dependents, *dependencies;
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 	ctlGitPanel* git;
 #endif
 	ctlAuiNotebook *listViews;

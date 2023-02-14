@@ -13,7 +13,7 @@
 #endif
 
 #include "pgAdmin3.h"
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 #include <wx/mstream.h>
 #include <wx/sstream.h>

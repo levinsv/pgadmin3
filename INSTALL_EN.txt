@@ -1,0 +1,36 @@
+Dependencies
+-------------
+cmake 3.2
+gcc10-c++
+
+wxWidgets 3.2, build from source (https://www.wxwidgets.org/downloads/):
+     tar -xf wxWidgets-3.2.2.1.tar.bz2
+     cd wxWidgets-3.2.2.1
+     ./configure --with-gtk --enable-unicode
+     make
+     sudo make install
+
+PostgreSQL 15.1
+libxml2
+libxslt
+
+Compile under Linux
+-------
+mkdir build
+cd build
+CXXFLAGS="-DNO_WXJSON_GIT" cmake ..
+cmake --build . --config Release --target all -j 3 --
+
+The resulting pgAdmin3 executable should be placed in the directory of the original pgadmin3
+
+There may be problems with the missing kwlist.h file
+It can be taken from the Postgresql 15 sources and put in include/parser/
+
+There may be problems compiling the JSON parser.
+It can be eliminated (as well as the experimental part with Git) by defining NO_WXJSON_GIT as done above through CXXFLAGS.
+
+
+OS for assembly used "Alt Workstation" 10
+https://www.basealt.ru/alt-workstation/download#c1211
+
+Edited and compiled on Visual Studio code
