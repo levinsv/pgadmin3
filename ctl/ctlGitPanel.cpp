@@ -28,7 +28,7 @@ enum
 {
     MARGIN_LINE_NUMBERS
 };
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 
 class SourceViewDialog : public wxFrame

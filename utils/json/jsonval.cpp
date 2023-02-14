@@ -12,7 +12,7 @@
 #endif
 
 #include "pgAdmin3.h"
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 // For compilers that support precompilation, includes "wx.h".
 

@@ -1,5 +1,5 @@
 #pragma once
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 #ifndef _WX_ctlGitPanel_H_
 #define _WX_ctlGitPanel_H_

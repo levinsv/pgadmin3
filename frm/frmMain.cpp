@@ -171,7 +171,7 @@ frmMain::frmMain(const wxString &title)
 	statistics = new ctlListView(listViews, CTL_STATVIEW, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER);
 	dependencies = new ctlListView(listViews, CTL_DEPVIEW, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER);
 	dependents = new ctlListView(listViews, CTL_REFVIEW, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER);
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 	git = NULL;
 	wxJSONValue cfg=ctlGitPanel::GetConfig();
@@ -188,7 +188,7 @@ frmMain::frmMain(const wxString &title)
 	listViews->AddPage(statistics, _("Statistics"));	// NBP_STATISTICS
 	listViews->AddPage(dependencies, _("Dependencies"));    // NBP_DEPENDENCIES
 	listViews->AddPage(dependents, _("Dependents"));	// NBP_DEPENDENTS
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 	if (git) {
 		listViews->AddPage(git, _("Git"));	// 
@@ -827,7 +827,7 @@ void frmMain::ShowObjStatistics(pgObject *data, wxWindow *ctrl)
 		data->ShowDependents(this, dependents);
 		dependents->Thaw();
 	}
-#if wxUSE_WEBREQUEST
+#if !defined(NO_WXJSON_GIT)
 
 	if ((!ctrl && git &&  git->IsShownOnScreen()) || ctrl == git)
 	{
