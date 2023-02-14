@@ -21,13 +21,13 @@ cmake --build . --config Release --target all -j 3 --
 Его можно взять в исходниках Postgresql 15 и положить в include/parser/
 
 Могут быть проблемы с компиляцией JSON парсера.
-Его можно исключить (как и эксперементальную часть с Git) заменой по всем исходникам NO_WXJSON_GIT 
-на что бессмысленное например NO_WXJSON_GIT.
+Его можно исключить (как и эксперементальную часть с Git) добавление к переменной CXXFLAGS="-DNO_WXJSON_GIT"
+Смотрите пример в INSTALL_EN.txt
 
 
 ОС для сборки использовал «Альт Рабочая станция» 10
 https://www.basealt.ru/alt-workstation/download#c1211
 
-Редактировал и собирал на Visual Studio code
+Редактировал и собирал на Visual Studio Сode
 
 
