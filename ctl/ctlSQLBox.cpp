@@ -929,7 +929,7 @@ void ctlSQLBox::OnEndProcess(wxProcessEvent &ev)
 	}
 }
 
-wxString ctlSQLBox::ExternalFormat()
+wxString ctlSQLBox::ExternalFormat(int typecmd)
 {
 	wxString msg;
 	processOutput = wxEmptyString;
@@ -945,9 +945,14 @@ wxString ctlSQLBox::ExternalFormat()
 		return _("Nothing to format.");
 
 	wxString formatCmd = settings->GetExtFormatCmd();
+	wxString msgword = "formatt";
+	if (typecmd == 1) {
+		formatCmd = settings->GetExtAlignCmd();
+		msgword = "align";
+	}
 	if (formatCmd.IsEmpty())
 	{
-		return _("You need to setup a formatting command");
+		return _("You need to setup a "+msgword+"ing command");
 	}
 
 	if (process)
@@ -967,7 +972,7 @@ wxString ctlSQLBox::ExternalFormat()
 		delete process;
 		process = NULL;
 		processID = 0;
-		msg = _("Couldn't run formatting command: ") + formatCmd;
+		msg = _("Couldn't run " + msgword + "ing command: ") + formatCmd;
 		return msg;
 	}
 	process->WriteOutputStream(processInput);
@@ -989,7 +994,7 @@ wxString ctlSQLBox::ExternalFormat()
 	if (process)
 	{
 		AbortProcess();
-		return wxString::Format(_("Formatting command did not respond in %d ms"), timeoutMs);
+		return wxString::Format(_("" + msgword + "ing command did not respond in %d ms"), timeoutMs);
 	}
 
 	if (processExitCode != 0)
@@ -1000,7 +1005,7 @@ wxString ctlSQLBox::ExternalFormat()
 	}
 	else if (processOutput.Trim().IsEmpty())
 	{
-		return _("Formatting command error: Output is empty.");
+		return _("" + msgword + "ing command error: Output is empty.");
 	}
 
 	if (isSelected)
@@ -1008,7 +1013,7 @@ wxString ctlSQLBox::ExternalFormat()
 	else
 		SetText(processOutput);
 
-	return _("Formatting complete.");
+	return _("" + msgword + "ing complete.");
 }
 
 void ctlSQLBox::AbortProcess()

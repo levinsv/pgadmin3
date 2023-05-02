@@ -536,6 +536,23 @@
                     <border>4</border>
                   </object>
                   <object class="sizeritem">
+                    <object class="wxStaticText" name="stExtAlignCmd">
+                      <label>External alignment utlity</label>
+                    </object>
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxFilePickerCtrl" name="pickerExtAlignCmd">
+                      <message>Select utility to format text</message>
+                      <wildcard>*</wildcard>
+                      <style>wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
+                      <tooltip>A command line utility which reads STDIN and directs output to STDOUT.</tooltip>
+                    </object>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
                     <object class="wxStaticText" name="stASUTPstyle">
                       <label>Enable ASUTP style</label>
                     </object>

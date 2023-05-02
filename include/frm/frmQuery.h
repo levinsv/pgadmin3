@@ -262,6 +262,7 @@ private:
 	void OnDoubleText(wxCommandEvent& event);
 	void OnUnDoubleText(wxCommandEvent& event);
 	void OnExternalFormat(wxCommandEvent &event);
+	void OnExternalAlign(wxCommandEvent& event);
 
 	void OnDeleteCurrent(wxCommandEvent &event);
 	void OnDeleteAll(wxCommandEvent &event);

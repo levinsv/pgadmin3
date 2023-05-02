@@ -477,6 +477,16 @@ public:
 	{
 		Write(wxT("ExtFormatCmd"), newval);
 	}
+	wxString GetExtAlignCmd()
+	{
+		wxString s;
+		Read(wxT("ExtAlignCmd"), &s, wxEmptyString);
+		return s;
+	}
+	void SetExtAlignCmd(const wxString& newval)
+	{
+		Write(wxT("ExtAlignCmd"), newval);
+	}
 	long GetExtFormatTimeout() const
 	{
 		long l;

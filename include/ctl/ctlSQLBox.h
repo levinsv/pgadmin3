@@ -81,7 +81,7 @@ public:
 	bool BlockComment(bool uncomment = false);
 	bool BlockDouble(bool undouble = false);
 	void UpdateLineNumber();
-	wxString ExternalFormat();
+	wxString ExternalFormat(int typecmd = 0);
 	void AbortProcess();
 	void SetDefFunction(wxArrayString &name, wxArrayString &def);
 	CharacterRange RegexFindText(int minPos, int maxPos, const wxString &text);

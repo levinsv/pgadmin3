@@ -108,6 +108,7 @@
 #define pickerMacrosFile            CTRL_FILEPICKER("pickerMacrosFile")
 #define pickerHistoryFile           CTRL_FILEPICKER("pickerHistoryFile")
 #define pickerExtFormatCmd          CTRL_FILEPICKER("pickerExtFormatCmd")
+#define pickerExtAlignCmd          CTRL_FILEPICKER("pickerExtAlignCmd")
 #define txtHistoryMaxQueries        CTRL_TEXT("txtHistoryMaxQueries")
 #define txtHistoryMaxQuerySize      CTRL_TEXT("txtHistoryMaxQuerySize")
 #define chkSQLUseSystemBackgroundColour  CTRL_CHECKBOX("chkSQLUseSystemBackgroundColour")
@@ -339,6 +340,7 @@ frmOptions::frmOptions(frmMain *parent)
 	pickerMacrosFile->SetPath(settings->GetMacrosFile());
 	pickerHistoryFile->SetPath(settings->GetHistoryFile());
 	pickerExtFormatCmd->SetPath(settings->GetExtFormatCmd());
+	pickerExtAlignCmd->SetPath(settings->GetExtAlignCmd());
 
 	txtHistoryMaxQueries->SetValue(NumToStr(settings->GetHistoryMaxQueries()));
 	txtHistoryMaxQuerySize->SetValue(NumToStr(settings->GetHistoryMaxQuerySize()));
@@ -799,6 +801,7 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	settings->SetMacrosFile(pickerMacrosFile->GetPath());
 	settings->SetHistoryFile(pickerHistoryFile->GetPath());
 	settings->SetExtFormatCmd(pickerExtFormatCmd->GetPath());
+	settings->SetExtAlignCmd(pickerExtAlignCmd->GetPath());
 
 	// Change SQL Syntax colours
 	if (settings->GetSQLBoxUseSystemBackground() != chkSQLUseSystemBackgroundColour->GetValue())
