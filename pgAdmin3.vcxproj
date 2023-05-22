@@ -1012,6 +1012,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="utils\align\AlignWrap.cpp" />
+    <ClCompile Include="utils\align\Item.cpp" />
     <ClCompile Include="utils\csvfiles.cpp" />
     <ClCompile Include="utils\diff_match_patch.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -1570,6 +1572,8 @@
     <ClInclude Include="include\schema\pgPublication.h" />
     <ClInclude Include="include\schema\pgSubscription.h" />
     <ClInclude Include="include\svnversion.h" />
+    <ClInclude Include="include\utils\align\AlignWrap.h" />
+    <ClInclude Include="include\utils\align\Item.h" />
     <ClInclude Include="include\utils\json\jsonreader.h" />
     <ClInclude Include="include\utils\json\jsonval.h" />
     <ClInclude Include="include\utils\json\jsonwriter.h" />

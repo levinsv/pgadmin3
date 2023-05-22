@@ -1668,6 +1668,12 @@
     <ClCompile Include="ctl\ctlGitPanel.cpp">
       <Filter>ctl</Filter>
     </ClCompile>
+    <ClCompile Include="utils\align\AlignWrap.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\align\Item.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -3586,6 +3592,12 @@
     </ClInclude>
     <ClInclude Include="include\ctl\ctlGitPanel.h">
       <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\align\AlignWrap.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\align\Item.h">
+      <Filter>include\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

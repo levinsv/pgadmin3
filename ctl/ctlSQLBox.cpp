@@ -24,7 +24,7 @@
 #include "utils/sysProcess.h"
 #include <wx/clipbrd.h>
 #include <wx/aui/aui.h>
-
+#include "utils/align/AlignWrap.h"
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
 static const wxString s_rightBrace(_T(")]}"));
@@ -952,6 +952,50 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 	}
 	if (formatCmd.IsEmpty())
 	{
+		if (typecmd == 1) {
+			//internal align
+			AlignWrap a;
+			wxString lineEnd;
+			switch (GetEOLMode())
+			{
+			case wxSTC_EOL_LF:
+				lineEnd = wxT("\n");
+				break;
+			case wxSTC_EOL_CRLF:
+				lineEnd = wxT("\r\n");
+				break;
+			case wxSTC_EOL_CR:
+				lineEnd = wxT("\r");
+				break;
+			}
+			wxArrayString choiceCmpOpts;
+			wxArrayInt choiceSelectOpts;
+			choiceCmpOpts.Add("All line (use all EOL)");
+			choiceCmpOpts.Add("First line pattern (ignore all but the first EOL)");
+			choiceCmpOpts.Add("Try looking for patterns above");
+			wxMultiChoiceDialog dialog(this,
+				wxT("A multi-choice convenience dialog"),
+				wxT("Please select several align options"),
+				choiceCmpOpts);
+			dialog.SetSelections(choiceSelectOpts);
+			int cfg = 0;
+			if (dialog.ShowModal() == wxID_OK) {
+				choiceSelectOpts = dialog.GetSelections();
+
+				for (size_t n = 0; n < choiceSelectOpts.GetCount(); n++) {
+						if (choiceSelectOpts[n] == 0) cfg |= AlignWrap::ALL_LINES;
+						if (choiceSelectOpts[n] == 1 ) cfg |= AlignWrap::FIRST_LINE ;
+						if (choiceSelectOpts[n] == 2) cfg |= AlignWrap::FIND_UP_LONG_LINE;
+
+				}
+				if (CHKCFGPARAM(cfg, AlignWrap::ALL_LINES) && CHKCFGPARAM(cfg, AlignWrap::FIRST_LINE)) cfg -= AlignWrap::FIRST_LINE;
+			}
+			else return _("Cancel");
+
+
+			processOutput=a.build(processInput, cfg, lineEnd);
+			goto theend;
+		}
 		return _("You need to setup a "+msgword+"ing command");
 	}
 
@@ -1007,7 +1051,7 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 	{
 		return _("" + msgword + "ing command error: Output is empty.");
 	}
-
+theend:
 	if (isSelected)
 		ReplaceSelection(processOutput);
 	else
