@@ -4077,7 +4077,7 @@ void frmQuery::OnExternalAlign(wxCommandEvent& event)
 	if (FindFocus()->GetId() == CTL_SQLQUERY)
 	{
 		wxBusyCursor wait;
-		SetStatusText(_("Running formatting command..."), STATUSPOS_MSGS);
+		SetStatusText(_("Running aligning command..."), STATUSPOS_MSGS);
 		SetStatusText(sqlQuery->ExternalFormat(1), STATUSPOS_MSGS);
 		sqlQuery->SetFocus(); // could loose focus after running formatting process
 	}
@@ -4613,10 +4613,19 @@ void frmQuery::SqlBookAddPage(wxString& title)
 
 	box->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	box->Connect(wxID_ANY, wxEVT_KILL_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
+	
+	if (title.BeforeFirst(' ')=="Query") {
+		wxString np = title.AfterFirst(' ');
+		long nl = 0;
+		if (np.ToLong(&nl)) {
+			if (sqlQueryCounter < nl) sqlQueryCounter = nl;
+		}
 
-	sqlQueryCounter ++;
+	}
+	if (title.IsEmpty()) sqlQueryCounter ++;
 	int ll = sqlQueryCounter;
 	caption = wxString::Format(_("Query %d"), ll);
+	
 	bool select = title.IsEmpty();
 	if (!select) caption = title;
 	select = true;
