@@ -502,7 +502,7 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 		ResetLists();
 		sqlPane->Clear();
 	}
-
+	
 	// Get the item data, and feed it to the relevant handler,
 	// cast as required.
 	//
@@ -596,6 +596,7 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 		else
 			setDisplay(currentObject, 0, 0);
 	}
+	browser->DrawDbName(item);
 }
 
 

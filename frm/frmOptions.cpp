@@ -77,6 +77,7 @@
 #define chkAskSaveConfirm           CTRL_CHECKBOX("chkAskSaveConfirm")
 #define chkAskDelete                CTRL_CHECKBOX("chkAskDelete")
 #define chkShowUsersForPrivileges   CTRL_CHECKBOX("chkShowUsersForPrivileges")
+#define chkShowDBnameTree		    CTRL_CHECKBOX("chkShowDBnameTree")
 #define txtAutoRowCount             CTRL_TEXT("txtAutoRowCount")
 #define txtIndent                   CTRL_TEXT("txtIndent")
 #define chkSpacesForTabs			CTRL_CHECKBOX("chkSpacesForTabs")
@@ -293,6 +294,7 @@ frmOptions::frmOptions(frmMain *parent)
 	chkAskDelete->SetValue(settings->GetConfirmDelete());
 	chkShowUsersForPrivileges->SetValue(settings->GetShowUsersForPrivileges());
 	txtAutoRowCount->SetValue(NumToStr(settings->GetAutoRowCountThreshold()));
+	chkShowDBnameTree->SetValue(settings->GetVisibleDbNameTree());
 	txtIndent->SetValue(NumToStr(settings->GetIndentSpaces()));
 	chkSpacesForTabs->SetValue(settings->GetSpacesForTabs());
 	cbCopyQuote->SetSelection(settings->GetCopyQuoting());
@@ -662,6 +664,8 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	settings->SetAskSaveConfirmation(!chkAskSaveConfirm->GetValue());
 	settings->SetConfirmDelete(chkAskDelete->GetValue());
 	settings->SetShowUsersForPrivileges(chkShowUsersForPrivileges->GetValue());
+	settings->SetVisibleDbNameTree(chkShowDBnameTree->GetValue());
+	
 	settings->SetAutoRowCountThreshold(StrToLong(txtAutoRowCount->GetValue()));
 	settings->SetIndentSpaces(StrToLong(txtIndent->GetValue()));
 	settings->SetSpacesForTabs(chkSpacesForTabs->GetValue());

@@ -814,6 +814,16 @@ public:
 	{
 		WriteBool(wxT("ASUTPstyle"), newval);
 	}
+	bool GetVisibleDbNameTree() const
+	{
+		bool b;
+		Read(wxT("VisibleDbNameTree"), &b, true);
+		return b;
+	}
+	void SetVisibleDbNameTree(const bool newval)
+	{
+		WriteBool(wxT("VisibleDbNameTree"), newval);
+	}
 
 	
 	wxString GetOptionsLastTreeItem() const

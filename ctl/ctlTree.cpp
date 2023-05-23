@@ -171,6 +171,55 @@ wxTreeItemId ctlTree::GetVerticalItem(wxPoint& pt) {
 	}
 	return NULL;
 }
+void ctlTree::DrawDbName(const wxTreeItemId& item) {
+	if (item && settings->GetVisibleDbNameTree()) {
+		wxRect r;
+		GetBoundingRect(item, r, false);
+		wxTreeItemId prev;
+		wxString name = "";
+		pgObject* o = GetObject(item);
+		if (o) {
+			pgConn* conn = o->GetConnection();
+			pgServer* s = o->GetServer();
+			if (conn)
+				name = conn->GetName().BeforeFirst(' ');
+			if (name.IsEmpty()) {
+				return ;
+			}
+			wxColour c;
+			wxClientDC dc(this);
+				if (s) {
+					if (!(s->GetColour().IsEmpty())) {
+						c=s->GetColour();
+						dc.SetBrush(wxBrush(c, wxSOLID));
+					} else
+						dc.SetBrush(*wxYELLOW_BRUSH);
+				}
+//			pgServer* s = wxColour(server->GetColour();
+			
+			wxRect orig;
+//			dc.SetBrush(*wxYELLOW_BRUSH);
+			dc.SetPen(*wxTRANSPARENT_PEN);
+
+			wxString str = wxString::Format("%s", name);
+			wxSize sz = dc.GetTextExtent(str);
+			sz.SetWidth(sz.GetX() + 3);
+			r.SetWidth(sz.GetX() + 5);
+			orig = r;
+			orig.Deflate(2);
+			orig.SetLeft(orig.GetLeft() + (orig.GetWidth() - sz.GetWidth()));
+			orig.SetHeight(sz.GetHeight());
+			orig.SetWidth(sz.GetWidth());
+			dc.DrawRoundedRectangle(orig, 2);
+
+			dc.DrawText(name, wxPoint(orig.x + 2, orig.y + 1));
+		}
+
+		//Update();
+		//return;
+	}
+
+}
 void ctlTree::OnMouse(wxMouseEvent& event)
 {
 	wxPoint pt = event.GetPosition();
@@ -193,7 +242,7 @@ void ctlTree::OnMouse(wxMouseEvent& event)
 				//event.Skip(!GetEventHandler()->ProcessEvent(nevent));
 				return;
 			}
-			
+
 		}
 		else {
 		if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT && (item==GetSelection())) {
@@ -234,7 +283,6 @@ void ctlTree::OnMouse(wxMouseEvent& event)
 			return;
 
 		}
-
 		}
 		event.Skip();
 
