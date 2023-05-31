@@ -300,7 +300,29 @@ void ctlTree::OnChar(wxKeyEvent &event)
 		if (!currItem.IsOk())
 			return;
 
-		wxTreeItemId matchItem = FindItem(currItem, m_findPrefix + (wxChar)keyCode);
+		wxTreeItemId matchItem;
+		wxTreeItemData* data = GetItemData(currItem);
+		// Set the item colour
+		if (data)
+		{
+			if (((pgObject*)data)->GetMetaType() == PGM_SERVER)
+			{
+				wxString prefix = m_findPrefix + (wxChar)keyCode;
+				wxTreeItemId id= GetNextSibling(currItem);
+				while (id.IsOk() &&
+					((GetItemText(id) == wxT("Dummy") && !GetItemData(id)) ||
+						!((GetItemText(id).Lower().StartsWith(prefix))
+							)
+					))
+				{
+					id = GetNextSibling(id);
+				}
+				if (id.IsOk()) matchItem = id;
+			} else
+				matchItem = FindItem(currItem, m_findPrefix + (wxChar)keyCode);
+		}
+
+		
 
 		if ( matchItem.IsOk() )
 		{
