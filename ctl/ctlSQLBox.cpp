@@ -1388,7 +1388,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end) {
 		l = 1;
 		if (!selText[k].IsAscii()) l++;
 		int s = 0;
-		char c = selText[k].GetValue();
+		wxUniChar c = selText[k].GetValue();
 		if (c == '\r') { startp = startp + l; k++; continue; };
 		if (c == '\n') { str += wxT("<br>"); startp = startp + l; k++; continue; };
 		if (c == 9) s = 5;
