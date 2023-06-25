@@ -213,7 +213,7 @@ frmMain::frmMain(const wxString &title)
 	pgaFactory::RegisterMenu(this, wxCommandEventHandler(frmMain::OnNew));
 	menuFactories->RegisterMenu(this, wxCommandEventHandler(frmMain::OnAction));
 	menuFactories->CheckMenu(0, menuBar, toolBar);
-
+	wxSize toolw = toolBar->GetBestSize();
 	// Kickstart wxAUI
 	manager.AddPane(browser, wxAuiPaneInfo().Name(wxT("objectBrowser")).Caption(_("Object browser")).Left().MinSize(wxSize(100, 200)).BestSize(wxSize(200, 450)));
 	manager.AddPane(listViews, wxAuiPaneInfo().Name(wxT("listViews")).Caption(_("Info pane")).Center().CaptionVisible(false).CloseButton(false).MinSize(wxSize(200, 100)).BestSize(wxSize(400, 200)));
@@ -230,6 +230,7 @@ frmMain::frmMain(const wxString &title)
 	manager.GetPane(wxT("listViews")).Caption(_("Info pane"));
 	manager.GetPane(wxT("sqlPane")).Caption(_("SQL pane"));
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
+	manager.GetPane(wxT("toolBar")).BestSize(toolw);
 
 	// Sync the View menu options
 	viewMenu->Check(MNU_SQLPANE, manager.GetPane(wxT("sqlPane")).IsShown());
@@ -287,7 +288,16 @@ frmMain::~frmMain()
 #endif
 }
 
-
+wxBitmapBundle* GetBundleSVG(wxBitmap* std, wxString name, wxSize sz) {
+	wxBitmapBundle *b;
+	if (wxFile::Exists(loadPath + sepPath +"svg" + sepPath + name)) {
+		b = new wxBitmapBundle(wxBitmapBundle::FromSVGFile(loadPath + sepPath + "svg" + sepPath + name, sz));
+	}
+	else {
+		b=new wxBitmapBundle(*std);
+	}
+	return b;
+}
 
 void frmMain::CreateMenus()
 {
@@ -313,7 +323,7 @@ void frmMain::CreateMenus()
 	newContextMenu = new wxMenu();
 
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER );
-	toolBar->SetToolBitmapSize(wxSize(32, 32));
+	//toolBar->SetToolBitmapSize(wxSize(32, 32));
 	menuFactories = new menuFactoryList();
 
 	// Load plugins - must do this after creating the menus and the factories
@@ -1482,7 +1492,7 @@ pgsqlHelpFactory::pgsqlHelpFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuTo
 	if (toolbar)
 	{
 		if (bigIcon)
-			toolbar->AddTool(id, wxEmptyString, *help2_png_bmp, _("Display help on SQL commands."));
+			toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(help2_png_bmp, "help2.svg", wxSize(32, 32)), _("Display help on SQL commands."));
 		else
 			toolbar->AddTool(id, wxEmptyString, *help_png_bmp, _("Display help on SQL commands."));
 	}

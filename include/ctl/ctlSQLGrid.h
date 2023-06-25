@@ -69,6 +69,7 @@ public:
 	DECLARE_EVENT_TABLE()
 	
 private:
+	void setresizedpi();
 	void OnCopy(wxCommandEvent &event);
 	void OnMouseWheel(wxMouseEvent &event);
 	void OnGridColSize(wxGridSizeEvent &event);

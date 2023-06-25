@@ -41,9 +41,7 @@ ctlSQLGrid::ctlSQLGrid()
 {
 }
 
-ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
-	: wxGrid(parent, id, pos, size, wxWANTS_CHARS | wxVSCROLL | wxHSCROLL)
-{
+void ctlSQLGrid::setresizedpi() {
 	// Set cells font
 	wxFont fntCells(settings->GetSQLFont());
 	SetDefaultCellFont(fntCells);
@@ -53,8 +51,22 @@ ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetLabelFont(fntLabel);
 	SetColLabelAlignment(wxALIGN_LEFT, wxALIGN_CENTER);
 	SetRowLabelSize(50);
-	SetDefaultRowSize(fntCells.GetPointSize() * 2 + 2);
-	SetColLabelSize(fntLabel.GetPointSize() * 4);
+
+}
+
+ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
+	: wxGrid(parent, id, pos, size, wxWANTS_CHARS | wxVSCROLL | wxHSCROLL)
+{
+
+	Bind(wxEVT_DPI_CHANGED, [this](wxDPIChangedEvent& event) {
+		setresizedpi();
+		event.Skip();
+		});
+
+
+	setresizedpi();
+	//SetDefaultRowSize(fntCells.GetPointSize() * 2 + 2);
+	//SetColLabelSize(fntLabel.GetPointSize() * 4);
 	SetDefaultCellOverflow(false);
 	//SetDefaultRenderer(new  wxGridCellAutoWrapStringRenderer);
 	SetDefaultRenderer(new  CursorCellRenderer);

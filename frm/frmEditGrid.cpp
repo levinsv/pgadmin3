@@ -3343,7 +3343,7 @@ wxWindow *editGridFactoryBase::ViewData(frmMain *form, pgObject *obj, bool filte
 editGridFactory::editGridFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : editGridFactoryBase(list)
 {
 	mnu->Append(id, _("View &All Rows\tCtrl-D"), _("View the data in the selected object."));
-	toolbar->AddTool(id, _("View All Rows\tCtrl-D"), *viewdata_png_bmp, _("View the data in the selected object."), wxITEM_NORMAL);
+	toolbar->AddTool(id, _("View All Rows\tCtrl-D"), *GetBundleSVG(viewdata_png_bmp, "viewdata.svg", wxSize(32, 32)), _("View the data in the selected object."), wxITEM_NORMAL);
 	context = false;
 }
 
@@ -3358,7 +3358,7 @@ wxWindow *editGridFactory::StartDialog(frmMain *form, pgObject *obj)
 editGridFilteredFactory::editGridFilteredFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : editGridFactoryBase(list)
 {
 	mnu->Append(id, _("View F&iltered Rows...\tCtrl-G"), _("Apply a filter and view the data in the selected object."));
-	toolbar->AddTool(id, _("View Filtered Rows\tCtrl-G"), *viewfiltereddata_png_bmp, _("Apply a filter and view the data in the selected object."), wxITEM_NORMAL);
+	toolbar->AddTool(id, _("View Filtered Rows\tCtrl-G"), *GetBundleSVG(viewfiltereddata_png_bmp, "viewfiltereddata.svg", wxSize(32, 32)) , _("Apply a filter and view the data in the selected object."), wxITEM_NORMAL);
 	context = false;
 }
 

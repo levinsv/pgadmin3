@@ -386,6 +386,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	AddXactPane();
 	AddQuerystatePane();
 	AddLogPane();
+	wxSize toolw = toolBar->GetBestSize();
 
 	manager.AddPane(toolBar, wxAuiPaneInfo().Name(wxT("toolBar")).Caption(_("Tool bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
 
@@ -400,6 +401,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	manager.GetPane(wxT("Transactions")).Caption(_("Prepared Transactions"));
 	manager.GetPane(wxT("Logfile")).Caption(_("Logfile"));
 	manager.GetPane(wxT("Querystate")).Caption(_("QueryState"));
+	manager.GetPane(wxT("toolBar")).BestSize(toolw);
 
 	// Tell the manager to "commit" all the changes just made
 	manager.Update();

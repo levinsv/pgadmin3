@@ -12,6 +12,8 @@
 #if defined(_WIN32_WCE)
 #undef _WIN32_WCE
 #endif
+#define wxUSE_DPI_AWARE_MANIFEST 2
+#define wxUSE_RC_MANIFEST 1
 
 #include <wx/msw/wx.rc>
 #include <winver.h>

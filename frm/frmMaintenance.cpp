@@ -295,7 +295,7 @@ void frmMaintenance::Go()
 maintenanceFactory::maintenanceFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {
 	mnu->Append(id, _("&Maintenance..."), _("Maintain the current database or table."));
-	toolbar->AddTool(id, wxEmptyString, *vacuum_png_bmp, _("Maintain the current database or table."), wxITEM_NORMAL);
+	toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(vacuum_png_bmp, "vacuum.svg", wxSize(32, 32)), _("Maintain the current database or table."), wxITEM_NORMAL);
 }
 
 

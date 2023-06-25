@@ -1920,7 +1920,7 @@ static pgaCollectionFactory cf(&serverFactory, __("Servers"), servers_png_img);
 addServerFactory::addServerFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : actionFactory(list)
 {
 	mnu->Append(id, _("&Add Server..."), _("Add a connection to a server."));
-	toolbar->AddTool(id, _("Add Server"), *connect_png_bmp, _("Add a connection to a server."), wxITEM_NORMAL);
+	toolbar->AddTool(id, _("Add Server"), *GetBundleSVG(connect_png_bmp, "connect.svg", wxSize(32, 32)), _("Add a connection to a server."), wxITEM_NORMAL);
 }
 
 

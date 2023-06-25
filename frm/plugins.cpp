@@ -439,7 +439,7 @@ pluginButtonMenuFactory::pluginButtonMenuFactory(menuFactoryList *list, wxMenu *
 
 	if (toolbar)
 	{
-		toolbar->AddTool(id, wxEmptyString, *plugins_png_bmp, _("Execute the last used plugin."));
+		toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(plugins_png_bmp, "plugins.svg", wxSize(32, 32)), _("Execute the last used plugin."));
 		pulldownButton = toolbar->AddMenuPulldownTool(MNU_PLUGINBUTTONLIST, wxT("Execute Plugin"), wxT("Select a plugin."), popupmenu);
 	}
 }
