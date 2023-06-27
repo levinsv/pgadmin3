@@ -50,19 +50,19 @@ void ctlSQLGrid::setresizedpi() {
 	fntLabel.SetWeight(wxBOLD);
 	SetLabelFont(fntLabel);
 	SetColLabelAlignment(wxALIGN_LEFT, wxALIGN_CENTER);
-	SetRowLabelSize(50);
+	SetRowLabelSize(FromDIP(50));
 
 }
 
 ctlSQLGrid::ctlSQLGrid(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
 	: wxGrid(parent, id, pos, size, wxWANTS_CHARS | wxVSCROLL | wxHSCROLL)
 {
-
+/*
 	Bind(wxEVT_DPI_CHANGED, [this](wxDPIChangedEvent& event) {
 		setresizedpi();
 		event.Skip();
 		});
-
+*/	
 
 	setresizedpi();
 	//SetDefaultRowSize(fntCells.GetPointSize() * 2 + 2);
@@ -122,8 +122,8 @@ void ctlSQLGrid::DrawColLabel( wxDC& dc, int col ) {
         wxRect ar = rect;
 
         // make a rect for the arrow
-        ar.height = 4;
-        ar.width = 8;
+        ar.height = FromDIP(4);
+        ar.width = FromDIP(8);
         ar.y += (rect.height - ar.height)/2;
         ar.x = ar.x + rect.width - 3*ar.width/2;
 	    int arrowSpace = 0;
@@ -903,7 +903,7 @@ void ctlSQLGrid::AutoSizeColumn(int col, bool setAsMin, bool doLimit)
 
 void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
 {
-	wxCoord newSize, oldSize;
+	wxCoord newSize, oldSize, maxH=0;
 	wxCoord maxSize, totalSize = 0, availSize;
 	int col, nCols = GetNumberCols();
 	int row, nRows = GetNumberRows();
@@ -941,6 +941,8 @@ void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
 			if ( GetColLabelTextOrientation() == wxVERTICAL )
 				w = h;
 
+			if (h > maxH)
+					maxH = h;
 			if ( w > newSize )
 				newSize = w;
 
@@ -948,14 +950,14 @@ void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
 				newSize = GetRowLabelSize();
 			else
 				// leave some space around text
-				newSize += 6;
+				newSize += FromDIP(EXTRAEXTENT_WIDTH);
 
 			colMaxSizes.Add(newSize);
 		}
 		SetColSize(col, newSize);
 		totalSize += newSize;
 	}
-
+	SetColLabelSize(maxH+ FromDIP(EXTRAEXTENT_HEIGHT));
 	availSize = GetClientSize().GetWidth() - GetRowLabelSize();
 
 	// Second pass: shrink wide columns if exceeded available width
@@ -998,8 +1000,8 @@ wxSize ctlSQLGrid::GetBestSize(int row, int col)
 	{
 		wxClientDC dc(GetGridWindow());
 		size = renderer->GetBestSize(*this, *attr, dc, row, col);
-		int h =	renderer->GetBestHeight(*this, *attr, dc, row, col, size.GetWidth());
-		size.SetHeight(h);
+//		int h =	renderer->GetBestHeight(*this, *attr, dc, row, col, size.GetWidth())
+		size.SetHeight(size.GetHeight() + FromDIP(EXTRAEXTENT_HEIGHT));
 		renderer->DecRef();
 	}
 

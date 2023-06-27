@@ -850,7 +850,7 @@ int pgAdmin3::OnExit()
 
 	// Delete the settings object to ensure settings are saved.
 	delete settings;
-
+	settings = NULL;
 #ifdef __WXMSW__
 	WSACleanup();
 #endif
