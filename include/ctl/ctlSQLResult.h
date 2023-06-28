@@ -131,6 +131,9 @@ public:
 	
 private:
 	pgQueryThread *thread;
+	bool c_IndicateNull;
+	int c_MaxColSize;
+	wxString c_ThousandsSeparator, c_DecimalMark;
 };
 
 #endif

@@ -400,6 +400,7 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 
 				wxString typestr = set->GetVal(wxT("type"));
 				pgaFactory *depFactory = 0;
+				int icon=-1;
 				switch ((wxChar)typestr.c_str()[0])
 				{
 					case 'c':
@@ -428,6 +429,10 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 						break;
 					case 'v':
 						depFactory = &viewFactory;
+						break;
+					case 'm':
+						depFactory = &viewFactory;
+						icon=viewFactory.GetMaterializedIconId();
 						break;
 					case 'x':
 						depFactory = &extTableFactory;
@@ -505,11 +510,10 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 				refname += _refname;
 
 				wxString typname;
-				int icon;
 				if (depFactory)
 				{
 					typname = depFactory->GetTypeName();
-					icon = depFactory->GetIconId();
+					if (icon==-1) icon = depFactory->GetIconId();
 				}
 				else
 				{

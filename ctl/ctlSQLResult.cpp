@@ -201,10 +201,14 @@ void ctlSQLResult::DisplayData(bool single)
 	table->initSort();
 	SetSort(true);
 	if (NumRows()<1000) {
+		int h, v;
+		GetDefaultCellAlignment(&h, &v);
 	for(int row = 0; row < NumRows(); ++row) {
 	    if (row%2==0) {
 			    wxGridCellAttr* pAttr = new wxGridCellAttr;
 			    pAttr->SetBackgroundColour(wxColour(224,255,224));
+				
+				pAttr->SetAlignment(h,v);
 				SetRowAttr(row,pAttr);
 		}
 		
@@ -1068,7 +1072,7 @@ wxString sqlResultTable::GetValue(int row, int col)
 		{
 			if (use_map) row=maplines[row];
 			thread->DataSet()->Locate(row + 1);
-			if (settings->GetIndicateNull() && thread->DataSet()->IsNull(col))
+			if (c_IndicateNull && thread->DataSet()->IsNull(col))
 				return wxT("<NULL>");
 			else
 			{
@@ -1077,14 +1081,14 @@ wxString sqlResultTable::GetValue(int row, int col)
 				wxString s = thread->DataSet()->GetVal(col);
 
 				if(thread->DataSet()->ColTypClass(col) == PGTYPCLASS_NUMERIC &&
-				        settings->GetDecimalMark().Length() > 0)
+				        !c_DecimalMark.IsEmpty())
 				{
 					decimalMark = settings->GetDecimalMark();
 					s.Replace(wxT("."), decimalMark);
 
 				}
 				if (thread->DataSet()->ColTypClass(col) == PGTYPCLASS_NUMERIC &&
-				        settings->GetThousandsSeparator().Length() > 0)
+				        !c_ThousandsSeparator.IsEmpty())
 				{
 					/* Add thousands separator */
 					size_t pos = s.find(decimalMark);
@@ -1094,7 +1098,7 @@ wxString sqlResultTable::GetValue(int row, int col)
 					{
 						pos -= 3;
 						if (pos > 1 || !s.StartsWith(wxT("-")))
-							s.insert(pos, settings->GetThousandsSeparator());
+							s.insert(pos, c_ThousandsSeparator);
 					}
 					return s;
 				}
@@ -1102,8 +1106,8 @@ wxString sqlResultTable::GetValue(int row, int col)
 				{
 					wxString data = thread->DataSet()->GetVal(col);
 
-					if (data.Length() > (size_t)settings->GetMaxColSize())
-						return thread->DataSet()->GetVal(col).Left(settings->GetMaxColSize()) + wxT(" (...)");
+					if (data.Length() > (size_t) c_MaxColSize)
+						return thread->DataSet()->GetVal(col).Left(c_MaxColSize) + wxT(" (...)");
 					else
 						return thread->DataSet()->GetVal(col);
 				}
@@ -1121,6 +1125,10 @@ sqlResultTable::sqlResultTable()
 	colorder=NULL;
 	maplines=NULL;
 	use_map=false;
+	c_MaxColSize = settings->GetMaxColSize();
+	c_IndicateNull=settings->GetIndicateNull();
+	c_ThousandsSeparator = settings->GetThousandsSeparator();
+	c_DecimalMark = settings->GetDecimalMark();
 }
 
 int sqlResultTable::GetNumberRows()

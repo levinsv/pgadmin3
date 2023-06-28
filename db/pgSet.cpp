@@ -198,14 +198,13 @@ int pgSet::ColNumber(const wxString &colname) const
 {
 	int col;
 
-	if (needColQuoting)
+	col = PQfnumber(res, colname.mb_str(conv));
+	if (col < 0 && needColQuoting)
 	{
 		wxString quotedColName = colname;
 		quotedColName.Replace(wxT("\""), wxT("\"\""));
 		col = PQfnumber(res, (wxT("\"") + quotedColName + wxT("\"")).mb_str(conv));
 	}
-	else
-		col = PQfnumber(res, colname.mb_str(conv));
 
 	if (col < 0)
 	{

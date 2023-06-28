@@ -49,7 +49,8 @@ void ctlSQLGrid::setresizedpi() {
 	wxFont fntLabel(settings->GetSystemFont());
 	fntLabel.SetWeight(wxBOLD);
 	SetLabelFont(fntLabel);
-	SetColLabelAlignment(wxALIGN_LEFT, wxALIGN_CENTER);
+	SetColLabelAlignment(wxALIGN_LEFT, wxALIGN_CENTRE);
+	SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
 	SetRowLabelSize(FromDIP(50));
 
 }
@@ -903,7 +904,7 @@ void ctlSQLGrid::AutoSizeColumn(int col, bool setAsMin, bool doLimit)
 
 void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
 {
-	wxCoord newSize, oldSize, maxH=0;
+	wxCoord newSize, oldSize, maxH=0, newSizeH=0;
 	wxCoord maxSize, totalSize = 0, availSize;
 	int col, nCols = GetNumberCols();
 	int row, nRows = GetNumberRows();
@@ -933,6 +934,8 @@ void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
 				wxSize size = GetBestSize(row, col);
 				if ( size.x > newSize )
 					newSize = size.x;
+				if (size.y > newSizeH)
+					newSizeH = size.y;
 			}
 			// get column's label width
 			wxCoord w, h;
@@ -959,7 +962,8 @@ void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
 	}
 	SetColLabelSize(maxH+ FromDIP(EXTRAEXTENT_HEIGHT));
 	availSize = GetClientSize().GetWidth() - GetRowLabelSize();
-
+	int newDef = GetDefaultRowSize()+FromDIP(1);
+	SetDefaultRowSize(newDef, true);
 	// Second pass: shrink wide columns if exceeded available width
 	if (totalSize > availSize)
 	{
