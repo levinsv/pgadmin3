@@ -12,6 +12,7 @@ x64/Release_(3.0)/*.res
 x64/Release_(3.0)/*.sbr
 x64/Release_(3.0)/*.ilk
 x64/Release_(3.0)/*.txt
+x64/Release_(3.0)/svg
 *.sbr
 *.obj
 *.cod

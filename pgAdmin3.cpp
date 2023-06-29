@@ -26,6 +26,7 @@
 #include <wx/stdpaths.h>
 #include <wx/clipbrd.h>
 #include <wx/sysopt.h>
+#include "wx/stackwalk.h"
 
 // wxOGL
 #include <ogl/ogl.h>
@@ -200,8 +201,75 @@ void frmDlgTest::OnSelect(wxCommandEvent &ev)
 	}
 }
 
+class MyStackWalker : public wxStackWalker
+{
+public:
+	MyStackWalker(wxString &rez)
+	{
+		Rez = &rez;
+	}
+
+//	bool IsOk() const { return m_isOk; }
+
+protected:
+	virtual void OnStackFrame(const wxStackFrame& frame) wxOVERRIDE;
+	wxString* Rez;
+};
+void MyStackWalker::OnStackFrame(const wxStackFrame& frame)
+{
+	
+	Rez->Append(wxString::Format("level: %lu\n", (unsigned long) frame.GetLevel()));
+	wxString func = frame.GetName();
+	if (!func.empty())
+		Rez->Append(wxString::Format("function: %s\n", func));
+	Rez->Append(wxString::Format(" offset: %08lx\n address: %08lx\n", (unsigned long) frame.GetOffset(), (unsigned long)wxPtrToUInt(frame.GetAddress())));
+
+
+	wxString module = frame.GetModule();
+	if (!module.empty())
+		Rez->Append(wxString::Format("module: %s\n", module));
+
+	if (frame.HasSourceLocation())
+	{
+		Rez->Append(wxString::Format("file: %s\n", frame.GetFileName()));
+		Rez->Append(wxString::Format("line: %lu\n", (unsigned long)frame.GetLine()));
+	}
+
+	const size_t nParams = frame.GetParamCount();
+	if (nParams)
+	{
+		for (size_t n = 0; n < nParams; n++)
+		{
+			Rez->Append(wxString::Format(" P%lu: %lu\n", (unsigned long)n));
+
+			wxString type, name, value;
+			if (!frame.GetParam(n, &type, &name, &value))
+				continue;
+
+			if (!type.empty())
+				Rez->Append(wxString::Format(" type: %s\n", type));
+
+			if (!name.empty())
+				Rez->Append(wxString::Format(" name: %s\n", name));
+
+			if (!value.empty())
+				Rez->Append(wxString::Format(" value: %s\n", value));
+		}
+
+	}
+	Rez->Append(wxString::Format("----------------\n"));
+	
+}
 
 // The Application!
+void pgAdmin3::OnFatalException() {
+	wxString err = "fatal error";
+	MyStackWalker sw(err);
+	sw.WalkFromException();
+	wxLogError(err);
+	wxMessageBox(err,
+		"wxExcept", wxOK | wxICON_ERROR);
+}
 bool pgAdmin3::OnInit()
 {
 	// Force logging off until we're ready
@@ -463,6 +531,7 @@ bool pgAdmin3::OnInit()
 	// Attempt to dynamically load PGgetOutResult from libpq. this
 	// is only present in EDB versions.
 	InitLibpq();
+
 #endif
 
 	if (configMode)

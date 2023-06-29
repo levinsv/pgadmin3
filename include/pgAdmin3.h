@@ -169,7 +169,7 @@ class pgAdmin3 : public wxApp
 public:
 	virtual bool OnInit();
 	virtual int OnExit();
-
+	virtual void OnFatalException() wxOVERRIDE;
 #ifdef __WXMAC__
 	void MacOpenFile(const wxString &fileName);
 #endif
@@ -190,7 +190,7 @@ protected:
 	void InitLogger();
 	void InitNetwork();
 	void InitXml();
-
+	
 #ifdef __WXMSW__
 	void InitLibpq();
 #endif

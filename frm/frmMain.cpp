@@ -1482,7 +1482,7 @@ faqFactory::faqFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolb
 
 wxWindow *faqFactory::StartDialog(frmMain *form, pgObject *obj)
 {
-	wxLaunchDefaultBrowser(wxT("http://www.pgadmin.org/support/faq.php"));
+	wxLaunchDefaultBrowser(wxT("https://github.com/levinsv/pgadmin3/issues"));
 
 	return 0;
 }
