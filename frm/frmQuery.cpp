@@ -266,10 +266,24 @@ void frmQuery::seticon()
 				if (!wxFileExists(f)) f = "";
 			}
 	}
+	if (f.empty()) {
+		f = tempDir + host + "_" + db + wxT(".svg");
+		if (!wxFileExists(f)) {
+			f = tempDir + host + wxT(".svg");
+			if (!wxFileExists(f)) {
+				f = tempDir + db + wxT(".svg");
+				if (!wxFileExists(f)) f = "";
+			}
+		}
+	}
 	while (!f.empty())
 	{
 		wxIcon* ico = new wxIcon();
-		wxBitmap bitmap(f, wxBITMAP_TYPE_PNG);
+		wxBitmapBundle bb = GetBundleSVG(NULL, f, wxSize(32, 32));
+		wxBitmap bitmap = bb.GetBitmap(wxSize(32, 32));
+
+		//wxBitmap bitmap(f, wxBITMAP_TYPE_PNG);
+		
 		if (!bitmap.Ok())
 		{
 			wxMessageBox(wxT("Sorry, could not load png file.\n")+f);
@@ -277,6 +291,7 @@ void frmQuery::seticon()
 		ico->CopyFromBitmap(bitmap);
 		//SetIcon(*sql_32_png_ico);
 		SetIcon(*ico);
+		delete ico;
 		return;
 		//f = wxFindNextFile();
 	}
@@ -306,6 +321,8 @@ void frmQuery::seticon()
 		ico->CopyFromBitmap(*bmp);
 		//SetIcon(*sql_32_png_ico);
 		SetIcon(*ico);
+		delete ico;
+		delete bmp;
 	}
 }
 frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const wxString &query, const wxString &file)
@@ -328,7 +345,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	dlgName = wxT("frmQuery");
 	recentKey = wxT("RecentFiles");
 	RestorePosition(100, 100, 600, 500, 450, 300);
-
+	wxLogInfo(wxT("frmQuery::Create window"));
 	explainCanvas = NULL;
 
 	// notify wxAUI which frame to use
@@ -506,7 +523,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	mapping["MNU_DOROLLBACK"] = MNU_DOROLLBACK;
 	mapping["MNU_DOCOMMIT"] = MNU_DOCOMMIT;
 	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"keymap.txt";
-	
+	wxLogInfo(wxT("frmQuery::Create key map ..."));
 	int idx = 0;
 	if (wxFileName::FileExists(tempDir) )
 	{
@@ -570,7 +587,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	wxAcceleratorTable accel(idx, entries);
 	SetAcceleratorTable(accel);
-
+	wxLogInfo(wxT("frmQuery::Create key map Ok"));
 	queryMenu->Enable(MNU_CANCEL, false);
 
 	int iWidths[7] = {0, -1, 40, 200, 80, 80, 80};
@@ -582,35 +599,36 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER);
 
 	//toolBar->SetToolBitmapSize(wxSize(22, 22));
-
-	toolBar->AddTool(MNU_NEWSQLTAB, wxEmptyString, *GetBundleSVG(file_new_png_bmp, "file_new.svg", wxSize(16, 16)), _("New SQL tab"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_OPEN, wxEmptyString, *GetBundleSVG(file_open_png_bmp, "file_open.svg", wxSize(16, 16)) , _("Open file"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_SAVE, wxEmptyString, *GetBundleSVG(file_save_png_bmp, "file_save.svg", wxSize(16, 16)) , _("Save file"), wxITEM_NORMAL);
+	wxLogInfo(wxT("frmQuery::Create tool bar .."));
+	toolBar->AddTool(MNU_NEWSQLTAB, wxEmptyString, GetBundleSVG(file_new_png_bmp, "file_new.svg", wxSize(16, 16)), _("New SQL tab"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_OPEN, wxEmptyString, GetBundleSVG(file_open_png_bmp, "file_open.svg", wxSize(16, 16)) , _("Open file"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_SAVE, wxEmptyString, GetBundleSVG(file_save_png_bmp, "file_save.svg", wxSize(16, 16)) , _("Save file"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
-	toolBar->AddTool(MNU_CUT, wxEmptyString, *GetBundleSVG(clip_cut_png_bmp, "clip_cut.svg", wxSize(16, 16)) , _("Cut selected text to clipboard"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_COPY, wxEmptyString, *GetBundleSVG(clip_copy_png_bmp, "clip_copy.svg", wxSize(16, 16)), _("Copy selected text to clipboard"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_PASTE, wxEmptyString, *GetBundleSVG(clip_paste_png_bmp, "clip_paste.svg", wxSize(16, 16)), _("Paste selected text from clipboard"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_CLEAR, wxEmptyString, *GetBundleSVG(edit_clear_png_bmp, "edit_clear.svg", wxSize(16, 16)), _("Clear edit window"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_CUT, wxEmptyString, GetBundleSVG(clip_cut_png_bmp, "clip_cut.svg", wxSize(16, 16)) , _("Cut selected text to clipboard"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_COPY, wxEmptyString, GetBundleSVG(clip_copy_png_bmp, "clip_copy.svg", wxSize(16, 16)), _("Copy selected text to clipboard"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_PASTE, wxEmptyString, GetBundleSVG(clip_paste_png_bmp, "clip_paste.svg", wxSize(16, 16)), _("Paste selected text from clipboard"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_CLEAR, wxEmptyString, GetBundleSVG(edit_clear_png_bmp, "edit_clear.svg", wxSize(16, 16)), _("Clear edit window"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
-	toolBar->AddTool(MNU_UNDO, wxEmptyString, *GetBundleSVG(edit_undo_png_bmp, "edit_undo.svg", wxSize(16, 16)), _("Undo last action"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_REDO, wxEmptyString, *GetBundleSVG(edit_redo_png_bmp, "edit_redo.svg", wxSize(16, 16)), _("Redo last action"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_UNDO, wxEmptyString, GetBundleSVG(edit_undo_png_bmp, "edit_undo.svg", wxSize(16, 16)), _("Undo last action"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_REDO, wxEmptyString, GetBundleSVG(edit_redo_png_bmp, "edit_redo.svg", wxSize(16, 16)), _("Redo last action"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
-	toolBar->AddTool(MNU_FIND, wxEmptyString, *GetBundleSVG(edit_find_png_bmp, "edit_find.svg", wxSize(16, 16)), _("Find and replace text"), wxITEM_NORMAL);
-	toolBar->AddSeparator();
-
-	toolBar->AddTool(MNU_EXECUTE, wxEmptyString, *GetBundleSVG(query_execute_png_bmp, "query_execute.svg", wxSize(16, 16)), _("Execute query"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_EXECPGS, wxEmptyString, *GetBundleSVG(query_pgscript_png_bmp, "query_pgscript.svg", wxSize(16, 16)), _("Execute pgScript"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_EXECFILE, wxEmptyString, *GetBundleSVG(query_execfile_png_bmp, "query_execfile.svg", wxSize(16, 16)), _("Execute query, write result to file"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_EXPLAIN, wxEmptyString, *GetBundleSVG(query_explain_png_bmp, "query_explain.svg", wxSize(16, 16)), _("Explain query"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_CANCEL, wxEmptyString, *GetBundleSVG(query_cancel_png_bmp, "query_cancel.svg", wxSize(16, 16)), _("Cancel query"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_FIND, wxEmptyString, GetBundleSVG(edit_find_png_bmp, "edit_find.svg", wxSize(16, 16)), _("Find and replace text"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
 
-	toolBar->AddTool(MNU_DOCOMMIT, wxEmptyString, *GetBundleSVG(query_commit_png_bmp, "query_commit.svg", wxSize(16, 16)), _("Commit"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_DOROLLBACK, wxEmptyString, *GetBundleSVG(query_rollback_png_bmp, "query_rollback.svg", wxSize(16, 16)), _("Rollback"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_EXECUTE, wxEmptyString, GetBundleSVG(query_execute_png_bmp, "query_execute.svg", wxSize(16, 16)), _("Execute query"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_EXECPGS, wxEmptyString, GetBundleSVG(query_pgscript_png_bmp, "query_pgscript.svg", wxSize(16, 16)), _("Execute pgScript"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_EXECFILE, wxEmptyString, GetBundleSVG(query_execfile_png_bmp, "query_execfile.svg", wxSize(16, 16)), _("Execute query, write result to file"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_EXPLAIN, wxEmptyString, GetBundleSVG(query_explain_png_bmp, "query_explain.svg", wxSize(16, 16)), _("Explain query"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_CANCEL, wxEmptyString, GetBundleSVG(query_cancel_png_bmp, "query_cancel.svg", wxSize(16, 16)), _("Cancel query"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
 
-	toolBar->AddTool(MNU_HELP, wxEmptyString, *GetBundleSVG(help_png_bmp, "help.svg", wxSize(16, 16)), _("Display help on SQL commands."), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_DOCOMMIT, wxEmptyString, GetBundleSVG(query_commit_png_bmp, "query_commit.svg", wxSize(16, 16)), _("Commit"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_DOROLLBACK, wxEmptyString, GetBundleSVG(query_rollback_png_bmp, "query_rollback.svg", wxSize(16, 16)), _("Rollback"), wxITEM_NORMAL);
+	toolBar->AddSeparator();
+
+	toolBar->AddTool(MNU_HELP, wxEmptyString, GetBundleSVG(help_png_bmp, "help.svg", wxSize(16, 16)), _("Display help on SQL commands."), wxITEM_NORMAL);
 	toolBar->Realize();
+	wxLogInfo(wxT("frmQuery::Create tool bar Ok"));
 	wxSize toolw = toolBar->GetBestSize();
 	// Add the database selection bar
 	cbConnection = new wxBitmapComboBox(this, CTRLID_CONNECTION, wxEmptyString, wxDefaultPosition, wxSize(-1, -1), wxArrayString(), wxCB_READONLY | wxCB_DROPDOWN);
@@ -866,7 +884,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		filename = f.AfterLast(sepPath).BeforeLast('.');
 		if (filename.BeforeFirst('.') == "_active") {
 			activePage.Add(filename.AfterFirst('.'));
-			//wxLogInfo(wxT("frmQuery::_active file marker: name=[%s] pref=[%s]"), filename.AfterFirst('.'), pref);
+			wxLogInfo(wxT("frmQuery::_active file marker: name=[%s] pref=[%s]"), filename.AfterFirst('.'), pref);
 		}
 		f = wxFindNextFile();
 	}
@@ -905,7 +923,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 				setExtendedTitle();
 				SqlBookUpdatePageTitle();
 				SaveTempFile();
-
+				wxLogInfo(wxT("frmQuery::Create tab name=[%s]"), filename);
 			}
 
 		 }
@@ -4859,8 +4877,8 @@ bool queryToolDataFactory::CheckEnable(pgObject *obj)
 queryToolFactory::queryToolFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : queryToolBaseFactory(list)
 {
 	mnu->Append(id, _("&Query tool\tCtrl-E"), _("Execute arbitrary SQL queries."));
-	toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(sql_32_png_bmp, "sql_32.svg", wxSize(32, 32)), _("Execute arbitrary SQL queries."), wxITEM_NORMAL);
-	//toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(sql_32_png_bmp, "plugins.svg", wxSize(32, 32)), _("Execute arbitrary SQL queries."), wxITEM_NORMAL);
+	toolbar->AddTool(id, wxEmptyString, GetBundleSVG(sql_32_png_bmp, "sql_32.svg", wxSize(32, 32)), _("Execute arbitrary SQL queries."), wxITEM_NORMAL);
+	//toolbar->AddTool(id, wxEmptyString, GetBundleSVG(sql_32_png_bmp, "plugins.svg", wxSize(32, 32)), _("Execute arbitrary SQL queries."), wxITEM_NORMAL);
 }
 
 
@@ -4877,7 +4895,7 @@ queryToolSqlFactory::queryToolSqlFactory(menuFactoryList *list, wxMenu *mnu, ctl
 {
 	mnu->Append(id, _("CREATE Script"), _("Start Query tool with CREATE script."));
 	if (toolbar)
-		toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(sql_32_png_bmp, "sql_32.svg", wxSize(32, 32)), _("Start query tool with CREATE script."), wxITEM_NORMAL);
+		toolbar->AddTool(id, wxEmptyString, GetBundleSVG(sql_32_png_bmp, "sql_32.svg", wxSize(32, 32)), _("Start query tool with CREATE script."), wxITEM_NORMAL);
 }
 
 

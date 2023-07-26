@@ -2262,7 +2262,7 @@ propertyFactory::propertyFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuTool
 	else
 		context = false;
 	if (toolbar)
-		toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(properties_png_bmp, "properties.svg", wxSize(32, 32)), _("Display/edit the properties of the selected object."), wxITEM_NORMAL);
+		toolbar->AddTool(id, wxEmptyString, GetBundleSVG(properties_png_bmp, "properties.svg", wxSize(32, 32)), _("Display/edit the properties of the selected object."), wxITEM_NORMAL);
 }
 
 
@@ -2285,7 +2285,7 @@ bool propertyFactory::CheckEnable(pgObject *obj)
 createFactory::createFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : actionFactory(list)
 {
 	mnu->Append(id, _("&Create..."),  _("Create a new object of the same type as the selected object."));
-	toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(create_png_bmp, "create.svg", wxSize(32, 32)), _("Create a new object of the same type as the selected object."), wxITEM_NORMAL);
+	toolbar->AddTool(id, wxEmptyString, GetBundleSVG(create_png_bmp, "create.svg", wxSize(32, 32)), _("Create a new object of the same type as the selected object."), wxITEM_NORMAL);
 }
 
 
@@ -2308,7 +2308,7 @@ bool createFactory::CheckEnable(pgObject *obj)
 dropFactory::dropFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {
 	mnu->Append(id, _("&Delete/Drop...\tDel"),  _("Delete/Drop the selected object."));
-	toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(drop_png_bmp, "drop.svg", wxSize(32, 32)), _("Drop the currently selected object."), wxITEM_NORMAL);
+	toolbar->AddTool(id, wxEmptyString, GetBundleSVG(drop_png_bmp, "drop.svg", wxSize(32, 32)), _("Drop the currently selected object."), wxITEM_NORMAL);
 }
 
 
@@ -2352,7 +2352,7 @@ refreshFactory::refreshFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolba
 	else
 		context = false;
 	if (toolbar)
-		toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(refresh_png_bmp,"refresh.svg",wxSize(32,32)), _("Refresh the selected object."), wxITEM_NORMAL);
+		toolbar->AddTool(id, wxEmptyString, GetBundleSVG(refresh_png_bmp,"refresh.svg",wxSize(32,32)), _("Refresh the selected object."), wxITEM_NORMAL);
 }
 
 

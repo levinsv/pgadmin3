@@ -290,16 +290,47 @@ frmMain::~frmMain()
 	}
 #endif
 }
+#include <wx/hashmap.h>
+WX_DECLARE_HASH_MAP(wxString, wxBitmapBundle, wxStringHash, wxStringEqual, MyHash1);
+MyHash1 bundleHash;
 
-wxBitmapBundle* GetBundleSVG(wxBitmap* std, wxString name, wxSize sz) {
-	wxBitmapBundle *b;
+wxBitmapBundle GetBundleSVG(wxBitmap* std, wxString name, wxSize sz) {
+	wxBitmapBundle bb;
+	wxBitmapBundle *b=NULL;
+	bb = bundleHash[name];
+	if (bb.IsOk()) return bb;
+
 	if (wxFile::Exists(loadPath + sepPath +"svg" + sepPath + name)) {
-		b = new wxBitmapBundle(wxBitmapBundle::FromSVGFile(loadPath + sepPath + "svg" + sepPath + name, sz));
+		//b = new wxBitmapBundle(wxBitmapBundle::FromSVGFile(loadPath + sepPath + "svg" + sepPath + name, sz));
+		bb=wxBitmapBundle::FromSVGFile(loadPath + sepPath + "svg" + sepPath + name, sz);
 	}
-	else {
-		b=new wxBitmapBundle(*std);
+	else if (wxFile::Exists(name)) {
+		if (name.AfterLast('.') == "png") {
+			wxBitmap bitmap(name, wxBITMAP_TYPE_PNG);
+			if (!bitmap.Ok())
+			{
+				wxMessageBox(wxT("Sorry, could not load png file.\n") + name);
+			}
+			else {
+				bb = wxBitmapBundle::FromBitmap(bitmap);
+			}
+
+		}
+		else if (name.AfterLast('.') == "svg") {
+			bb = wxBitmapBundle::FromSVGFile(name, sz);
+		}
+		
 	}
-	return b;
+
+	if (!bb.IsOk() && std){
+		//b=new wxBitmapBundle(*std);
+		bb = wxBitmapBundle::FromBitmap(*std);
+	}
+	
+	if (bb.IsOk()) bundleHash[name] = bb; else {
+		wxLogError("Empty bundle for %s",name);
+	}
+	return bb;
 }
 
 void frmMain::CreateMenus()
@@ -1495,7 +1526,7 @@ pgsqlHelpFactory::pgsqlHelpFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuTo
 	if (toolbar)
 	{
 		if (bigIcon)
-			toolbar->AddTool(id, wxEmptyString, *GetBundleSVG(help2_png_bmp, "help2.svg", wxSize(32, 32)), _("Display help on SQL commands."));
+			toolbar->AddTool(id, wxEmptyString, GetBundleSVG(help2_png_bmp, "help2.svg", wxSize(32, 32)), _("Display help on SQL commands."));
 		else
 			toolbar->AddTool(id, wxEmptyString, *help_png_bmp, _("Display help on SQL commands."));
 	}

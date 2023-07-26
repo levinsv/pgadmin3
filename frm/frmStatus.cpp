@@ -315,17 +315,17 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	// Set up toolbar
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER);
 	toolBar->SetToolBitmapSize(FromDIP(wxSize(32, 32)));
-	toolBar->AddTool(MNU_REFRESH, wxEmptyString, *GetBundleSVG(readdata_png_bmp, "refresh.svg", wxSize(16, 16)), _("Refresh"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_REFRESH, wxEmptyString, GetBundleSVG(readdata_png_bmp, "refresh.svg", wxSize(16, 16)), _("Refresh"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
-	toolBar->AddTool(MNU_COPY, wxEmptyString, *GetBundleSVG(clip_copy_png_bmp, "clip_copy.svg", wxSize(16, 16)), _("Copy selected text to clipboard"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_COPY_QUERY, wxEmptyString, *GetBundleSVG(clip_copy_png_bmp, "clip_copy_sql.svg", wxSize(16, 16)), _("Open the query tool with the selected query"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_COPY, wxEmptyString, GetBundleSVG(clip_copy_png_bmp, "clip_copy.svg", wxSize(16, 16)), _("Copy selected text to clipboard"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_COPY_QUERY, wxEmptyString, GetBundleSVG(clip_copy_png_bmp, "clip_copy_sql.svg", wxSize(16, 16)), _("Open the query tool with the selected query"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
-	toolBar->AddTool(MNU_CANCEL, wxEmptyString, *GetBundleSVG(query_cancel_png_bmp, "query_cancel.svg", wxSize(16, 16)), _("Cancel query"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_TERMINATE, wxEmptyString, *GetBundleSVG(terminate_backend_png_bmp, "terminate_backend.svg", wxSize(16, 16)), _("Terminate backend"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_COMMIT, wxEmptyString, *GetBundleSVG(storedata_png_bmp, "storedata.svg", wxSize(16, 16)), _("Commit transaction"), wxITEM_NORMAL);
-	toolBar->AddTool(MNU_ROLLBACK, wxEmptyString, *GetBundleSVG(delete_png_bmp, "drop.svg", wxSize(16, 16)), _("Rollback transaction"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_CANCEL, wxEmptyString, GetBundleSVG(query_cancel_png_bmp, "query_cancel.svg", wxSize(16, 16)), _("Cancel query"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_TERMINATE, wxEmptyString, GetBundleSVG(terminate_backend_png_bmp, "terminate_backend.svg", wxSize(16, 16)), _("Terminate backend"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_COMMIT, wxEmptyString, GetBundleSVG(storedata_png_bmp, "storedata.svg", wxSize(16, 16)), _("Commit transaction"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_ROLLBACK, wxEmptyString, GetBundleSVG(delete_png_bmp, "drop.svg", wxSize(16, 16)), _("Rollback transaction"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
-	toolBar->AddTool(MNU_CLEAR_FILTER_SERVER_STATUS, wxEmptyString, *GetBundleSVG(sortfilterclear_png_bmp, "sortfilterclear.svg", wxSize(16, 16)), _("Clear filter"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_CLEAR_FILTER_SERVER_STATUS, wxEmptyString, GetBundleSVG(sortfilterclear_png_bmp, "sortfilterclear.svg", wxSize(16, 16)), _("Clear filter"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
 	
 	cbLogfiles = new wxComboBox(toolBar, CTL_LOGCBO, wxT(""), wxDefaultPosition, wxDefaultSize, 0, NULL,

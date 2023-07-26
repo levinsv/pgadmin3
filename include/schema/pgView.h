@@ -53,7 +53,7 @@ public:
 	bool DropObject(wxFrame *frame, ctlTree *browser, bool cascaded);
 	bool CanCreate()
 	{
-		return GetSchema()->CanCreate();
+		return GetSchema()->GetCreatePrivilege();
 	}
 	bool CanView()
 	{

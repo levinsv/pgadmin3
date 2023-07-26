@@ -48,7 +48,7 @@
 #include "config.h"
 #undef VERSION
 #endif
-extern wxBitmapBundle* GetBundleSVG(wxBitmap* std, wxString name, wxSize sz);
+extern wxBitmapBundle GetBundleSVG(wxBitmap* std, wxString name, wxSize sz);
 // Check the wxWidgets config
 #if !wxCHECK_VERSION(2, 8, 0)
 #error wxWidgets 2.8.0 or higher is required to compile this version of pgAdmin.
