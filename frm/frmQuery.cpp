@@ -685,9 +685,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	btnDeleteAll = new wxButton(pnlQuery, CTL_DELETEALLBTN, _("Delete All"));
 	btnDeleteAll->Enable(sqlQueries->GetCount() > 0);
 	boxHistory->Add(btnDeleteAll, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-
 	boxQuery->Add(boxHistory, 0, wxEXPAND | wxALL, 1);
-
+	boxHistory->ShowItems(!settings->GetHideQueryHistory());
 	// Create the other inner box sizer
 	// This one will contain the SQL box
 	wxBoxSizer *boxSQL = new wxBoxSizer(wxHORIZONTAL);

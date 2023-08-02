@@ -131,6 +131,7 @@
 #define pickerSQLCaretColour        CTRL_COLOURPICKER("pickerSQLCaretColour")
 #define chkKeywordsInUppercase      CTRL_CHECKBOX("chkKeywordsInUppercase")
 #define chkASUTPstyle		        CTRL_CHECKBOX("chkASUTPstyle")
+#define chkHideQueryHistory		    CTRL_CHECKBOX("chkHideQueryHistory")
 #define menus                		CTRL_TREE("menus")
 #define pnlBrowserDisplay           CTRL_PANEL("pnlBrowserDisplay")
 #define pnlBrowserProperties        CTRL_PANEL("pnlBrowserProperties")
@@ -363,6 +364,7 @@ frmOptions::frmOptions(frmMain *parent)
 
 	chkKeywordsInUppercase->SetValue(settings->GetSQLKeywordsInUppercase());
 	chkASUTPstyle->SetValue(settings->GetASUTPstyle());
+	chkHideQueryHistory->SetValue(settings->GetHideQueryHistory());
 	cbLanguage->Append(_("Default"));
 	int sel = 0;
 	wxLanguage langId = settings->GetCanonicalLanguage();
@@ -874,6 +876,11 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	{
 		changed = true;
 		settings->SetASUTPstyle(chkASUTPstyle->GetValue());
+	}
+	if (settings->GetHideQueryHistory() != chkHideQueryHistory->GetValue())
+	{
+		changed = true;
+		settings->SetHideQueryHistory(chkHideQueryHistory->GetValue());
 	}
 
 	// Change the language last, as it will affect our tests for changes

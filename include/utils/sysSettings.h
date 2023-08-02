@@ -814,6 +814,16 @@ public:
 	{
 		WriteBool(wxT("ASUTPstyle"), newval);
 	}
+	bool GetHideQueryHistory() const
+	{
+		bool b;
+		Read(wxT("HideQueryHistory"), &b, false);
+		return b;
+	}
+	void SetHideQueryHistory(const bool newval)
+	{
+		WriteBool(wxT("HideQueryHistory"), newval);
+	}
 	bool GetVisibleDbNameTree() const
 	{
 		bool b;
