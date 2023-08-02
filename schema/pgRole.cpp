@@ -190,7 +190,20 @@ bool pgRole::DropObject(wxFrame *frame, ctlTree *browser, bool cascaded)
 	return server->ExecuteVoid(wxT("DROP ROLE ") + GetQuotedFullIdentifier() + wxT(";"));
 }
 
-
+wxString pgRole::GetOptStr(wxString& rolename) {
+	wxString opt = rolename.AfterLast('(');
+	if (opt==rolename) return wxEmptyString;
+	wxString str;
+	wxString delim = "";
+	if (opt.Index('A') != wxNOT_FOUND) str += "ADMIN OPTION";
+	if (!str.IsEmpty()) delim = ", ";
+	if (opt.find("I") != wxNOT_FOUND) str +=delim+ "INHERIT true";
+	if (opt.find("i") != wxNOT_FOUND) str += delim + "INHERIT false";
+	if (!str.IsEmpty()) delim = ", ";
+	if (opt.Index('s') != wxNOT_FOUND) str += delim + "SET false";
+	if (!str.IsEmpty()) str = " WITH "+str;
+	return str;
+}
 wxString pgRole::GetSql(ctlTree *browser)
 {
 	if (sql.IsNull())
@@ -269,16 +282,17 @@ wxString pgRole::GetSql(ctlTree *browser)
 		{
 			wxString role = rolesIn.Item(index);
 			bool admin = false;
-			if (role.Right(PGROLE_ADMINOPTION_LEN) == PGROLE_ADMINOPTION)
+			wxString opt = GetOptStr(role);
+			if (role.AfterLast('(')!=role)
 			{
-				admin = true;
-				role = role.Left(role.Length() - PGROLE_ADMINOPTION_LEN);
+				
+				role = role.BeforeLast('(');
 			}
 			sql += wxT("GRANT ") + qtIdent(role)
 			       +  wxT(" TO ") + GetQuotedIdentifier();
 
-			if (admin)
-				sql += wxT(" WITH ADMIN OPTION");
+			if (!opt.IsEmpty())
+				sql += opt;
 
 			sql += wxT(";\n");
 		}
@@ -473,12 +487,13 @@ void pgRole::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *proper
 	{
 		expandedKids = true;
 		wxString rolesquery;
-
+		wxString fieldOpt = ", admin_option";
+		if (GetConnection()->BackendMinimumVersion(16, 0)) fieldOpt += ", inherit_option, set_option";
 		if (GetConnection()->BackendMinimumVersion(8, 2))
-			rolesquery = wxT("SELECT rolname, admin_option,\n")
+			rolesquery = "SELECT rolname"+ fieldOpt +",\n"
 			             wxT(" pg_catalog.shobj_description(r.oid, 'pg_authid') AS description\n");
 		else
-			rolesquery = wxT("SELECT rolname, admin_option\n");
+			rolesquery = "SELECT rolname"+ fieldOpt +"\n";
 
 		rolesquery += wxT("  FROM pg_roles r\n")
 		              wxT("  JOIN pg_auth_members ON r.oid=roleid\n")
@@ -490,9 +505,17 @@ void pgRole::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *proper
 		while (roles.RowsLeft())
 		{
 			wxString role = roles.GetVal(wxT("rolname"));
+			wxString opt;
 			if (roles.GetBool(wxT("admin_option")))
-				role += PGROLE_ADMINOPTION;
-
+				opt += "A";
+			if (GetConnection()->BackendMinimumVersion(16, 0)) {
+				if (GetInherits() != roles.GetBool(wxT("inherit_option")))
+					if (roles.GetBool(wxT("inherit_option"))) opt += "I"; else opt += "i";
+				if (!roles.GetBool(wxT("set_option")))
+					opt += "s";
+			}
+			if (!opt.IsEmpty()) opt = "(" + opt + ")";
+			role += opt;
 			rolesIn.Add(role);
 		}
 

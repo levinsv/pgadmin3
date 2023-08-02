@@ -443,7 +443,7 @@ void dlgRole::OnRoleAdd(wxCommandEvent &ev)
 		{
 			wxString roleName = lbRolesNotIn->GetString(pos);
 			if (chkAdminOption->GetValue())
-				roleName += PGROLE_ADMINOPTION;
+				roleName += "(A)";
 			lbRolesIn->Append(roleName);
 			lbRolesNotIn->Delete(pos);
 		}
@@ -459,11 +459,11 @@ void dlgRole::OnRoleRemove(wxCommandEvent &ev)
 		int pos = lbRolesIn->GetSelection();
 		if (pos >= 0)
 		{
-			wxString role = lbRolesIn->GetString(pos);
-			if (role.Right(PGROLE_ADMINOPTION_LEN) == PGROLE_ADMINOPTION)
-				role = role.Left(role.Length() - PGROLE_ADMINOPTION_LEN);
+			wxString roleName = lbRolesIn->GetString(pos);
+			if (!pgRole::GetOptStr(roleName).IsEmpty())
+				roleName = roleName.BeforeLast('(');
 
-			lbRolesNotIn->Append(role);
+			lbRolesNotIn->Append(roleName);
 			lbRolesIn->Delete(pos);
 		}
 		CheckChange();
@@ -725,15 +725,16 @@ wxString dlgRole::GetSql()
 			else
 			{
 				bool admin = false;
-				if (roleName.Right(PGROLE_ADMINOPTION_LEN) == PGROLE_ADMINOPTION)
+				wxString opt = pgRole::GetOptStr(roleName);
+				if (!opt.IsEmpty())
 				{
 					admin = true;
-					roleName = roleName.Left(roleName.Length() - PGROLE_ADMINOPTION_LEN);
+					roleName = roleName.BeforeLast('(');
 				}
 				else
 				{
 					// new role membership without admin option
-					index = tmpRoles.Index(roleName + PGROLE_ADMINOPTION);
+					index = tmpRoles.Index(roleName + "(");
 					if (index >= 0)
 					{
 						// old membership with admin option
@@ -755,7 +756,7 @@ wxString dlgRole::GetSql()
 				       +  wxT(" TO ") + qtIdent(name);
 
 				if (admin)
-					sql += wxT(" WITH ADMIN OPTION");
+					sql += opt;
 
 				sql += wxT(";\n");
 			}
@@ -764,7 +765,11 @@ wxString dlgRole::GetSql()
 		// check for removed roles
 		for (pos = 0 ; pos < (int)tmpRoles.GetCount() ; pos++)
 		{
-			sql += wxT("REVOKE ") + qtIdent(tmpRoles.Item(pos))
+			wxString roleName = tmpRoles.Item(pos);
+			wxString opt=pgRole::GetOptStr(roleName);
+			if (!opt.IsEmpty()) roleName = roleName.BeforeLast('(');
+
+			sql += wxT("REVOKE ") + qtIdent(roleName)
 			       +  wxT(" FROM ") + qtIdent(name) + wxT(";\n");
 		}
 	}
@@ -816,9 +821,10 @@ wxString dlgRole::GetSql()
 			{
 				bool admin = false;
 				roleName = lbRolesIn->GetString(pos);
-				if (roleName.Right(PGROLE_ADMINOPTION_LEN) == PGROLE_ADMINOPTION)
+				wxString opt = pgRole::GetOptStr(roleName);
+				if (!opt.IsEmpty())
 				{
-					roleName = roleName.Left(roleName.Length() - PGROLE_ADMINOPTION_LEN);
+					roleName = roleName.BeforeLast('(');
 					admin = true;
 
 				}
@@ -826,7 +832,7 @@ wxString dlgRole::GetSql()
 				          +  wxT(" TO ") + qtIdent(name);
 
 				if (admin)
-					grants += wxT(" WITH ADMIN OPTION;\n");
+					grants += opt;
 				else
 					grants += wxT(";\n");
 			}

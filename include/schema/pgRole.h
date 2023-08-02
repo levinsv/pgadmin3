@@ -165,9 +165,11 @@ public:
 	// Tree object creation
 	void ShowTreeDetail(ctlTree *browser, frmMain *form = 0, ctlListView *properties = 0, ctlSQLBox *sqlPane = 0);
 	void ShowDependents(frmMain *form, ctlListView *referencedBy, const wxString &where);
-
+	
+	static wxString GetOptStr(wxString& rolename);
 	// virtual methods
 	wxString GetSql(ctlTree *browser);
+	
 	pgObject *Refresh(ctlTree *browser, const wxTreeItemId item);
 	bool DropObject(wxFrame *frame, ctlTree *browser, bool cascaded);
 
