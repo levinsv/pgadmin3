@@ -193,7 +193,7 @@ pgsRecord pgsString::record() const
 
 	// Try to find the representation of a record in the string
 	{
-		wxString element(wxT("(\"([^\"\\\\]|\\\\.)*\")|((-|[a-zA-Z0-9\\+\\.])+)"));
+		wxString element(wxT("(\"([^\"\\\\\\\\]|\\\\.)*\")|((-|[a-zA-Z0-9\\+\\.])+)"));
 		wxString data(m_data);
 		wxRegEx regex1(wxString() << wxT("^[[:space:]]*\\([[:space:]]*(")
 		               << element << wxT(")[[:space:]]*([,][[:space:]]*(")

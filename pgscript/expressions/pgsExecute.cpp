@@ -60,7 +60,7 @@ pgsOperand pgsExecute::eval(pgsVarMap &vars) const
 	wxString stmt(m_query);
 
 	// Build regular expressions
-	wxRegEx identifier(wxT("([^\\])(@[a-zA-Z0-9_#@]+)"));
+	wxRegEx identifier(wxT("([^\\\\])(@[a-zA-Z0-9_#@]+)"));
 	wxRegEx escaped(wxT("\\\\(@|\\\\)")); // Backslash followed by @ or backslash
 	wxASSERT(identifier.IsValid() && escaped.IsValid());
 
