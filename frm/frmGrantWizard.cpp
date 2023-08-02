@@ -167,7 +167,10 @@ void frmGrantWizard::Go()
 
 	wxString privList = wxT("INSERT,SELECT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER");
 	const char *privChar = "arwdDxt";
-
+	if (conn && conn->BackendMinimumVersion(16, 0)) {
+		privChar = "arwdDxtm";
+		privList += ",MAINTAIN";
+	}
 	switch (object->GetMetaType())
 	{
 		case PGM_DATABASE:
@@ -289,7 +292,10 @@ wxString frmGrantWizard::GetSql()
 						tmp = securityPage->GetGrant(wxT("r"), wxT("TABLE ") + obj->GetQuotedFullIdentifier());
 					}
 					else
-						tmp = securityPage->GetGrant(wxT("arwdDxt"), obj->GetTypeName().Upper() + wxT(" ") + obj->GetQuotedFullIdentifier());
+						if (conn && conn->BackendMinimumVersion(16, 0)) 
+							tmp = securityPage->GetGrant(wxT("arwdDxtm"), obj->GetTypeName().Upper() + wxT(" ") + obj->GetQuotedFullIdentifier());
+						else 
+							tmp = securityPage->GetGrant(wxT("arwdDxt"), obj->GetTypeName().Upper() + wxT(" ") + obj->GetQuotedFullIdentifier());
 					break;
 			}
 

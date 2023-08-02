@@ -1036,6 +1036,7 @@ wxString pgObject::GetPrivilegeGrant(const wxString &allPattern, const wxString 
 		AppendRight(rights, acl, 'R', wxT("RULE"), column);
 		AppendRight(rights, acl, 'x', wxT("REFERENCES"), column);
 		AppendRight(rights, acl, 't', wxT("TRIGGER"), column);
+		AppendRight(rights, acl, 'm', wxT("MAINTAIN"), column);
 		AppendRight(rights, acl, 'X', wxT("EXECUTE"), column);
 		AppendRight(rights, acl, 'U', wxT("USAGE"), column);
 		AppendRight(rights, acl, 'C', wxT("CREATE"), column);
@@ -2076,6 +2077,8 @@ wxString pgObject::GetPrivilegeName(wxChar privilege)
 			return wxT("REFERENCES");
 		case 't':
 			return wxT("TRIGGER");
+		case 'm':
+			return wxT("MAINTAIN");
 		case 'U':
 			return wxT("USAGE");
 		case 'X':

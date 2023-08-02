@@ -986,7 +986,7 @@ wxString pgDatabase::GetDefaultPrivileges(const wxChar &cType, wxString strDefPr
 		{
 			case 'r':
 				strType = wxT("TABLES");
-				strSupportedPrivs = wxT("arwdDxt");
+				strSupportedPrivs = wxT("arwdDxtm");
 				break;
 			case 'S':
 				strType = wxT("SEQUENCES");
