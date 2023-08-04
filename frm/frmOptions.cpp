@@ -79,6 +79,7 @@
 #define chkShowUsersForPrivileges   CTRL_CHECKBOX("chkShowUsersForPrivileges")
 #define chkShowDBnameTree		    CTRL_CHECKBOX("chkShowDBnameTree")
 #define txtAutoRowCount             CTRL_TEXT("txtAutoRowCount")
+#define chkNumberPretty 		    CTRL_CHECKBOX("chkNumberPretty")
 #define txtIndent                   CTRL_TEXT("txtIndent")
 #define chkSpacesForTabs			CTRL_CHECKBOX("chkSpacesForTabs")
 #define cbCopyQuote					CTRL_COMBOBOX("cbCopyQuote")
@@ -365,6 +366,7 @@ frmOptions::frmOptions(frmMain *parent)
 	chkKeywordsInUppercase->SetValue(settings->GetSQLKeywordsInUppercase());
 	chkASUTPstyle->SetValue(settings->GetASUTPstyle());
 	chkHideQueryHistory->SetValue(settings->GetHideQueryHistory());
+	chkNumberPretty->SetValue(settings->GetNumberPretty());
 	cbLanguage->Append(_("Default"));
 	int sel = 0;
 	wxLanguage langId = settings->GetCanonicalLanguage();
@@ -881,6 +883,11 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	{
 		changed = true;
 		settings->SetHideQueryHistory(chkHideQueryHistory->GetValue());
+	}
+	if (settings->GetNumberPretty() != chkNumberPretty->GetValue())
+	{
+		changed = true;
+		settings->SetNumberPretty(chkNumberPretty->GetValue());
 	}
 
 	// Change the language last, as it will affect our tests for changes

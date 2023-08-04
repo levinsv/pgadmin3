@@ -115,6 +115,7 @@ wxString generate_spaces(int length);
 wxString BoolToYesNo(bool value);
 wxString NumToStr(long value);
 wxString NumToStr(double value);
+wxString NumToStrHuman(wxLongLong value);
 wxString NumToStr(OID value);
 wxString NumToStr(wxLongLong value);
 wxString DateToStr(const wxDateTime &datetime);

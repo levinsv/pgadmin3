@@ -177,7 +177,27 @@ wxString NumToStr(double value)
 
 	return result;
 }
+wxString NumToStrHuman(wxLongLong value) {
+	// billion
+	long ddiv = 1000000000;
+	wxLongLong r = 0;
+	wxString s;
+	while ((r=value/ddiv)==0) {
+		ddiv = ddiv / 1000;
+		if (ddiv == 0) return wxEmptyString;
+	}
+	if (ddiv == 1000000000) s = "Bi";
+	else if (ddiv == 1000000) s = "Mi";
+	else if (ddiv == 1000) s = "ths";
+	else return wxEmptyString;
 
+	wxLongLong m = value % ddiv;
+	m = m / (ddiv / 10);
+	wxString rez;
+	rez = NumToStr(r) + (m == 0 ? "": "." + NumToStr(m))+" "+s;
+
+	return rez;
+}
 
 wxString NumToStr(wxLongLong value)
 {
@@ -611,7 +631,7 @@ wxString queryTokenizer::GetNextToken()
 		if (foundQuote)
 			str.Append(delimiter);
 	}
-	while (foundQuote & HasMoreTokens());
+	while (foundQuote && HasMoreTokens());
 
 	return str;
 }

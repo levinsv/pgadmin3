@@ -824,6 +824,16 @@ public:
 	{
 		WriteBool(wxT("HideQueryHistory"), newval);
 	}
+	bool GetNumberPretty() const
+	{
+		bool b;
+		Read(wxT("NumberPretty"), &b, false);
+		return b;
+	}
+	void SetNumberPretty(const bool newval)
+	{
+		WriteBool(wxT("NumberPretty"), newval);
+	}
 	bool GetVisibleDbNameTree() const
 	{
 		bool b;

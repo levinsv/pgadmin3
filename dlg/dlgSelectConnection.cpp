@@ -124,15 +124,26 @@ void dlgSelectConnection::OnChangeServer(wxCommandEvent &ev)
 			                   wxT(" WHERE datallowconn ORDER BY datname"));
 
 			item = 0;
+			int item2 = -1;
+			wxString v;
 			while(set1.RowsLeft())
 			{
-				cbDatabase->Append(set1.GetVal(wxT("datname")));
-				if (set1.GetVal(wxT("datname")) == olddatabase)
+				v = set1.GetVal(wxT("datname"));
+				cbDatabase->Append(v);
+				if (v == olddatabase)
 					item = cbDatabase->GetCount() - 1;
+				else if (v.StartsWith("template") || v == "postgres")
+					continue;
+				else if (item2 == -1)
+					item2 = cbDatabase->GetCount() - 1;
+					
 			}
 
 			if (cbDatabase->GetCount())
-				cbDatabase->SetSelection(item);
+				if (item2>=0)
+					cbDatabase->SetSelection(item2);
+				else 
+					cbDatabase->SetSelection(item);
 
 			pgSetIterator set2(remoteServer->GetConnection(),
 			                   wxT("SELECT DISTINCT usename\n")
@@ -144,7 +155,7 @@ void dlgSelectConnection::OnChangeServer(wxCommandEvent &ev)
 			{
 				cbUsername->Append(set2.GetVal(wxT("usename")));
 				if (set2.GetVal(wxT("usename")) == oldusername)
-					item = cbDatabase->GetCount() - 1;
+					item = cbUsername->GetCount() - 1;
 			}
 
 			if (cbUsername->GetCount())

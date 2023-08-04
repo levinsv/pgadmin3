@@ -186,6 +186,14 @@
                       <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
+                    <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkNumberPretty">
+                        <label>Beautiful big numbers on the statistics page</label>
+                        <checked>0</checked>
+                      </object>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
                   </object>
                 </object>
                 <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>

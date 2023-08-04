@@ -1561,11 +1561,39 @@ void pgDatabaseObject::DisplayStatistics(ctlListView *statistics, const wxString
 
 		if (stats)
 		{
+			bool pretty = settings->GetNumberPretty();
 			int col;
+			wxArrayInt a;
+			int vmax = -1;
+			int lt = -1;
 			for (col = 0 ; col < stats->NumCols() ; col++)
 			{
-				if (!stats->ColName(col).IsEmpty())
-					statistics->AppendItem(stats->ColName(col), stats->GetVal(col));
+				if (!stats->ColName(col).IsEmpty()) {
+					wxString name = stats->ColName(col);
+					wxString vl = stats->GetVal(col);
+					if (vl.IsNumber() && vl.Length()>0) {
+						int l = vl.Length();
+						if (l > vmax) vmax = l;
+						a.Add(l);
+						if (_("Live Tuples") == name) lt = a.GetCount() - 1;
+					} else
+						a.Add(-1);
+					statistics->AppendItem(name, vl);
+				}
+			}
+			if (vmax > 0 && pretty) {
+				for (int i = 0; i < a.Count(); i++) {
+					if (a[i] >= 0) {
+						wxString str = statistics->GetItemText(i, 1);
+						wxLongLong l = StrToLongLong(str);
+						wxString h = NumToStrHuman(l);
+						if (h.IsEmpty()) continue;
+						str += generate_spaces(vmax - a[i] + 5) + h;
+						if (lt == i) str[vmax + 2] = 'R';
+						statistics->SetItem(i, 1, str);
+					}
+
+				}
 			}
 			delete stats;
 		}
