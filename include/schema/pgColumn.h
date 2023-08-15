@@ -245,6 +245,14 @@ public:
 	{
 		generated = s;
 	}
+	void iSetCompression(const wxString& s)
+	{
+		compression = s;
+	}
+	wxString GetCompression() const
+	{
+		return compression == "p" ? "pglz" : (compression == "l" ? "lz4" : "");
+	}
 	wxString GetIdentity() const
 	{
 		return identity;
@@ -315,7 +323,7 @@ public:
 
 private:
 	wxString varTypename, quotedTypename, defaultVal, tableName, quotedFullTable, defaultStorage, storage, rawTypename;
-	wxString serialSequence, serialSchema, pkCols, inheritedTableName, collation, generated, identity;
+	wxString serialSequence, serialSchema, pkCols, inheritedTableName, collation, generated, identity, compression;
 	long colNumber, length, precision, statistics, attstattarget;
 	long typlen, typmod, inheritedCount;
 	bool isPK, isFK, notNull, isArray, isLocal;

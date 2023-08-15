@@ -314,6 +314,18 @@ wxString pgColumn::GetDefinition()
 	if (table->GetOfTypeOid() == 0)
 		sql += GetQuotedTypename();
 
+	if (GetDatabase()->BackendMinimumVersion(16, 0))
+	{
+		if (GetStorage() != GetDefaultStorage())
+			sql += " STORAGE " + GetStorage();
+	}
+	if (GetDatabase()->BackendMinimumVersion(14, 0))
+	{
+		wxString cmp = GetCompression();
+		if (!cmp.IsEmpty())
+			sql += " COMPRESSION " + GetCompression();
+	}
+
 	if (!GetCollation().IsEmpty() && GetCollation() != wxT("pg_catalog.\"default\""))
 		sql += wxT(" COLLATE ") + GetCollation();
 
@@ -668,7 +680,12 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
 			{
 				column->iSetGenerated(columns->GetVal(wxT("attgenerated")));
 			};
-			
+			if (database->BackendMinimumVersion(14, 0))
+			{
+				wxString compres = columns->GetVal(wxT("attcompression"));
+				column->iSetCompression(compres);
+			}
+
 			
 
 			column->iSetPkCols(columns->GetVal(wxT("indkey")));

@@ -422,7 +422,8 @@ wxString pgTable::GetSql(ctlTree *browser)
 					if (colDetails.Length() > 0)
 						if (colDetails.Last() != '\n')
 							colDetails += wxT("\n");
-					colDetails += column->GetStorageSql();
+					if (!GetDatabase()->BackendMinimumVersion(16, 0))
+						colDetails += column->GetStorageSql();
 					if (colDetails.Length() > 0)
 						if (colDetails.Last() != '\n')
 							colDetails += wxT("\n");

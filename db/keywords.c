@@ -28,7 +28,7 @@
 /*
  * List of (keyword-name, keyword-token-value) pairs.
  */
-#define PG_KEYWORD(a,b,c) {a,c},
+#define PG_KEYWORD(a,b,c,d) {a,c},
 const ScanKeyword ScanKeywords[] = {
 #ifdef WIN32
 
