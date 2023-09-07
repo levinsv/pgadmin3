@@ -83,7 +83,30 @@ enum
 #endif
 
 
+class MywxAuiDefaultTabArt : public wxAuiDefaultTabArt
+{
+public:
+    MywxAuiDefaultTabArt() :wxAuiDefaultTabArt(){};
+    MywxAuiDefaultTabArt* Clone() {
+        return new MywxAuiDefaultTabArt(*this);
+    }
+    virtual void DrawTab(wxDC& dc,
+        wxWindow* wnd,
+        const wxAuiNotebookPage& page,
+        const wxRect& in_rect,
+        int close_button_state,
+        wxRect* out_tab_rect,
+        wxRect* out_button_rect,
+        int* x_extent) wxOVERRIDE;
+    virtual    wxSize GetTabSize(wxDC& dc,
+        wxWindow* wnd,
+        const wxString& caption,
+        const wxBitmapBundle& bitmap,
+        bool WXUNUSED(active),
+        int close_button_state,
+        int* x_extent)  wxOVERRIDE;
 
+};
 
 class frmLog : public pgFrame
 {
@@ -106,7 +129,7 @@ private:
 	pgConn *connection;
     RemoteConnArray2 conArray;
     MyDataViewCtrl* my_view;
-	wxNotebook* m_notebook;
+	wxAuiNotebook* m_notebook;
     wxStaticText* status;
     wxCheckBox *group, *detail;
     wxCheckListBox* lb;

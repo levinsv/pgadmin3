@@ -128,7 +128,7 @@ public:
 	}
 
 	void Close();
-	bool Reconnect();
+	bool Reconnect(bool message=true);
 	bool ExecuteVoid(const wxString &sql, bool reportError = true);
 	wxString ExecuteScalar(const wxString &sql, bool reportError = true);
 	pgSet *ExecuteSet(const wxString &sql, bool reportError = true);

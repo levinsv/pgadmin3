@@ -338,7 +338,7 @@ void pgConn::Close()
 
 
 // Reconnect to the server
-bool pgConn::Reconnect()
+bool pgConn::Reconnect(bool message)
 {
 	// Close the existing (possibly broken) connection
 	Close();
@@ -349,6 +349,7 @@ bool pgConn::Reconnect()
 	// Attempt the reconnect
 	if (!DoConnect())
 	{
+		if (!message) return false;
 		wxLogError(_("Failed to re-establish the connection to the server %s"), GetName().c_str());
 		return false;
 	}
