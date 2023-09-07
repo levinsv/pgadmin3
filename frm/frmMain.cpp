@@ -90,6 +90,9 @@
 #include "schema/pgCheck.h"
 #include "schema/pgDomain.h"
 #include "schema/pgEventTrigger.h"
+#include "ctl/ctlShortCut.h"
+
+
 #ifdef WIN32
 #include <wx/msw/ole/automtn.h>
 #endif
@@ -535,10 +538,9 @@ void frmMain::CreateMenus()
 
 	// Add the plugin toolbar button/menu
 	new pluginButtonMenuFactory(menuFactories, pluginsMenu, toolBar, pluginUtilityCount);
-
+	
 	//--------------------------
 	toolBar->AddSeparator();
-
 	actionFactory *helpFact = new contentsFactory(menuFactories, helpMenu, 0);
 	new hintFactory(menuFactories, helpMenu, toolBar, true);
 	new faqFactory(menuFactories, helpMenu, 0);
@@ -589,6 +591,8 @@ void frmMain::CreateMenus()
 	}
 
 	treeContextMenu = 0;
+	
+
 
 	// Status bar
 	statusBar = CreateStatusBar(4);
@@ -599,15 +603,16 @@ void frmMain::CreateMenus()
 	statusBar->SetStatusText(_("Ready."), 1);
 	statusBar->SetStatusText(_("0 Secs"), 3);
 
-	wxAcceleratorEntry entries[4];
+	wxAcceleratorEntry entries[5];
 	entries[0].Set(wxACCEL_NORMAL, WXK_F5, refFact->GetId());
 	entries[1].Set(wxACCEL_NORMAL, WXK_DELETE, MNU_DELETE);
 	entries[2].Set(wxACCEL_NORMAL, WXK_F1, helpFact->GetId());
 	entries[3].Set(wxACCEL_SHIFT, WXK_F10, MNU_CONTEXTMENU);
-	wxAcceleratorTable accel(4, entries);
+	entries[4].Set(wxACCEL_NORMAL, WXK_F4, MNU_SHORTCUT);
+	wxAcceleratorTable accel(5, entries);
 
 	SetAcceleratorTable(accel);
-
+	
 	// Display the bar and configure buttons.
 	toolBar->Realize();
 }

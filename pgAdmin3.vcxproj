@@ -758,6 +758,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="ctl\calbox.cpp" />
+    <ClCompile Include="ctl\ctlShortCut.cpp" />
     <ClCompile Include="ctl\ctlAuiNotebook.cpp" />
     <ClCompile Include="ctl\ctlCheckTreeView.cpp" />
     <ClCompile Include="ctl\ctlColourPicker.cpp" />
@@ -1573,6 +1574,7 @@
   <ItemGroup>
     <ClInclude Include="include\copyright.h" />
     <ClInclude Include="include\ctl\ctlGitPanel.h" />
+    <ClInclude Include="include\ctl\ctlShortCut.h" />
     <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
     <ClInclude Include="include\frm\frmLog.h" />

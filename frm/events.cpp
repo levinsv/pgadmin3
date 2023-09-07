@@ -38,6 +38,7 @@
 #include "schema/pgTable.h"
 #include "schema/edbPrivateSynonym.h"
 #include "dlg/dlgProperty.h"
+#include "ctl/ctlShortCut.h"
 
 // Mutex to protect the "currentObject" from race conditions.
 //
@@ -59,6 +60,7 @@ BEGIN_EVENT_TABLE(frmMain, pgFrame)
 	EVT_MENU(MNU_DEFAULTVIEW,               frmMain::OnDefaultView)
 	EVT_MENU(MNU_CHECKALIVE,                frmMain::OnCheckAlive)
 	EVT_MENU(MNU_CONTEXTMENU,               frmMain::OnContextMenu)
+	EVT_MENU(MNU_SHORTCUT,				    frmMain::OnShortCut)
 
 	EVT_AUINOTEBOOK_PAGE_CHANGED(wxID_ANY,	frmMain::OnPageChange)
 	EVT_LIST_ITEM_SELECTED(CTL_PROPVIEW,    frmMain::OnPropSelChanged)
@@ -470,8 +472,20 @@ void frmMain::OnTreeSelChanged(wxTreeEvent &event)
 
 	denyCollapseItem = wxTreeItemId();
 	// Reset the listviews/SQL pane
-	if (event.GetItem())
+	if (event.GetItem()) {
 		execSelChange(event.GetItem(), true);
+		wxTreeItemId s=browser->GetSelection();
+		if (currentObject) {
+			int imgidx = browser->GetItemImage(s);
+			wxString path = wxString::Format("%4d", imgidx) + GetCurrentNodePath();
+			;
+			int p = shortcut.Index(path);
+			if (shortcut.GetCount() >= 50) shortcut.RemoveAt(shortcut.GetCount() - 1);
+			if (p != wxNOT_FOUND)  shortcut.RemoveAt(p);
+			shortcut.Insert(path, 0);
+		}
+	}
+		
 }
 
 
@@ -819,7 +833,60 @@ void frmMain::OnContextMenu(wxCommandEvent &event)
 	}
 
 }
+void frmMain::OnShortCut(wxCommandEvent& event)
+{
+	wxPoint point;
 
+	if (FindFocus() == browser)
+	{
+		wxRect rect;
+		wxTreeItemId item = browser->GetSelection();
+
+		browser->GetBoundingRect(item, rect);
+		point = rect.GetPosition();
+		wxPoint origin = GetClientAreaOrigin();
+		point.y += rect.GetHeight();
+		// Because this Tree is inside a vertical splitter, we
+		// must compensate for the size of the other elements
+		point.x += origin.x;
+		point.y += origin.y;
+		wxPoint ps;
+		ps= browser->ClientToScreen(point);
+
+		//ctlShortCut* cb = new ctlShortCut(wxTheApp->GetTopWindow(), wxID_ANY, ps, wxDefaultSize);
+		//dlgshrcut = new dlgShortCut(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+		select_shortcut = wxEmptyString;
+		dlgShortCut dlg(this, wxID_ANY, ps, wxDefaultSize);
+		dlg.ShowModal();
+		wxString path;
+		bool add = false;
+		if (select_shortcut.IsEmpty()) return;
+		
+		if (select_shortcut.StartsWith("@") > 0) {
+			select_shortcut = select_shortcut.substr(4);
+			path = select_shortcut.SubString(1, select_shortcut.Length() - 1);
+			add = true;
+		}
+		else path = select_shortcut.substr(4);
+			
+		if (!SetCurrentNode(GetBrowser()->GetRootItem(), path))
+			{
+				wxMessageBox(_("The specified object couldn't be found in the tree."));
+				return;
+			}
+		if (add) {
+			int p = shortcut.Index(path);
+			if (p != wxNOT_FOUND)  shortcut.RemoveAt(p);
+			
+			shortcut.Insert(path, 0);
+		}
+
+		
+		
+		//doPopup(this, point, browser->GetObject(item));
+	}
+
+}
 void frmMain::OnBrowserToolTip(wxTreeEvent& event)
 {
 

@@ -26,7 +26,7 @@
 #include "utils/factory.h"
 #include "frm/frmLog.h"
 #include "ctl/ctlGitPanel.h"
-
+#include "ctl/ctlShortCut.h"
 //
 // This number MUST be incremented if changing any of the default perspectives
 //
@@ -201,6 +201,8 @@ public:
 
 	public:
 		frmLog* Logfrm;
+		wxArrayString shortcut;
+		wxString select_shortcut;
 private:
 	wxAuiManager manager;
 	ctlTree *browser;
@@ -215,7 +217,7 @@ private:
 	wxMenu *newMenu, *debuggingMenu, *reportMenu, *toolsMenu, *pluginsMenu, *viewMenu,
 	       *treeContextMenu, *newContextMenu, *slonyMenu, *scriptingMenu, *viewDataMenu;
 	pgServerCollection *serversObj;
-
+	dlgShortCut *dlgshrcut;
 	pluginUtilityFactory *lastPluginUtility;
 	int pluginUtilityCount;
 
@@ -255,6 +257,7 @@ private:
 	void OnAuiUpdate(wxAuiManagerEvent &event);
 	void OnAuiNotebookPageClose(wxAuiNotebookEvent &event);
 	void OnContextMenu(wxCommandEvent &event);
+	void OnShortCut(wxCommandEvent& event);
 
 	void OnStatSelChanged(wxListEvent& event);
 	void OnStatRightClick(wxListEvent& event);
