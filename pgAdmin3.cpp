@@ -328,11 +328,12 @@ bool pgAdmin3::OnInit()
 			wxString translatedName = line.AfterFirst(',').Trim(false);
 
 			langInfo = wxLocale::FindLanguageInfo(englishName);
+			if (!langInfo && englishName == "English (U.S.)") langInfo = wxLocale::FindLanguageInfo("English (United States)");
 			if (langInfo)
 			{
-				if (langInfo->CanonicalName == wxT("en_US") ||
-				        (!langInfo->CanonicalName.IsEmpty() &&
-				         wxDir::Exists(i18nPath + wxT("/") + langInfo->CanonicalName)))
+				if (langInfo->GetCanonicalWithRegion() == wxT("en_US") ||
+				        (!langInfo->GetCanonicalWithRegion().IsEmpty() &&
+				         wxDir::Exists(i18nPath + wxT("/") + langInfo->GetCanonicalWithRegion())))
 				{
 					existingLangs.Add(langInfo->Language);
 					existingLangNames.Add(translatedName);
