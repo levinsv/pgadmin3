@@ -19,8 +19,6 @@
 #include <wx/notebook.h>
 #include <wx/notebook.h>
 #include <wx/dynarray.h>
-
-
 // wxAUI
 #include <wx/aui/aui.h>
 
@@ -29,7 +27,10 @@
 #include "ctl/ctlAuiNotebook.h"
 #include "log/StorageModel.h"
 #include "log/MyDataViewCtrl.h"
+#include <wx/thread.h>
 
+static wxMutex s_mutexDBReading;
+static wxSemaphore s_goRead(0,1);
 class RemoteConn2
 {
 public:
@@ -82,7 +83,7 @@ enum
 #endif
 #endif
 
-
+#define FLAG_MAX_LINE 9999999999
 class MywxAuiDefaultTabArt : public wxAuiDefaultTabArt
 {
 public:
@@ -107,6 +108,73 @@ public:
         int* x_extent)  wxOVERRIDE;
 
 };
+class MyThread : public wxThread
+{
+public:
+    MyThread(RemoteConnArray2 &conArray, wxWindow* p)
+    {
+        
+        //m_addNewRows = addNewRows;
+        //m_serversName = serversName;
+        //m_startRowsSevers = startRowsSevers;
+        theParent = p;
+        for (size_t i = 0; i < conArray.GetCount(); i++) {
+            logfileName.Add("");
+            savedPartialLine.Add("");
+            logfileLength.Add(0);
+            len.Add(0);
+            RemoteConn2* po = (RemoteConn2*)&conArray[i];
+            wxString db = po->conn->GetDbname();
+            m_conArray.Add(po);
+            
+        }
+    }
+    wxString getNamePage() { return namepage; }
+	bool IsIconError() { return m_seticon; }
+    void DoTerminate() { m_exit = true; return; }
+	wxString AppendNewRows(MyDataViewCtrl* my_view, Storage* st);
+	bool isReadyRows() {
+		wxMutexError e=s_mutexDBReading.TryLock();
+		if (e == wxMUTEX_NO_ERROR) {
+			s_mutexDBReading.Unlock();
+			return true;
+		}
+		return false;
+	}
+	bool GoReadRows() {
+		wxSemaError e = s_goRead.Post();
+		if (e == wxSEMA_NO_ERROR) {
+			return true;
+		}
+        //wxLogError("Semafore return error");
+		return false;
+	}
+
+    virtual void* Entry();
+private:
+	void readLogFile(wxString logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine, pgConn* conn);
+	void getFilename();
+    void sendText(wxString s) {
+        wxThreadEvent e(wxEVT_THREAD);
+        e.SetString(s);
+        theParent->GetEventHandler()->AddPendingEvent(e);
+    }
+    wxWindow* theParent;
+    wxArrayPtrVoid m_conArray;
+    wxArrayString m_addNewRows;
+    wxArrayString m_serversName;
+    wxArrayLong   m_startRowsSevers;
+    bool m_exit = false;
+	bool m_seticon = false;
+    wxString namepage;
+	
+    //
+    wxArrayString logfileName;
+    wxArrayString savedPartialLine;
+    wxArrayLong logfileLength;
+    wxArrayLong len;
+
+};
 
 class frmLog : public pgFrame
 {
@@ -114,8 +182,6 @@ public:
 	frmLog(frmMain *form, const wxString &_title, pgServer *srv);
 	~frmLog();
 	void Go();
-    void getFilename();
-    void readLogFile(wxString  logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine, pgConn* conn);
     void AddNewConn(pgConn* con);
     pgServer* getServer(wxString& strserver);
     pgConn* createConn(pgServer* srv);
@@ -124,7 +190,7 @@ private:
 	static const int timerInterval = 5000; // 1000 ms
     	wxTimer   m_timer;
 	wxAuiManager manager;
-
+    wxString msgtext;
 	frmMain *mainForm;
 	pgConn *connection;
     RemoteConnArray2 conArray;
@@ -137,10 +203,18 @@ private:
     wxComboBox* smart;
     wxTextCtrl* contentFilter;
     wxObjectDataPtr<StorageModel> m_storage_model;
+    MyThread* DBthread;
+// Shared variable
+// 
+    wxArrayString addNewRows;   // Thread appeend rows
+    wxArrayString serversName;  // 
+    wxArrayLong   startRowsSevers;
+//
     wxArrayString logfileName;
     wxArrayString savedPartialLine;
     wxArrayLong logfileLength;
     wxArrayLong len;
+
     void OnSetGroup(wxCommandEvent& event);
     void OnSetDetailGroup(wxCommandEvent& event);
     void OnClearAllFilter(wxCommandEvent& event);
@@ -159,7 +233,7 @@ private:
     void OnActivate(wxActivateEvent& event);
     void OnTimer(wxTimerEvent& event);
     void seticon(bool errflag);
-
+    void OnAddLabelTextThread(wxThreadEvent& event);
     wxIcon idef;
     wxIcon idefRed;
 

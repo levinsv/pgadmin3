@@ -81,6 +81,14 @@ void frmLog::OnClose(wxCloseEvent& event) {
 		event.Veto();
 		return;
 	}
+	DBthread->DoTerminate();
+	while (!DBthread->isReadyRows()) {
+		wxThread::Sleep(50);
+		wxYield();
+	}
+	DBthread->GoReadRows();
+	
+	wxThread::Sleep(50);
 	event.Skip();
 }
 
@@ -267,34 +275,86 @@ void frmLog::OnSetDetailGroup(wxCommandEvent& event)
         my_view->ViewGroup(false);
     }
 }
+void* MyThread::Entry() {
 
-void frmLog::getFilename() {
-    pgSet* set;
-	wxString namepage;
-	for (size_t i = 0;i< conArray.GetCount(); i++) {
+	while (!m_exit)
+	{
+		{
+			wxMutexLocker lock(s_mutexDBReading);
+			m_addNewRows.Clear();
+			m_serversName.Clear();
+			m_startRowsSevers.Clear();
+			getFilename();
+		}
+		
+		s_goRead.Wait();
+		if (m_exit) break;
+	}
 
+	return NULL;
+}
+wxString MyThread::AppendNewRows(MyDataViewCtrl* my_view, Storage* st) {
+	//Storage* st = m_storage_model->getStorage();
+	//int rows = st->getCountStore();
+	int ra, ri;
+	st->ClearRowsStat();
+	my_view->Freeze();
+	for (size_t i = 0; i < m_startRowsSevers.GetCount(); i++) {
+		if (m_exit) return "exit";
+		int sr = m_startRowsSevers[i];
+		int er = m_addNewRows.GetCount();
+		if ((i+1)< m_startRowsSevers.GetCount()) er= m_startRowsSevers[i+1];
+		if (sr == er) continue;
+		st->SetHost(m_serversName[i]);
+		for (int k = sr; k < er; k++) {
+			if (m_exit) return "exit";
+			wxString ss = m_addNewRows[k];
+			if (ss.IsEmpty())
+				continue;
+			my_view->AddRow(ss);
+		}
+	}
+	st->GetRowsStat(ra, ri);
+	my_view->Thaw();
+	//int newrows = st->getCountStore();
+	//if (loglen !=logfileLength) 
+	if (st->GetErrMsgFlag()) {
+		m_seticon=true;
+	}
+	return wxString::Format("Add rows %d ignore %d. View rows ", ra, ri);
+
+}
+void MyThread::getFilename() {
+	pgSet* set;
+	namepage = "";
+	m_seticon = false;
+	for (size_t i = 0; i < m_conArray.GetCount(); i++) {
+		if (m_exit) break;
+		RemoteConn2* po = (RemoteConn2*) m_conArray[i];
+		wxString dbname = po->conn->GetDbname();
 		if (!namepage.IsEmpty()) namepage += ",";
-
-		if (!conArray[i].conn->IsAlive()) {
+		m_serversName.Add(po->conn->GetHostName());
+		m_startRowsSevers.Add(m_addNewRows.GetCount());
+		if (!po->conn->IsAlive()) {
 			wxDateTime n = wxDateTime::Now();
-			seticon(true);
-			if (conArray[i].nextrun < n) {
-				if (!conArray[i].conn->Reconnect(false))
+			m_seticon = true;
+			if (po->nextrun < n) {
+				if (!po->conn->Reconnect(false))
 				{
 					wxTimeSpan sp(0, 2);
-					conArray[i].nextrun = wxDateTime::Now() + sp;
-					namepage += " " + conArray[i].conn->GetDbname();
+					po->nextrun = wxDateTime::Now() + sp;
+					namepage += " " + dbname;
 					continue;
 				}
 			}
 			else {
-				namepage += " " + conArray[i].conn->GetDbname();
+				namepage += " " + dbname;
 				continue;
 			}
 
-			
+
 		}
-		set = conArray[i].conn->ExecuteSet(
+		set = po->conn->ExecuteSet(
 			wxT("select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n")
 			wxT("  FROM pg_ls_logdir()  where name ~ '.csv' ORDER BY modification DESC"));
 		if (set)
@@ -302,25 +362,27 @@ void frmLog::getFilename() {
 
 			//logfileTimestamp = set->GetDateTime(wxT("filetime"));
 			len[i] = set->GetLong(wxT("len"));
-			namepage += conArray[i].conn->GetDbname();
-			m_storage_model->getStorage()->SetHost(conArray[i].conn->GetHostName());
-
+			namepage += dbname;
+			//m_storage_model->getStorage()->SetHost(m_conArray[i].conn->GetHostName());
+			//m_startRowsSevers[i] = m_addNewRows.GetCount();
 			wxString fn = set->GetVal(wxT("filename"));
 			if (fn != logfileName[i]) {
 				logfileLength[i] = 0;
 				logfileName[i] = fn;
-				
+
 			}
 			/// addLogFile(logfileName, logfileTimestamp, len, logfileLength, skipFirst);
 
 			delete set;
-			readLogFile(logfileName[i],len[i],logfileLength[i],savedPartialLine[i],conArray[i].conn);
+			readLogFile(logfileName[i], len[i], logfileLength[i], savedPartialLine[i], po->conn);
+			//m_startRowsSevers[i] = m_addNewRows.GetCount();
+			//if (m_startRowsSevers[i] == m_addNewRows.GetCount()) m_startRowsSevers[i] = FLAG_MAX_LINE;
 		}
 	}
-	if (namepage.IsEmpty()) namepage = "not connect";
-	if (m_notebook->GetPageText(0) != namepage) m_notebook->SetPageText(0, namepage);
+	//if (namepage.IsEmpty()) namepage = "not connect";
+	//if (m_notebook->GetPageText(0) != namepage) m_notebook->SetPageText(0, namepage);
 }
-void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,wxString& savedPartialLine,pgConn* conn) {
+void MyThread::readLogFile(wxString logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine, pgConn* conn) {
 	wxString line;
 
 	// If GPDB 3.3 and later, log is normally in CSV format.  Let's get a whole log line before calling addLogLine,
@@ -343,6 +405,7 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 	while (lenfile > logfileLength)
 	{
 		//statusBar->SetStatusText(_("Reading log from server..."));
+		if (m_exit) return;
 		pgSet* set = conn->ExecuteSet(wxT("SELECT ") + funcname +
 			conn->qtDbString(logfileName) + wxT(", ") + NumToStr(logfileLength) + wxT(", 50000)"));
 		if (!set)
@@ -359,7 +422,7 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 		}
 		char* raw;
 		unsigned char m[50001];
-		if (settings->GetASUTPstyle()||true) {
+		if (true) {
 
 			raw = (char*)&m[0];
 			unsigned char c;
@@ -408,10 +471,11 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 		else {
 			raw = raw1;
 		}
-		int l= strlen(raw);
+		int l = strlen(raw);
 		logfileLength += l;
 		wxString host = conn->GetHostName();
-		status->SetLabelText(wxString::Format("%s Load bytes %ld", host,logfileLength));
+		//status->SetLabelText(wxString::Format("%s Load bytes %ld", host, logfileLength));
+		sendText(wxString::Format("%s Load bytes %ld", host, logfileLength));
 		wxString str;
 		str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
 		//if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
@@ -425,8 +489,9 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 
 		if (str.Len() == 0)
 		{
-			wxString msgstr = _("The server log contains entries in multiple encodings and cannot be displayed by pgAdmin.");
-			wxMessageBox(msgstr);
+			wxString msgstr = host+" The server log contains entries in multiple encodings and cannot be displayed by pgAdmin.";
+			//wxMessageBox(msgstr);
+			sendText(msgstr);
 			return;
 		}
 
@@ -437,8 +502,8 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 
 			CSVLineTokenizer tk(str);
 
-			
-			my_view->Freeze();
+
+			//my_view->Freeze();
 			while (tk.HasMoreLines())
 			{
 				line.Clear();
@@ -453,12 +518,13 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 
 
 				// Looks like we have a good complete CSV log record.
-				
-				//addLogLine(str.Trim(), true, true);
-				my_view->AddRow(str.Trim());
+
+
+				//my_view->AddRow(str.Trim());
+				m_addNewRows.Add(str.Trim());
 			}
 
-			my_view->Thaw();
+			//my_view->Thaw();
 		}
 		else
 		{
@@ -476,24 +542,35 @@ void frmLog::readLogFile(wxString logfileName,long& lenfile,long& logfileLength,
 			line.Clear();
 		}
 		else
-			my_view->AddRow(line.Trim());
+			//my_view->AddRow(line.Trim());
+			m_addNewRows.Add(line.Trim());
 	}
 
 
 }
+
+void frmLog::OnAddLabelTextThread(wxThreadEvent& event) {
+	wxString s=event.GetString();
+	if (!msgtext.IsEmpty() && !s.IsEmpty()) s += " : ";
+	s += msgtext;
+	status->SetLabelText(s);
+}
+
 void frmLog::OnTimer(wxTimerEvent& event) {
-	Storage* st = m_storage_model->getStorage();
-	//int rows = st->getCountStore();
-	int ra, ri;
-	st->ClearRowsStat();
-	getFilename();
-	st->GetRowsStat(ra, ri);
-	//int newrows = st->getCountStore();
-	//if (loglen !=logfileLength) 
-	if (m_storage_model->getStorage()->GetErrMsgFlag()) {
+
+	if (!DBthread->isReadyRows()) return;
+
+	wxString rez=DBthread->AppendNewRows(my_view, m_storage_model->getStorage());
+	msgtext = wxString::Format("%s%d", rez, m_storage_model->GetRowCount());
+	status->SetLabelText(msgtext);
+	if (DBthread->IsIconError()) {
 		seticon(true);
 	}
-	status->SetLabelText(wxString::Format("Add rows %d ignore %d. View rows %d", ra,ri, m_storage_model->GetRowCount()) );
+	wxString namepage= DBthread->getNamePage();
+
+	if (namepage.IsEmpty()) namepage = "not connect";
+	if (m_notebook->GetPageText(0) != namepage) m_notebook->SetPageText(0, namepage);
+	DBthread->GoReadRows();
 
 }
 #include "log/log_xpm.xpm"
@@ -1070,6 +1147,13 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 	my_view->setGroupMode(b);
 	my_view->ModUserFilter("","Init", listUserFilter, contentFilter);
 //	if (mainForm) getFilename();
+	Connect(wxID_ANY, wxEVT_THREAD, wxThreadEventHandler(frmLog::OnAddLabelTextThread), NULL, this);
+	DBthread = new MyThread(conArray,this);
+	if (DBthread->Create() != wxTHREAD_NO_ERROR)
+	{
+		wxLogError(wxT("Can’t create thread!"));
+	}
+	DBthread->Run();
 	m_timer.Start(timerInterval);
 }
 pgServer* frmLog::getServer(wxString& strserver) {
