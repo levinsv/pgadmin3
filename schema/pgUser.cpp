@@ -197,7 +197,7 @@ void pgUser::ShowDependents(frmMain *form, ctlListView *referencedBy, const wxSt
 	}
 
 	FillOwned(form->GetBrowser(), referencedBy, dblist,
-	          wxT("SELECT cl.relkind, COALESCE(cin.nspname, cln.nspname) as nspname, COALESCE(ci.relname, cl.relname) as relname, cl.relname as indname\n")
+	          wxT("SELECT cl.relkind::text, COALESCE(cin.nspname, cln.nspname) as nspname, COALESCE(ci.relname, cl.relname) as relname, cl.relname as indname\n")
 	          wxT("  FROM pg_class cl\n")
 	          wxT("  JOIN pg_namespace cln ON cl.relnamespace=cln.oid\n")
 	          wxT("  LEFT OUTER JOIN pg_index ind ON ind.indexrelid=cl.oid\n")
