@@ -571,7 +571,7 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_ROTATELOG] = true;
 				else if (proname == wxT("pg_postmaster_starttime") && pronargs == 0)
 					features[FEATURE_POSTMASTER_STARTTIME] = true;
-				else if (proname == wxT("pg_terminate_backend") && pronargs == 1 && set->GetLong(wxT("arg0")) == 23)
+				else if (proname == wxT("pg_terminate_backend") && pronargs >= 1 && set->GetLong(wxT("arg0")) == 23)
 					features[FEATURE_TERMINATE_BACKEND] = true;
 				else if (proname == wxT("pg_reload_conf") && pronargs == 0)
 					features[FEATURE_RELOAD_CONF] = true;
