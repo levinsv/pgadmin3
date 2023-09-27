@@ -314,9 +314,8 @@ wxString pgView::GetSql(ctlTree *browser)
 			       + wxT("\n\n")
 			       + GetOwnerSql(7, 3, wxT("TABLE ") + GetQuotedFullIdentifier());
 		}
-		if (GetConnection()->BackendMinimumVersion(16, 0) && IsMatViewFlag)
-			sql += GetGrant(wxT("arwdxtm"), wxT("TABLE ") + GetQuotedFullIdentifier());
-		else if (GetConnection()->BackendMinimumVersion(8, 2))
+
+		if (GetConnection()->BackendMinimumVersion(8, 2))
 			sql += GetGrant(wxT("arwdxt"), wxT("TABLE ") + GetQuotedFullIdentifier());
 		else
 			sql += GetGrant(wxT("arwdRxt"), wxT("TABLE ") + GetQuotedFullIdentifier());

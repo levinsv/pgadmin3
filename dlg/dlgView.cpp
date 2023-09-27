@@ -1013,10 +1013,8 @@ wxString dlgView::GetSql()
 	else
 		AppendOwnerNew(sql, wxT("TABLE ") + qtIdent(cbSchema->GetValue()) + wxT(".") + qtIdent(GetName()));
 
-	if (connection->BackendMinimumVersion(16, 0) && chkMaterializedView->GetValue())
-		sql += GetGrant(wxT("arwdRxtm"), wxT("TABLE ") + qtIdent(cbSchema->GetValue()) + wxT(".") + qtIdent(GetName()));
-	else
-		sql +=  GetGrant(wxT("arwdRxt"), wxT("TABLE ") + qtIdent(cbSchema->GetValue()) + wxT(".") + qtIdent(GetName()));
+
+	sql +=  GetGrant(wxT("arwdRxt"), wxT("TABLE ") + qtIdent(cbSchema->GetValue()) + wxT(".") + qtIdent(GetName()));
 
 	if (connection->BackendMinimumVersion(9, 3) && chkMaterializedView->GetValue())
 		AppendComment(sql, wxT("MATERIALIZED VIEW ") + qtIdent(cbSchema->GetValue()) + wxT(".") + qtIdent(GetName()), view);

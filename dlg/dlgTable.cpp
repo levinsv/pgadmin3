@@ -188,7 +188,7 @@ dlgProperty *pgPartitionFactory::CreateDialog(frmMain *frame, pgObject *node, pg
 }
 
 dlgTable::dlgTable(pgaFactory *f, frmMain *frame, pgTable *node, pgSchema *sch)
-	: dlgSecurityProperty(f, frame, node, wxT("dlgTable"), wxT("INSERT,SELECT,UPDATE,DELETE,TRUNCATE,RULE,REFERENCES,TRIGGER,MAINTAIN"), "arwdDRxtm")
+	: dlgSecurityProperty(f, frame, node, wxT("dlgTable"), wxT("INSERT,SELECT,UPDATE,DELETE,TRUNCATE,RULE,REFERENCES,TRIGGER"), "arwdDRxt")
 {
 	schema = sch;
 	table = node;
@@ -1508,9 +1508,7 @@ wxString dlgTable::GetSql()
 	if (seclabelPage && connection->BackendMinimumVersion(9, 1))
 		sql += seclabelPage->GetSqlForSecLabels(wxT("TABLE"), qtIdent(cbSchema->GetValue()) + wxT(".") + qtIdent(GetName()));
 
-	if (connection->BackendMinimumVersion(16, 0))
-		sql += GetGrant(wxT("arwdDxtm"), wxT("TABLE ") + tabname);
-	else if (connection->BackendMinimumVersion(8, 4))
+	if (connection->BackendMinimumVersion(8, 4))
 		sql += GetGrant(wxT("arwdDxt"), wxT("TABLE ") + tabname);
 	else if (connection->BackendMinimumVersion(8, 2))
 		sql += GetGrant(wxT("arwdxt"), wxT("TABLE ") + tabname);

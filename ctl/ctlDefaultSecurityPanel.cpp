@@ -26,7 +26,7 @@
 
 #include <wx/arrimpl.cpp>
 
-defaultPrivilegesOn g_defPrivTables('r', wxT("Tables"), wxT("arwdDxtm")),
+defaultPrivilegesOn g_defPrivTables('r', wxT("Tables"), wxT("arwdDxt")),
                     g_defPrivSequences('S', wxT("Sequences"), wxT("rwU")),
                     g_defPrivFunctions('f', wxT("Functions"), wxT("X")),
                     g_defPrivTypes('T', wxT("Types"), wxT("U"));
