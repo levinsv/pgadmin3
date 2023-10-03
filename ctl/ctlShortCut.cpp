@@ -188,7 +188,6 @@ void dlgShortCut::OnKEY_DOWN(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_ESCAPE) {
         Close(true);
     }
-    HWND f=GetFocus();
     if (!cb->HasFocus()) {
 
     }

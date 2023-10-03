@@ -994,7 +994,12 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 
 
 			processOutput=a.build(processInput, cfg, lineEnd);
-			goto theend;
+			if (isSelected)
+				ReplaceSelection(processOutput);
+			else
+				SetText(processOutput);
+
+			return _("" + msgword + "ing complete.");
 		}
 		return _("You need to setup a "+msgword+"ing command");
 	}
@@ -1051,7 +1056,6 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 	{
 		return _("" + msgword + "ing command error: Output is empty.");
 	}
-theend:
 	if (isSelected)
 		ReplaceSelection(processOutput);
 	else
