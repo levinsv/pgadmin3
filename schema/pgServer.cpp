@@ -46,7 +46,7 @@
 #define DEFAULT_PG_DATABASE wxT("postgres")
 
 pgServer::pgServer(const wxString &newName, const wxString &newHostAddr, const wxString &newDescription, const wxString &newService,
-                   const wxString &newDatabase, const wxString &newUsername, int newPort, bool _storePwd, const wxString &newRolename, bool _restore,
+                   const wxString &newDatabase, const wxString &newUsername, int newPort, bool _storePwd, const wxString &newRolename, const wxString& newConnStr, bool _restore,
                    int _ssl, const wxString &_colour, const wxString &_group, bool _sshTunnel, const wxString &newTunnelHost, const wxString &newTunnelUserName,
                    bool _authModePwd, const wxString &newTunnelPassword, const wxString &newPublicKey, const wxString &newIdentity, const int &sshPort)
 	: pgObject(serverFactory, newName)
@@ -70,6 +70,7 @@ pgServer::pgServer(const wxString &newName, const wxString &newHostAddr, const w
 	passwordValid = true;
 	storePwd = _storePwd;
 	rolename = newRolename;
+	connstr = newConnStr;
 	restore = _restore;
 	superUser = false;
 	createPrivilege = false;
@@ -232,12 +233,12 @@ pgConn *pgServer::CreateConn(wxString dbName, OID oid, wxString applicationname)
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 	if(sshTunnel)
 	{
-		conn = new pgConn(local_listenhost, service, hostaddr, dbName, username, password, local_listenport, rolename, ssl, oid, applicationname, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
+		conn = new pgConn(local_listenhost, service, hostaddr, dbName, username, password, local_listenport, rolename,connstr, ssl, oid, applicationname, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
 	}
 	else
 #endif
 	{
-		conn = new pgConn(GetName(), service, hostaddr, dbName, username, password, port, rolename, ssl, oid, applicationname, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
+		conn = new pgConn(GetName(), service, hostaddr, dbName, username, password, port, rolename,connstr, ssl, oid, applicationname, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
 	}
 
 	if (conn && conn->GetStatus() != PGCONN_OK)
@@ -807,21 +808,21 @@ int pgServer::Connect(frmMain *form, bool askPassword, const wxString &pwd, bool
 		wxGetEnv(wxT("USERNAME"),&usr);
 		if (database.IsEmpty())
 		{
-			conn = new pgConn(host, service, hostaddr, DEFAULT_PG_DATABASE, username, password, iPort, rolename, ssl, 0, appearanceFactory->GetLongAppName() +wxT(" - ")+ usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
+			conn = new pgConn(host, service, hostaddr, DEFAULT_PG_DATABASE, username, password, iPort, rolename,connstr, ssl, 0, appearanceFactory->GetLongAppName() +wxT(" - ")+ usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
 			if (conn->GetStatus() == PGCONN_OK)
 				database = DEFAULT_PG_DATABASE;
 			else if (conn->GetStatus() == PGCONN_BAD && conn->GetLastError().Find(
 			             wxT("database \"") DEFAULT_PG_DATABASE wxT("\" does not exist")) >= 0)
 			{
 				delete conn;
-				conn = new pgConn(host, service, hostaddr, wxT("template1"), username, password, iPort, rolename, ssl, 0, appearanceFactory->GetLongAppName() + wxT(" - Browser"), sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
+				conn = new pgConn(host, service, hostaddr, wxT("template1"), username, password, iPort, rolename,connstr, ssl, 0, appearanceFactory->GetLongAppName() + wxT(" - Browser"), sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
 				if (conn && conn->GetStatus() == PGCONN_OK)
 					database = wxT("template1");
 			}
 		}
 		else
 		{
-			conn = new pgConn(host, service, hostaddr, database, username, password, iPort, rolename, ssl, 0, appearanceFactory->GetLongAppName() + _(" ")+usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
+			conn = new pgConn(host, service, hostaddr, database, username, password, iPort, rolename,connstr, ssl, 0, appearanceFactory->GetLongAppName() + _(" ")+usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
 			if (!conn)
 			{
 				form->EndMsg(false);
@@ -1252,6 +1253,8 @@ void pgServer::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 		properties->AppendItem(_("Username"), GetUsername());
 		if (!GetRolename().IsEmpty())
 			properties->AppendItem(_("Default role"), GetRolename());
+		if (!GetConnStr().IsEmpty())
+			properties->AppendItem(_("Add connect str"), GetConnStr());
 
 		properties->AppendYesNoItem(_("Store password?"), GetStorePwd());
 		properties->AppendYesNoItem(_("Restore environment?"), GetRestore());
@@ -1544,7 +1547,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 
 	long loop, port, ssl = 0;
 	wxString key, servername, hostaddr, description, service, database, username, lastDatabase, lastSchema;
-	wxString storePwd, rolename, restore, serviceID, discoveryID, dbRestriction, colour;
+	wxString storePwd, rolename, connstr, restore, serviceID, discoveryID, dbRestriction, colour;
 	wxString group, sslcert, sslkey, sslrootcert, sslcrl, sslcompression;
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
@@ -1575,6 +1578,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 		settings->Read(key + wxT("Description"), &description, wxEmptyString);
 		settings->Read(key + wxT("StorePwd"), &storePwd, wxEmptyString);
 		settings->Read(key + wxT("Rolename"), &rolename, wxEmptyString);
+		settings->Read(key + wxT("ConnStr"), &connstr, wxEmptyString);
 		settings->Read(key + wxT("Restore"), &restore, wxT("true"));
 		settings->Read(key + wxT("Port"), &port, 0);
 		settings->Read(key + wxT("Database"), &database, wxEmptyString);
@@ -1631,7 +1635,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 
 		// Add the Server node
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
-		server = new pgServer(servername, hostaddr, description, service, database, username, port, StrToBool(storePwd), rolename, StrToBool(restore), ssl,
+		server = new pgServer(servername, hostaddr, description, service, database, username, port, StrToBool(storePwd), rolename, connstr, StrToBool(restore), ssl,
 		                      colour, group, StrToBool(sshTunnel), tunnelHost, tunnelUserName, StrToBool(authModePwd), tunnelPassword, publicKeyFile, identityFile, tunnelPort);
 #else
 		server = new pgServer(servername, hostaddr, description, service, database, username, port, StrToBool(storePwd), rolename, StrToBool(restore), ssl,
@@ -1723,7 +1727,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 				svcKey->QueryValue(wxT("Port"), &tmpport);
 
 				// Add the Server node
-				server = new pgServer(servername, wxEmptyString, description, wxEmptyString, database, username, (long)tmpport, false, wxEmptyString, false);
+				server = new pgServer(servername, wxEmptyString, description, wxEmptyString, database, username, (long)tmpport, false, wxEmptyString, wxEmptyString, false);
 				server->iSetDiscoveryID(svcName);
 				server->iSetDiscovered(true);
 				server->iSetServiceID(svcName);
@@ -1813,7 +1817,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 					// Add the item, if it looks sane
 					if (port != 0 && username != wxEmptyString)
 					{
-						server = new pgServer(servername, wxEmptyString, description, wxEmptyString, wxT("postgres"), username, port, false, rolename, 0);
+						server = new pgServer(servername, wxEmptyString, description, wxEmptyString, wxT("postgres"), username, port, false, rolename, connstr, 0);
 						server->iSetDiscoveryID(cnf->GetPath() + wxT("/") + version);
 						server->iSetDiscovered(true);
 						server->iSetGroup(group);

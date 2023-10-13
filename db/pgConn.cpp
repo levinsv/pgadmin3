@@ -50,7 +50,7 @@ static void pgNoticeProcessor(void *arg, const char *message)
 }
 
 pgConn::pgConn(const wxString &server, const wxString &service, const wxString &hostaddr, const wxString &database, const wxString &username, const wxString &password,
-               int port, const wxString &rolename, int sslmode, OID oid, const wxString &applicationname,
+               int port, const wxString &rolename, const wxString& addconnstr, int sslmode, OID oid, const wxString &applicationname,
                const wxString &sslcert, const wxString &sslkey, const wxString &sslrootcert, const wxString &sslcrl,
                const bool sslcompression) : m_cancelConn(NULL)
 {
@@ -64,6 +64,7 @@ pgConn::pgConn(const wxString &server, const wxString &service, const wxString &
 	save_password = password;
 	save_port = port;
 	save_rolename = rolename;
+	save_addconnstr = addconnstr;
 	save_sslmode = sslmode;
 	save_oid = oid;
 	save_applicationname = applicationname;
@@ -122,7 +123,12 @@ pgConn::pgConn(const wxString &server, const wxString &service, const wxString &
 		connstr.Append(wxT(" port="));
 		connstr.Append(NumToStr((long)port));
 	}
-
+	if (!addconnstr.IsEmpty())
+	{
+		connstr.Append(wxT(" "));
+		connstr.Append(addconnstr);
+	}
+	
 	if (libpqVersion > 7.3)
 	{
 		switch (sslmode)
@@ -362,7 +368,7 @@ pgConn *pgConn::Duplicate(const wxString &_appName)
 {
 	pgConn *res = new pgConn(wxString(save_server), wxString(save_service),
 	                         wxString(save_hostaddr), wxString(save_database), wxString(save_username),
-	                         wxString(save_password), save_port, save_rolename, save_sslmode, save_oid,
+	                         wxString(save_password), save_port, save_rolename, save_addconnstr, save_sslmode, save_oid,
 	                         _appName.IsEmpty() ? save_applicationname : _appName, save_sslcert, save_sslkey,
 	                         save_sslrootcert, save_sslcrl, save_sslcompression);
 

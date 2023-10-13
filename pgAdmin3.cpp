@@ -638,7 +638,8 @@ bool pgAdmin3::OnInit()
 				winSplash->Show(false);
 				dlgSelectConnection dlg(NULL, NULL);
 				dlg.CenterOnParent();
-				conn = dlg.CreateConn(host, database, username, port, rolename, sslmode, applicationname);
+				wxString connstr = "";
+				conn = dlg.CreateConn(host, database, username, port, rolename,connstr, sslmode, applicationname);
 			}
 			else
 			{
@@ -822,7 +823,8 @@ bool pgAdmin3::OnInit()
 				winSplash->Show(false);
 				dlgSelectConnection dlg(NULL, NULL);
 				dlg.CenterOnParent();
-				conn = dlg.CreateConn(host, database, username, port, rolename, sslmode, applicationname);
+				wxString connstr = "";
+				conn = dlg.CreateConn(host, database, username, port, rolename, connstr, sslmode, applicationname);
 			}
 			else
 			{

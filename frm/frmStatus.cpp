@@ -592,7 +592,7 @@ void frmStatus::OnChangeDatabase(wxCommandEvent &ev)
 	}
 
 	locks_connection = new pgConn(connection->GetHostName(), connection->GetService(), connection->GetHostAddr(), cbDatabase->GetValue(),
-	                              connection->GetUser(), connection->GetPassword(), connection->GetPort(), connection->GetRole(), connection->GetSslMode(),
+	                              connection->GetUser(), connection->GetPassword(), connection->GetPort(), connection->GetRole(),"", connection->GetSslMode(),
 	                              0, connection->GetApplicationName(), connection->GetSSLCert(), connection->GetSSLKey(), connection->GetSSLRootCert(), connection->GetSSLCrl(),
 	                              connection->GetSSLCompression());
 
@@ -1253,7 +1253,7 @@ void frmStatus::OnCopyQuery(wxCommandEvent &ev)
 	{
 		pgConn *conn = new pgConn(connection->GetHostName(), connection->GetService(), connection->GetHostAddr(), dbname,
 		                          connection->GetUser(), connection->GetPassword(),
-		                          connection->GetPort(), connection->GetRole(), connection->GetSslMode(), connection->GetDbOid(),
+		                          connection->GetPort(), connection->GetRole(),"", connection->GetSslMode(), connection->GetDbOid(),
 		                          connection->GetApplicationName(),
 		                          connection->GetSSLCert(), connection->GetSSLKey(), connection->GetSSLRootCert(), connection->GetSSLCrl(),
 		                          connection->GetSSLCompression());
@@ -3437,6 +3437,7 @@ void frmStatus::OnCommit(wxCommandEvent &event)
 			                             connection->GetPassword(),
 			                             connection->GetPort(),
 			                             connection->GetRole(),
+										 "",
 			                             connection->GetSslMode(),
 			                             0,
 			                             connection->GetApplicationName(),
@@ -3494,6 +3495,7 @@ void frmStatus::OnRollback(wxCommandEvent &event)
 			                             connection->GetPassword(),
 			                             connection->GetPort(),
 			                             connection->GetRole(),
+										 "",
 			                             connection->GetSslMode(),
 			                             0,
 			                             connection->GetApplicationName(),

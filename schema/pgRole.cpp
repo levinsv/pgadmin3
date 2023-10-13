@@ -645,6 +645,7 @@ void pgRole::ReassignDropOwnedTo(frmMain *form)
 		                  GetConnection()->GetPassword(),
 		                  GetConnection()->GetPort(),
 		                  GetConnection()->GetRole(),
+						  GetConnection()->GetAddConnStr(),
 		                  GetConnection()->GetSslMode(),
 		                  0,
 		                  GetConnection()->GetApplicationName(),

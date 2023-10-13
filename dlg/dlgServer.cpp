@@ -41,6 +41,7 @@
 #define stStorePwd        CTRL_STATIC("stStorePwd")
 #define chkStorePwd       CTRL_CHECKBOX("chkStorePwd")
 #define txtRolename       CTRL_TEXT("txtRolename")
+#define txtConnStr        CTRL_TEXT("txtConnStr")
 #define stRestore         CTRL_STATIC("stRestore")
 #define chkRestore        CTRL_CHECKBOX("chkRestore")
 #define stPassword        CTRL_STATIC("stPassword")
@@ -80,6 +81,7 @@ BEGIN_EVENT_TABLE(dlgServer, dlgProperty)
 	EVT_TEXT(XRCID("txtPort")  ,                       dlgProperty::OnChange)
 	EVT_TEXT(XRCID("txtUsername"),                     dlgProperty::OnChange)
 	EVT_TEXT(XRCID("txtRolename"),                     dlgProperty::OnChange)
+	EVT_TEXT(XRCID("txtConnStr"),                      dlgProperty::OnChange)
 	EVT_TEXT(XRCID("txtDbRestriction"),                dlgServer::OnChangeRestr)
 	EVT_COMBOBOX(XRCID("cbSSL"),                       dlgProperty::OnChange)
 	EVT_CHECKBOX(XRCID("chkStorePwd"),                 dlgProperty::OnChange)
@@ -231,6 +233,7 @@ void dlgServer::OnOK(wxCommandEvent &ev)
 		server->iSetDatabase(cbDatabase->GetValue());
 		server->iSetUsername(txtUsername->GetValue());
 		server->iSetRolename(txtRolename->GetValue());
+		server->iSetConnStr(txtConnStr->GetValue());
 		server->iSetStorePwd(chkStorePwd->GetValue());
 		server->iSetRestore(chkRestore->GetValue());
 		server->iSetDbRestriction(txtDbRestriction->GetValue().Trim());
@@ -274,6 +277,7 @@ void dlgServer::OnOK(wxCommandEvent &ev)
 			    server->GetPort(),
 			    server->GetStorePwd(),
 			    server->GetRolename(),
+				server->GetConnStr(),
 			    server->GetRestore(),
 			    server->GetSSL(),
 			    server->GetColour(),
@@ -466,6 +470,7 @@ int dlgServer::Go(bool modal)
 		txtUsername->SetValue(server->GetUsername());
 		chkStorePwd->SetValue(server->GetStorePwd());
 		txtRolename->SetValue(server->GetRolename());
+		txtConnStr->SetValue(server->GetConnStr());
 		chkRestore->SetValue(server->GetRestore());
 		txtDbRestriction->SetValue(server->GetDbRestriction());
 		colourPicker->SetColour(server->GetColour());
@@ -517,6 +522,7 @@ int dlgServer::Go(bool modal)
 			txtUsername->Disable();
 			chkStorePwd->Disable();
 			txtRolename->Disable();
+			txtConnStr->Disable();
 			chkRestore->Disable();
 			txtDbRestriction->Disable();
 			colourPicker->Disable();
@@ -579,7 +585,7 @@ pgObject *dlgServer::CreateObject(pgCollection *collection)
 		                   txtService->GetValue(), cbDatabase->GetValue(),
 		                   txtUsername->GetValue(), StrToLong(txtPort->GetValue()),
 		                   chkTryConnect->GetValue() && chkStorePwd->GetValue(),
-		                   txtRolename->GetValue(), chkRestore->GetValue(), cbSSL->GetCurrentSelection(),
+		                   txtRolename->GetValue(), txtConnStr->GetValue(), chkRestore->GetValue(), cbSSL->GetCurrentSelection(),
 		                   colourPicker->GetColourString(), cbGroup->GetValue(),
 		                   chkSSHTunnel->GetValue(), txtTunnelHost->GetValue(), txtTunnelUsername->GetValue(),
 		                   radioBtnPassword->GetValue(),
@@ -593,7 +599,7 @@ pgObject *dlgServer::CreateObject(pgCollection *collection)
 		                   txtService->GetValue(), cbDatabase->GetValue(),
 		                   txtUsername->GetValue(), StrToLong(txtPort->GetValue()),
 		                   chkTryConnect->GetValue() && chkStorePwd->GetValue(),
-		                   txtRolename->GetValue(), chkRestore->GetValue(), cbSSL->GetCurrentSelection(),
+		                   txtRolename->GetValue(), txtConnStr->GetValue(), chkRestore->GetValue(), cbSSL->GetCurrentSelection(),
 		                   colourPicker->GetColourString(), cbGroup->GetValue());
 	}
 
@@ -645,6 +651,7 @@ void dlgServer::CheckChange()
 		          || cbSSL->GetCurrentSelection() != server->GetSSL()
 		          || chkStorePwd->GetValue() != server->GetStorePwd()
 		          || txtRolename->GetValue() != server->GetRolename()
+				  || txtConnStr->GetValue() != server->GetConnStr()
 		          || chkRestore->GetValue() != server->GetRestore()
 		          || txtDbRestriction->GetValue() != server->GetDbRestriction()
 		          || sColour != sColour2

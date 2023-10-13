@@ -46,7 +46,7 @@ class pgServer : public pgObject
 public:
 	pgServer(const wxString &newServer = wxT(""), const wxString &newHostAddr = wxT(""), const wxString &newDescription = wxT(""),
 	         const wxString &newService = wxT(""), const wxString &newDatabase = wxT(""), const wxString &newUsername = wxT(""), int newPort = 5432,
-	         bool storePwd = false, const wxString &newRolename = wxT(""), bool restore = true, int sslMode = 0,
+	         bool storePwd = false, const wxString &newRolename = wxT(""), const wxString& newConnStr = wxT(""), bool restore = true, int sslMode = 0,
 	         const wxString &colour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW).GetAsString(wxC2S_HTML_SYNTAX), const wxString &group = wxEmptyString,
 	         bool sshTunnel = false, const wxString &newTunnelHost = wxEmptyString, const wxString &newTunnelUserName = wxEmptyString, bool authModePwd = true,
 	         const wxString &newTunnelPassword = wxEmptyString, const wxString &newPublicKey = wxEmptyString, const wxString &newIdentityFile = wxEmptyString,
@@ -111,6 +111,10 @@ public:
 	wxString GetRolename() const
 	{
 		return rolename;
+	}
+	wxString GetConnStr() const
+	{
+		return connstr;
 	}
 	bool GetRestore() const
 	{
@@ -307,6 +311,10 @@ public:
 	void iSetRolename(const wxString &newVal)
 	{
 		rolename = newVal;
+	}
+	void iSetConnStr(const wxString& newVal)
+	{
+		connstr = newVal;
 	}
 	void iSetRestore(const bool b)
 	{
@@ -534,7 +542,7 @@ private:
 	pgConn *conn;
 	long serverIndex;
 	bool connected, passwordValid, autovacuumRunning;
-	wxString service, hostaddr, database, username, password, rolename, ver, error;
+	wxString service, hostaddr, database, username, password, rolename, connstr, ver, error;
 	wxString lastDatabase, lastSchema, description, serviceId, discoveryId;
 	wxDateTime upSince;
 	int port, ssl;

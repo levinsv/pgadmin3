@@ -1304,6 +1304,7 @@ void frmMain::StoreServers()
 					settings->WriteInt(key + wxT("Port"), server->GetPort());
 					settings->WriteBool(key + wxT("StorePwd"), server->GetStorePwd());
 					settings->Write(key + wxT("Rolename"), server->GetRolename());
+					settings->Write(key + wxT("ConnStr"), server->GetConnStr());
 					settings->WriteBool(key + wxT("Restore"), server->GetRestore());
 					settings->Write(key + wxT("Database"), server->GetDatabaseName());
 					settings->Write(key + wxT("Username"), server->GetUsername());

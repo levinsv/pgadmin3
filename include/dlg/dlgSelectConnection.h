@@ -28,7 +28,7 @@ public:
 		return remoteServer;
 	}
 	pgConn *CreateConn(wxString &applicationame, bool &createdNew);
-	pgConn *CreateConn(wxString &server, wxString &dbname, wxString &username, int port, wxString &rolename, int sslmode, wxString &applicationame, bool writeMRU = false);
+	pgConn *CreateConn(wxString &server, wxString &dbname, wxString &username, int port, wxString &rolename, wxString& addconnstr, int sslmode, wxString &applicationame, bool writeMRU = false);
 	wxString GetServerName();
 	wxString GetDatabase();
 
