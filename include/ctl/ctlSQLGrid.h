@@ -203,6 +203,7 @@ class CursorCellRenderer : public wxGridCellStringRenderer
          {
 			int hAlign, vAlign;
 			int sPos=-1;
+			bool multiline = false;
 			attr.GetAlignment(&hAlign, &vAlign);
             //////////////////////////////////////////////////////////////////////////////
             //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
@@ -226,8 +227,10 @@ class CursorCellRenderer : public wxGridCellStringRenderer
 				{
 					wxColor color;
 					color.Set(239, 228, 176);
-					if (sPos=text.Find(wxT('\n'))!=wxNOT_FOUND ) 
-						dc.SetBrush( wxBrush(color, wxSOLID) );
+					if (sPos = text.Find(wxT('\n')) != wxNOT_FOUND) {
+						dc.SetBrush(wxBrush(color, wxSOLID));
+						multiline = true;
+					}
 					else
 						dc.SetBrush( wxBrush(attr.GetBackgroundColour(), wxSOLID) );
 				}
@@ -287,6 +290,20 @@ class CursorCellRenderer : public wxGridCellStringRenderer
 				}
 			}
 
+			if (!multiline) {
+				//int textWidth = dc.GetTextExtent(text).GetWidth();
+				wxEllipsizeMode mode(wxELLIPSIZE_END);
+				if (hAlign == wxALIGN_RIGHT) mode = wxELLIPSIZE_START;
+				const wxString& ellipsizedText = wxControl::Ellipsize
+				(
+					text,
+					dc,
+					mode,
+					rect.GetWidth() - 2,
+					wxELLIPSIZE_FLAGS_NONE
+				);
+				if (ellipsizedText != text) text=ellipsizedText;
+			}
 			grid.DrawTextRectangle(dc, text,
                            rect, hAlign, vAlign);
          }

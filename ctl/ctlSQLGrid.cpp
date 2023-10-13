@@ -189,6 +189,7 @@ void ctlSQLGrid::OnGridColSize(wxGridSizeEvent &event)
 {
 	// Save key="index:label", value=size
 	int col = event.GetRowOrCol();
+	if (col < 0) return;
 	colSizes[GetColKeyValue(col)] = GetColSize(col);
 
 }
