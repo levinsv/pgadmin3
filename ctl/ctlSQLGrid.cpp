@@ -410,7 +410,7 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
 		"<head>"
 		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n"
 		"<style type = \"text/css\">\n"
-		"#maket { width: 90%;  border-collapse: collapse;}\n"
+		"#maket { width: 90%;  border-collapse: collapse; table-layout: fixed;}\n"
 		"TD { vertical-align: top; border: 1px solid; padding: 2px; }\n"
 
 		;
@@ -420,36 +420,48 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
 		wxString fnt = htmlquery.SubString(s + 1, e - 1);
 		htm += "PRE { " + fnt + ";}\n";
 	}
-	if (GetSelectedCols().GetCount())
-	{
-		wxArrayInt cols = GetSelectedCols();
+	wxArrayInt cols = GetSelectedCols();
+	if (cols.GetCount() == 0) {
+		for (int i = 0; i < GetNumberCols(); i++)
+		{
+			cols.Add(i);
+		}
+	}
+	wxArrayInt rows = GetSelectedRows();
 		size_t numRows = GetNumberRows();
+		bool isRowsArray = rows.GetCount() > 0;
+		if (isRowsArray) numRows = rows.GetCount();
 		wxString bg = GetGridRowLabelWindow()->GetBackgroundColour().GetAsString(wxC2S_HTML_SYNTAX);
 		wxString head;
 		head= wxString::Format("<tr style=\"font-weight: bold; background: %s;\">", bg);
 		htm += wxString::Format("TD#cn { width: %dpx;font-weight: bold; background: %s;}\n", GetRowLabelSize(), bg);
 		head += wxString::Format("<td id=\"cn\"></td>");
+		int sumWidth = GetRowLabelSize();
 		for (int i = 0; i < cols.Count(); i++)
 		{
 			long columnPos = cols.Item(i);
 			int w = GetColWidth(columnPos);
+			sumWidth += w+2;
 			htm += wxString::Format("TD#c%d { width: %dpx;}\n",i,w);
 			head += wxString::Format("<td id=\"c%d\">%s</td>", i, GetColumnName(columnPos));
 		}
 		head += "</tr>\n";
 		htm += "</style></head><body>";
-		
+		htm.Replace("90%", wxString::Format("%dpx", sumWidth));
+
 		htm += htmlquery;
 		htm += "<br><table cellspacing=\"0\" cellpadding=\"0\" id=\"maket\">";
 //		AppendColumnHeader(str, cols);
 		htm += head;
 		for (int i = 0; i < numRows; i++)
 		{
-			if (GetRowSize(i) == 0) continue;
+			long rowPos = i;
+			if (isRowsArray) rowPos = rows.Item(i);
+			if (GetRowSize(rowPos) == 0) continue;
 			htm+= "<tr>\n";
-			htm += wxString::Format("<td id=\"cn\"><pre>%d</pre></td>",i+1);
+			htm += wxString::Format("<td id=\"cn\"><pre>%d</pre></td>", rowPos +1);
 			for (int c = 0; c < cols.Count(); c++) {
-				wxString text = GetCellValue(i, cols[c]);
+				wxString text = GetCellValue(rowPos, cols[c]);
 				htm += wxString::Format("<td id=\"c%d\"><pre>%s</pre></td>", c, escapeHtml(text,true));
 			}
 			htm += "</tr>\n";
@@ -457,10 +469,7 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
 
 		}
 		htm += "</table>";
-	}
-	else {
-		htm += "</style></head><body>"+ htmlquery+"</body></html>";
-	}
+
 	if (wxTheClipboard->Open())
 	{
 		wxDataObjectComposite* dataobj = new wxDataObjectComposite();

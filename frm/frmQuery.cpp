@@ -2224,7 +2224,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	bool selcol = sqlResult->GetSelectedCols().GetCount() > 0;
 	xmenu->Enable(MNU_CHECK_COLUMN_DATE, selcol);
 	xmenu->Enable(MNU_COPY_LISTCOLTYPE, selcol);
-	xmenu->Enable(MNU_COPY_TABLEHTML, selcol);
+	xmenu->Enable(MNU_COPY_TABLEHTML, selcol|| rows.GetCount()>0);
 	xmenu->Enable(MNU_AUTOCOLSPLOT, sqlResult->IsSelection());
 	xmenu->Enable(MNU_SUMMARY_COL, sqlResult->IsSelection());
 	xmenu->Enable(MNU_COPY_INLIST, sqlResult->IsSelection());
