@@ -338,7 +338,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	mainForm = form;
 	conn = _conn;
-
+	autoSave = settings->GetAutosaveQuery();
 	loading = true;
 	closing = false;
 
@@ -2455,24 +2455,25 @@ void frmQuery::SaveTempFile()
 	//if (filename.StartsWith(pref))
 	filename+=wxT(".a");
 	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
-	wxUtfFile file(tempDir+filename, wxFile::write, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
-	if (file.IsOpened())
-	{
-		int nl=sqlQuery->GetCurrentPos();
-		wxString strnl;
-		strnl=wxString::Format(_("%i@"), nl);
-		file.Write(strnl);
-		if ((file.Write(sqlQuery->GetText()) == 0) && (!modeUnicode))
-			wxMessageBox(_("Query text incomplete.\nQuery contained characters that could not be converted to the local charset.\nPlease correct the data or try using UTF8 instead."));
-		file.Close();
-		sqlQuery->SetChanged(false);
-		SqlBookUpdatePageTitle();
+	if (autoSave) {
+		wxUtfFile file(tempDir + filename, wxFile::write, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
+		if (file.IsOpened())
+		{
+			int nl = sqlQuery->GetCurrentPos();
+			wxString strnl;
+			strnl = wxString::Format(_("%i@"), nl);
+			file.Write(strnl);
+			if ((file.Write(sqlQuery->GetText()) == 0) && (!modeUnicode))
+				wxMessageBox(_("Query text incomplete.\nQuery contained characters that could not be converted to the local charset.\nPlease correct the data or try using UTF8 instead."));
+			file.Close();
+			sqlQuery->SetChanged(false);
+			SqlBookUpdatePageTitle();
+		}
+		else
+		{
+			wxLogError(__("Could not write the file %s: Errcode=%d."), filename.c_str(), wxSysErrorCode());
+		}
 	}
-	else
-	{
-		wxLogError(__("Could not write the file %s: Errcode=%d."), filename.c_str(), wxSysErrorCode());
-	}
-	
 	
 }
 
@@ -4370,7 +4371,7 @@ void frmQuery::fileMarkerActive(bool addOrRemove, const wxString &sqlTabName) {
 	
 	wxString fn = tempDir + wxT("_active.") + tabname + ".a";
 	//if (sqlTabName.Right(1)=='*' ) tabname=
-	if (addOrRemove)
+	if (addOrRemove && autoSave)
 	{
 		//wxUtfFile file(fn, wxFile::write, wxFONTENCODING_UTF8);
 		wxFile file(fn, wxFile::write);

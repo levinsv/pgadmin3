@@ -225,12 +225,13 @@ void ctlTree::OnMouse(wxMouseEvent& event)
 	wxPoint pt = event.GetPosition();
 	int flags = 0;
 	wxTreeItemId item = DoTreeHitTest(pt, flags);
-	if (event.LeftDown())
+	if (isJumpRoot) {
+		if (event.LeftDown())
 		{
 			if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT) {
 				if (item) {
 					wxRect r;
-					wxTreeItemId itemParent=item;
+					wxTreeItemId itemParent = item;
 					GetBoundingRect(itemParent, r, false);
 					wxTreeItemId prev;
 					prev = GetVerticalItem(pt);
@@ -245,46 +246,47 @@ void ctlTree::OnMouse(wxMouseEvent& event)
 
 		}
 		else {
-		if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT && (item==GetSelection())) {
-			wxRect r;
-			GetBoundingRect(item, r, true);
-			r.width = r.x-19;
-			r.x = r.x - 19;
-			if (r.x < 10) return;
-			wxTreeItemId prev;
-			wxTreeItemId itemParent = item;
-			wxImageList *list=this->GetImageList();
-			wxClientDC dc(this);
-			bool ex = false;
-			while (!ex) {
-				//ex = true;
-				prev = itemParent;
-				itemParent = GetItemParent(itemParent);
-				//this->ScrollTo(itemParent);
-				if (!itemParent.IsOk()) break;
+			if ((flags & wxTREE_HITTEST_ONITEMINDENT) == wxTREE_HITTEST_ONITEMINDENT && (item == GetSelection())) {
+				wxRect r;
+				GetBoundingRect(item, r, true);
+				r.width = r.x - 19;
 				r.x = r.x - 19;
-				//if (r.x >= pt.x) ex = false;
-				int image = this->GetItemImage(itemParent);
-				if (image >= 0) {
-					dc.SetClippingRegion(r.x + 1 - 19, r.y + 1,
-						16, 16);
-					list->Draw(image, dc,
-						r.x + 1 - 19,
-						r.y + 1,
-						wxIMAGELIST_DRAW_TRANSPARENT
-					);
-					dc.DestroyClippingRegion();
+				if (r.x < 10) return;
+				wxTreeItemId prev;
+				wxTreeItemId itemParent = item;
+				wxImageList* list = this->GetImageList();
+				wxClientDC dc(this);
+				bool ex = false;
+				while (!ex) {
+					//ex = true;
+					prev = itemParent;
+					itemParent = GetItemParent(itemParent);
+					//this->ScrollTo(itemParent);
+					if (!itemParent.IsOk()) break;
+					r.x = r.x - 19;
+					//if (r.x >= pt.x) ex = false;
+					int image = this->GetItemImage(itemParent);
+					if (image >= 0) {
+						dc.SetClippingRegion(r.x + 1 - 19, r.y + 1,
+							16, 16);
+						list->Draw(image, dc,
+							r.x + 1 - 19,
+							r.y + 1,
+							wxIMAGELIST_DRAW_TRANSPARENT
+						);
+						dc.DestroyClippingRegion();
+					}
 				}
-			}
-//			dc.SetBrush(*wxRED);
-//			dc.SetPen(*wxTRANSPARENT_PEN);
-//			dc.DrawRectangle(r);
-			Update();
-			return;
+				//			dc.SetBrush(*wxRED);
+				//			dc.SetPen(*wxTRANSPARENT_PEN);
+				//			dc.DrawRectangle(r);
+				Update();
+				return;
 
+			}
 		}
-		}
-		event.Skip();
+	}
+	event.Skip();
 
 }
 void ctlTree::OnChar(wxKeyEvent &event)
@@ -352,6 +354,7 @@ void ctlTree::OnChar(wxKeyEvent &event)
 ctlTree::ctlTree(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, long style)
 	: wxTreeCtrl(parent, id, pos, size, style), m_findTimer(NULL)
 {
+	isJumpRoot = settings->GetJumpRoot();
 }
 
 ctlTree::~ctlTree()

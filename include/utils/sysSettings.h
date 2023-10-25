@@ -824,6 +824,26 @@ public:
 	{
 		WriteBool(wxT("HideQueryHistory"), newval);
 	}
+	bool GetAutosaveQuery() const
+	{
+		bool b;
+		Read(wxT("AutosaveQuery"), &b, true);
+		return b;
+	}
+	void SetAutosaveQuery(const bool newval)
+	{
+		WriteBool(wxT("AutosaveQuery"), newval);
+	}
+	bool GetJumpRoot() const
+	{
+		bool b;
+		Read(wxT("JumpRoot"), &b, true);
+		return b;
+	}
+	void SetJumpRoot(const bool newval)
+	{
+		WriteBool(wxT("JumpRoot"), newval);
+	}
 	bool GetNumberPretty() const
 	{
 		bool b;

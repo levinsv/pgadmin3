@@ -133,6 +133,8 @@
 #define chkKeywordsInUppercase      CTRL_CHECKBOX("chkKeywordsInUppercase")
 #define chkASUTPstyle		        CTRL_CHECKBOX("chkASUTPstyle")
 #define chkHideQueryHistory		    CTRL_CHECKBOX("chkHideQueryHistory")
+#define chkAutosaveQuery		    CTRL_CHECKBOX("chkAutosaveQuery")
+#define chkJumpRoot     		    CTRL_CHECKBOX("chkJumpRoot")
 #define menus                		CTRL_TREE("menus")
 #define pnlBrowserDisplay           CTRL_PANEL("pnlBrowserDisplay")
 #define pnlBrowserProperties        CTRL_PANEL("pnlBrowserProperties")
@@ -366,6 +368,8 @@ frmOptions::frmOptions(frmMain *parent)
 	chkKeywordsInUppercase->SetValue(settings->GetSQLKeywordsInUppercase());
 	chkASUTPstyle->SetValue(settings->GetASUTPstyle());
 	chkHideQueryHistory->SetValue(settings->GetHideQueryHistory());
+	chkAutosaveQuery->SetValue(settings->GetAutosaveQuery());
+	chkJumpRoot->SetValue(settings->GetJumpRoot());
 	chkNumberPretty->SetValue(settings->GetNumberPretty());
 	cbLanguage->Append(_("Default"));
 	int sel = 0;
@@ -883,6 +887,16 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	{
 		changed = true;
 		settings->SetHideQueryHistory(chkHideQueryHistory->GetValue());
+	}
+	if (settings->GetAutosaveQuery() != chkAutosaveQuery->GetValue())
+	{
+		changed = true;
+		settings->SetAutosaveQuery(chkAutosaveQuery->GetValue());
+	}
+	if (settings->GetJumpRoot() != chkJumpRoot->GetValue())
+	{
+		changed = true;
+		settings->SetJumpRoot(chkJumpRoot->GetValue());
 	}
 	if (settings->GetNumberPretty() != chkNumberPretty->GetValue())
 	{

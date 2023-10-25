@@ -380,6 +380,14 @@
                       <border>4</border>
                     </object>
                     <object class="sizeritem">
+                      <object class="wxCheckBox" name="chkJumpRoot">
+                        <label>Quick jump to the root node</label>
+                        <checked>0</checked>
+                      </object>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
                       <object class="wxFlexGridSizer">
                         <cols>2</cols>
                         <vgap>5</vgap>
@@ -592,6 +600,21 @@
                   </object>
                   <object class="sizeritem">
                     <object class="wxCheckBox" name="chkHideQueryHistory">
+                      <label></label>
+                      <checked>1</checked>
+                    </object>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="stAutosaveQuery">
+                      <label>Auto save query text</label>
+                    </object>
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxCheckBox" name="chkAutosaveQuery">
                       <label></label>
                       <checked>1</checked>
                     </object>

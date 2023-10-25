@@ -53,6 +53,7 @@ private:
 	wxString m_findPrefix;
 	ctlTreeFindTimer *m_findTimer;
 	friend class ctlTreeFindTimer;
+	bool isJumpRoot;
 };
 
 

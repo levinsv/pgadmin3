@@ -170,6 +170,7 @@ private:
 	gqbModel *model;
 	gqbController *controller;
 	bool firstTime;
+	bool autoSave;
 	bool gqbUpdateRunning;
 	wxTimer *adjustSizesTimer;
 
