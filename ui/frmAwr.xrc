@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<resource>
+ <object class="wxDialog" name="frmAwr">
+  <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
+  <size>500,269</size>
+  <title>AWR report</title>
+  <centered>1</centered>
+  <object class="wxGridSizer">
+   <rows>0</rows>
+   <cols>1</cols>
+   <vgap>0</vgap>
+   <hgap>0</hgap>
+   <object class="sizeritem">
+    <option>1</option>
+    <flag>wxEXPAND</flag>
+    <border>5</border>
+    <object class="wxFlexGridSizer">
+     <rows>0</rows>
+     <cols>2</cols>
+     <vgap>0</vgap>
+     <hgap>0</hgap>
+     <growablecols></growablecols>
+     <growablerows></growablerows>
+     <object class="sizeritem">
+      <option>1</option>
+      <flag>wxEXPAND</flag>
+      <border>5</border>
+      <object class="wxBoxSizer">
+       <orient>wxVERTICAL</orient>
+       <object class="sizeritem">
+        <option>0</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+        <object class="wxRadioBox" name="rbTypeReport">
+         <style>wxRA_SPECIFY_ROWS</style>
+         <label>Type report</label>
+         <selection>1</selection>
+         <content>
+          <item>Report</item>
+          <item>Diff report</item>
+         </content>
+         <dimension>1</dimension>
+        </object>
+       </object>
+       <object class="sizeritem">
+        <option>1</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>2</border>
+        <object class="wxPanel" name="m_panel2">
+         <style>wxTAB_TRAVERSAL</style>
+         <object class="wxFlexGridSizer">
+          <rows>0</rows>
+          <cols>2</cols>
+          <vgap>0</vgap>
+          <hgap>0</hgap>
+          <growablecols>1</growablecols>
+          <growablerows></growablerows>
+          <object class="sizeritem">
+           <option>1</option>
+           <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+           <border>5</border>
+           <object class="wxStaticText" name="m_staticText3">
+            <label>Server name</label>
+            <wrap>-1</wrap>
+           </object>
+          </object>
+          <object class="sizeritem">
+           <option>0</option>
+           <flag>wxALL|wxEXPAND</flag>
+           <border>5</border>
+           <object class="wxComboBox" name="cbServer">
+	    <style>wxCB_READONLY</style>
+            <value>cbServer</value>
+            <content />
+           </object>
+          </object>
+         </object>
+        </object>
+       </object>
+       <object class="sizeritem">
+        <option>1</option>
+        <flag>wxEXPAND | wxALL</flag>
+        <border>2</border>
+        <object class="wxPanel" name="m_panel3">
+         <style>wxTAB_TRAVERSAL</style>
+         <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+           <option>1</option>
+           <flag>wxEXPAND</flag>
+           <border>5</border>
+           <object class="wxFlexGridSizer">
+            <rows>0</rows>
+            <cols>4</cols>
+            <vgap>0</vgap>
+            <hgap>0</hgap>
+            <growablecols>1,3</growablecols>
+            <growablerows></growablerows>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+             <border>5</border>
+             <object class="wxStaticText" name="m_staticText4">
+              <label>Start Id1</label>
+              <wrap>-1</wrap>
+             </object>
+            </object>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALL|wxEXPAND</flag>
+             <border>5</border>
+             <object class="wxComboBox" name="cbStartId1">
+              <style>wxCB_READONLY</style>
+              <value>cbStartId1</value>
+              <content />
+             </object>
+            </object>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+             <border>5</border>
+             <object class="wxStaticText" name="m_staticText5">
+              <label>End Id1</label>
+              <wrap>-1</wrap>
+             </object>
+            </object>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALL|wxEXPAND</flag>
+             <border>5</border>
+             <object class="wxComboBox" name="cbEndId1">
+              <style>wxCB_READONLY</style>
+              <value>cbEndId1</value>
+              <content />
+             </object>
+            </object>
+           </object>
+          </object>
+         </object>
+        </object>
+       </object>
+       <object class="sizeritem">
+        <option>1</option>
+        <flag>wxEXPAND | wxALL</flag>
+        <border>5</border>
+        <object class="wxPanel" name="m_panel31">
+         <style>wxTAB_TRAVERSAL</style>
+         <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+           <option>1</option>
+           <flag>wxEXPAND</flag>
+           <border>5</border>
+           <object class="wxFlexGridSizer">
+            <rows>0</rows>
+            <cols>4</cols>
+            <vgap>0</vgap>
+            <hgap>0</hgap>
+            <growablecols>1,3</growablecols>
+            <growablerows></growablerows>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+             <border>5</border>
+             <object class="wxStaticText" name="m_staticText41">
+              <label>Start Id2</label>
+              <wrap>-1</wrap>
+             </object>
+            </object>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALL|wxEXPAND</flag>
+             <border>5</border>
+             <object class="wxComboBox" name="cbStartId2">
+              <style>wxCB_READONLY</style>
+              <value>cbStartId2</value>
+              <content />
+             </object>
+            </object>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+             <border>5</border>
+             <object class="wxStaticText" name="m_staticText51">
+              <label>End Id2</label>
+              <wrap>-1</wrap>
+             </object>
+            </object>
+            <object class="sizeritem">
+             <option>0</option>
+             <flag>wxALL|wxEXPAND</flag>
+             <border>5</border>
+             <object class="wxComboBox" name="cbEndId2">
+              <style>wxCB_READONLY</style>
+              <value>cbEndId2</value>
+              <content />
+             </object>
+            </object>
+           </object>
+          </object>
+         </object>
+        </object>
+       </object>
+       <object class="sizeritem">
+        <option>1</option>
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <object class="wxStdDialogButtonSizer">
+         <object class="button">
+          <flag>wxALIGN_CENTER_HORIZONTAL|wxALL</flag>
+          <border>5</border>
+          <object class="wxButton" name="wxID_OK">
+           <label>&amp;OK</label>
+          </object>
+         </object>
+         <object class="button">
+          <flag>wxALIGN_CENTER_HORIZONTAL|wxALL</flag>
+          <border>5</border>
+          <object class="wxButton" name="wxID_CANCEL">
+           <label>&amp;Cancel</label>
+          </object>
+         </object>
+        </object>
+       </object>
+      </object>
+     </object>
+    </object>
+   </object>
+  </object>
+ </object>
+</resource>

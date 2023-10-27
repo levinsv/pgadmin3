@@ -64,6 +64,7 @@
 #include "frm/frmMaintenance.h"
 #include "frm/frmStatus.h"
 #include "frm/frmLog.h"
+#include "frm/frmAwr.h"
 #include "frm/frmPassword.h"
 #ifdef DATABASEDESIGNER
 #include "frm/frmDatabaseDesigner.h"
@@ -503,6 +504,7 @@ void frmMain::CreateMenus()
 	new reportObjectDependentsFactory(menuFactories, reportMenu, 0);
 	new reportObjectListFactory(menuFactories, reportMenu, 0);
 	new reportCompareFactory(menuFactories, reportMenu, 0);
+	new reportAwrFactory(menuFactories, reportMenu, 0);
 	choiceSelectOpts.Add(0);
 	choiceSelectOpts.Add(1);
 

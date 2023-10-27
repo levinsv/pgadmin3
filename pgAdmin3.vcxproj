@@ -914,6 +914,7 @@
     <ClCompile Include="dlg\dlgView.cpp" />
     <ClCompile Include="frm\events.cpp" />
     <ClCompile Include="frm\frmAbout.cpp" />
+    <ClCompile Include="frm\frmAwr.cpp" />
     <ClCompile Include="frm\frmBackup.cpp" />
     <ClCompile Include="frm\frmBackupGlobals.cpp" />
     <ClCompile Include="frm\frmBackupServer.cpp" />
@@ -1577,6 +1578,7 @@
     <ClInclude Include="include\ctl\ctlShortCut.h" />
     <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
+    <ClInclude Include="include\frm\frmAwr.h" />
     <ClInclude Include="include\frm\frmLog.h" />
     <ClInclude Include="include\frm\frmPlot.h" />
     <ClInclude Include="include\frm\mathplot.h" />

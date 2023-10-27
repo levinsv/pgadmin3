@@ -552,10 +552,10 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT("SELECT proname, pronargs, proargtypes[0] AS arg0, proargtypes[1] AS arg1, proargtypes[2] AS arg2\n")
 		    wxT("  FROM pg_proc\n")
 		    wxT("  JOIN pg_namespace n ON n.oid=pronamespace\n")
-		    wxT(" WHERE proname IN ('pg_tablespace_size', 'pg_file_read', 'pg_logfile_rotate',")
+		    wxT(" WHERE proname IN ('show_samples','pg_tablespace_size', 'pg_file_read', 'pg_logfile_rotate',")
 		    wxT(                  " 'pg_postmaster_starttime', 'pg_terminate_backend', 'pg_reload_conf',")
 		    wxT(                  " 'pgstattuple', 'pgstatindex','bt_index_parent_check')\n")
-		    wxT("   AND nspname IN ('pg_catalog', 'public')")
+		    wxT("   AND nspname IN ('pg_catalog', 'public','profile')")
 		    wxT(" union all select current_setting('log_destination'),555,null,null,null");
 
 		pgSet *set = ExecuteSet(sql);
@@ -585,6 +585,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_PGSTATTUPLE] = true;
 				else if (proname == wxT("pgstatindex") && pronargs == 1 && set->GetLong(wxT("arg0")) == 25)
 					features[FEATURE_PGSTATINDEX] = true;
+				else if (proname == wxT("show_samples") && pronargs == 1)
+					features[FEATURE_PGPRO_PWR] = true;
 				else if (proname == wxT("bt_index_parent_check") && pronargs == 2 )
 					features[FEATURE_PGCHECKINDEX] = true;
 				else if (proname == wxT("csvlog") && pronargs == 555)

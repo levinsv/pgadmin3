@@ -1674,6 +1674,10 @@
     <ClCompile Include="utils\align\Item.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="ctl\ctlShortCut.cpp" />
+    <ClCompile Include="frm\frmAwr.cpp">
+      <Filter>frm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -3598,6 +3602,10 @@
     </ClInclude>
     <ClInclude Include="include\utils\align\Item.h">
       <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\ctlShortCut.h" />
+    <ClInclude Include="include\frm\frmAwr.h">
+      <Filter>include\frm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
