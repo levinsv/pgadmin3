@@ -54,6 +54,7 @@ public:
 		return options;
 	}
 	void iSetOptions(const wxString &s);
+	wxString ParseColumnOptions(const wxString& tmpoptions);
 	const wxArrayString &GetTypesArray()
 	{
 		return typesArray;

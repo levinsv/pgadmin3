@@ -132,7 +132,7 @@ void pgForeignTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView
 	{
 		expandedKids = true;
 		pgSet *set = ExecuteSet(
-		                 wxT("SELECT attname, format_type(t.oid,NULL) AS typname, attndims, atttypmod, nspname, attnotnull,\n")
+		                 wxT("SELECT attname, format_type(t.oid,NULL) AS typname, attndims, atttypmod, nspname, attnotnull,attfdwoptions,\n")
 		                 wxT("       (SELECT COUNT(1) from pg_type t2 WHERE t2.typname=t.typname) > 1 AS isdup\n")
 		                 wxT("  FROM pg_attribute att\n")
 		                 wxT("  JOIN pg_type t ON t.oid=atttypid\n")
@@ -155,6 +155,9 @@ void pgForeignTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView
 					typesList += wxT(", ");
 					quotedTypesList += wxT(",\n    ");
 				}
+				wxString str = set->GetVal("attfdwoptions");
+				if (!str.IsEmpty()) str="OPTIONS("+ ParseColumnOptions(str) + ") ";
+					//FillArray(column->GetVariables(), str.Mid(1, str.Length() - 2));
 
 				typesList += set->GetVal(wxT("attname")) + wxT(" ")
 				             + dt.GetSchemaPrefix(GetDatabase()) + dt.FullName() + wxT(" ")
@@ -162,7 +165,7 @@ void pgForeignTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView
 
 				quotedTypesList += qtIdent(set->GetVal(wxT("attname"))) + wxT(" ")
 				                   + dt.GetQuotedSchemaPrefix(GetDatabase()) + dt.QuotedFullName() + wxT(" ")
-				                   + constraint;
+				                   + str+ constraint;
 
 				typesArray.Add(set->GetVal(wxT("attname")));
 				typesArray.Add(dt.GetSchemaPrefix(GetDatabase()) + dt.FullName());
@@ -313,6 +316,83 @@ void pgForeignTable::iSetOptions(const wxString &tmpoptions)
 			options += wxT(", ");
 		options += option + wxT(" '") + value + wxT("'");
 	}
+}
+wxString pgForeignTable::ParseColumnOptions(const wxString& tmpoptions)
+{
+	wxString tmp;
+	wxString option;
+	wxString value;
+	wxString currentChar;
+	bool wrappedInQuotes = false, antislash = false;
+
+	wxString options = wxEmptyString;
+
+	if (tmpoptions == wxEmptyString)
+		return "";
+
+	// parse the options string
+	// we start at 1 and stop at length-1 to get rid of the { and } of the array
+	for (unsigned int index = 1; index < tmpoptions.Length() - 1; index++)
+	{
+		// get current char
+		currentChar = tmpoptions.Mid(index, 1);
+
+		// if there is a double quote at the beginning of an option,
+		// the whole option=value will be wrapped in quotes
+		if (currentChar == wxT("\"") && tmp.IsEmpty())
+			wrappedInQuotes = true;
+		else if (currentChar == wxT("\\") && wrappedInQuotes)
+			antislash = true;
+		else
+		{
+			if ((currentChar == wxT(",") && !wrappedInQuotes && !tmp.IsEmpty())
+				|| (currentChar == wxT("\"") && wrappedInQuotes && !antislash && !tmp.IsEmpty()))
+			{
+				// new options
+
+				if (currentChar == wxT("\"") && wrappedInQuotes && !antislash && !tmp.IsEmpty())
+				{
+					// In this specific case, the next character is the comma,
+					// but we don't want to start the next option with the comma
+					// so we skip it right now
+					index++;
+				}
+
+				// we need to grab option and value from tmp string
+				option = tmp.BeforeFirst('=');
+				value = tmp.AfterFirst('=');
+
+				// put them in the array
+
+				// build the options string
+				if (options.Length() > 0)
+					options += wxT(", ");
+				options += option + wxT(" '") + value + wxT("'");
+
+				// reinit tmp
+				tmp = wxEmptyString;
+				wrappedInQuotes = false;
+			}
+			else
+				tmp += currentChar;
+			antislash = false;
+		}
+	}
+
+	// last options
+
+	if (!tmp.IsEmpty())
+	{
+		// we need to grab option and value from tmp string
+		option = tmp.BeforeFirst('=');
+		value = tmp.AfterFirst('=');
+
+		// build the options string
+		if (options.Length() > 0)
+			options += wxT(", ");
+		options += option + wxT(" '") + value + wxT("'");
+	}
+	return options;
 }
 
 
