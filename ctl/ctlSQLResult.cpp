@@ -22,7 +22,7 @@
 #include "frm/frmExport.h"
 #include "frm/mathplot.h"
 #include "frm/frmPlot.h"
-
+#include "ctl/SourceViewDialog.h"
 
 
 ctlSQLResult::ctlSQLResult(wxWindow *parent, pgConn *_conn, wxWindowID id, const wxPoint &pos, const wxSize &size)
@@ -341,7 +341,6 @@ wxString ctlSQLResult::OnGetItemText(long item, long col) const
 }
 wxString ctlSQLResult::CopySelColumnNameType()
 {
-	size_t i;
 	wxString ss = wxEmptyString;
 	if (GetSelectedCols().GetCount()) {
 		wxArrayInt cols = GetSelectedCols();
@@ -479,6 +478,58 @@ wxDateTime parseDT(int &fmttype,const wxString dtStr) {
 	}
 	return dt;
 }
+wxString ctlSQLResult::CompareSelectCells() {
+	if (IsSelection()) {
+		unsigned int i;
+		int row, col;
+		wxGridCellCoordsArray cells = GetSelectedCells();
+		wxString sql_1;
+		wxString sql_2;
+		wxString cname;
+		if (GetSelectionBlockTopLeft().GetCount() > 0 &&
+			GetSelectionBlockBottomRight().GetCount() > 0)
+		{
+			unsigned int x1, x2, y1, y2;
+			int count = GetSelectionBlockTopLeft().GetCount();
+
+			x1 = GetSelectionBlockTopLeft()[0].GetCol();
+			x2 = GetSelectionBlockBottomRight()[0].GetCol();
+			y1 = GetSelectionBlockTopLeft()[0].GetRow();
+			y2 = GetSelectionBlockBottomRight()[0].GetRow();
+			for (size_t n = 0; n < count; n++)
+			{
+				x1 = GetSelectionBlockTopLeft()[n].GetCol();
+				x2 = GetSelectionBlockBottomRight()[n].GetCol();
+				y1 = GetSelectionBlockTopLeft()[n].GetRow();
+				y2 = GetSelectionBlockBottomRight()[n].GetRow();
+				for (i = y1; i <= y2; i++)
+				{
+					//clearCellData(row, col);
+					row = i;
+					col = x1;
+					if (sql_1.IsEmpty()) { sql_1 = GetCellValue(row, col); cname = wxString::Format("Row: %d col:%s", row + 1, ctlSQLGrid::GetColumnName(col)); }
+					else {
+						sql_2 = GetCellValue(row, col); cname += wxString::Format(" # Row: %d col:%s", row + 1, ctlSQLGrid::GetColumnName(col));
+					}
+					if (!sql_2.IsEmpty() && sql_1 == sql_2) {
+						sql_2 = wxEmptyString;
+						cname = cname.BeforeFirst('#');
+						continue;
+					}
+					if (!sql_2.IsEmpty()) {
+						SourceViewDialog* dlg = new SourceViewDialog(NULL, sql_1, sql_2, cname);
+						dlg->Show();
+						return "Diff cells";
+					}
+				}
+			}
+		}
+		else
+		{
+		}
+	}
+	return "Not diff cells.";
+}
 wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	wxArrayInt cols;
 	wxArrayString leg;
@@ -486,7 +537,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	wxString rez="Draw plot";
 	if (IsSelection()) {
 			unsigned int i;
-			int row, col;
+			int col;
 			wxGridCellCoordsArray cells = GetSelectedCells();
 			for (i = 0; i < cells.Count(); i++) {
 				//clearCellData(cells[i].GetRow(), cells[i].GetCol());
@@ -789,7 +840,6 @@ void ctlSQLResult::OnKeyChar(wxKeyEvent& event) {
 		int colS = GetGridCursorCol();
 		int rowS= GetGridCursorRow();
 		wxString fltval = this->searchStr;
-		bool eq;
 		size_t numRows = GetNumberRows();
 		size_t numCols = GetNumberCols();
 		int all = 0, show = 0, hide = 0;

@@ -48,6 +48,7 @@ public:
 
 	wxString OnGetItemText(long item, long col) const;
 	wxString SummaryColumn();
+	wxString CompareSelectCells();
 	wxString AutoColsPlot(int flags,frmQuery *parent);
 	wxString CheckSelColumnDate();
 	wxString CopySelColumnNameType();

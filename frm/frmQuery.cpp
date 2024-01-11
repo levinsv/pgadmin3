@@ -119,6 +119,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_PASTE,             frmQuery::OnPaste)
 	EVT_MENU(MNU_CLEAR,             frmQuery::OnClear)
 	EVT_MENU(MNU_SUMMARY_COL,       frmQuery::OnSummary_Column)
+	EVT_MENU(MNU_COMPARE_2CELL,		frmQuery::OnCompare_2Cell)
 	EVT_MENU(MNU_COPY_INSERT,       frmQuery::OnCopy_Insert)
 	EVT_MENU(MNU_COPY_INLIST,       frmQuery::OnCopy_InList)
 	EVT_MENU(MNU_COPY_WHERELIST,	frmQuery::OnCopy_WhereList)
@@ -2219,6 +2220,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->AppendSeparator();
 	xmenu->Append(MNU_AUTOCOLSPLOT, _("Draw plot LY(bar) or LXY or XYYY..."), _("Draw plot LY(bar) LXY or XYYY..."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
+	xmenu->Append(MNU_COMPARE_2CELL, _("Compare 2 Cells"), _("Compare 2 selected cells."));
 	xmenu->Append(MNU_CHECK_COLUMN_DATE, _("Check the sequence of dates"), _("Check the sequence of dates"));
 	xmenu->Append(MNU_CLEAR_FILTER, _("Clear filter"), _("Clear filter"));
 	bool selcol = sqlResult->GetSelectedCols().GetCount() > 0;
@@ -2227,6 +2229,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Enable(MNU_COPY_TABLEHTML, selcol|| rows.GetCount()>0);
 	xmenu->Enable(MNU_AUTOCOLSPLOT, sqlResult->IsSelection());
 	xmenu->Enable(MNU_SUMMARY_COL, sqlResult->IsSelection());
+	xmenu->Enable(MNU_COMPARE_2CELL, sqlResult->IsSelection());
 	xmenu->Enable(MNU_COPY_INLIST, sqlResult->IsSelection());
 
 	xmenu->Enable(MNU_COPY_WHERELIST, sqlResult->IsSelection());
@@ -2339,6 +2342,12 @@ void frmQuery::OnAutoColsPlot(wxCommandEvent& ev)
 		wxString s = sqlResult->AutoColsPlot(0, q);
 		SetStatusText(s, STATUSPOS_MSGS);
 	}
+}
+
+void frmQuery::OnCompare_2Cell(wxCommandEvent& ev)
+{
+		wxString s = sqlResult->CompareSelectCells();
+		SetStatusText(s, STATUSPOS_MSGS);
 }
 
 void frmQuery::OnSummary_Column(wxCommandEvent &ev)
