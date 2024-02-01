@@ -1097,7 +1097,10 @@ long ctlSQLBox::SelectQuery(int startposition)
 		ch = GetCharAt(pos);
 		st = GetStyleAt(pos) & 0x1F;
 		if ((ch == ';') &&
-	        st != 2 && st != 6 && st != 7)
+	        st != wxSTC_SQL_COMMENTLINE && 
+			st != wxSTC_SQL_STRING &&
+			st != wxSTC_SQL_CHARACTER &&
+			st!= wxSTC_SQL_COMMENT)
 		{
 			pend=pos;
 			break;
@@ -1118,7 +1121,11 @@ long ctlSQLBox::SelectQuery(int startposition)
 		ch = GetCharAt(pos);
 		st = GetStyleAt(pos) & 0x1F;
 		if ((ch == ';') &&
-	        st != 2 && st != 6 && st != 7)
+			st != wxSTC_SQL_COMMENTLINE &&
+			st != wxSTC_SQL_STRING &&
+			st != wxSTC_SQL_CHARACTER &&
+			st != wxSTC_SQL_COMMENT
+			)
 		{
 			//pstart=pos+1;
 			break;
