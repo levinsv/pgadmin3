@@ -29,7 +29,7 @@ jobs:
       run: |
            chown -R $(id -u):$(id -g) /var/lib;
            chown -R $(id -u):$(id -g) /var/cache;
-           chown -R $(id -u):$(id -g) /var/lib;
+           chown -R $(id -u):$(id -g) /var/lib/dpkg;
     - name: Install PostgreSQL client
       run: |
            apt-get install -y postgresql-client
