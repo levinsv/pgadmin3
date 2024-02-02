@@ -25,6 +25,11 @@ jobs:
       run: sudo apt-get install -y libxslt-dev
     - name: Install xmll2
       run: sudo apt-get install -y libxml2-utils
+    - name: Fix permissions on files and directories
+      run: |
+           chown -R $(id -u):$(id -g) /var/lib;
+           chown -R $(id -u):$(id -g) /var/cache;
+           chown -R $(id -u):$(id -g) /var/lib;
     - name: Install PostgreSQL client
       run: |
            apt-get install -y postgresql-client
