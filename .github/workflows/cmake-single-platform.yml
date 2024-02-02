@@ -25,6 +25,14 @@ jobs:
       run: sudo apt-get install -y libxslt-dev
     - name: Install xmll2
       run: sudo apt-get install -y libxml2-utils
+    - name: Install PostgreSQL client
+      run: |
+           apt-get update
+           apt-get install --yes postgresql-client
+    - name: Install wxWidgets
+      run: |
+           apt-get update
+           apt-get install --yes wxWidgets
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
