@@ -27,11 +27,9 @@ jobs:
       run: sudo apt-get install -y libxml2-utils
     - name: Install PostgreSQL client
       run: |
-           apt-get update
            apt-get install --yes postgresql-client
     - name: Install wxWidgets
       run: |
-           apt-get update
            sudo apt-get install libwxbase3.2-0-unofficial && sudo apt-get install libwxbase3.2-dev && sudo apt-get install libwxgtk3.2-0-unofficial && sudo apt-get install libwxgtk3.2-dev && sudo apt-get install wx3.2-headers && sudo apt-get install wx-common && sudo apt-get install libwxgtk-webview3.2-0-unofficial && sudo apt-get install libwxgtk-webview3.2-dev && sudo apt-get install libwxbase3.1-0-unofficial-dbg && sudo apt-get install libwxgtk-webview3.2-0-unofficial-dbg && sudo apt-get install libwxgtk-media3.2-0-unofficial-dbg && sudo apt-get install wx3.2-i18n
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
