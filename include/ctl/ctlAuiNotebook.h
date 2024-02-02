@@ -25,6 +25,15 @@ class ctlAuiNotebook : public wxAuiNotebook
 public:
 	ctlAuiNotebook(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize, long style = wxAUI_NB_DEFAULT_STYLE) :
 		wxAuiNotebook(parent, id, pos, size, style) { }
+	int DoModifySelection(size_t n, bool events) wxOVERRIDE
+	{
+		if (n == m_curPage)
+		{
+			SetFocus();
+			return m_curPage;
+		}
+		return wxAuiNotebook::DoModifySelection(n, events);
+	}
 
 protected:
 	void OnChildFocus(wxChildFocusEvent &evt);
