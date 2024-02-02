@@ -30,8 +30,6 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y libxml2-utils
     - name: Fix permissions on files and directories
-      run: |
-           chown -R $(id -u):$(id -g) /var/lib/dpkg;
     - name: Install PostgreSQL client
       run: |
            sudo apt-get update
