@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 3.0.0)
 project(pgAdmin3 VERSION 1.26.0)
 include_directories(. include include/libssh2
 )
-add_compile_definitions(WX_PRECOMP)
+if(UNIX)
+  add_compile_definitions(NO_WXJSON_GIT)
+endif()
 add_compile_definitions(WX_PRECOMP)
 add_compile_definitions(wxUSE_UNICODE)
 add_compile_definitions(EMBED_XRC)
-#add_compile_definitions(EMBED_XRC)
 add_compile_options(-Wno-narrowing
 )
 
