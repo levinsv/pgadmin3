@@ -29,7 +29,7 @@ jobs:
     - name: Install wxWidgets
       run: |
            sudo apt-get update
-           sudo apt-get install libwxgtk3.0-gtk3-dev
+           sudo apt-get install libwxgtk3.2-gtk3-dev
     - name: Display versions of tools and libraries
       continue-on-error: true
       run: uname -a; wx-config --list; wx-config --cxxflags; wx-config --libs; g++ --version | grep g++
