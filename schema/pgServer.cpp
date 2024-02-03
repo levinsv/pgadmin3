@@ -1638,7 +1638,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 		server = new pgServer(servername, hostaddr, description, service, database, username, port, StrToBool(storePwd), rolename, connstr, StrToBool(restore), ssl,
 		                      colour, group, StrToBool(sshTunnel), tunnelHost, tunnelUserName, StrToBool(authModePwd), tunnelPassword, publicKeyFile, identityFile, tunnelPort);
 #else
-		server = new pgServer(servername, hostaddr, description, service, database, username, port, StrToBool(storePwd), rolename, StrToBool(restore), ssl,
+		server = new pgServer(servername, hostaddr, description, service, database, username, port, StrToBool(storePwd), rolename, connstr, StrToBool(restore), ssl,
 		                      colour, group);
 #endif
 		server->iSetLastDatabase(lastDatabase);
@@ -1870,7 +1870,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 					// Add the item, if it looks sane
 					if (port != 0 && username != wxEmptyString)
 					{
-						server = new pgServer(servername, wxEmptyString, description, wxEmptyString, wxT("edb"), username, port, false, rolename, 0);
+						server = new pgServer(servername, wxEmptyString, description, wxEmptyString, wxT("edb"), username, port, false, rolename, connstr, 0);
 						server->iSetDiscoveryID(cnf->GetPath() + wxT("/") + version);
 						server->iSetDiscovered(true);
 						groupitem = browser->GetFirstChild(obj->GetId(), groupcookie);
