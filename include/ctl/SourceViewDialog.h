@@ -13,7 +13,7 @@ class SourceViewDialog : public wxFrame
     int pos = 0;
     int prev_line = -1;
 public:
-    SourceViewDialog::~SourceViewDialog() {
+    ~SourceViewDialog() {
         //delete m_text1;
         //m_btn_close->UnBind();
     }
