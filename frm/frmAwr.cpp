@@ -1,4 +1,4 @@
-#include "pgadmin3.h"
+#include "pgAdmin3.h"
 #include <wx/file.h>
 #include "frm/frmAwr.h"
 #include "schema/pgObject.h"

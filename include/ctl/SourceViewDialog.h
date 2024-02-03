@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pgAdmin3.h"
+
 class SourceViewDialog : public wxFrame
 {
     ctlSQLBox* m_text1;
