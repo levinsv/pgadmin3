@@ -58,7 +58,7 @@ void ExplainCanvas::SetExplainString(const wxString &str)
 		wxString tmp = tmpstr.GetNextToken();
 		if (p>-1)
 		{
-			// блок never executed
+			// Р±Р»РѕРє never executed
 			const wxChar *cp = tmp.c_str();
 			int pp=0;
 			while (pp<=p)

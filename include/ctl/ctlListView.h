@@ -23,7 +23,7 @@ class ctlListView : public wxListView
 {
 private:
 	void OnSortGrid(wxListEvent& event);
-	bool nosort; // если кто то пользуется SetItemData то не будем сортировать такие ctlListView
+	bool nosort; // РµСЃР»Рё РєС‚Рѕ С‚Рѕ РїРѕР»СЊР·СѓРµС‚СЃСЏ SetItemData С‚Рѕ РЅРµ Р±СѓРґРµРј СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ С‚Р°РєРёРµ ctlListView
 	int order, prev_col;
 public:
 	bool SetItemData(long item, long data) {

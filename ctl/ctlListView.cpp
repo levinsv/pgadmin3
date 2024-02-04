@@ -76,9 +76,9 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 				wxString val = GetItemText(i, col);
 				mp.insert(std::pair<wxString, int>(val, i));
 			}
-			// сопоставим сортированным значениям последовательность чисел для сортировки SortItems
+			// СЃРѕРїРѕСЃС‚Р°РІРёРј СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Рј Р·РЅР°С‡РµРЅРёСЏРј РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ С‡РёСЃРµР» РґР»СЏ СЃРѕСЂС‚РёСЂРѕРІРєРё SortItems
 			std::multimap<wxString, int>::iterator it = mp.begin();
-			for (int i = 1; it != mp.end(); it++, i++) {  // выводим их
+			for (int i = 1; it != mp.end(); it++, i++) {  // РІС‹РІРѕРґРёРј РёС…
 				int row = it->second; // row
 				wxListView::SetItemData(row, (long)i * order);
 			}
@@ -93,7 +93,7 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 				if (val == "NaN") val = "0";
 				if (val.ToCDouble(&d))
 				{
-					// это число
+					// СЌС‚Рѕ С‡РёСЃР»Рѕ
 				}
 				else
 				{
@@ -105,9 +105,9 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 				}
 				mp.insert(std::pair<double, int>(d, i));
 			}
-			// сопоставим сортированным значениям последовательность чисел для сортировки SortItems
+			// СЃРѕРїРѕСЃС‚Р°РІРёРј СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Рј Р·РЅР°С‡РµРЅРёСЏРј РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ С‡РёСЃРµР» РґР»СЏ СЃРѕСЂС‚РёСЂРѕРІРєРё SortItems
 			std::multimap<double, int>::iterator it = mp.begin();
-			for (int i = 1; it != mp.end(); it++, i++) {  // выводим их
+			for (int i = 1; it != mp.end(); it++, i++) {  // РІС‹РІРѕРґРёРј РёС…
 				int row = it->second; // row
 				wxListView::SetItemData(row, (long)i * order);
 			}

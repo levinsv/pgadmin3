@@ -90,7 +90,7 @@ public:
                 }
                 if (s[i] == '"') {
                     if (inquote) {
-                        // çàêðûòèå êàâû÷åê
+                        // Ð·Ð°ÐºÑ€Ñ‹Ñ‚Ð¸Ðµ ÐºÐ°Ð²Ñ‹Ñ‡ÐµÐº
                         rectCol.width = arr[i] - rectCol.x;
                         rectCol.x = rectCol.x - startX + rect.x;
                         dc->DrawRoundedRectangle(rectCol, 3);
