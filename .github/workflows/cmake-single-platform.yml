@@ -21,10 +21,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Install libxslt-dev libxml2-dev libpq-dev postgresql-server-dev-all
+    - name: Install libxslt-dev postgresql-common postgresql-server-dev-all
       run: |
-            sudo apt-get update
-            sudo apt-get install libxslt-dev libxml2-dev libpq-dev postgresql-server-dev-all
+            echo sudo apt-get update
+            echo sudo apt-get install libxslt-dev libxml2-dev libpq-dev postgresql-server-dev-all
     - name: Install wxWidgets
       run: |
            sudo apt-get update
