@@ -1,5 +1,5 @@
 /* XPM */
-static char *log_red_xpm[] = {
+static const char *const log_red_xpm[] = {
 "16 16 7 1 0 0",
 "  c #000000",
 "! c #FF0000",

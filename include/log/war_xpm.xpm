@@ -1,5 +1,5 @@
 /* XPM */
-static char *war_xpm[] = {
+static const char *const war_xpm[] = {
 "16 16 3 1 0 0",
 "  c #000000",
 "! c #C0C0C0",

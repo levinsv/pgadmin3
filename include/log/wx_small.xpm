@@ -1,5 +1,5 @@
 /* XPM */
-static const char *wx_small_xpm[] = {
+static const char *const wx_small_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 16 6 1",
 ". c Black",
