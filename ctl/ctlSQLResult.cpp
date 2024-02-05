@@ -994,7 +994,7 @@ int sqlResultTable::sortColumns()
 								 int row;
 								 int minval=0;
 								 cols[k] = new int[GetNumberRows()];
-								   for (int i = 0; it != mp.end(); it++, i++) {  // âûâîäèì èõ
+								   for (int i = 0; it != mp.end(); it++, i++) {  // Ð²Ñ‹Ð²Ð¾Ð´Ð¸Ð¼ Ð¸Ñ…
 									   row=it->second; // row
 									   if (i>0) if (prev!=it->first) minval++;
 									   cols[k][row]=minval;
