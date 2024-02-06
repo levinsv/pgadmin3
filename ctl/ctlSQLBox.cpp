@@ -1646,7 +1646,7 @@ CharacterRange ctlSQLBox::RegexFindText(int minPos, int maxPos, const wxString &
 	ft.lpstrText = (char *)(const char *)buf;
 
 //
-	if (SendMsg(2150, wxSTC_FIND_REGEXP, (LONG_PTR)&ft) == -1)
+	if (SendMsg(2150, wxSTC_FIND_REGEXP, (std::uintptr_t)&ft) == -1)
 	{
 		ft.chrgText.cpMin = -1;
 		ft.chrgText.cpMax = -1;
