@@ -1084,7 +1084,6 @@ long ctlSQLBox::SelectQuery(int startposition)
 	wxChar nextch = GetCharAt(pos);
 	int st = GetStyleAt(pos - 1);
 	int endPos = GetTextLength();
-	int match;
 	int pend=endPos;
 	int pstart=0;
 
@@ -1646,8 +1645,8 @@ CharacterRange ctlSQLBox::RegexFindText(int minPos, int maxPos, const wxString &
 	wxWX2MBbuf buf = text.mb_str(wxConvUTF8);
 	ft.lpstrText = (char *)(const char *)buf;
 
-//�� ��������������� � wx 2.8.12
-	if (SendMsg(2150, wxSTC_FIND_REGEXP, (long)&ft) == -1)
+//
+	if (SendMsg(2150, wxSTC_FIND_REGEXP, (LONG_PTR)&ft) == -1)
 	{
 		ft.chrgText.cpMin = -1;
 		ft.chrgText.cpMax = -1;

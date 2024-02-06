@@ -919,7 +919,7 @@ void wxLineShape::OnDrawOutline(wxDC &dc, double WXUNUSED(x), double WXUNUSED(y)
 	wxPen *old_pen = m_pen;
 	wxBrush *old_brush = m_brush;
 
-	wxPen dottedPen(wxColour(0, 0, 0), 1, wxDOT);
+	wxPen dottedPen(wxColour(0, 0, 0), 1, wxPENSTYLE_DOT);
 	SetPen(& dottedPen);
 	SetBrush( (wxBrush *) wxTRANSPARENT_BRUSH );
 
@@ -1152,10 +1152,10 @@ void wxLineShape::OnDraw(wxDC &dc)
 
 		// Problem with pen - if not a solid pen, does strange things
 		// to the arrowhead. So make (get) a new pen that's solid.
-		if (m_pen && (m_pen->GetStyle() != wxSOLID))
+		if (m_pen && (m_pen->GetStyle() != wxPENSTYLE_DOT))
 		{
 			wxPen *solid_pen =
-			    wxThePenList->FindOrCreatePen(m_pen->GetColour(), 1, wxSOLID);
+			    wxThePenList->FindOrCreatePen(m_pen->GetColour(), 1, wxPENSTYLE_DOT);
 			if (solid_pen)
 				dc.SetPen(* solid_pen);
 		}
@@ -2392,7 +2392,7 @@ wxLabelShape::wxLabelShape(wxLineShape *parent, wxShapeRegion *region, double w,
 {
 	m_lineShape = parent;
 	m_shapeRegion = region;
-	SetPen(wxThePenList->FindOrCreatePen(wxColour(0, 0, 0), 1, wxDOT));
+	SetPen(wxThePenList->FindOrCreatePen(wxColour(0, 0, 0), 1, wxPENSTYLE_DOT));
 }
 
 wxLabelShape::~wxLabelShape()

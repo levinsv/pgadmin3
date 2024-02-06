@@ -14,7 +14,7 @@
 
 // wxWindows headers
 #include <wx/grid.h>
-
+#include <wx/brush.h>
 class GroupRows;
 
 class ctlSQLGrid : public wxGrid
@@ -221,23 +221,23 @@ class CursorCellRenderer : public wxGridCellStringRenderer
 						clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
 				
 				
-					dc.SetBrush( wxBrush(clr, wxSOLID) );
+					dc.SetBrush( *wxTheBrushList->FindOrCreateBrush(clr));
 				}
 				else
 				{
 					wxColor color;
 					color.Set(239, 228, 176);
 					if (sPos = text.Find(wxT('\n')) != wxNOT_FOUND) {
-						dc.SetBrush(wxBrush(color, wxSOLID));
+						dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(color));
 						multiline = true;
 					}
 					else
-						dc.SetBrush( wxBrush(attr.GetBackgroundColour(), wxSOLID) );
+						dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(attr.GetBackgroundColour()));
 				}
 			}
 			else
 			{
-				dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE), wxSOLID));
+				dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
 			}
 
 			dc.SetPen( *wxTRANSPARENT_PEN );

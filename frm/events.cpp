@@ -862,7 +862,7 @@ void frmMain::OnShortCut(wxCommandEvent& event)
 		bool add = false;
 		if (select_shortcut.IsEmpty()) return;
 		
-		if (select_shortcut.StartsWith("@") > 0) {
+		if (select_shortcut.StartsWith("@")) {
 			select_shortcut = select_shortcut.substr(4);
 			path = select_shortcut.SubString(1, select_shortcut.Length() - 1);
 			add = true;

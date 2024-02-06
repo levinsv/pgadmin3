@@ -641,7 +641,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 //	btnModeTransaction->Enable(true);
 	wxFont stdFont = settings->GetSystemFont();
 	wxFont boldFont = stdFont;
-	boldFont.SetWeight(wxBOLD);
+	boldFont.SetWeight(wxFONTWEIGHT_BOLD);
 	btnModeTransaction->SetFont(boldFont);
 	if (settings->GetAutoCommit())
 		btnModeTransaction->SetLabel("A");

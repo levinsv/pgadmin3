@@ -191,7 +191,7 @@ void ctlTree::DrawDbName(const wxTreeItemId& item) {
 				if (s) {
 					if (!(s->GetColour().IsEmpty())) {
 						c=s->GetColour();
-						dc.SetBrush(wxBrush(c, wxSOLID));
+						dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(c));
 					} else
 						dc.SetBrush(*wxYELLOW_BRUSH);
 				}

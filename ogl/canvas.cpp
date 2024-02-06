@@ -111,7 +111,7 @@ void wxShapeCanvas::OnPaint(wxPaintEvent &WXUNUSED(event))
 // Draws the background
 void wxShapeCanvas::DrawBackground(wxDC &dc, bool transformed)
 {
-	dc.SetBackground(wxBrush(GetBackgroundColour(), wxSOLID));
+	dc.SetBackground(wxBrush(GetBackgroundColour(), wxBRUSHSTYLE_SOLID));
 	dc.Clear();
 }
 

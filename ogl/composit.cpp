@@ -136,7 +136,7 @@ void wxCompositeShape::OnDragLeft(bool WXUNUSED(draw), double x, double y, int W
 	GetCanvas()->PrepareDC(dc);
 
 	dc.SetLogicalFunction(OGLRBLF);
-	wxPen dottedPen(wxColour(0, 0, 0), 1, wxDOT);
+	wxPen dottedPen(wxColour(0, 0, 0), 1, wxPENSTYLE_DOT);
 	dc.SetPen(dottedPen);
 	dc.SetBrush((* wxTRANSPARENT_BRUSH));
 
@@ -156,7 +156,7 @@ void wxCompositeShape::OnBeginDragLeft(double x, double y, int WXUNUSED(keys), i
 
 	dc.SetLogicalFunction(OGLRBLF);
 
-	wxPen dottedPen(wxColour(0, 0, 0), 1, wxDOT);
+	wxPen dottedPen(wxColour(0, 0, 0), 1, wxPENSTYLE_DOT);
 	dc.SetPen(dottedPen);
 	dc.SetBrush((* wxTRANSPARENT_BRUSH));
 	m_canvas->CaptureMouse();
@@ -334,7 +334,7 @@ void wxCompositeShape::Copy(wxShape &copy)
 	wxCompositeShape &compositeCopy = (wxCompositeShape &) copy;
 
 	// Associate old and new copies for compositeCopying constraints and division geometry
-	oglObjectCopyMapping.Append((long)this, &compositeCopy);
+	oglObjectCopyMapping.Append((LONG_PTR)this, &compositeCopy);
 
 	// Copy the children
 	wxNode *node = m_children.GetFirst();
@@ -352,7 +352,7 @@ void wxCompositeShape::Copy(wxShape &copy)
 		if (m_divisions.Member(object))
 			compositeCopy.m_divisions.Append(newObject);
 
-		oglObjectCopyMapping.Append((long)object, newObject);
+		oglObjectCopyMapping.Append((LONG_PTR)object, newObject);
 
 		node = node->GetNext();
 	}
@@ -363,14 +363,14 @@ void wxCompositeShape::Copy(wxShape &copy)
 	{
 		wxOGLConstraint *constraint = (wxOGLConstraint *)node->GetData();
 
-		wxShape *newConstraining = (wxShape *)(oglObjectCopyMapping.Find((long)constraint->m_constrainingObject)->GetData());
+		wxShape *newConstraining = (wxShape *)(oglObjectCopyMapping.Find((LONG_PTR)constraint->m_constrainingObject)->GetData());
 
 		wxList newConstrainedList;
 		wxNode *node2 = constraint->m_constrainedObjects.GetFirst();
 		while (node2)
 		{
 			wxShape *constrainedObject = (wxShape *)node2->GetData();
-			wxShape *newConstrained = (wxShape *)(oglObjectCopyMapping.Find((long)constrainedObject)->GetData());
+			wxShape *newConstrained = (wxShape *)(oglObjectCopyMapping.Find((LONG_PTR)constrainedObject)->GetData());
 			newConstrainedList.Append(newConstrained);
 			node2 = node2->GetNext();
 		}
@@ -393,19 +393,19 @@ void wxCompositeShape::Copy(wxShape &copy)
 	while (node)
 	{
 		wxDivisionShape *division = (wxDivisionShape *)node->GetData();
-		wxNode *node1 = oglObjectCopyMapping.Find((long)division);
+		wxNode *node1 = oglObjectCopyMapping.Find((LONG_PTR)division);
 		wxNode *leftNode = NULL;
 		wxNode *topNode = NULL;
 		wxNode *rightNode = NULL;
 		wxNode *bottomNode = NULL;
 		if (division->GetLeftSide())
-			leftNode = oglObjectCopyMapping.Find((long)division->GetLeftSide());
+			leftNode = oglObjectCopyMapping.Find((LONG_PTR)division->GetLeftSide());
 		if (division->GetTopSide())
-			topNode = oglObjectCopyMapping.Find((long)division->GetTopSide());
+			topNode = oglObjectCopyMapping.Find((LONG_PTR)division->GetTopSide());
 		if (division->GetRightSide())
-			rightNode = oglObjectCopyMapping.Find((long)division->GetRightSide());
+			rightNode = oglObjectCopyMapping.Find((LONG_PTR)division->GetRightSide());
 		if (division->GetBottomSide())
-			bottomNode = oglObjectCopyMapping.Find((long)division->GetBottomSide());
+			bottomNode = oglObjectCopyMapping.Find((LONG_PTR)division->GetBottomSide());
 		if (node1)
 		{
 			wxDivisionShape *newDivision = (wxDivisionShape *)node1->GetData();
@@ -1728,8 +1728,8 @@ void wxDivisionShape::PopupMenu(double x, double y)
 	wxClientDC dc(GetCanvas());
 	GetCanvas()->PrepareDC(dc);
 
-	int mouse_x = (int)(dc.LogicalToDeviceX((long)(x - x1 * unit_x)));
-	int mouse_y = (int)(dc.LogicalToDeviceY((long)(y - y1 * unit_y)));
+	int mouse_x = (int)(dc.LogicalToDeviceX((LONG_PTR)(x - x1 * unit_x)));
+	int mouse_y = (int)(dc.LogicalToDeviceY((LONG_PTR)(y - y1 * unit_y)));
 
 	m_canvas->PopupMenu(oglPopupDivisionMenu, mouse_x, mouse_y);
 	delete oglPopupDivisionMenu;

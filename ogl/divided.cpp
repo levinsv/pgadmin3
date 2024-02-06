@@ -583,7 +583,7 @@ void wxDividedShapeControlPoint::OnDragLeft(bool WXUNUSED(draw), double WXUNUSED
 	GetCanvas()->PrepareDC(dc);
 
 	dc.SetLogicalFunction(OGLRBLF);
-	wxPen dottedPen(wxColour(0, 0, 0), 1, wxDOT);
+	wxPen dottedPen(wxColour(0, 0, 0), 1, wxPENSTYLE_DOT);
 	dc.SetPen(dottedPen);
 	dc.SetBrush((* wxTRANSPARENT_BRUSH));
 
@@ -602,7 +602,7 @@ void wxDividedShapeControlPoint::OnBeginDragLeft(double WXUNUSED(x), double y, i
 
 	wxDividedShape *dividedObject = (wxDividedShape *)m_shape;
 	dc.SetLogicalFunction(OGLRBLF);
-	wxPen dottedPen(wxColour(0, 0, 0), 1, wxDOT);
+	wxPen dottedPen(wxColour(0, 0, 0), 1, wxPENSTYLE_DOT);
 	dc.SetPen(dottedPen);
 	dc.SetBrush((* wxTRANSPARENT_BRUSH));
 

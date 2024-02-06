@@ -181,7 +181,6 @@ void dlgProJob::OnRemove(wxCommandEvent& ev) {
 
 void dlgProJob::OnChangeName(wxCommandEvent &ev)
 {
-	bool relocatable;
 
 	// add all versions
 	//cbVersion->Clear();

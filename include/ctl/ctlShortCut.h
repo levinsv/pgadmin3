@@ -26,7 +26,7 @@ public:
     virtual void OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
     {
         if (item == wxNOT_FOUND) return;
-        wxCoord w1, h1, w2, h2;
+        wxCoord w1, h1;
         wxString ss = GetString(item);
         wxString src = viewText(ss);
         int pp = src.Find(fnd);

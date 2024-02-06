@@ -691,7 +691,7 @@ wxFont sysSettings::GetSQLFont()
 	if (fontName.IsEmpty())
 	{
 #ifdef __WXMSW__
-		return wxFont(9, wxTELETYPE, wxNORMAL, wxNORMAL);
+		return wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #else
 #ifdef __WXGTK__
 		return wxFont(10, wxTELETYPE, wxNORMAL, wxNORMAL);

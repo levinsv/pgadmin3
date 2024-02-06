@@ -1286,7 +1286,6 @@ void reportCompareFactory::GetExpandedChildNodes(wxTreeItemId node, wxArrayStrin
 		else child = browser->GetFirstChild(node, cookie);
 	pgObject *obj;
 	wxString path;
-	time_t tmp;
 	int size=expandedNodes.Count();
 	while (child.IsOk())
 	{

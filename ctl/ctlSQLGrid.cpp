@@ -47,7 +47,7 @@ void ctlSQLGrid::setresizedpi() {
 	SetDefaultCellFont(fntCells);
 	// Set labels font
 	wxFont fntLabel(settings->GetSystemFont());
-	fntLabel.SetWeight(wxBOLD);
+	fntLabel.SetWeight(wxFONTWEIGHT_BOLD);
 	SetLabelFont(fntLabel);
 	SetColLabelAlignment(wxALIGN_LEFT, wxALIGN_CENTRE);
 	SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
