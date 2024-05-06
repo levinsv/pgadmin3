@@ -21,6 +21,7 @@
 #include "db/pgConn.h"
 #include "dlg/dlgFindReplace.h"
 #include "ctl/ctlAuiNotebook.h"
+#include "utils/popuphelp.h"
 
 // These structs are from Scintilla.h which isn't easily #included :-(
 struct CharacterRange
@@ -57,6 +58,7 @@ public:
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnCopy(wxCommandEvent& ev);
+	void OnFuncHelp(wxCommandEvent& ev);
 	void OnKillFocus(wxFocusEvent &event);
 //	void OnBackGround(wxEraseEvent &event);
 	void SetQueryBook(ctlAuiNotebook *query_book);
@@ -121,6 +123,7 @@ private:
 	wxArrayString *m_def; // finction arguments
 	wxString list_table; //  list table from section
 	wxString calltip;
+	popuphelp *m_PopupHelp=NULL;
 	int ct_hl;
 	dlgFindReplace *m_dlgFindReplace;
 	pgConn *m_database;

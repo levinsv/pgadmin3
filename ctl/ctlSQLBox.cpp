@@ -21,10 +21,13 @@
 #include "ctl/ctlSQLBox.h"
 #include "dlg/dlgFindReplace.h"
 #include "frm/menu.h"
+#include "frm/frmMain.h"
 #include "utils/sysProcess.h"
 #include <wx/clipbrd.h>
 #include <wx/aui/aui.h>
 #include "utils/align/AlignWrap.h"
+#include "utils/popuphelp.h"
+
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
 static const wxString s_rightBrace(_T(")]}"));
@@ -43,6 +46,7 @@ wxString pgscriptKeywords = wxT(" assert break columns continue date datetime fi
 BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_KEY_DOWN(ctlSQLBox::OnKeyDown)
 	EVT_MENU(MNU_FIND, ctlSQLBox::OnSearchReplace)
+	EVT_MENU(MNU_FUNC_HELP, ctlSQLBox::OnFuncHelp)
 	EVT_MENU(MNU_COPY, ctlSQLBox::OnCopy)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
@@ -194,11 +198,12 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetFoldFlags(16);
 
 	// Setup accelerators
-	wxAcceleratorEntry entries[3];
+	wxAcceleratorEntry entries[4];
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, WXK_SPACE, MNU_AUTOCOMPLETE);
 	entries[2].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
-	wxAcceleratorTable accel(3, entries);
+	entries[3].Set(wxACCEL_CTRL, WXK_F1, MNU_FUNC_HELP);
+	wxAcceleratorTable accel(4, entries);
 	SetAcceleratorTable(accel);
 
 	// Autocompletion configuration
@@ -497,9 +502,41 @@ void ctlSQLBox::SetDefFunction(wxArrayString &name, wxArrayString &def) {
 void ctlSQLBox::OnCopy(wxCommandEvent& ev) {
 	Copy();
 }
+void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
+	
+	FunctionPGHelper *fh=winMain->GetFunctionPGHelper();
+	int pos = GetCurrentPos();
+	if (!fh->isValid()) return;
+	wxPoint p =  ClientToScreen( PointFromPosition(pos));
+	wxString current = GetSelectedText();
+	wxString key = "";
+	if (!current.IsEmpty()) 
+			key = current;
+		else {
+			wxChar ch;
+			wxString tmp;
+			while ((pos--) >= 0)
+			{
+				ch = GetCharAt(pos);
+				if (ch < 35) { break; }
+				if ( wxIsalnum(ch) || ch=='_' || ch> 255) tmp.Append(ch);
+				//pos--;
+			}
+
+			for (int i = tmp.Len()-1; i >=0; i--) key+=tmp[i];
+	}
+	delete 	m_PopupHelp;
+	m_PopupHelp = new popuphelp(this->GetParent(), key.Lower(), fh);
+	if (m_PopupHelp && m_PopupHelp->IsValid()) {
+		m_PopupHelp->Position(p, wxSize(0, 17));
+		m_PopupHelp->Popup();
+	}
+
+}
 
 void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 {
+	if (event.GetKeyCode() == WXK_ESCAPE && m_PopupHelp) { delete m_PopupHelp; m_PopupHelp = NULL; }
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
 	wxChar nextch = GetCharAt(pos);

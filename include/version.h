@@ -13,9 +13,16 @@
 #define VERSION_H
 
 // Application Versions
+#ifdef CORP
+#define VERSION_STR     wxT("1.22")
+#define VERSION_NUM     1,22,0,0
+#define VERSION_PACKAGE 1.22.2
+#else
 #define VERSION_STR     wxT("1.26 Dev ASUTP support PG16")
 #define VERSION_NUM     1,26,0,0
 #define VERSION_PACKAGE 1.26.0-dev
+
+#endif
 
 #define PRERELEASE 1
 // #define BUILD "..."

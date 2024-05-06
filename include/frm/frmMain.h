@@ -27,6 +27,7 @@
 #include "frm/frmLog.h"
 #include "ctl/ctlGitPanel.h"
 #include "ctl/ctlShortCut.h"
+#include "utils/FunctionPGHelper.h";
 //
 // This number MUST be incremented if changing any of the default perspectives
 //
@@ -180,6 +181,10 @@ public:
 	{
 		return pluginsMenu;
 	}
+	FunctionPGHelper * GetFunctionPGHelper()
+	{
+		return &hhelp;
+	}
 
 	wxString GetCurrentNodePath();
 	bool SetCurrentNode(wxTreeItemId node, const wxString &path);
@@ -212,6 +217,7 @@ private:
 #if !defined(NO_WXJSON_GIT)
 	ctlGitPanel* git;
 #endif
+	FunctionPGHelper hhelp;
 	ctlAuiNotebook *listViews;
 	ctlSQLBox *sqlPane;
 	wxMenu *newMenu, *debuggingMenu, *reportMenu, *toolsMenu, *pluginsMenu, *viewMenu,
