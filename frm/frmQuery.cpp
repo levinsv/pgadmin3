@@ -2321,7 +2321,8 @@ void frmQuery::OnCopy_NameTypeCols(wxCommandEvent& ev)
 {
 	//	if (currentControl() == sqlResult)
 	{
-		wxString s = sqlResult->CopySelColumnNameType();
+		bool press=wxGetKeyState(WXK_CONTROL);
+		wxString s = sqlResult->CopySelColumnNameType(press);
 		SetStatusText(s, STATUSPOS_MSGS);
 	}
 }

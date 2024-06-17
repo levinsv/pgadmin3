@@ -51,7 +51,7 @@ public:
 	wxString CompareSelectCells();
 	wxString AutoColsPlot(int flags,frmQuery *parent);
 	wxString CheckSelColumnDate();
-	wxString CopySelColumnNameType();
+	wxString CopySelColumnNameType(bool onlyname);
 	void ClearFilter();
 	bool IsColText(int col);
 	bool hasRowNumber()

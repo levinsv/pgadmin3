@@ -339,7 +339,7 @@ wxString ctlSQLResult::OnGetItemText(long item, long col) const
 	}
 	return wxEmptyString;
 }
-wxString ctlSQLResult::CopySelColumnNameType()
+wxString ctlSQLResult::CopySelColumnNameType(bool onlyname)
 {
 	wxString ss = wxEmptyString;
 	if (GetSelectedCols().GetCount()) {
@@ -356,7 +356,8 @@ wxString ctlSQLResult::CopySelColumnNameType()
 			wxString colName = colNames.Item(cl);
 			wxString colType = colTypes.Item(cl);
 			if (!ss.IsEmpty()) ss.Append(", ");
-			ss.Append(colName + " " + colType);
+			ss.Append(colName);
+			if (!onlyname) ss.Append(" " + colType);
 
 		}
 	}
