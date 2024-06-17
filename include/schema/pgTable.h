@@ -142,6 +142,15 @@ public:
 	{
 		tablespace = newVal;
 	}
+	wxString GetCreateTableTS() const
+	{
+		return create_table_TS;
+	};
+	void iSetCreateTableTS(const wxString& newVal)
+	{
+		create_table_TS = newVal;
+	}
+
 	wxString GetRatio() const
 	{
 		return ratio;
@@ -613,7 +622,7 @@ private:
 
 	long inheritedTableCount, triggerCount;
 	wxString quotedInheritedTables, inheritedTables, primaryKey, quotedPrimaryKey,
-	         primaryKeyName, primaryKeyColNumbers, tablespace, ratio,
+	         primaryKeyName, primaryKeyColNumbers, tablespace, ratio, create_table_TS,
 	         distributionColNumbers, ofType;
 	wxArrayString quotedInheritedTablesList, inheritedTablesOidList;
 

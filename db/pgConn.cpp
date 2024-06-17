@@ -556,7 +556,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT(                  " 'pg_postmaster_starttime', 'pg_terminate_backend', 'pg_reload_conf',")
 		    wxT(                  " 'pgstattuple', 'pgstatindex','bt_index_parent_check')\n")
 		    wxT("   AND nspname IN ('pg_catalog', 'public','profile')")
-		    wxT(" union all select current_setting('log_destination'),555,null,null,null");
+		    wxT(" union all select current_setting('log_destination'),555,null,null,null")
+		    wxT(" union all select setting,666,null,null,null from pg_settings s where s.name='track_commit_timestamp'");
 
 		pgSet *set = ExecuteSet(sql);
 
@@ -591,6 +592,9 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_PGCHECKINDEX] = true;
 				else if (proname == wxT("csvlog") && pronargs == 555)
 					features[FEATURE_CSVLOG] = true;
+				else if (proname == "on" && pronargs == 666)
+					features[FEATURE_TRACK_COMMIT_TS] = true;
+				
 				set->MoveNext();
 			}
 			delete set;

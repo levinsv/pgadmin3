@@ -231,6 +231,8 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 		query += wxT(", rel.relpersistence \n");
 		if (collection->GetDatabase()->connection()->GetIsPgProEnt()) query += wxT(",left((cfs_fragmentation(rel.oid)*100)::text,5)::text AS cfs_ratio\n");
 			else query += wxT(",null::text AS cfs_ratio\n");
+		if (collection->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS))
+			query += wxT(", pg_xact_commit_timestamp(typ2.xmin) create_ts\n");
 
 		query += wxT(", substring(array_to_string(rel.reloptions, ',') FROM 'fillfactor=([0-9]*)') AS fillfactor \n");
 		query += wxT(", substring(array_to_string(rel.reloptions, ',') FROM 'autovacuum_enabled=([a-z|0-9]*)') AS autovacuum_enabled \n")
@@ -282,6 +284,8 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 		         wxT("  LEFT OUTER JOIN pg_constraint con ON con.conrelid=rel.oid AND con.contype='p'\n");
 		query += wxT("  LEFT OUTER JOIN pg_class tst ON tst.oid = rel.reltoastrelid\n");
 			query += wxT("LEFT JOIN pg_type typ ON rel.reloftype=typ.oid\n");
+		if (collection->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS))
+				query += wxT("LEFT JOIN pg_type typ2 ON rel.oid=typ2.typrelid\n");
 
 		query += wxT(" WHERE rel.relkind IN ('r','s','t','p')\n");
 		// show partitions in other schema
@@ -330,7 +334,10 @@ pgObject *pgPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
 			table->iSetOwner(tables->GetVal(wxT("relowner")));
 			table->iSetAcl(tables->GetVal(wxT("relacl")));
 			table->iSetRatio(tables->GetVal(wxT("cfs_ratio")));
-				if (tables->GetOid(wxT("spcoid")) == 0)
+			if (collection->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS)) {
+				table->iSetCreateTableTS(tables->GetVal(wxT("create_ts")));
+			}
+			if (tables->GetOid(wxT("spcoid")) == 0)
 					table->iSetTablespaceOid(collection->GetDatabase()->GetTablespaceOid());
 				else
 					table->iSetTablespaceOid(tables->GetOid(wxT("spcoid")));

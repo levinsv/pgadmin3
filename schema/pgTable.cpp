@@ -1086,9 +1086,11 @@ void pgTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prope
 			properties->AppendYesNoItem(_("Has OIDs?"), GetHasOids());
 		if (!GetConnection()->BackendMinimumVersion(12, 0))
 			properties->AppendYesNoItem(_("System table?"), GetSystemObject());
-		if (GetConnection()->GetIsPgProEnt())
+		if (GetConnection()->GetIsPgProEnt() && GetRatio().Len()>0)
 			properties->AppendItem(_("CFS fragmentation"), GetRatio());
-		
+		if (GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS) && GetCreateTableTS().Len()>0)
+			properties->AppendItem(_("Create table timestamp"), GetCreateTableTS());
+
 		/* Custom AutoVacuum Settings */
 		if (GetConnection()->BackendMinimumVersion(8, 4) && GetCustomAutoVacuumEnabled())
 		{
@@ -1563,6 +1565,8 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 		}
 		if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 			query += wxT(", rel.reloftype, typ.typname\n");
+		if (collection->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS))
+			query += wxT(", pg_xact_commit_timestamp(typ2.xmin) create_ts\n");
 		if (collection->GetDatabase()->BackendMinimumVersion(9, 1))
 		{
 			query += wxT(",\n(SELECT array_agg(label) FROM pg_seclabels sl1 WHERE sl1.objoid=rel.oid AND sl1.objsubid=0) AS labels");
@@ -1610,6 +1614,8 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 
 		if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 			query += wxT("LEFT JOIN pg_type typ ON rel.reloftype=typ.oid\n");
+		if (collection->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS))
+			query += wxT("LEFT JOIN pg_type typ2 ON rel.oid=typ2.typrelid\n");
 
 		query += wxT(" WHERE ")+pg10+wxT(" rel.relkind IN ('r','s','t','p') AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
 
@@ -1654,6 +1660,9 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
 			table->iSetOwner(tables->GetVal(wxT("relowner")));
 			table->iSetAcl(tables->GetVal(wxT("relacl")));
 			table->iSetRatio(tables->GetVal(wxT("cfs_ratio")));
+			if (collection->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS)) {
+				table->iSetCreateTableTS(tables->GetVal(wxT("create_ts")));
+			}
 			if (collection->GetConnection()->BackendMinimumVersion(8, 0))
 			{
 				if (tables->GetOid(wxT("spcoid")) == 0)
