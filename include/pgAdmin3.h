@@ -12,6 +12,7 @@
 #ifndef PGADMIN3_H
 #define PGADMIN3_H
 #include "../utils/diff_match_patch.h"
+#include "utils/FormatterSQL.h"
 
 // wxWindows headers
 #include <wx/wx.h>

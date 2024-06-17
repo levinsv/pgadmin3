@@ -27,6 +27,7 @@
 #include <wx/aui/aui.h>
 #include "utils/align/AlignWrap.h"
 #include "utils/popuphelp.h"
+#include "utils/FormatterSQL.h"
 
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
@@ -1038,6 +1039,20 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 
 			return _("" + msgword + "ing complete.");
 		}
+		if (typecmd == 0) {
+			FSQL::FormatterSQL f(processInput);
+			int rez = f.ParseSql(0);
+			if (rez >= 0) {
+				wxRect rr(0, 0, 120, 2000);
+				wxString processOutput = f.Formating(rr);
+				if (isSelected)
+					ReplaceSelection(processOutput);
+				else
+					SetText(processOutput);
+				return _("Formatting Ok");
+			} else 
+				return wxString::Format("Error parse sql %d",rez);
+		}
 		return _("You need to setup a "+msgword+"ing command");
 	}
 
@@ -1479,8 +1494,8 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 		return;
 	if (m_autocompDisabled)
 		return;
-
-	wxString what = GetCurLine().Left(GetCurrentPos() - PositionFromLine(GetCurrentLine()));;
+	int pos = GetCurrentPos();
+	wxString what = GetCurLine().Left(pos - PositionFromLine(GetCurrentLine()));;
 	int spaceidx = what.Find(' ', true);
 
 	char *tab_ret;
@@ -1490,6 +1505,77 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), spaceidx + 1, what.Len() + 1, m_database);
 	wxString wxRet;
 	if ((tab_ret == NULL || tab_ret[0] == '\0')&&(what.Right(1)>' ')){
+			long p = SelectQuery(pos);
+			int s = p >> 16;
+			
+			wxString sql = GetTextRange(s, p & 65535);
+		    FSQL::FormatterSQL f(sql);
+			int rez = f.ParseSql(0);
+			if (rez >= 0) {
+				// ok query
+				f.BuildAutoComplite(0, 0);
+				int sqlPos = CountCharacters(s,pos);
+				int ItemPos=f.GetIndexItemNextSqlPosition(sqlPos);
+				FSQL::view_item vi;
+				f.GetItem(ItemPos, vi);
+				if (vi.type == FSQL::spaces) {
+					ItemPos--;
+					f.GetItem(ItemPos, vi);
+				}
+				wxString field;
+				bool ast = false;
+				if (vi.type == FSQL::separation) {
+					ast=vi.txt == ".*";
+					while (f.GetItem(--ItemPos, vi)) {
+						if (vi.type == FSQL::identifier || vi.type == FSQL::name) {
+							field = vi.txt;
+							break;
+						}
+						if (vi.srcpos != -1) break;
+					};
+				}
+				else if (vi.type == FSQL::identifier) {
+					field = vi.txt;
+				}
+				if (!field.IsEmpty()) {
+					wxString lf;
+					wxString tabn;
+					
+					wxString r=f.GetColsList(field, lf, tabn);
+					int l2 = 0;
+					wxString flt = "";
+					wxString prev=tabn;
+					wxString fld = field.AfterFirst('.');
+					if (fld.Len()>0) l2 = fld.Len();
+					if (tabn.Len() > 0 && r.Len()==0) {
+						if (!field.AfterFirst('.').IsEmpty()) flt = " and a.attname ~* " + qtConnString(fld);
+						wxString sch;
+						if (tabn.Find('.') != -1) sch = tabn.BeforeFirst('.');
+						if (sch.Len() > 0) {
+							tabn = tabn.AfterFirst('.');
+							if (sch[0] == '"') sch.Replace("\"", ""); else sch = sch.Lower();
+							sch = " and relnamespace =" + qtConnString(sch) + "::regnamespace";
+						}
+						if (tabn[0] == '"') tabn.Replace("\"", ""); else tabn = tabn.Lower();
+						wxString sql2 = wxT("select string_agg(a.attname,E'\t' ORDER BY attname) from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
+							+ wxT(") and a.attisdropped IS FALSE and a.attnum>=0 ") + flt
+							+ wxT("");
+						//pgSet *res = m_database->ExecuteSet(sql);
+						r = m_database->ExecuteScalar(sql2);
+
+					}
+					if (ast) {
+						// replace name.*
+						r.Replace("\t", ", "+ field +".");
+						int npos = pos - 2 - field.Len();
+						DeleteRange(npos, field.Len() + 2);
+						InsertText(npos, field + "."+r);
+					} else
+						AutoCompShow(l2, r);
+				}
+				return;
+			}
+
 			int l=0;
 			wxString alias;
 			wxString fld,tmp;

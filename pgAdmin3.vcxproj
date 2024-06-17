@@ -1035,6 +1035,7 @@
     <ClCompile Include="utils\align\AlignWrap.cpp" />
     <ClCompile Include="utils\align\Item.cpp" />
     <ClCompile Include="utils\csvfiles.cpp" />
+    <ClCompile Include="utils\FormatterSQL.cpp" />
     <ClCompile Include="utils\diff_match_patch.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -1613,8 +1614,11 @@
     <ClInclude Include="include\utils\registr.h" />
     <ClInclude Include="include\utils\registry.h" />
     <ClInclude Include="include\utils\sysLogger.h" />
+    <ClInclude Include="include\utils\FormatterSQL.h" />
     <ClInclude Include="include\utils\sysProcess.h" />
     <ClInclude Include="include\utils\sysSettings.h" />
+    <ClInclude Include="include\utils\popuphelp.h" />
+    <ClInclude Include="include\utils\FunctionPGHelper.h" />
     <ClInclude Include="include\utils\utffile.h" />
     <ClInclude Include="include\ctl\calbox.h" />
     <ClInclude Include="include\ctl\ctlAuiNotebook.h" />
