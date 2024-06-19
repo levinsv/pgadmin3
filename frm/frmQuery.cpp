@@ -881,10 +881,15 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxString f = wxFindFirstFile(tempDir + wxT("*.a"));
 	while (!f.empty())
 	{
-		filename = f.AfterLast(sepPath).BeforeLast('.');
-		if (filename.BeforeFirst('.') == "_active") {
-			activePage.Add(filename.AfterFirst('.'));
-			wxLogInfo(wxT("frmQuery::_active file marker: name=[%s] pref=[%s]"), filename.AfterFirst('.'), pref);
+		if (autoSave) {
+			filename = f.AfterLast(sepPath).BeforeLast('.');
+			if (filename.BeforeFirst('.') == "_active") {
+				activePage.Add(filename.AfterFirst('.'));
+				wxLogInfo(wxT("frmQuery::_active file marker: name=[%s] pref=[%s]"), filename.AfterFirst('.'), pref);
+			}
+		}
+		else {
+			wxRemoveFile(f);
 		}
 		f = wxFindNextFile();
 	}
