@@ -841,6 +841,7 @@ void ctlSQLGrid::OnLabelDoubleClick(wxGridEvent &event)
 	
 	//SetRowLabelValue(row-1,);
 	//HideRow(row);
+	event.Skip();
 }
 void ctlSQLGrid::OnLabelClick(wxGridEvent &event)
 {
