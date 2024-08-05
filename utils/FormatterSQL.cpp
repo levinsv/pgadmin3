@@ -8,7 +8,7 @@ wxString FormatterSQL::printParseArray() {
     for (auto& it : items) {
         wxString e;
         //s.Append(wxString::Format("Index: %d\n",i));
-        if (it.endlevel!=-1) s.Append(wxString::Format("Index: %d Jump %d",i, it.endlevel));
+        if (it.endlevel != -1) s.Append(wxString::Format("Index: %d Jump %d", i, it.endlevel));
         else s.Append(wxString::Format("Index: %d", i));
         s.Append(wxString::Format(" Type: %d", it.type));
         s.Append(wxString::Format(" widt: %d", it.width));
@@ -23,13 +23,13 @@ int  FormatterSQL::GetIndexItemNextSqlPosition(int sqlPosition) {
     view_item vi;
     for (auto& it : items) {
         p++;
-        if (it.srcpos < sqlPosition ) continue;
-        
+        if (it.srcpos < sqlPosition) continue;
+
         while (p >= 0 && items[--p].srcpos == -1) {};
         vi = items[p];
         return p;
     }
-    return items.size()-1;
+    return items.size() - 1;
 };
 bool FormatterSQL::GetItem(int index, FSQL::view_item& item) {
     if (index >= 0 && index < items.size()) {
@@ -41,26 +41,29 @@ bool FormatterSQL::GetItem(int index, FSQL::view_item& item) {
 
 wxString FormatterSQL::get_list_columns(int startindex, union Byte zone) {
     wxString cols;
-    
+
     wxArrayString ar;
     int i = startindex;
     int ngroup = 0;
-    if (zone.b.from||zone.b.with) {
+    int nbracket = 0;
+    if (zone.b.from || zone.b.with) {
         while (next_item_no_space(i) != -1) {
             if (items[i].txt == ',')
             {
                 ngroup = 0;
             }
-            if (items[i].type == name|| items[i].type == identifier)
+            if (items[i].txt == '(') nbracket++;
+            if (items[i].type == name || items[i].type == identifier)
             {
-                if (ngroup<1) ar.Add(items[i].txt); // only first name
+                if (ngroup < 1) ar.Add(items[i].txt); // only first name
                 ngroup++;
             }
-            if (items[i].txt == ')') break;
+            if (items[i].txt == ')')
+                if (--nbracket == 0) break;
             i++;
         }
         cols = wxJoin(ar, ',');
-        
+
     }
     return cols;
 }
@@ -69,24 +72,24 @@ wxString FormatterSQL::GetListTable(int cursorPos) {
     wxString r = "";
     while (s < listTable.size()) {
         complite_element* el = &listTable[s++];
-        r+=wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
+        r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
     }
     return r;
 }
-wxString FormatterSQL::GetColsList(wxString what, wxString &listfieldOut,wxString &nameTableOut) {
+wxString FormatterSQL::GetColsList(wxString what, wxString& listfieldOut, wxString& nameTableOut) {
     wxString r = "";
     wxString f = "";
     wxString t = "";
     nameTableOut = "";
-    
-    wxArrayString ar=wxSplit(what, '.');
+
+    wxArrayString ar = wxSplit(what, '.');
     int iTab = 0;
     int iFld = 1;
     if (ar.GetCount() > 2) { iTab++; iFld++; }
-    if (ar.GetCount() == 1) { iTab=0; iFld=-1; }
+    if (ar.GetCount() == 1) { iTab = 0; iFld = -1; }
     bool astreplace = false;
     if (iFld != -1 && ar[iFld] == '*') astreplace = true;
-    if (iFld != -1 && !astreplace ) f = ar[iFld].Lower();
+    if (iFld != -1 && !astreplace) f = ar[iFld].Lower();
     t = ar[iTab].Lower();
     std::map<wxString, int> tablename;
     // check recursive
@@ -99,10 +102,10 @@ iteration_remove_dublicate:
     int k = 0;
     tablename.clear();
     nc--;
-    while (nc >0 && k < listTable.size()) {
+    while (nc > 0 && k < listTable.size()) {
         complite_element* el = &listTable[k++];
-        if (el->table.Lower() == tmp && el->columnList.Len()==0) { // for table
-            tablename[tmp]=k-1;
+        if (el->table.Lower() == tmp && el->columnList.Len() == 0) { // for table
+            tablename[tmp] = k - 1;
         }
         else if (el->table != "@" && el->alias.Lower() == tmp && el->columnList.Len() == 0) { // for alias
             tmp = el->table.Lower();
@@ -112,8 +115,8 @@ iteration_remove_dublicate:
         else if (el->alias.Lower() == tmp && el->columnList.Len() > 0 && tablename.count(tmp) > 0) {
             // remove empty dublicate
             int j = tablename[tmp];
-            
-            listTable.erase(listTable.begin()+j);
+
+            listTable.erase(listTable.begin() + j);
             //listTable.
             goto iteration_remove_dublicate;
         }
@@ -121,10 +124,11 @@ iteration_remove_dublicate:
     }
     tablename.clear();
     //
-    iteration2:
+iteration2:
     int s = 0;
+    complite_element* el;
     while (s < listTable.size()) {
-        complite_element* el = &listTable[s++];
+        el = &listTable[s++];
         //r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
         if (el->table != '@' && el->table.Lower() == t) {
             nameTableOut = t;
@@ -134,7 +138,7 @@ iteration_remove_dublicate:
         }
         else {
             nameTableOut = el->table;
-            if (nameTableOut=="@") nameTableOut = el->alias.Lower();
+            if (nameTableOut == "@") nameTableOut = el->alias.Lower();
         }
         // 
         if (el->columnList.Len() == 0) {
@@ -156,7 +160,7 @@ iteration_remove_dublicate:
             ff = ar[j].AfterLast('.');
             if (astreplace || ff.Lower().StartsWith(f)) rez.Add(ff);
         }
-        r = wxJoin(rez,'\t');
+        r = wxJoin(rez, '\t');
         break;
     }
     return r;
@@ -167,16 +171,17 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     int found_index = startIndex;
     int start_select_list;
     int indexlastID;
-    union Byte zone {0};
+    union Byte zone { 0 };
     wxString lastname;
     wxString query_cols_list;
-    wxArrayString cols,colsfirst;
+    wxArrayString cols, colsfirst;
     complite_element el;
-    
+
     wxArrayString objName;
     wxString cols_name;
     bool isfunction = false;
     bool isskipnext = false;
+    el.columnList = ""; el.alias = ""; el.table = "";
     if (level == 0) listTable.clear();
     while (next_item_no_space(found_index) != -1) {
         view_item* vi = &items[found_index];
@@ -186,7 +191,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
         }
         if (vi->type == keyword) {
             union Byte z = zone;
-            if (vi->txt.Lower() == "from") {
+            if (vi->txt.Lower() == "from" && vi->flags != 0) {
                 if (zone.b.select_list) {
                     if (!lastname.IsEmpty())cols.Add(lastname);
                 }
@@ -197,13 +202,13 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 zone.b.with = 1; zone.b.skip = 1;
             }
             if (vi->txt.Lower() == "select") {
-                zone.b.select_list = 1; zone.b.with = 0; start_select_list = found_index+1;
+                zone.b.select_list = 1; zone.b.with = 0; start_select_list = found_index + 1;
                 isfunction = false;
                 zone.b.skip = 0;
                 cols.Clear();
                 //el.startIndex = found_index + 1;
             }
-            if (vi->txt.Lower().Find( "join")>-1) {
+            if (vi->txt.Lower().Find("join") > -1) {
 
                 goto close_element_from;
             }
@@ -237,18 +242,18 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     objName.Clear();
                 }
             }
-            if (z.byte != zone.byte) { 
+            if (z.byte != zone.byte) {
                 found_index++;
                 continue;
             }
 
         }
-        else if ((vi->txt == ',' && zone.b.skip==0)|| vi->txt == ')') {
+        else if ((vi->txt == ',' && zone.b.skip == 0) || vi->txt == ')') {
             if (zone.b.select_list) {
                 cols.Add(lastname);
             }
             else if (zone.b.from) {
-                close_element_from:
+            close_element_from:
                 if (!isskipnext) {
                     if (isfunction) {
                         // [ LATERAL ] ( выборка ) [ AS ] псевдоним
@@ -264,7 +269,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     }
                     listTable.push_back(el);
                 }
-                
+
             }
             objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = "";
             cols_name = "";
@@ -288,8 +293,8 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     i = found_index;
                     lastname = "";
                     int prev = i;
-                    while (next_item_no_space(i) != -1 ) {
-                        if (items[i].type == separation || (items[i].type == keyword && items[i].txt.Lower()!="as")) break;
+                    while (next_item_no_space(i) != -1) {
+                        if (items[i].type == separation || (items[i].type == keyword && items[i].txt.Lower() != "as")) break;
                         if (i - prev > 1) lastname += ' ';
                         //lastname += items[i].txt;
                         lastname = items[i].txt;
@@ -297,7 +302,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                         i++;
                     }
                     indexlastID = found_index;
-                    found_index = i-1;
+                    found_index = i - 1;
                     if (i == -1) break;
 
                 }
@@ -318,7 +323,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 // запрос
                 found_index++;
                 if (next_item_no_space(found_index) != -1) {
-                    query_cols_list=BuildAutoComplite(found_index, level + 1);
+                    query_cols_list = BuildAutoComplite(found_index, level + 1);
                     if (zone.b.with) {
                         el.alias = lastname;
                         el.table = "@";
@@ -328,7 +333,8 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                         listTable.push_back(el);
                         el.columnList = ""; el.alias = ""; el.table = "";
                         objName.Clear();
-                    } else 
+                    }
+                    else
                         el.columnList = query_cols_list;
                     isfunction = true;
                     found_index = jump + 1;
@@ -339,7 +345,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 if (objName.GetCount() == 1) {
 
                     if (zone.b.with) {
-                        cols_name=get_list_columns(found_index, zone); // columns name
+                        cols_name = get_list_columns(found_index, zone); // columns name
                         el.columnList = cols_name;
                         found_index = jump + 1;
                         continue;
@@ -355,13 +361,15 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
 
                 }
                 // 
-                cols_name=get_list_columns(found_index,zone);
+                cols_name = get_list_columns(found_index, zone);
                 //    get_list_columns(found_index, zone, el);
                 if (!cols_name.IsEmpty()) {
-                    if (isfunction) 
+                    if (isfunction)
                         el.table = "@";
-                    else 
-                        el.table = objName[0];
+                    else
+                        if (objName.Count() > 0) el.table = objName[0];
+                        else
+                            el.table = "-";
                     el.alias = lastname;
                     el.columnList = cols_name;
                     listTable.push_back(el);
@@ -409,9 +417,9 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
         }
 
     };
-    if (colsfirst.GetCount()>0) return wxJoin(colsfirst, ',');
-        else 
-            return wxJoin(cols,',');
+    if (colsfirst.GetCount() > 0) return wxJoin(colsfirst, ',');
+    else
+        return wxJoin(cols, ',');
 }
 /// <summary>
 /// <c>ParseSql</c> Выполнение разбора текста как SQL выражения
@@ -440,8 +448,8 @@ int FormatterSQL::ParseSql(int flags) {
     while (!ex) {
         c = '\0';
         if (i < sql.length()) c = sql[i++];
-            else ex = true;
-        
+        else ex = true;
+
         wxChar c2(0);
         if (i < sql.length()) c2 = sql[i];
         if (iscomment > 0) {
@@ -452,7 +460,7 @@ int FormatterSQL::ParseSql(int flags) {
                 ex = false;
                 continue;
             }
-            if (iscomment == 1 && (c == '\r' || c== '\n')) {
+            if (iscomment == 1 && (c == '\r' || c == '\n')) {
                 iscomment = 0;
                 vi.txt = sql.substr(lhome, i - lhome - 1);
                 vi.type = comment;
@@ -471,7 +479,7 @@ int FormatterSQL::ParseSql(int flags) {
         }
 
         if (vi.type != unknown) {
-            if (c == '\n' && vi.type == comment && vi.txt[0]=='/') { // \n append comment if exists
+            if (c == '\n' && vi.type == comment && vi.txt[0] == '/') { // \n append comment if exists
                 vi.txt.append(c);
             }
             if (vi.type != spaces && newline) {
@@ -480,7 +488,7 @@ int FormatterSQL::ParseSql(int flags) {
             }
             if (vi.type == name || vi.type == identifier) {
                 int kj = items.size() - 2;
-                if (items.size() > 1 && items[kj+1].txt == "." && (items[kj ].type == name || items[kj].type == identifier)) {
+                if (items.size() > 1 && items[kj + 1].txt == "." && (items[kj].type == name || items[kj].type == identifier)) {
                     // union name.name
                     items[kj].type = identifier;
                     items[kj].txt = items[kj].txt + "." + vi.txt;
@@ -488,7 +496,7 @@ int FormatterSQL::ParseSql(int flags) {
                     //if ("trabopt.value_num" == items[kj].txt) {
                     //    wxLogError("d");
                     //}
-                    items.resize(kj+1);
+                    items.resize(kj + 1);
                     view_item tmp;
                     vi = tmp;
                     vi.srcpos = i - 1;
@@ -695,13 +703,14 @@ int FormatterSQL::ParseSql(int flags) {
         }
         // spaces
         int k = i - 1;
-        while (c == ' ' || c == '\t' ) {
+        while (c == ' ' || c == '\t') {
             if (i < sql.length()) c = sql[i++]; else { i++;  break; }
         }
         if ((i - 1) > k) {
             if (items.size() != 0 && items[items.size() - 1].type == spaces) {
                 // multi space ---> one spaces
-            } else 
+            }
+            else
                 vi.type = spaces;
             i--;
             continue;
@@ -744,9 +753,9 @@ int FormatterSQL::ParseSql(int flags) {
                     vi.txt = tmp;
                     vi.type = keyword;
                     vi.flags = flg;
-                    if (keyEntities[n].name == "from" && i2 >= 2) {
+                    if (tmp == "from" && i2 >= 2) {
                         wxString s = items[items.size() - 2].txt;
-                        if (s.Len() >= 8 && s.substr(s.Len() - 8).CmpNoCase("distinct")==0) {
+                        if (s.Len() >= 8 && s.substr(s.Len() - 8).CmpNoCase("distinct") == 0) {
                             vi.flags = 0;
                         }
                     }
@@ -781,7 +790,7 @@ int FormatterSQL::ParseSql(int flags) {
                 // is function 
                 int pp2 = items.size() - 1;
                 int pp3 = next_item_no_space(pp2, -1);
-                if (pp3 != -1 && (items[pp3].type==name|| items[pp3].type == identifier)) {
+                if (pp3 != -1 && (items[pp3].type == name || items[pp3].type == identifier)) {
                     vi.flags = isFUNCTION;
                 }
             }
@@ -845,7 +854,7 @@ int FormatterSQL::ParseSql(int flags) {
             if (i < sql.length()) c = sql[i++]; else break;
         }
         if (!sepa.IsEmpty()) {
-           // i=i - (i == sql.length() ? 0: 0);
+            // i=i - (i == sql.length() ? 0: 0);
             vi.txt = sepa;
             vi.type = separation;
             if (items.size() > 0 && items[items.size() - 1].type != spaces) {
@@ -975,7 +984,7 @@ wxSize FormatterSQL::best_sizeAndDraw(wxDC& dc, wxPoint& pos, view_item& vi, int
 /// <returns>индекс найденого элемента или -1 дошли до конца списка. ВАЖНО: в переменной <c>index</c> будет содержаться найденное значение.</returns>
 int FormatterSQL::next_item_no_space(int& index, int direction) {
     bool f = true;
-    while (index>=0 && index < items.size()) {
+    while (index >= 0 && index < items.size()) {
         if (items[index].type != spaces) {
             f = false;
             break;
@@ -1075,7 +1084,7 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
         wxString txt = wxString(vi->txt);
         if (vi->type == keyword && txt == "with") iswith = true;
         if ((vi->txt.Lower() == "dblink")) {
-//            neededNewLine.y = -1;
+            //            neededNewLine.y = -1;
         }
         if ((s == 2511)) {
             p.x = p.x;
@@ -1097,12 +1106,12 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
             if (txt.Lower() == "and") {
                 int ibetween = get_prev_value(s - 1, "between"); // exclude between ... and
                 int ion = get_prev_value(s - 1, "on"); // exclude on
-                if (ibetween != -1 && ion<ibetween) {
+                if (ibetween != -1 && ion < ibetween) {
                     int nx = items[ibetween].x + items[ibetween].width - vi->width;
                     neededNewLine = wxPoint(nx, Ypos + maxYheightLine);
                     iprev = -1;
                 }
-                if (ion > iprev && iprev!=-1) iprev = -1;
+                if (ion > iprev && iprev != -1) iprev = -1;
                 ion = get_prev_value(s - 1, "where"); // exclude on
                 if (ion > iprev && iprev != -1) iprev = -1;
             }
@@ -1143,7 +1152,7 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
                 if (fl & isCASE) flag_in = fl;
                 if (flag & newLineBracet) flag_in |= newLineBracet;
                 if (flag & isCASE &&
-                    fl   & isCASE) { // nested case 2 level
+                    fl & isCASE) { // nested case 2 level
                     Xpos = xstart + casepad;
                     Ypos += maxYheightLine;
                     vi->x = Xpos;
@@ -1197,8 +1206,8 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
         }
 
         if (p.x == 0 && p.y == 0) {
-            if ((vi->txt.Lower() == "from"||
-                vi->txt.Lower() == "order" 
+            if ((vi->txt.Lower() == "from" ||
+                vi->txt.Lower() == "order"
                 ) && ((flag & newLineComma) == 0)) // for function args
                 fl = none;
             if (flag & newLineComma && vi->type == separation && vi->txt[0] == ',') {
@@ -1308,4 +1317,3 @@ wxString FormatterSQL::Formating(wxRect re) {
     }
     return str;
 }
-

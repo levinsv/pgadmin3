@@ -112,7 +112,7 @@ namespace FSQL {
         { "nothing", 7,  none},
         { "default", 7,  none},
         { "current", 7,  none},
-        { "distinct", 8,  none},
+        { "distinct", 8,  special},
         { "conflict", 8,  none},
         { "recursive", 9,  none},
         { "intersect", 9,  new_line_align_no_pad | end_from},

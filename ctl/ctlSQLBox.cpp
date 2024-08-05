@@ -1542,6 +1542,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 					wxString tabn;
 					
 					wxString r=f.GetColsList(field, lf, tabn);
+					if (r == "\t") r.clear();
 					int l2 = 0;
 					wxString flt = "";
 					wxString prev=tabn;
