@@ -31,7 +31,7 @@ enum
 
 
 #if !defined(NO_WXJSON_GIT)
-
+#if wxUSE_WEBREQUEST
 ctlGitPanel::ctlGitPanel(wxWindow* parent, frmMain* form, wxJSONValue cf) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 {
@@ -1112,4 +1112,5 @@ void ctlGitPanel::OnNotebookPageChanged(wxBookCtrlEvent& event)
     //dlg->Show();
 
 }
+#endif
 #endif

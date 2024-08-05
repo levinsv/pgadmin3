@@ -7,7 +7,6 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
-#if !defined(NO_WXJSON_GIT)
 
 #include "pgAdmin3.h"
 
@@ -16,7 +15,7 @@
 #define _WX_JSONWRITER_H
 
 #ifdef __GNUG__
-#pragma interface "jsonwriter.h"
+//#pragma interface "jsonwriter.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -117,7 +116,6 @@ private:
 
 
 #endif            // not defined _WX_JSONWRITER_H
-#endif
 
 
 

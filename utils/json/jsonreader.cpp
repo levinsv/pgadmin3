@@ -9,11 +9,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #ifdef __GNUG__
-#pragma implementation "jsonreader.cpp"
+//#pragma implementation "jsonreader.cpp"
 #endif
 
 #include "pgAdmin3.h"
-#if !defined(NO_WXJSON_GIT)
+
 
 #include <wx/mstream.h>
 #include <wx/sstream.h>
@@ -2127,6 +2127,3 @@ wxJSONReader::DoStrto_ll(const wxString& str, wxUint64* ui64, wxChar* sign)
 }
 */
 
-
-
-#endif

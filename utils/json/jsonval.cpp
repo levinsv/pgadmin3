@@ -8,11 +8,11 @@
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
 #ifdef __GNUG__
-#pragma implementation "jsonval.cpp"
+//#pragma implementation "jsonval.cpp"
 #endif
 
 #include "pgAdmin3.h"
-#if !defined(NO_WXJSON_GIT)
+
 
 // For compilers that support precompilation, includes "wx.h".
 
@@ -3554,4 +3554,4 @@ wxJSONValue::operator = (wxUint64 ui)
 }
 */
 
-#endif
+

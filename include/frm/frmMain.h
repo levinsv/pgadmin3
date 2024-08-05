@@ -215,7 +215,9 @@ private:
 	ctlListView *statistics;
 	ctlListView *dependents, *dependencies;
 #if !defined(NO_WXJSON_GIT)
+#if wxUSE_WEBREQUEST
 	ctlGitPanel* git;
+#endif
 #endif
 	FunctionPGHelper hhelp;
 	ctlAuiNotebook *listViews;

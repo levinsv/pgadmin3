@@ -13,7 +13,7 @@
 #define SYSSETTINGS_H
 
 #include "utils/sysLogger.h"
-
+#include "utils/json/jsonval.h"
 // wxWindows headers
 #include <wx/wx.h>
 #include <wx/config.h>
@@ -894,6 +894,10 @@ public:
 	bool WriteBool(const wxString &key, bool value);
 	bool WritePoint(const wxString &key, const wxPoint &value);
 	bool WriteSize(const wxString &key, const wxSize &value);
+	bool WriteJsonObect(const wxString& key, wxJSONValue& value);
+	bool WriteJsonFile();
+	bool ReloadJsonFileIfNeed();
+	bool ReadJsonObect(const  wxString& key, wxJSONValue& value, wxJSONValue& defvalue);
 	bool WriteSizePoint(const wxString &key, const wxSize &size, const wxPoint &point)
 	{
 		WritePoint(key, point);
@@ -934,6 +938,9 @@ private:
 
 	wxFileConfig *defaultSettings;
 	wxString appName;
+	wxJSONValue jsoncfg;
+	bool jsonchange = false;
+	wxDateTime jsonfilemod;
 };
 
 #endif

@@ -8,12 +8,11 @@
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
 #ifdef __GNUG__
-#pragma implementation "jsonwriter.cpp"
+//#pragma implementation "jsonwriter.cpp"
 #endif
 
 
 #include "pgAdmin3.h"
-#if !defined(NO_WXJSON_GIT)
 
 #include <wx/sstream.h>
 #include <wx/mstream.h>
@@ -1271,7 +1270,3 @@ wxJSONWriter::IsPunctuation(wxChar ch)
 }
 */
 
-
-
-
-#endif

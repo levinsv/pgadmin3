@@ -29,7 +29,10 @@
 #include "utils/sysSettings.h"
 #include "utils/sysLogger.h"
 #include "utils/misc.h"
-sysSettings::sysSettings(const wxString &name) : wxConfig(name)
+#include "utils/json/jsonval.h"
+#include "utils/json/jsonreader.h"
+#include "utils/json/jsonwriter.h"
+sysSettings::sysSettings(const wxString& name) : wxConfig(name)
 {
 	appName = name;
 	// Open the default settings file
@@ -39,7 +42,6 @@ sysSettings::sysSettings(const wxString &name) : wxConfig(name)
 		wxFileInputStream fst(settingsIni);
 		defaultSettings = new wxFileConfig(fst);
 	}
-
 	// Convert settings from pre-1.5
 	long i, serverCount;
 	Read(wxT("Servers/Count"), &serverCount, 0L);
@@ -75,6 +77,7 @@ sysSettings::~sysSettings()
 		delete defaultSettings;
 		defaultSettings = NULL;
 	}
+	if (!jsoncfg.IsNull()) WriteJsonFile();
 }
 
 bool sysSettings::GetDisplayOption(const wxString &objtype, bool GetDefault)
@@ -453,6 +456,73 @@ bool sysSettings::WriteSize(const wxString &key, const wxSize &value)
 	return rc;
 }
 
+// Write a json object
+bool sysSettings::WriteJsonObect(const  wxString& key, wxJSONValue& value)
+{
+	//wxJSONValue d(wxJSONTYPE_OBJECT);
+	if (jsoncfg.IsNull()) jsoncfg.SetType(wxJSONTYPE_OBJECT);
+	jsoncfg[key] = value;
+	//value =jsoncfg.Get(key,d);
+	jsonchange = true;
+	return true;
+}
+bool sysSettings::ReloadJsonFileIfNeed() {
+	wxString path = wxStandardPaths::Get().GetUserConfigDir() + sepPath + "postgresql" + sepPath + "pgadmin3opt.json";
+	if (wxFileExists(path)) {
+		wxDateTime fmod = wxFileName(path).GetModificationTime();
+		if (!jsonfilemod.IsValid() || fmod != jsonfilemod) {
+			// load json file
+			wxFileInputStream input(path);
+			if (input.IsOk()) {
+				jsonchange = false;
+				wxJSONReader reader;
+				int errnum = reader.Parse(input, &jsoncfg);
+				if (errnum > 0) {
+					wxLogError("Parse json file %s errors. Number errors %d", path, errnum);
+				}
+				else {
+					jsonfilemod = fmod;
+					return true;
+				}
+
+			}
+
+		}
+	}
+	return false;
+}
+bool sysSettings::WriteJsonFile()
+{
+	if (!jsoncfg.IsNull() && jsonchange) {
+		//wxString s = jsoncfg.Dump(true, 0);
+		{
+			wxString p = wxStandardPaths::Get().GetUserConfigDir() + sepPath + "postgresql" + sepPath + "pgadmin3opt.json";
+			{
+				wxFileOutputStream out(p);
+				if (out.IsOk()) {
+					wxJSONWriter writer(wxJSONWRITER_STYLED | wxJSONWRITER_WRITE_COMMENTS);
+					writer.Write(jsoncfg, out);
+					//writer.Write(jsoncfg, s);
+					out.Close();
+					jsonchange = false;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool sysSettings::ReadJsonObect(const  wxString& key, wxJSONValue& value, wxJSONValue& defvalue)
+{
+	if (jsoncfg.IsNull()|| (!jsoncfg.HasMember(key))) {
+		value = defvalue;
+		WriteJsonObect(key, defvalue);
+		return true;
+	}
+	value=jsoncfg.Get(key,defvalue);
+	return true;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Log

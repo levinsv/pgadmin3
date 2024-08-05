@@ -7,15 +7,13 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
-#if !defined(NO_WXJSON_GIT)
-
 #include "pgAdmin3.h"
 
 #if !defined( _WX_JSONREADER_H )
 #define _WX_JSONREADER_H
 
 #ifdef __GNUG__
-#pragma interface "jsonreader.h"
+//#pragma interface "jsonreader.h"
 #endif
 // For compilers that support precompilation, includes "wx/wx.h".
 
@@ -145,5 +143,4 @@ protected:
 
 
 #endif            // not defined _WX_JSONREADER_H
-#endif
 

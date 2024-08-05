@@ -7,13 +7,12 @@
 // Copyright:   (c) 2007 Luciano Cattani
 // Licence:     wxWidgets licence
 /////////////////////////////////////////////////////////////////////////////
-#if !defined(NO_WXJSON_GIT)
 
 #if !defined( _WX_JSONVAL_H )
 #define _WX_JSONVAL_H
 
 #ifdef __GNUG__
-#pragma interface "jsonval.h"
+//#pragma interface "jsonval.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -437,5 +436,4 @@ public:
 
 
 #endif            // not defined _WX_JSONVAL_H
-#endif
 
