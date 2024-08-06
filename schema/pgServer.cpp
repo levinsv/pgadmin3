@@ -892,7 +892,7 @@ int pgServer::Connect(frmMain *form, bool askPassword, const wxString &pwd, bool
 		if (conn->BackendMinimumVersion(8, 1))
 		{
 			hasUptime = true;
-			sql += wxT(", CASE WHEN usesuper THEN pg_postmaster_start_time() ELSE NULL END as upsince");
+			sql += wxT(", pg_postmaster_start_time() as upsince");
 		}
 		else if (conn->HasFeature(FEATURE_POSTMASTER_STARTTIME))
 		{
@@ -901,7 +901,7 @@ int pgServer::Connect(frmMain *form, bool askPassword, const wxString &pwd, bool
 		}
 		if (conn->BackendMinimumVersion(8, 4))
 		{
-			sql += wxT(", CASE WHEN usesuper THEN pg_conf_load_time() ELSE NULL END as confloadedsince");
+			sql += wxT(", pg_conf_load_time() as confloadedsince");
 		}
 		if (conn->BackendMinimumVersion(8, 5))
 		{
