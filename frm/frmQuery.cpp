@@ -748,9 +748,9 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxSize w1 = cbConnection->GetBestSize();
 	// Kickstart wxAUI
 	manager.AddPane(toolBar, wxAuiPaneInfo().Name(wxT("toolBar")).Caption(_("Tool bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
+	manager.AddPane(btnModeTransaction, wxAuiPaneInfo().Name(wxT("ModeTransaction")).Caption(_("Mode transaction")).ToolbarPane().Top().LeftDockable(false).RightDockable(false).Left().LeftDockable(false));
 	manager.AddPane(cbConnection, wxAuiPaneInfo().Name(wxT("databaseBar")).Caption(_("Connection bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
-	manager.AddPane(btnModeTransaction, wxAuiPaneInfo().Name(wxT("ModeTransaction")).Caption(_("Mode transaction")).ToolbarPane().Top().LeftDockable(false).RightDockable(false).Left().LeftDockable(true));
-
+	
 	manager.AddPane(outputPane, wxAuiPaneInfo().Name(wxT("outputPane")).Caption(_("Output pane")).Bottom().MinSize(wxSize(200, 100)).BestSize(wxSize(550, 300)));
 	manager.AddPane(scratchPad, wxAuiPaneInfo().Name(wxT("scratchPad")).Caption(_("Scratch pad")).Right().MinSize(wxSize(100, 100)).BestSize(wxSize(250, 200)));
 	manager.AddPane(sqlNotebook, wxAuiPaneInfo().Name(wxT("sqlQuery")).Caption(_("SQL query")).Center().CaptionVisible(false).CloseButton(false).MinSize(wxSize(200, 100)).BestSize(wxSize(350, 200)));
