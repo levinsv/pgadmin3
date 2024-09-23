@@ -52,6 +52,7 @@
 #define QUERYTOOL_HISTORYFILE_ITEM _("History file")
 #define DATABASEDESIGNER_ITEM _("Database Designer")
 #define SERVERSTATUS_ITEM _("Server status")
+#define TREEJSON_ITEM _("PgAdmin3opt settings")
 #define MISC_ITEM _("Miscellaneous")
 #define MISC_UI_ITEM _("User Interface")
 #define MISC_HELPPATH_ITEM _("Help paths")
@@ -137,6 +138,7 @@
 #define chkJumpRoot     		    CTRL_CHECKBOX("chkJumpRoot")
 #define menus                		CTRL_TREE("menus")
 #define pnlBrowserDisplay           CTRL_PANEL("pnlBrowserDisplay")
+#define pnlTreeJSON                 CTRL_PANEL("pnlTreeJSON")
 #define pnlBrowserProperties        CTRL_PANEL("pnlBrowserProperties")
 #define pnlBrowserBinPath         	CTRL_PANEL("pnlBrowserBinPath")
 #define pnlBrowserMisc          	CTRL_PANEL("pnlBrowserMisc")
@@ -155,7 +157,7 @@
 #define pnlMiscLogging          	CTRL_PANEL("pnlMiscLogging")
 #define cbRefreshOnClick			CTRL_COMBOBOX("cbRefreshOnClick")
 #define pickerFontDD                CTRL_FONTPICKER("pickerFontDD")
-
+#define treeJSON					CTRL_TREEJSON("treeJSON")
 
 BEGIN_EVENT_TABLE(frmOptions, pgDialog)
 	EVT_MENU(MNU_HELP,                                            frmOptions::OnHelp)
@@ -281,6 +283,14 @@ frmOptions::frmOptions(frmMain *parent)
 
 	wxAcceleratorTable accel(1, entries);
 	SetAcceleratorTable(accel);
+
+
+	//wxPanel* parentForTree = XRCCTRL(*this, "pnlTreeJSON", wxPanel);
+	//m_jsontree = new ctlTreeJSON();
+	//m_jsontree->Create(parentForTree, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxSIMPLE_BORDER | wxTR_EDIT_LABELS | wxTR_FULL_ROW_HIGHLIGHT | wxTR_NO_LINES | wxTR_HIDE_ROOT);
+	//m_jsontree->InitMy();
+	//wxXmlResource::Get()->AttachUnknownControl("treeJSON", m_jsontree);
+	treeJSON->InitMy();
 
 	wxTextValidator numval(wxFILTER_NUMERIC);
 	txtMaxRows->SetValidator(numval);
@@ -474,6 +484,8 @@ frmOptions::frmOptions(frmMain *parent)
 	menus->AppendItem(node, MISC_HELPPATH_ITEM);
 	menus->AppendItem(node, MISC_GURUHINTS_ITEM);
 	menus->AppendItem(node, MISC_LOGGING_ITEM);
+
+	node = menus->AppendItem(root, TREEJSON_ITEM);
 
 	menus->ExpandAllChildren(root);
 
@@ -927,7 +939,8 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	// in the selected language.
 	if (changed)
 		wxMessageBox(_("Changes to the display options may not be visible until the browser tree is refreshed."), _("Display options"), wxICON_INFORMATION | wxOK);
-
+	treeJSON->Save();
+	//m_jsontree->Save();
 	Destroy();
 }
 
@@ -990,6 +1003,7 @@ void frmOptions::ShowPanel(const wxTreeItemId &menuItem)
 {
 	// Hide everything
 	pnlBrowserDisplay->Show(false);
+	pnlTreeJSON->Show(false);
 	pnlBrowserProperties->Show(false);
 	pnlBrowserBinPath->Show(false);
 	pnlBrowserMisc->Show(false);
@@ -1050,6 +1064,8 @@ void frmOptions::ShowPanel(const wxTreeItemId &menuItem)
 
 	else if (menuSelection == DATABASEDESIGNER_ITEM)
 		pnlDatabaseDesigner->Show(true);
+	else if (menuSelection == TREEJSON_ITEM)
+		pnlTreeJSON->Show(true);
 
 	else if (menuSelection == SERVERSTATUS_ITEM)
 	{

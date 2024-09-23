@@ -22,6 +22,7 @@
 // Class declarations
 class sysSettings : private wxConfig
 {
+	friend class ctlTreeJSON;
 public:
 	sysSettings(const wxString &name);
 	~sysSettings();

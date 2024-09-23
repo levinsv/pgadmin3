@@ -27,6 +27,7 @@
 
 #include "utils/misc.h"
 #include <ctl/ctlTree.h>
+#include <ctl/ctlTreeJSON.h>
 #include "ctl/ctlSQLBox.h"
 #include "ctl/ctlListView.h"
 #include "ctl/ctlComboBox.h"
