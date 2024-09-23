@@ -73,6 +73,8 @@
 #include "ctl/xh_ctltree.h"
 #include "ctl/xh_ctlchecktreeview.h"
 #include "ctl/xh_ctlcolourpicker.h"
+#include "ctl/xh_styledtext.h"
+
 
 #define DOC_DIR       wxT("/docs")
 #define UI_DIR        wxT("/ui")
@@ -508,7 +510,8 @@ bool pgAdmin3::OnInit()
 	wxXmlResource::Get()->AddHandler(new ctlTreeXmlHandler);
 	wxXmlResource::Get()->AddHandler(new ctlCheckTreeViewXmlHandler);
 	wxXmlResource::Get()->AddHandler(new ctlColourPickerXmlHandler);
-
+	wxXmlResource::Get()->AddHandler(new ctlStyledTextXmlHandler);
+	//wxXmlResource::Get()->AddHandler(new ctlTreeJSONXmlHandler);
 	InitXml();
 
 	wxOGLInitialize();
