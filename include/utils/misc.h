@@ -94,7 +94,8 @@ extern sysSettings *settings;
 #define CTRL_FONTPICKER(id)     (XRCCTRL(*this, id, wxFontPickerCtrl))
 #define CTRL_CHECKTREEVIEW(id)  (XRCCTRL(*this, id, ctlCheckTreeView))
 #define CTRL_GAUGE(id)          (XRCCTRL(*this, id, wxGauge))
-
+#define CTRL_STYLEDTEXT(id)     (XRCCTRL(*this, id, ctlStyledText))
+#define CTRL_TREEJSON(id)       (XRCCTRL(*this, id, ctlTreeJSON))
 #endif // PGSCLI
 
 // Conversions
@@ -120,7 +121,7 @@ wxString NumToStr(OID value);
 wxString NumToStr(wxLongLong value);
 wxString DateToStr(const wxDateTime &datetime);
 wxString ElapsedTimeToStr(wxLongLong msec);
-
+wxString ContrastColorBlackOrWhite(wxColour& bgColor);
 
 // Quoting
 wxString qtConnString(const wxString &value); // connection strings always have single quotes escaped with backslash

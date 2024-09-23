@@ -22,6 +22,7 @@
 #include "dlg/dlgFindReplace.h"
 #include "ctl/ctlAuiNotebook.h"
 #include "utils/popuphelp.h"
+#include "utils/dlgTransformText.h"
 
 // These structs are from Scintilla.h which isn't easily #included :-(
 struct CharacterRange
@@ -57,6 +58,7 @@ public:
 	void OnKeyDown(wxKeyEvent &event);
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
+	void OnTransformText(wxCommandEvent& ev);
 	void OnCopy(wxCommandEvent& ev);
 	void OnFuncHelp(wxCommandEvent& ev);
 	void OnKillFocus(wxFocusEvent &event);
@@ -126,6 +128,7 @@ private:
 	popuphelp *m_PopupHelp=NULL;
 	int ct_hl;
 	dlgFindReplace *m_dlgFindReplace;
+	dlgTransformText *m_dlgTransformText;
 	pgConn *m_database;
 	bool m_autoIndent, m_autocompDisabled;
 

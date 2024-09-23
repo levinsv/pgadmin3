@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<resource>
+  <object class="wxDialog" name="dlgTransformText">
+    <style>wxDEFAULT_DIALOG_STYLE|wxCAPTION|wxMAXIMIZE_BOX|wxRESIZE_BORDER</style>
+    <title>Transform text</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer1">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND | wxALL</flag>
+        <border>3</border>
+        <option>0</option>
+        <object class="wxPanel" name="srcOpt">
+          <style>wxTAB_TRAVERSAL</style>
+          <object class="wxStaticBoxSizer" name="sbSizer1">
+            <orient>wxVERTICAL</orient>
+            <label>Source text options</label>
+            <object class="sizeritem">
+              <flag>wxEXPAND</flag>
+              <border>5</border>
+              <option>1</option>
+              <object class="wxGridBagSizer" name="gbSizer2">
+                <vgap>0</vgap>
+                <hgap>0</hgap>
+                <growablerows></growablerows>
+                <growablecols>0,1</growablecols>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>0,0</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText8">
+                    <label>PCRE regexp</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxEXPAND | wxALL</flag>
+                  <border>5</border>
+                  <cellpos>1,0</cellpos>
+                  <cellspan>3,1</cellspan>
+                  <object class="ctlStyledText" name="RegText"/>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>0,1</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText9">
+                    <label>Replace expression</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxEXPAND | wxALL</flag>
+                  <border>5</border>
+                  <cellpos>1,1</cellpos>
+                  <cellspan>3,1</cellspan>
+                  <object class="ctlStyledText" name="ReplaceText"/>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>1,2</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText12">
+                    <label>Rows limit</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>1,3</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxTextCtrl" name="LimitRowsText">
+                    <value></value>
+                    <maxlength>0</maxlength>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>2,2</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText13">
+                    <label>Chars limit</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>2,3</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxTextCtrl" name="LimitCharsText">
+                    <value></value>
+                    <maxlength>0</maxlength>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>3,3</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxCheckBox" name="chkHighLight">
+                    <label>Refresh highlight</label>
+                    <checked>1</checked>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND | wxALL</flag>
+        <border>3</border>
+        <option>1</option>
+        <object class="wxPanel" name="m_panel3">
+          <style>wxTAB_TRAVERSAL</style>
+          <object class="wxStaticBoxSizer" name="sbSizer2">
+            <orient>wxVERTICAL</orient>
+            <label>Source text</label>
+            <object class="sizeritem">
+              <flag>wxEXPAND | wxALL</flag>
+              <border>5</border>
+              <option>1</option>
+              <object class="ctlStyledText" name="srcText"/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND | wxALL</flag>
+        <border>3</border>
+        <option>1</option>
+        <object class="wxPanel" name="m_panel8">
+          <style>wxTAB_TRAVERSAL</style>
+          <object class="wxStaticBoxSizer" name="sbSizer5">
+            <orient>wxVERTICAL</orient>
+            <label>Transform text</label>
+            <object class="sizeritem">
+              <flag>wxEXPAND | wxALL</flag>
+              <border>5</border>
+              <option>1</option>
+              <object class="ctlStyledText" name="trgText"/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND | wxALL</flag>
+        <border>3</border>
+        <option>0</option>
+        <object class="wxPanel" name="m_panel7">
+          <style>wxTAB_TRAVERSAL</style>
+          <object class="wxStaticBoxSizer" name="sbSizer3">
+            <orient>wxVERTICAL</orient>
+            <label>Transform text options</label>
+            <object class="sizeritem">
+              <flag>wxEXPAND</flag>
+              <border>5</border>
+              <option>0</option>
+              <object class="wxGridBagSizer" name="gbSizer1">
+                <vgap>0</vgap>
+                <hgap>0</hgap>
+                <growablerows></growablerows>
+                <growablecols>1,3</growablecols>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>1,0</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText1">
+                    <label>Append before row</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL|wxEXPAND</flag>
+                  <border>5</border>
+                  <cellpos>1,1</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxComboBox" name="beforeRowCB">
+                    <value></value>
+                    <content/>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>1,2</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText2">
+                    <label>After row</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL|wxEXPAND</flag>
+                  <border>5</border>
+                  <cellpos>1,3</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxComboBox" name="afterRowCB">
+                    <value></value>
+                    <content/>
+                  </object>
+                </object>
+                <object class="spacer">
+                  <flag>wxEXPAND</flag>
+                  <border>5</border>
+                  <cellpos>2,2</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <size>0,0</size>
+                </object>
+                <object class="spacer">
+                  <flag>wxEXPAND</flag>
+                  <border>5</border>
+                  <cellpos>2,3</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <size>0,0</size>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL</flag>
+                  <border>5</border>
+                  <cellpos>3,0</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxStaticText" name="m_staticText3">
+                    <label>Field separator</label>
+                    <wrap>-1</wrap>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <flag>wxALL|wxEXPAND</flag>
+                  <border>5</border>
+                  <cellpos>3,1</cellpos>
+                  <cellspan>1,1</cellspan>
+                  <object class="wxComboBox" name="sepFieldCB">
+                    <value></value>
+                    <content/>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND | wxALL</flag>
+        <border>3</border>
+        <option>0</option>
+        <object class="wxPanel" name="m_panel2">
+          <style>wxTAB_TRAVERSAL</style>
+          <object class="wxFlexGridSizer" name="fgSizer21">
+            <vgap>0</vgap>
+            <hgap>0</hgap>
+            <growablerows></growablerows>
+            <growablecols>1,3</growablecols>
+            <rows>0</rows>
+            <cols>6</cols>
+            <object class="sizeritem">
+              <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+              <border>5</border>
+              <option>0</option>
+              <object class="wxStaticText" name="m_staticText6">
+                <label>Load options</label>
+                <wrap>-1</wrap>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <flag>wxALL|wxEXPAND</flag>
+              <border>5</border>
+              <option>0</option>
+              <object class="wxComboBox" name="optionsLoadCB">
+                <value>First</value>
+                <content/>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <flag>wxALL</flag>
+              <border>5</border>
+              <option>0</option>
+              <object class="wxButton" name="btnSave">
+                <label>Save</label>
+                <default>0</default>
+                <auth_needed>0</auth_needed>
+                <markup>0</markup>
+                <bitmap/>
+              </object>
+            </object>
+            <object class="spacer">
+              <border>5</border>
+              <option>1</option>
+              <size>0,0</size>
+            </object>
+            <object class="sizeritem">
+              <flag>wxALL</flag>
+              <border>5</border>
+              <option>0</option>
+              <object class="wxButton" name="btnOk">
+                <label>Copy</label>
+                <default>0</default>
+                <auth_needed>0</auth_needed>
+                <markup>0</markup>
+                <bitmap/>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <flag>wxALL</flag>
+              <border>5</border>
+              <option>0</option>
+              <object class="wxButton" name="wxID_CANCEL">
+                <label>Cancel</label>
+                <default>0</default>
+                <auth_needed>0</auth_needed>
+                <markup>0</markup>
+                <bitmap/>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticText" name="m_msg">
+          <font>
+            <style>normal</style>
+            <weight>bold</weight>
+            <family>default</family>
+            <underlined>0</underlined>
+          </font>
+          <label>Rows loading</label>
+          <wrap>-1</wrap>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>

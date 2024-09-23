@@ -225,6 +225,7 @@ private:
 	void OnCheck_Column_Date(wxCommandEvent& ev);
 	void OnAutoColsPlot(wxCommandEvent& ev);
 	void OnSearchReplace(wxCommandEvent &event);
+	void OnTransformText(wxCommandEvent& ev);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);
 	void OnSaveHistory(wxCommandEvent &event);

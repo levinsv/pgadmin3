@@ -129,6 +129,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_COPY_LISTCOLTYPE,  frmQuery::OnCopy_NameTypeCols)
 	EVT_MENU(MNU_AUTOCOLSPLOT,      frmQuery::OnAutoColsPlot)
 	EVT_MENU(MNU_FIND,              frmQuery::OnSearchReplace)
+	EVT_MENU(MNU_TRANSFORM,			frmQuery::OnTransformText)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
 	EVT_MENU(MNU_REDO,              frmQuery::OnRedo)
 	EVT_MENU(MNU_EXECUTE,           frmQuery::OnExecute)
@@ -413,11 +414,12 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	formatMenu->Append(MNU_UNDOUBLEQUOTE_TEXT, _("Undouble the single quote\tCtrl-Shift-'"), _("Undouble the single quote"));
 	formatMenu->AppendSeparator();
 	formatMenu->Append(MNU_EXTERNALFORMAT, _("External Format\tCtrl-Shift-F"), _("Call external formatting command"));
-	formatMenu->Append(MNU_EXTERNALALIGN, _("External Align\tCtrl-Shift-A"), _("Call external align command"));
+	formatMenu->Append(MNU_EXTERNALALIGN, _("External Align...\tCtrl-Shift-A"), _("Call external align command"));
 	editMenu->AppendSubMenu(formatMenu, _("F&ormat"));
 	editMenu->Append(MNU_LINEENDS, _("&Line ends"), lineEndMenu);
 	editMenu->Append(MNU_AUTOREPLACE_MANAGE, _("Manage autoreplace..."), _("Edit and delete autoreplace strings"));
 	editMenu->Append(MNU_AUTOEDITOBJECT, _("Open object\tF4"), _("Open object in brouser tree"));
+	editMenu->Append(MNU_TRANSFORM, _("Text transform...\tCtrl+M"), _("Open dialog transform"));
 	
 	autoreplace = queryMacroFileProvider::LoadAutoReplace(true);
 
@@ -1812,6 +1814,10 @@ void frmQuery::OnSelectAll(wxCommandEvent &ev)
 void frmQuery::OnSearchReplace(wxCommandEvent &ev)
 {
 	sqlQuery->OnSearchReplace(ev);
+}
+void frmQuery::OnTransformText(wxCommandEvent& ev)
+{
+	sqlQuery->OnTransformText(ev);
 }
 
 

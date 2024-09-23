@@ -28,6 +28,7 @@
 #include "utils/align/AlignWrap.h"
 #include "utils/popuphelp.h"
 #include "utils/FormatterSQL.h"
+#include "utils/dlgTransformText.h"
 
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
@@ -48,6 +49,7 @@ BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_KEY_DOWN(ctlSQLBox::OnKeyDown)
 	EVT_MENU(MNU_FIND, ctlSQLBox::OnSearchReplace)
 	EVT_MENU(MNU_FUNC_HELP, ctlSQLBox::OnFuncHelp)
+	EVT_MENU(MNU_TRANSFORM, ctlSQLBox::OnTransformText)
 	EVT_MENU(MNU_COPY, ctlSQLBox::OnCopy)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
@@ -69,6 +71,7 @@ IMPLEMENT_DYNAMIC_CLASS(ctlSQLBox, wxStyledTextCtrl)
 ctlSQLBox::ctlSQLBox()
 {
 	m_dlgFindReplace = 0;
+	m_dlgTransformText = 0;
 	m_autoIndent = false;
 	m_autocompDisabled = false;
 	process = 0;
@@ -80,7 +83,7 @@ ctlSQLBox::ctlSQLBox()
 ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, long style)
 {
 	m_dlgFindReplace = 0;
-
+	m_dlgTransformText = 0;
 	m_database = NULL;
 
 	m_autocompDisabled = false;
@@ -199,12 +202,13 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetFoldFlags(16);
 
 	// Setup accelerators
-	wxAcceleratorEntry entries[4];
+	wxAcceleratorEntry entries[5];
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, WXK_SPACE, MNU_AUTOCOMPLETE);
 	entries[2].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
 	entries[3].Set(wxACCEL_CTRL, WXK_F1, MNU_FUNC_HELP);
-	wxAcceleratorTable accel(4, entries);
+	entries[4].Set(wxACCEL_CTRL, (int)'M', MNU_TRANSFORM);
+	wxAcceleratorTable accel(5, entries);
 	SetAcceleratorTable(accel);
 
 	// Autocompletion configuration
@@ -310,7 +314,42 @@ void ctlSQLBox::UpdateTitle()
 
 	SetTitle(title);
 }
+void ctlSQLBox::OnTransformText(wxCommandEvent& ev) {
+	wxString selText = GetSelectedText();
+	if (!selText.IsEmpty())
+	{
+		//m_dlgTransformText->SetSource(selText);
+	}
+	else {
+		if (wxTheClipboard->Open())
+		{
+			if (wxTheClipboard->IsSupported(wxDF_TEXT))
+			{
+				wxTextDataObject textData;
+				wxTheClipboard->GetData(textData);
+				selText = textData.GetText();
+			}
+			wxTheClipboard->Close();
+		}
 
+	}
+	if (selText.IsEmpty()) return;
+	if (!m_dlgTransformText)
+	{
+		wxString s;
+		m_dlgTransformText = new dlgTransformText(this,s);
+		m_dlgTransformText->SetSource(selText);
+		m_dlgTransformText->Show(true);
+	}
+	else
+	{
+		m_dlgTransformText->SetSource(selText);
+		m_dlgTransformText->Show(true);
+		m_dlgTransformText->SetFocus();
+	}
+
+
+}
 void ctlSQLBox::OnSearchReplace(wxCommandEvent &ev)
 {
 	if (!m_dlgFindReplace)
@@ -1712,6 +1751,11 @@ ctlSQLBox::~ctlSQLBox()
 	{
 		m_dlgFindReplace->Destroy();
 		m_dlgFindReplace = 0;
+	}
+	if (m_dlgTransformText)
+	{
+		m_dlgTransformText->Destroy();
+		m_dlgTransformText = 0;
 	}
 	AbortProcess();
 }

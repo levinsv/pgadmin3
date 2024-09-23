@@ -245,7 +245,10 @@ wxString DateToStr(const wxDateTime &datetime)
 	return datetime.FormatDate() + wxT(" ") + datetime.FormatTime();
 }
 
-
+wxString ContrastColorBlackOrWhite(wxColour &bgColor) {
+	float k = bgColor.GetRed() * 0.299 + bgColor.GetGreen() * 0.587 + bgColor.GetBlue() * 0.114;
+	if (k <= 150) return "#FFFFFF"; else return "#000000";
+}
 wxString ElapsedTimeToStr(wxLongLong msec)
 {
 	wxTimeSpan tsMsec(0, 0, 0, msec);
