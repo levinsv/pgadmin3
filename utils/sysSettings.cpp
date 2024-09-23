@@ -470,7 +470,7 @@ bool sysSettings::ReloadJsonFileIfNeed() {
 	wxString path = wxStandardPaths::Get().GetUserConfigDir() + sepPath + "postgresql" + sepPath + "pgadmin3opt.json";
 	if (wxFileExists(path)) {
 		wxDateTime fmod = wxFileName(path).GetModificationTime();
-		if (!jsonfilemod.IsValid() || fmod != jsonfilemod) {
+		if ((!jsonfilemod.IsValid() || fmod != jsonfilemod) && !jsonchange) {
 			// load json file
 			wxFileInputStream input(path);
 			if (input.IsOk()) {
@@ -505,6 +505,8 @@ bool sysSettings::WriteJsonFile()
 					//writer.Write(jsoncfg, s);
 					out.Close();
 					jsonchange = false;
+					wxDateTime fmod = wxFileName(p).GetModificationTime();
+					jsonfilemod = fmod;
 					return true;
 				}
 			}
