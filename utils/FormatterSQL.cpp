@@ -606,8 +606,7 @@ int FormatterSQL::ParseSql(int flags) {
                         while (wxIsdigit(c2)) {
                             if (i < sql.length()) c2 = sql[i++]; else break;
                         }
-                        if (i == sql.length()) i++;
-                        vi.txt = sql.substr(k, i - k - 1);
+                        vi.txt = sql.substr(k, i - k-1);
                         vi.type = bindarg;
                         i--;
                         continue;
