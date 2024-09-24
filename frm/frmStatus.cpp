@@ -19,7 +19,8 @@
 #include <wx/textbuf.h>
 #include <wx/clipbrd.h>
 #include <wx/sysopt.h>
-
+#include <wx/rawbmp.h>
+#include <wx/stdpaths.h>
 // wxAUI
 #include <wx/aui/aui.h>
 
@@ -36,7 +37,9 @@
 #include "ctl/ctlMenuToolbar.h"
 #include "ctl/ctlAuiNotebook.h"
 #include "utils/csvfiles.h"
-
+#include "utils/utffile.h"
+#include "ctl/ctlNavigatePanel.h"
+#include "ctl/wxTopActivity.h"
 // Icons
 #include "images/clip_copy.pngc"
 #include "images/readdata.pngc"
@@ -48,10 +51,11 @@
 #include "images/down.pngc"
 #include "images/up.pngc"
 #include "images/server_status.pngc"
-
+#include <algorithm>
 
 #include "db/pgConn.h"
 
+extern int s_pid_HIGHLIGH;
 
 #define CTRLID_DATABASE         4200
 
@@ -68,6 +72,7 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
 	EVT_MENU(MNU_XACTPAGE,                        frmStatus::OnToggleXactPane)
 	EVT_MENU(MNU_LOGPAGE,                         frmStatus::OnToggleLogPane)
 	EVT_MENU(MNU_QUERYSTATEPAGE,                  frmStatus::OnToggleQuerystatePane)
+	EVT_MENU(MNU_WAITENABLE,                      frmStatus::OnToggleWaitEnable)
 	EVT_MENU(MNU_QUERYSTATEVERBOSE,				  frmStatus::OnEmptyAction)
 	EVT_MENU(MNU_QUERYSTATETIME,				  frmStatus::OnEmptyAction)
 	EVT_MENU(MNU_QUERYSTATEBUFFER,                frmStatus::OnEmptyAction)
@@ -78,7 +83,7 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
 	EVT_MENU(MNU_HIGHLIGHTSTATUS,                 frmStatus::OnHighlightStatus)
 
 	EVT_AUI_PANE_CLOSE(                           frmStatus::OnPaneClose)
-
+	//EVT_AUI_PANE_ACTIVATED(                       frmStatus::OnPaneActivated)
 	EVT_COMBOBOX(CTL_RATECBO,                     frmStatus::OnRateChange)
 	EVT_MENU(MNU_REFRESH,                         frmStatus::OnRefresh)
 	EVT_MENU(MNU_CANCEL,                          frmStatus::OnCancelBtn)
@@ -112,13 +117,14 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
 	EVT_LIST_COL_CLICK(CTL_XACTLIST,              frmStatus::OnSortXactGrid)
 	EVT_LIST_COL_RIGHT_CLICK(CTL_XACTLIST,        frmStatus::OnRightClickXactGrid)
 	EVT_LIST_COL_END_DRAG(CTL_XACTLIST,           frmStatus::OnChgColSizeXactGrid)
-
+	//EVT_KEY_UP(CTL_LOGLIST,                       frmStatus::OnLogKeyUp)
 
 	
 
 	EVT_TIMER(TIMER_LOG_ID,                       frmStatus::OnRefreshLogTimer)
 	EVT_LIST_ITEM_SELECTED(CTL_LOGLIST,           frmStatus::OnSelLogItem)
 	EVT_LIST_ITEM_DESELECTED(CTL_LOGLIST,         frmStatus::OnSelLogItem)
+	EVT_LIST_ITEM_RIGHT_CLICK(CTL_LOGLIST,         frmStatus::OnRightClickLogGrid)
 
 	EVT_TIMER(TIMER_QUERYSTATE_ID,                frmStatus::OnRefreshQuerystateTimer)
 	EVT_LIST_COL_RIGHT_CLICK(CTL_QUERYSTATELIST,  frmStatus::OnRightClickQuerystateGrid)
@@ -201,7 +207,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	mainForm = form;
 	connection = conn;
 	locks_connection = conn;
-
+	logconn = NULL;
 	statusTimer = 0;
 	locksTimer = 0;
 	xactTimer = 0;
@@ -226,12 +232,78 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 			connection->ExecuteVoid(initquery, false);
 		}
 		//pg_is_in_recovery()
-		wxString v = connection->ExecuteScalar(wxT("select pg_is_in_recovery()"));
-		
-		isrecovery = (v == wxT("t"));
-		v = connection->ExecuteScalar(wxT("select current_setting('track_commit_timestamp')"));
-		track_commit_timestamp = (v == wxT("on"));
-	
+		waitMenu = new wxMenu();
+		waitMenu->Append(MNU_WAITENABLE, _("&Wait trace"), _("Enable the wait event."), wxITEM_CHECK);
+		waitMenu->Append(MNU_WAITSAVE, _("&Wait event save"), _("Enable the wait event save to file sample.dat."), wxITEM_CHECK);
+		settings->Read(wxT("frmStatus/WaitTraceEnable"), &wait_enable, false);
+		settings->Read(wxT("frmStatus/WaitSave"), &wait_save, false);
+		waitMenu->Check(MNU_WAITENABLE,wait_enable);
+		waitMenu->Check(MNU_WAITSAVE, wait_save);
+		//MNU_WAITSAVE
+		wxString q = "select pg_is_in_recovery() recovery, \
+							 (select setting from pg_settings s where name = 'pg_wait_sampling.history_size')::integer hsize, \
+						     (select setting from pg_settings s where name = 'pg_wait_sampling.history_period')::integer hperiod, \
+						     (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views where viewname = 'pg_wait_sampling_history') as wsh, \
+						     (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views v where viewname='pgpro_stats_statements') as pro, \
+						     (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views v where viewname='pg_stats_statements') as std, \
+							 has_function_privilege('pg_read_binary_file(text,bigint,bigint,boolean)','execute') isreadlog \
+					 ";
+
+		pgSet* dataSet1 = connection->ExecuteSet(q);
+		bool pro = false;
+		bool std = false;
+		wait_sample = false;
+		is_read_log = false;
+		if (dataSet1)
+		{
+			while (!dataSet1->Eof())
+			{
+				wxString v = dataSet1->GetVal(wxT("recovery"));
+				pro= dataSet1->GetBool(wxT("pro"));
+				std = dataSet1->GetBool(wxT("std"));
+				is_read_log = dataSet1->GetBool(wxT("isreadlog"));
+				isrecovery = (v == wxT("t"));
+				track_commit_timestamp = connection->HasFeature(FEATURE_TRACK_COMMIT_TS);
+				long sz = dataSet1->GetLong(wxT("hsize"));
+				long p = dataSet1->GetLong(wxT("hperiod"));
+				if (!dataSet1->GetBool(wxT("wsh"))) p = 0;
+				if (sz > 1000000) {
+					wxLogWarning(_("Value parameter pg_wait_sampling.history_size = %ld greet 1000000  monitoring wait events disabled.\n"),
+						sz
+					);
+					p = 0;
+				}
+				if (p > 0) {
+					wait_sample = true;
+					WS.SetConfig(p,sz);
+				}
+				dataSet1->MoveNext();
+			}
+			delete dataSet1 ;
+		}
+		if (!wait_sample) {
+			waitMenu->Enable(MNU_WAITENABLE, false);
+			waitMenu->Enable(MNU_WAITSAVE, false);
+		}
+		if (wait_sample && wait_enable && (std || pro)) {
+			if (std) q = "select distinct queryid,query from pg_stats_statements s";
+			if (pro) q = "select distinct queryid,query from pgpro_stats_statements s";
+			dataSet1 = connection->ExecuteSet(q);
+			bool pro = false;
+			bool std = false;
+			if (dataSet1)
+			{
+				while (!dataSet1->Eof())
+				{
+					wxULongLong qid= dataSet1->GetLongLong("queryid");
+					wxString query= dataSet1->GetVal("query");
+					WS.AddQuery(qid.GetValue(), query);
+					dataSet1->MoveNext();
+				}
+				delete dataSet1;
+			}
+
+		}
 
 	// Notify wxAUI which frame to use
 	manager.SetManagedWindow(this);
@@ -286,9 +358,10 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	viewMenu->Append(MNU_HIGHLIGHTSTATUS, _("Highlight items of the activity list"), _("Highlight or not the items of the activity list."), wxITEM_CHECK);
 	viewMenu->AppendSeparator();
 	viewMenu->Append(MNU_DEFAULTVIEW, _("&Default view\tCtrl-Alt-V"), _("Restore the default view."));
-
+	
+	menuBar->Append(waitMenu, _("&Wait"));
 	menuBar->Append(viewMenu, _("&View"));
-
+	
 	wxMenu *helpMenu = new wxMenu();
 	helpMenu->Append(MNU_CONTENTS, _("&Help contents"), _("Open the helpfile."));
 	helpMenu->Append(MNU_HELP, _("&Server status help"), _("Display help on this window."));
@@ -339,6 +412,13 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	toolBar->AddSeparator();
 	cbDatabase = new ctlComboBoxFix(toolBar, CTRLID_DATABASE, wxDefaultPosition, wxSize(-1, -1), wxCB_READONLY | wxCB_DROPDOWN);
 	toolBar->AddControl(cbDatabase);
+	if (wait_sample && wait_enable) {
+		toolBar->AddSeparator();
+		top_small = new wxTopActivity(toolBar, &WS, wxSize(100, 32));
+		toolBar->AddControl(top_small);
+	}
+	else top_small = NULL;
+
 	toolBar->Realize();
 
 	// Append items to cbo
@@ -367,13 +447,13 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	btnRotateLog->Enable(false);
 
 	// Add the database combobox
-	pgSet *dataSet1 = connection->ExecuteSet(wxT("SELECT datname FROM pg_database WHERE datallowconn ORDER BY datname"));
-	while (!dataSet1->Eof())
+	pgSet *dataSet3 = connection->ExecuteSet(wxT("SELECT datname FROM pg_database WHERE datallowconn ORDER BY datname"));
+	while (!dataSet3->Eof())
 	{
-		cbDatabase->Append(dataSet1->GetVal(wxT("datname")));
-		dataSet1->MoveNext();
+		cbDatabase->Append(dataSet3->GetVal(wxT("datname")));
+		dataSet3->MoveNext();
 	}
-	delete dataSet1;
+	delete dataSet3;
 
 	// Image list for all listviews
 	listimages = new wxImageList(13, 8, true, 2);
@@ -402,7 +482,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	manager.GetPane(wxT("Logfile")).Caption(_("Logfile"));
 	manager.GetPane(wxT("Querystate")).Caption(_("QueryState"));
 	manager.GetPane(wxT("toolBar")).BestSize(toolw);
-
+	//manager.GetPane(wxT("Activity")).GripperTop(true);
 	// Tell the manager to "commit" all the changes just made
 	manager.Update();
 
@@ -412,15 +492,21 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
 	viewMenu->Check(MNU_XACTPAGE, manager.GetPane(wxT("Transactions")).IsShown());
 	viewMenu->Check(MNU_LOGPAGE, manager.GetPane(wxT("Logfile")).IsShown());
  		pgSet *set = connection->ExecuteSet(wxT("SELECT 1 FROM pg_available_extensions WHERE installed_version is not null and name='pg_query_state'"));
-     	viewMenu->Enable(MNU_QUERYSTATEPAGE,set->NumRows() == 1);
+		bool queryenable = set->NumRows() == 1;
+     	viewMenu->Enable(MNU_QUERYSTATEPAGE, queryenable);
+		if (!queryenable) {
+			viewMenu->Check(MNU_QUERYSTATEPAGE, false);
+			manager.GetPane(wxT("Querystate")).Hide();
+		}
 		//viewMenu->Check(MNU_QUERYSTATEPAGE,set->NumRows() == 1);
 		delete set;
 
 	viewMenu->Check(MNU_TOOLBAR, manager.GetPane(wxT("toolBar")).IsShown());
 	//
-	if (!viewMenu->IsEnabled(MNU_QUERYSTATEPAGE)) {
-		manager.GetPane(wxT("Querystate")).Hide();
-		} else manager.GetPane(wxT("Querystate")).Show();
+	//if (!viewMenu->IsEnabled(MNU_QUERYSTATEPAGE)) {
+	//	manager.GetPane(wxT("Querystate")).Hide();
+	//	} else manager.GetPane(wxT("Querystate")).Show();
+
 	viewMenu->Check(MNU_QUERYSTATEPAGE,manager.GetPane(wxT("Querystate")).IsShown());
 	// Read the highlight status checkbox
 	settings->Read(wxT("frmStatus/HighlightStatus"), &highlight, true);
@@ -459,7 +545,6 @@ frmStatus::~frmStatus()
 {
 	// Delete the refresh timer
 	delete refreshUITimer;
-
 	// If the status window wasn't launched in standalone mode...
 	if (mainForm)
 		mainForm->RemoveFrame(this);
@@ -475,7 +560,9 @@ frmStatus::~frmStatus()
 	settings->WriteBool(wxT("frmStatus/QuerystateTimeStatus"), viewMenu->IsChecked(MNU_QUERYSTATETIME));
 	settings->WriteBool(wxT("frmStatus/QuerystateBufferStatus"), viewMenu->IsChecked(MNU_QUERYSTATEBUFFER));
 	settings->WriteBool(wxT("frmStatus/QuerystateTriggerStatus"), viewMenu->IsChecked(MNU_QUERYSTATETRIGGER));
-
+	if (wait_sample) settings->WriteBool(wxT("frmStatus/WaitTraceEnable"), waitMenu->IsChecked(MNU_WAITENABLE));
+	if (wait_sample) settings->WriteBool(wxT("frmStatus/WaitSave"), waitMenu->IsChecked(MNU_WAITSAVE));
+	if (wait_sample && wait_enable && waitMenu->IsChecked(MNU_WAITSAVE)) WS.SaveFileSamples();
 
 
 	// For each current page, save the slider's position and delete the timer
@@ -522,6 +609,18 @@ frmStatus::~frmStatus()
 	{
 		if (connection->IsAlive())
 			delete connection;
+	}
+	if (logThread) {
+		logThread->BreakRead();
+		wxMilliSleep(50);
+		logThread->DoTerminate();
+		s_CloseLog.Wait();
+		logThread=NULL;
+	}
+	if (logconn)
+	{
+		if (logconn->IsAlive())
+			delete logconn;
 	}
 }
 
@@ -572,13 +671,21 @@ void frmStatus::Go()
 
 void frmStatus::OnClose(wxCloseEvent &event)
 {
-	Destroy();
+
+	frm_exit = true;
+	if (logThread && logisread) {
+		logThread->BreakRead();
+		event.Veto();
+	} else Destroy();
+	//Destroy();
 }
 
 
 void frmStatus::OnExit(wxCommandEvent &event)
 {
-	Destroy();
+	wxCloseEvent e;
+	OnClose(e);
+	//Destroy();
 }
 
 
@@ -1007,10 +1114,11 @@ void frmStatus::AddLogPane()
 
 	// Create panel
 	wxPanel *pnlLog = new wxPanel(this);
-
+	//pnlLog->SetBackgroundColour(*wxRED);
 	// Create flex grid
-	wxFlexGridSizer *grdLog = new wxFlexGridSizer(1, 1, 5, 5);
-	grdLog->AddGrowableCol(0);
+	wxFlexGridSizer *grdLog = new wxFlexGridSizer(1, 2, 2, 0);
+	//wxBoxSizer* grdLog = new wxBoxSizer(wxHORIZONTAL);
+	grdLog->AddGrowableCol(1);
 	grdLog->AddGrowableRow(0);
 
 	// Add the list control
@@ -1020,12 +1128,22 @@ void frmStatus::AddLogPane()
 	wxSystemOptions::SetOption(wxT("mac.listctrl.always_use_generic"), true);
 #endif
 	wxListCtrl *lstLog = new wxListCtrl(pnlLog, CTL_LOGLIST, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxSUNKEN_BORDER);
+	// Add the log list
+	logList = (ctlListView*)lstLog;
+	nav = new ctlNavigatePanel(pnlLog, logList);
+	lstLog->Bind(wxEVT_KEY_UP, &frmStatus::OnLogKeyUp, this);
+	//lstLog->Bind(wxEVT_MENU, &ctlNavigatePanel::OnContextMenu, this);
+	Bind(wxEVT_THREAD, &frmStatus::OnAddLabelTextThread, this);
+	lstLog->Bind(wxEVT_MENU, &frmStatus::OnLogContextMenu, this);
+	//Connect(wxID_ANY, wxEVT_THREAD, wxThreadEventHandler(frmLog::OnAddLabelTextThread), NULL, this);
 	// Now switch back
 #ifdef __WXMAC__
 	wxSystemOptions::SetOption(wxT("mac.listctrl.always_use_generic"), false);
 #endif
-	grdLog->Add(lstLog, 0, wxGROW, 3);
+	
 
+	grdLog->Add(nav, 0, wxSHRINK, 3);
+	grdLog->Add(lstLog, 0, wxALL | wxEXPAND, 3);
 	// Add the panel to the notebook
 	manager.AddPane(pnlLog,
 	                wxAuiPaneInfo().Center().
@@ -1037,11 +1155,19 @@ void frmStatus::AddLogPane()
 	pnlLog->SetSizer(grdLog);
 	grdLog->Fit(pnlLog);
 
-	// Add the log list
-	logList = (ctlListView *)lstLog;
-	bgColor = logList->GetBackgroundColour();
+	logcol[0] = logList->GetBackgroundColour();
+	logcol[1] = wxColour("#afafaf");
 	// We don't need this report (but we need the pane)
 	// if server release is less than 8.0 or if server has no adminpack
+	if (!is_read_log) {
+		logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, 700);
+		logList->InsertItem(logList->GetItemCount(), _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."), -1);
+		logList->Enable(false);
+		logTimer = NULL;
+		// We're done
+		return;
+
+	}
 	if (!(connection->BackendMinimumVersion(8, 0) &&
 	        connection->HasFeature(FEATURE_FILEREAD)))
 	{
@@ -1065,7 +1191,7 @@ void frmStatus::AddLogPane()
 
 		if (!connection->HasFeature(FEATURE_FILEREAD, true))
 		{
-			logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, 800);
+			logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE_USEHEADER);
 			logList->InsertItem(logList->GetItemCount(), _("Logs are not available for this server."), -1);
 			logList->Enable(false);
 			logTimer = NULL;
@@ -1130,7 +1256,6 @@ void frmStatus::AddLogPane()
 	// Create the timer
 	logTimer = new wxTimer(this, TIMER_LOG_ID);
 }
-
 
 void frmStatus::OnCopy(wxCommandEvent &ev)
 {
@@ -1266,7 +1391,10 @@ void frmStatus::OnCopyQuery(wxCommandEvent &ev)
 	}
 }
 
-
+void frmStatus::OnPaneActivated(wxAuiManagerEvent& evt) {
+	wxTimerEvent event;
+	OnRefreshUITimer(event);
+}
 void frmStatus::OnPaneClose(wxAuiManagerEvent &evt)
 {
 	if (evt.pane->name == wxT("Activity"))
@@ -1288,6 +1416,8 @@ void frmStatus::OnPaneClose(wxAuiManagerEvent &evt)
 	if (evt.pane->name == wxT("Logfile"))
 	{
 		viewMenu->Check(MNU_LOGPAGE, false);
+
+		if (logThread) logThread->BreakRead();
 		if (logTimer)
 			logTimer->Stop();
 	}
@@ -1369,16 +1499,22 @@ void frmStatus::OnToggleLogPane(wxCommandEvent &event)
 		cbRate->SetValue(rateToCboString(logRate));
 		if (logRate > 0 && logTimer)
 			logTimer->Start(logRate * 1000L);
+		wxTimerEvent e;
+		OnRefreshLogTimer(e);
 	}
 	else
 	{
 		manager.GetPane(wxT("Logfile")).Show(false);
+		if (logThread) logThread->BreakRead();
 		if (logTimer)
 			logTimer->Stop();
 	}
 
 	// Tell the manager to "commit" all the changes just made
 	manager.Update();
+}
+void frmStatus::OnToggleWaitEnable(wxCommandEvent& event) {
+
 }
 void frmStatus::OnToggleQuerystatePane(wxCommandEvent &event)
 {
@@ -1516,9 +1652,8 @@ void frmStatus::OnRateChange(wxCommandEvent &event)
 void frmStatus::OnRefreshUITimer(wxTimerEvent &event)
 {
 	wxListEvent evt;
-
 	refreshUITimer->Stop();
-
+	if (frm_exit && !logisread) Destroy();
 	for (unsigned int i = 0; i < manager.GetAllPanes().GetCount(); i++)
 	{
 		wxAuiPaneInfo &pane = manager.GetAllPanes()[i];
@@ -1579,14 +1714,16 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 	long row = 0;
 	wxString q = wxT("SELECT ");
-
+	wait_enable = waitMenu->IsChecked(MNU_WAITENABLE);
 	// PID
 	q += pidcol + wxT(" AS pid, ");
 
 	// Application name (when available)
 	if (connection->BackendMinimumVersion(8, 5))
 		q += wxT("application_name, ");
-
+	if (connection->BackendMinimumVersion(14, 0))
+		q += wxT("query_id, ");
+	
 	// Database, and user name
 	q += wxT("p.datname, usename,\n");
 
@@ -1621,7 +1758,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 	// Transaction start timestamp
 	if (connection->BackendMinimumVersion(8, 3))
-		q += wxT("date_trunc('second', xact_start) AS xact_start, ");
+		q += wxT("xact_start AS xact_start_full,date_trunc('second', xact_start) AS xact_start, ");
 
 	// State
 	if (connection->BackendMinimumVersion(9, 2))
@@ -1689,7 +1826,12 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 	if (connection->BackendMinimumVersion(10, 0))
 	{
 		if (connection->BackendMinimumVersion(13, 0))
-			q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info,case when backend_type='autovacuum launcher' then (select min(xmin::text::bigint) from pg_replication_slots) end av_replica\n");
+			{
+				q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info,case when backend_type='autovacuum launcher' then (select min(xmin::text::bigint) from pg_replication_slots) end av_replica\n");
+				if (wait_sample && wait_enable) {
+					q += ",transaction_timestamp() tt,hs.wait_sample,hs.maxts";
+				}
+			}
 			else
 			q += wxT(",backend_type,wait_event_type,wait_event,v.heap_blks_total,v.heap_blks_vacuumed,v.heap_blks_scanned,v.phase\n");
 
@@ -1704,6 +1846,20 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 		else
 			q += wxT("FROM pg_stat_activity p LEFT JOIN pg_stat_progress_vacuum v ON p.pid=v.pid\n");
 		q += wxT("LEFT JOIN pg_replication_slots sl ON p.pid=sl.active_pid\n");
+		if (wait_sample && wait_enable)
+		{
+			q += " left join ( \
+			select pid, string_agg(format('%s:%s', event_type || ':' || event||':'||queryid, cnt), ';') wait_sample, max(maxts) maxts from( \
+				select pid,queryid, event_type, event, max(ts) maxts, count(*) cnt from pg_wait_sampling_history h \
+		where h.event not in('ArchiverMain', 'WalWriterMain', 'CheckpointerMain', 'Extension', 'LogicalLauncherMain', 'CfsGcEnable', 'WalSenderMain' \
+			, 'AutoVacuumMain', '-ClientRead', 'CheckpointWriteDelay', 'BgWriterMain', 'BgWriterHibernate') \
+			";
+
+			if (!first_tt.IsEmpty()) q += "and h.ts > '"+first_tt+"'";
+
+			q+="group by pid, event_type, event,queryid \
+				) l group by pid) hs on p.pid = hs.pid\n";
+		}
 		iswalsend = true;
 		//backend_type
 	} else
@@ -1714,28 +1870,38 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 	// And the rest of the query...
 	
 	q += wxT(" ORDER BY ") + NumToStr((long)statusSortColumn) + wxT(" ") + statusSortOrder;
-
-	pgSet *dataSet1 = connection->ExecuteSet(q);
+	wxString msgerror;
+	pgSet *dataSet1 = connection->ExecuteSet(q,false);
 	if (dataSet1)
 	{
+		msgerror = connection->GetLastError();
 		statusBar->SetStatusText(_("Refreshing status list."));
 		statusList->Freeze();
 
 		// Clear the queries array content
 		queries.Clear();
 		wxString blocked=wxT("");
+		
 		wxArrayLong pids;
+		wxDateTime tt;
 		while (!dataSet1->Eof())
 		{
 			pid = dataSet1->GetLong(wxT("pid"));
 			wxString slinfo=wxEmptyString;
+			wxString backend_xid;
+			wxDateTime start_transaction;
 			if (iswalsend) {
 				slinfo = dataSet1->GetVal(wxT("slotinfo"));
+			}
+			if (!tt.IsValid()&&wait_sample && wait_enable) {
+				tt = dataSet1->GetDateTime("tt");
+				WS.BeginSeriosSample(tt.GetValue().GetValue());
+				first_tt = dataSet1->GetVal("tt");
+
 			}
 			// Update the UI
 			if (pid != backend_pid)
 			{
-				
 
 				if (row >= statusList->GetItemCount())
 				{
@@ -1744,11 +1910,16 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				}
 				else
 				{
-					statusList->SetItem(row, 0, NumToStr(pid));
+					statusList->SetItem(row, 0, NumToStr(pid),-1);
 				}
 
 				wxString qry = dataSet1->GetVal(wxT("query"));
 				wxString app_name = dataSet1->GetVal(wxT("application_name"));
+				wxString backend_type;
+				if (connection->BackendMinimumVersion(13, 0)) {
+					backend_type = dataSet1->GetVal(wxT("backend_type"));
+					if (app_name.IsEmpty() && backend_type != "client backend") app_name = backend_type;
+				}
 				if (connection->BackendMinimumVersion(9, 6))
 				{
 					if (connection->BackendMinimumVersion(13, 0)) {
@@ -1793,8 +1964,10 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("query_start")));
 				}
 
-				if (connection->BackendMinimumVersion(8, 3))
+				if (connection->BackendMinimumVersion(8, 3)) {
+					start_transaction= dataSet1->GetDateTime("xact_start_full");
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xact_start")));
+				}
 
 				if (connection->BackendMinimumVersion(9, 2))
 				{
@@ -1804,7 +1977,8 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 
 				if (connection->BackendMinimumVersion(9, 4))
 				{
-					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xid")));
+					backend_xid= dataSet1->GetVal(wxT("backend_xid"));
+					statusList->SetItem(row, colpos++, backend_xid);
 					if (!slinfo.IsEmpty())  statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xmin_slot")));
 					else
 					{
@@ -1822,8 +1996,20 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("wait_event_type")));
 					statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("wait_event")));
 				}
+				wxString blockedby = dataSet1->GetVal(wxT("blockedby"));
+				if (wait_sample && wait_enable) {
+					bool isClientReadTransaction = false;
+					//if ( spt.count>1 && ll!=0) isClientReadTransaction = true;
+					if (start_transaction.IsValid()
+						&& start_transaction < tt
+						&& !backend_xid.IsEmpty()
+						)isClientReadTransaction = true;
 
-				statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("blockedby")));
+					WS.AddSample(pid, isClientReadTransaction, backend_type, dataSet1->GetVal("wait_sample"));
+					wxULongLong qid = dataSet1->GetLongLong("query_id");
+					WS.AddQuery(qid.GetValue(), qry);
+				}
+				statusList->SetItem(row, colpos++, blockedby);
 				if (!slinfo.IsEmpty()) {
 					statusList->SetItem(row, colpos, dataSet1->GetVal(wxT("xminlag")));
 				} 
@@ -1890,33 +2076,41 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 				}
 				if (!flt) {
 					// Add the query content to the queries array
-					queries.Add(dataSet1->GetVal(wxT("query")));
+					queries.Add(qry);
 					pids.Add(pid);
+					if (pid == s_pid_HIGHLIGH) {
+						statusList->SetItemBackgroundColour(row, wxColour(wxT("#FF8028")));
+						statusList->EnsureVisible(row);
+					}
+
 					row++;
 				}
 			}
 			dataSet1->MoveNext();
 		}
 		delete dataSet1;
-				if (viewMenu->IsChecked(MNU_HIGHLIGHTSTATUS))
+		if (viewMenu->IsChecked(MNU_HIGHLIGHTSTATUS))
+		{
+			wxString numstr;
+			wxString str;
+			numstr=blocked.BeforeFirst(',',&str);
+			while (!numstr.IsEmpty()) {
+				int number = wxAtoi(numstr);
+				for(long i = 0; i < pids.size(); i++)
 				{
-					wxString numstr;
-					wxString str;
-					numstr=blocked.BeforeFirst(',',&str);
-					while (!numstr.IsEmpty()) {
-						int number = wxAtoi(numstr);
-						for(long i = 0; i < pids.size(); i++)
-						{
-							if (pids[i]==number) {
-								statusList->SetItemBackgroundColour(i,
-						                                    wxColour(settings->GetBlockedbyProcessColour()));
+					if (pids[i]==number) {
+						statusList->SetItemBackgroundColour(i,
+						                            wxColour(settings->GetBlockedbyProcessColour()));
 
-							}
-						}
-						blocked=str.Clone();
-						numstr=blocked.BeforeFirst(',',&str);
 					}
 				}
+				blocked=str.Clone();
+				numstr=blocked.BeforeFirst(',',&str);
+			}
+		}
+		if (tt.IsValid() && wait_sample && wait_enable) {
+			WS.EndSeriosSample();
+		}
 		bool selverify=true;
 		while (row < statusList->GetItemCount()) {
 			statusList->Select(row,false);
@@ -1933,11 +2127,18 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
 			manager.Update();
 		}
 		statusList->Thaw();
-		
+		if (wait_sample && wait_enable && top_small) top_small->Refresh();
 		
 		wxListEvent ev;
 		//OnSelStatusItem(ev);
-		statusBar->SetStatusText(_("Done."));
+		if (msgerror.length() > 0) {
+			statusBar->SetStatusText(msgerror);
+		}
+		else
+		{
+
+			statusBar->SetStatusText(_("Done."));
+		}
 	}
 	else
 		checkConnection();
@@ -2302,6 +2503,7 @@ void frmStatus::OnRefreshQuerystateTimer(wxTimerEvent &event)
 
 void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 {
+	if (logisread) return;
 	if (! viewMenu->IsEnabled(MNU_LOGPAGE) || ! viewMenu->IsChecked(MNU_LOGPAGE) || !logTimer)
 		return;
 
@@ -2315,8 +2517,99 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 		logTimer->Stop();
 		return;
 	}
+	if (!logThread) {
+		wxString applicationname = "pgAdmin III LogReader";
+		logconn = new pgConn(connection->GetHostName(), connection->GetService(), connection->GetHostAddr(), connection->GetDbname(),
+			connection->GetUser(), connection->GetPassword(), connection->GetPort(), connection->GetRole(), "", connection->GetSslMode(),
+			0, applicationname, connection->GetSSLCert(), connection->GetSSLKey(), connection->GetSSLRootCert(), connection->GetSSLCrl(),
+			connection->GetSSLCompression());
+		
+		if (!logconn->IsAlive()) {
+			wxString err=logconn->GetLastError();
+			//wxMessageBox(err);
+			statusBar->SetStatusText(err);
+			delete logconn;
+			logconn = NULL;
+			return;
+		}
+		else
+		{
+		}
+		if (log_queue.IsOk()) log_queue.Clear();
 
+		logThread = new ReadLogThread(logconn, this,&log_queue);
+		if (logThread->Create() != wxTHREAD_NO_ERROR)
+		{
+			wxLogError(wxT("Can’t create log thread!"));
+			delete logThread;
+			logThread = NULL;
+		} else
+			logThread->Run();
+	}
+	else
+		if (logThread) // The thread 
+		{
+			// Recive lines
+			if (logThread->isBreak()) return;
+			wxString sstr;
+			long lastrow = logList->GetItemCount();
+			bool remote = lastrow - 1 == logList->GetFocusedItem();
+			long cnt = 0;
+			float pr = 0;
+			long timeout = logTimer->GetInterval();
+			const wxMilliClock_t waitUntil = wxGetLocalTimeMillis() + timeout;
+			logisread = true;
+			if (!logList->IsFrozen()) logList->Freeze();
+			while (logThread && log_queue.ReceiveTimeout(1, sstr) == wxMSGQUEUE_NO_ERROR) {
+				if (logThread->isBreak()) break;
+					addLogLine(sstr, true, true);
+					if (logThread->isBreak()) break;
+				if ((cnt++ % 1000) == 0) {
+						//pr = 100 * cnt / total;
+						wxString ll = wxString::Format("append rows %ld ...", cnt+ lastrow);
+						statusBar->SetStatusText(ll);
+						wxYield();
+						if (frm_exit) { logisread = false; return; }
+				}
+				//if (logThread->isBreak()) return;
+				const wxMilliClock_t now = wxGetLocalTimeMillis();
+				if (now >= waitUntil) break;
+
+			};
+			if (logList->IsFrozen())
+			{
+				logList->Thaw();
+				nav->Refresh();
+			}
+			logisread = false;
+			if (logThread && logThread->isBreak()) {
+				return;
+			}
+			if (cnt > 0) {
+				cnt += lastrow;
+				//wxString ll = wxString::Format("append rows GUI %ld ...", cnt);
+				//statusBar->SetStatusText(ll);
+				addodd++;
+				if (remote) {
+					logList->Focus(logList->GetItemCount() - 1);
+				}
+				logList->Refresh();
+			}
+			//statusBar->SetStatusText(s);
+			if (logThread && logThread->isReadyRows()) {
+				long read = logThread->GetReadByteFile(savedPartialLine);  // result last read
+				logfileLength = read;
+				// Ready next lines
+			}
+			else {
+				return; /// not ready next lines
+			}
+		}
+		
+		
+	
 	wxCriticalSectionLocker lock(gs_critsect);
+	if (logList->IsFrozen()) logList->Thaw();
 
 	if (connection->GetLastResultError().sql_state == wxT("42501"))
 	{
@@ -2355,6 +2648,8 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 		}
 		else
 		{
+			logDirectory = wxEmptyString;
+			return;
 			logDirectory = wxT("-");
 			if (connection->BackendMinimumVersion(8, 3))
 				logList->AppendItem(-1, wxString(_("logging_collector not enabled or log_filename misconfigured")));
@@ -2368,45 +2663,39 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 	if (logDirectory == wxT("-"))
 		return;
 
-	if (isCurrent)
+	if (isCurrent && logfileName.Len()>0)
 	{
 		// check if the current logfile changed
 		
 		pgSet* set;
 		if ((connection->BackendMinimumVersion(10, 0)))
-			set = connection->ExecuteSet(wxT("select size len from pg_stat_file(") + connection->qtDbString(logfileName) + wxT(")"));
+			set = connection->ExecuteSet(wxT("select size len from pg_stat_file(") + connection->qtDbString(logfileName) + wxT(")"),false);
 			else 
 			set = connection->ExecuteSet(wxT("SELECT pg_file_length(") + connection->qtDbString(logfileName) + wxT(") AS len"));
-		if (set)
+		if (set )
 		{
-			newlen = set->GetLong(wxT("len"));
+			if (set->NumCols()>0) newlen = set->GetLong(wxT("len")); 
+			else {
+				logDirectory = ""; // reRead directory
+				logfileName = "";
+				newlen = 0;
+				showCurrent = true;
+			}
 			delete set;
 		}
 		else
 		{
 			checkConnection();
+			//logDirectory = ""; // reRead directory
+			logfileName = "";
 			return;
 		}
 		if (newlen > logfileLength)
 		{
 
-			long lastrow = logList->GetItemCount();
-			bool remote = lastrow-1 == logList->GetFocusedItem();
 			statusBar->SetStatusText(_("Refreshing log list."));
 			addLogFile(logfileName, logfileTimestamp, newlen, logfileLength, false);
-			statusBar->SetStatusText(_("Done."));
-			if (bgColor == logList->GetBackgroundColour()) bgColor = wxColour("#afafaf"); else
-			{
-				bgColor = logList->GetBackgroundColour();
-			}
-			if (remote) {
-				//logList->Select(lastrow - 1,false);
-				//logList->SetScrollPos(wxGA_VERTICAL, logList->GetItemCount() - 1, true);
-				//logList->Select(logList->GetItemCount() - 1);
-				logList->Focus(logList->GetItemCount() - 1);
-				
-				//logList->Show
-			}
+			statusBar->SetStatusText(_("Wait..."));
 			// as long as there was new data, the logfile is probably the current
 			// one so we don't need to check for rotation
 			return;
@@ -2437,7 +2726,7 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 				addLogLine(_("pgadmin:Logfile rotated."), false);
 				wxDateTime *ts = (wxDateTime *)cbLogfiles->wxItemContainer::GetClientData(pos++);
 				wxASSERT(ts != 0);
-
+				if (logThread) logThread->BreakRead();
 				addLogFile(ts, skipFirst);
 				skipFirst = false;
 
@@ -2483,6 +2772,7 @@ void frmStatus::checkConnection()
 			actionMenu->Enable(MNU_REFRESH, false);
 			toolBar->EnableTool(MNU_REFRESH, false);
 			statusBar->SetStatusText(_("Connection broken."));
+			SetTitle(_("Connection broken."));
 		}
 	}
 }
@@ -2492,20 +2782,20 @@ void frmStatus::addLogFile(wxDateTime *dt, bool skipFirst)
 {
 	pgSet* set;
 	if (settings->GetASUTPstyle()) {
-		set = connection->ExecuteSet(
-			wxT("select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n")
-			wxT("  FROM pg_ls_logdir()  where modification = '") + DateToAnsiStr(*dt) + wxT("'::timestamp"));
+		wxString sql = "select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n"
+			"  FROM pg_ls_logdir()  where name ~ '.csv' and modification >= '" + DateToAnsiStr(*dt) + "'::timestamp order by modification-'" + DateToAnsiStr(*dt) + "'::timestamp limit 1";
+		set = connection->ExecuteSet(sql);
 	} else
 		set = connection->ExecuteSet(
-	                 wxT("SELECT filetime, filename, pg_file_length(filename) AS len ")
-	                 wxT("  FROM pg_logdir_ls() AS A(filetime timestamp, filename text) ")
-	                 wxT(" WHERE filetime = '") + DateToAnsiStr(*dt) + wxT("'::timestamp"));
+	                 wxT("SELECT modification filetime, name filename, size AS len ")
+	                 wxT("  FROM pg_ls_logdir()")
+	                 wxT(" WHERE modification = '") + DateToAnsiStr(*dt) + wxT("'::timestamp"),false);
 	if (set)
 	{
 		logfileName = set->GetVal(wxT("filename"));
 		logfileTimestamp = set->GetDateTime(wxT("filetime"));
 		long len = set->GetLong(wxT("len"));
-
+		//if (logThread) logThread->BreakRead();
 		logfileLength = 0;
 		addLogFile(logfileName, logfileTimestamp, len, logfileLength, skipFirst);
 
@@ -2547,19 +2837,29 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 		else
 			line = savedPartialLine;
 	}
+	if (logThread) {
+		if (logThread->isReadyRows()) {
+			logThread->SetParameters(filename,len,read,savedPartialLine);
+			logThread->GoReadRows();
+			return;
+		}
+	}
 	wxString funcname = "pg_read_binary_file(";
-	if (!settings->GetASUTPstyle()) funcname = "pg_file_read(";
+	//if (!settings->GetASUTPstyle()) funcname = "pg_file_read(";
+	wxString msg = _("Reading log from server...");
 	while (len > read)
 	{
-		statusBar->SetStatusText(_("Reading log from server..."));
-		pgSet *set = connection->ExecuteSet(wxT("SELECT ") + funcname +
-		                                    connection->qtDbString(filename) + wxT(", ") + NumToStr(read) + wxT(", 50000)"));
+#define PG_READ_BUFFER 500000
+		float pr = 100.0 * read / len;
+		statusBar->SetStatusText(wxString::Format("%s %.2f MB (%.1f %%)", msg, len / 1048576.0, pr));
+		wxString readsql = wxString::Format("select %s%s,%s, %d)", funcname, connection->qtDbString(filename), NumToStr(read), PG_READ_BUFFER);
+		pgSet *set = connection->ExecuteSet(readsql);
 		if (!set)
 		{
 			connection->IsAlive();
 			return;
 		}
-		
+		wxSafeYield();
 		char *raw1 = set->GetCharPtr(0);
 
 		if (!raw1 || !*raw1)
@@ -2568,7 +2868,7 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 			break;
 		}
 		char* raw;
-		unsigned char m[50001];
+		unsigned char m[PG_READ_BUFFER + 1];
 		if (settings->GetASUTPstyle()) {
 			
 			raw =( char *) &m[0];
@@ -2626,7 +2926,7 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 			//	str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
 			//}
 		
-
+#undef PG_READ_BUFFER
 		delete set;
 
 		if (str.Len() == 0)
@@ -2770,8 +3070,11 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
 
 	if (!logFormatKnown) {
 		logList->AppendItem(-1, str);
-		if (bgColor != logList->GetBackgroundColour()) logList->SetItemBackgroundColour(row, bgColor);
-
+		int colorindex = nav->TryMarkItem(row, str);
+		if (colorindex>=0)
+			logList->SetItemBackgroundColour(row, nav->GetColorByIndex(colorindex));
+		else 
+			logList->SetItemBackgroundColour(row, logcol[addodd % 2]);
 	}
 	else if ((!csv_log_format) && str.Find(':') < 0)
 	{
@@ -3068,6 +3371,13 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
 	}
 }
 
+void frmStatus::OnLogKeyUp(wxKeyEvent& event)
+{
+	if (currentPane == PANE_LOG) {
+		if (nav->RunKeyCommand(event)) return;
+	}
+	event.Skip();
+}
 
 void frmStatus::emptyLogfileCombo()
 {
@@ -3096,12 +3406,12 @@ int frmStatus::fillLogfileCombo()
 	    set = connection->ExecuteSet(
 		wxT("select name filename,modification filetime\n")
 		wxT("  FROM pg_ls_logdir()  where name ~ '.csv'\n")
-		wxT(" ORDER BY modification DESC"));
+		wxT(" ORDER BY modification DESC"),false);
 
 	else set = connection->ExecuteSet(
-		   wxT("SELECT filename, filetime\n")
-		   wxT("  FROM pg_logdir_ls() AS A(filetime timestamp, filename text) \n")
-		   wxT(" ORDER BY filetime DESC"));
+		   wxT("SELECT name filename,modification filetime\n")
+		   wxT("  FROM pg_ls_logdir()\n")
+		   wxT(" ORDER BY filetime DESC"),false);
 
 
 	if (set)
@@ -3128,7 +3438,27 @@ int frmStatus::fillLogfileCombo()
 
 		delete set;
 	}
+	if (count > 0) {
+		unsigned int i;
+		int maxWidth(0), width;
+		for (i = 0; i < cbLogfiles->GetCount(); i++)
+		{
+			cbLogfiles->GetTextExtent(cbLogfiles->GetString(i), &width, NULL);
+			if (width > maxWidth)
+				maxWidth = width;
+		}
 
+		//cbLogfiles->SetMinSize(wxSize(maxWidth + 2, -1));
+		//int sz = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, cbLogfiles);
+		int sz = 24;
+		cbLogfiles->SetSize(wxSize(maxWidth + sz, -1));
+		toolBar->Realize();
+		
+		wxSize newszT = toolBar->GetBestSize();
+		manager.GetPane(wxT("toolBar")).BestSize(newszT);
+		//manager.GetPane(wxT("toolBar")).MinSize(newszT);
+		manager.Update();
+	}
 	return count;
 }
 
@@ -3146,12 +3476,267 @@ void frmStatus::OnLoadLogfile(wxCommandEvent &event)
 
 		if (ts != NULL && (!logfileTimestamp.IsValid() || *ts != logfileTimestamp))
 		{
+			if (logThread) logThread->BreakRead();
+
 			logList->DeleteAllItems();
+			nav->ClearMark();
+			//bgColor = wxColour("#afafaf");
+			//bgColor = logList->GetBackgroundColour();
+			addodd = 0;
 			addLogFile(ts, true);
+			nav->Refresh();
 		}
 	}
 }
+ReadLogThread::~ReadLogThread() {
+	s_CloseLog.Post();
+}
+void ReadLogThread::BreakRead() {
+	if (!isReadyRows()) {
+		m_break = true;
+		while (!isReadyRows()) {
+			wxMilliSleep(20);
+		}
+	}
+	log_queue->Clear();
+}
+void ReadLogThread::DoTerminate() {
+	 m_exit = true;
+	 if (isReadyRows()) {
+		 s_goReadLog.Post();
+	 }
+	 return; 
+}
 
+void* ReadLogThread::Entry() {
+	int size_rows = 0;
+	while (!m_exit)
+	{
+		{
+			wxMutexLocker lock(s_mutexDBLogReading);
+			//s_mutexDBLogReading.Lock();
+			//rows.clear();
+			getFilename();
+		}
+		if (m_exit) break;
+		s_goReadLog.Wait();
+	}
+	return NULL;
+}
+void ReadLogThread::getFilename() {
+	pgSet* set;
+	if (logfileName.length() == 0) return;
+	if (m_exit || m_break) return;
+		if (!conn->IsAlive()) {
+			wxDateTime n = wxDateTime::Now();
+			if (!nextrun.IsValid() || nextrun < n) {
+				if (!conn->Reconnect(false))
+				{
+					wxTimeSpan sp(0, 2);
+					nextrun = wxDateTime::Now() + sp;
+				}
+			}
+			return;
+		}
+		readLogFile(logfileName, len, logfileLength, savedPartialLine);
+	
+	//if (namepage.IsEmpty()) namepage = "not connect";
+	//if (m_notebook->GetPageText(0) != namepage) m_notebook->SetPageText(0, namepage);
+}
+void ReadLogThread::readLogFile(wxString logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine) {
+	wxString line;
+
+	// If GPDB 3.3 and later, log is normally in CSV format.  Let's get a whole log line before calling addLogLine,
+	// so we can do things smarter.
+
+	// PostgreSQL can log in CSV format, as well as regular format.  Normally, we'd only see
+	// the regular format logs here, because pg_logdir_ls only returns those.  But if pg_logdir_ls is
+	// changed to return the csv format log files, we should handle it.
+
+	bool csv_log_format = logfileName.Right(4) == wxT(".csv");
+	if (csv_log_format && savedPartialLine.length() > 0)
+	{
+		if (logfileLength == 0)  // Starting at beginning of log file
+			savedPartialLine.clear();
+		line = savedPartialLine;
+	}
+	wxString funcname = "pg_read_binary_file(";
+	int countLine = 0;
+	long logf = logfileLength;
+	while (lenfile > logfileLength)
+	{
+		//statusBar->SetStatusText(_("Reading log from server..."));
+		if (m_exit) return;
+
+#define PG_READ_BUFFER 500000
+		wxString readsql = wxString::Format("select %s%s,%s, %d,true)", funcname, conn->qtDbString(logfileName), NumToStr(logfileLength), PG_READ_BUFFER);
+		pgSet* set = conn->ExecuteSet(readsql,false);
+		if (!set)
+		{
+			conn->IsAlive();
+			return;
+		}
+		if (set->NumRows() == 0 || set->NumCols() ==0 || set->GetVal(0).IsNull()) {
+			delete set;
+			break;
+		}
+		char* raw1 = set->GetCharPtr(0);
+		if (!raw1 || !*raw1)
+		{
+			    delete set;
+				break;
+		}
+		char* rawbuff;
+		char m[PG_READ_BUFFER + 1];
+		if (true) {
+
+			rawbuff = &m[0];
+			unsigned char c;
+			unsigned char* startChar;
+			unsigned char* startLine= (unsigned char*)&m[0];
+			int pos = 0;
+			raw1 = raw1 + 2; // bytea data \x01cf23 ....
+			int utf8charLen = 0;
+			unsigned int unichar = 0;
+			unsigned int unicharcurrent = 0;
+			int shift;
+			while (*raw1 != 0) {
+				if (m_exit) return;
+				if (m_break) {
+					log_queue->Clear();
+					return;
+				}
+				c = *raw1;
+				c = c - '0';
+				if (c > 9) c = *raw1 - 'a' + 10;
+				raw1++;
+				m[pos] = c << 4;
+				c = *raw1 - '0';
+				if (c > 9) c = *raw1 - 'a' + 10;
+				c = c | m[pos]; // hex string -> byte
+				m[pos] = c;
+				// check utf-8 char
+				if (utf8charLen == 0) {
+					startChar = (unsigned char*) &m[pos];
+
+					if (c >> 7 == 0)
+						utf8charLen = 1;
+					else if (c >> 5 == 0x6)
+						utf8charLen = 2;
+					else if (c >> 4 == 0xE)
+						utf8charLen = 3;
+					else if (c >> 5 == 0x1E)
+						utf8charLen = 4;
+					else
+						utf8charLen = 0;
+					// bad utf8 format
+					shift = 0;
+					unichar = c;
+				}
+				unicharcurrent = c << shift;
+				shift += 8;
+				unichar = unichar  | unicharcurrent;
+				pos++;
+				raw1++;
+				utf8charLen--;
+				if (utf8charLen == 0) {
+					// utf-8 char complite
+					if (unichar == '\"' && csv_log_format)
+						inquote = !inquote;
+					//wxString linebuff(startChar, lencsvstr);
+					if (unichar == '\n' && !inquote) {
+						// end line
+						size_t lencsvstr = (unsigned char*)&m[pos] - startLine;
+						wxString linebuff(startLine, set->GetConversion(),lencsvstr); // include '\n'
+						if (line.length() > 0) {
+							linebuff = line + linebuff;
+							line.clear();
+						}
+						startLine = (unsigned char*)&m[pos];
+						//rows.push_back(linebuff.Trim());
+						log_queue->Post(linebuff.Trim());
+						countLine++;
+					}
+
+				}
+			}
+			// 
+			m[pos] = 0;
+			if (utf8charLen != 0) {
+				//read = startChar - &m[0];
+				// remove bad utf-8 char
+				*startChar = 0;
+				pos = startChar- (unsigned char*)&m[0];
+				// start position bad utf-8 char
+			} else 
+				m[pos] = 0;
+			if (startLine != (unsigned char*)&m[pos]) {
+				// partial line
+				size_t lencsvstr = (unsigned char*)&m[pos] - startLine;
+				wxString linebuff(startLine, lencsvstr); // include '\n'
+				if (line.length() > 0) {
+					linebuff = line + linebuff;
+					line.clear();
+				}
+				line = linebuff;
+			}
+		}
+		else {
+			rawbuff = raw1;
+		}
+		int l = strlen(rawbuff);
+		logfileLength += l;
+		//status->SetLabelText(wxString::Format("%s Load bytes %ld", host, logfileLength));
+		
+		wxString str;
+		//str = line + wxTextBuffer::Translate(wxString(rawbuff, set->GetConversion()), wxTextFileType_Unix);
+		sendText(wxString::Format("@Load log line %d ...", countLine));
+#undef PG_READ_BUFFER
+		delete set;
+
+		if (countLine == 0)
+		{
+			wxString msgstr = "@ The server log contains entries in multiple encodings and cannot be displayed by pgAdmin.";
+			//wxMessageBox(msgstr);
+			sendText(msgstr);
+			return;
+		}
+
+	} 
+
+	savedPartialLine.clear();
+
+	if (!line.IsEmpty())
+	{
+		// We finished reading to the end of the log file, but still have some data left
+		if (csv_log_format)
+		{
+			savedPartialLine = line;    // Save partial log line for next read of the data file.
+			line.Clear();
+		}
+		else
+			//my_view->AddRow(line.Trim());
+			log_queue->Post(line.Trim());
+			//rows.push_back(line.Trim());
+
+	}
+	if (logf==0) sendText(wxString::Format("Done %d", countLine));
+}
+
+void frmStatus::OnAddLabelTextThread(wxThreadEvent& event) {
+	wxString s = event.GetString();
+	if (s[0] == '@') {
+		s = s.substr(1);
+		statusBar->SetStatusText(s);
+		return;
+	} 
+	{
+		wxTimerEvent event;
+		OnRefreshLogTimer(event);
+	}
+	
+}
+/////////////////////////////// 
 
 void frmStatus::OnRotateLogfile(wxCommandEvent &event)
 {
@@ -3541,6 +4126,8 @@ void frmStatus::OnSelStatusItem(wxListEvent &event)
 #endif
 	currentPane = PANE_STATUS;
 	cbRate->SetValue(rateToCboString(statusRate));
+	statusList->SetFocus();
+	ActivatePane("Activity");
 	if (connection && connection->BackendMinimumVersion(8, 0))
 	{
 		if(statusList->GetSelectedItemCount() > 0)
@@ -3571,7 +4158,14 @@ void frmStatus::OnSelStatusItem(wxListEvent &event)
 	editMenu->Enable(MNU_COPY, statusList->GetFirstSelected() >= 0);
 	actionMenu->Enable(MNU_COPY_QUERY, statusList->GetFirstSelected() >= 0);
 	toolBar->EnableTool(MNU_COPY_QUERY, statusList->GetFirstSelected() >= 0);
-	OnRefresh(event);
+
+	//OnRefresh(event);
+	wxTimerEvent evt;
+	OnRefreshStatusTimer(evt);
+	OnRefreshLocksTimer(evt);
+	OnRefreshXactTimer(evt);
+	OnRefreshQuerystateTimer(evt);
+
 }
 
 
@@ -3586,6 +4180,8 @@ void frmStatus::OnSelLockItem(wxListEvent &event)
 	manager.Update();
 #endif
 	currentPane = PANE_LOCKS;
+	lockList->SetFocus();
+	ActivatePane("Locks");
 	cbRate->SetValue(rateToCboString(locksRate));
 	if (connection && connection->BackendMinimumVersion(8, 0))
 	{
@@ -3631,6 +4227,8 @@ void frmStatus::OnSelXactItem(wxListEvent &event)
 	manager.Update();
 #endif
 	currentPane = PANE_XACT;
+	xactList->SetFocus();
+	ActivatePane("Transactions"); 
 	cbRate->SetValue(rateToCboString(xactRate));
 	if(xactList->GetSelectedItemCount() > 0)
 	{
@@ -3669,6 +4267,8 @@ void frmStatus::OnSelQuerystateItem(wxListEvent &event)
 	manager.Update();
 #endif
 	currentPane = PANE_QUERYSTATE;
+	querystateList->SetFocus();
+	ActivatePane("Querystate");
 	cbRate->SetValue(rateToCboString(querystateRate));
 	{
 		toolBar->EnableTool(MNU_COMMIT, false);
@@ -3688,6 +4288,25 @@ void frmStatus::OnSelQuerystateItem(wxListEvent &event)
 	toolBar->EnableTool(MNU_COPY_QUERY, false);
 }
 
+void frmStatus::ActivatePane(wxString name) {
+	if (!manager.GetPane(name).HasFlag(wxAuiPaneInfo::optionActive)) {
+		//manager.GetPane("Logfile").HasFlag(wxAuiPaneInfo::optionActive);
+		int i, pane_count;
+		wxAuiPaneInfo* active_paneinfo = NULL;
+		for (unsigned int i = 0; i < manager.GetAllPanes().GetCount(); i++)
+		{
+			wxAuiPaneInfo& pane = manager.GetAllPanes()[i];
+			pane.state &= ~wxAuiPaneInfo::optionActive;
+			if (pane.name == name)
+			{
+				pane.state |= wxAuiPaneInfo::optionActive;
+				active_paneinfo = &pane;
+			}
+		}
+		if (active_paneinfo) manager.Update();
+	}
+}
+
 
 void frmStatus::OnSelLogItem(wxListEvent &event)
 {
@@ -3701,7 +4320,8 @@ void frmStatus::OnSelLogItem(wxListEvent &event)
 #endif
 	currentPane = PANE_LOG;
 	cbRate->SetValue(rateToCboString(logRate));
-
+	logList->SetFocus();
+	ActivatePane("Logfile");
 	// if there's no log, don't enable items
 	if (logDirectory != wxT("-"))
 	{
@@ -3720,6 +4340,7 @@ void frmStatus::OnSelLogItem(wxListEvent &event)
 	editMenu->Enable(MNU_COPY, logList->GetFirstSelected() >= 0);
 	actionMenu->Enable(MNU_COPY_QUERY, false);
 	toolBar->EnableTool(MNU_COPY_QUERY, false);
+	event.Skip();
 }
 
 
@@ -3912,6 +4533,16 @@ void frmStatus::OnRightClickXactGrid(wxListEvent &event)
 void frmStatus::OnRightClickQuerystateGrid(wxListEvent &event)
 {
 	querystateList->PopupMenu(querystatePopupMenu, event.GetPoint());
+}
+void frmStatus::OnLogContextMenu(wxCommandEvent& event) {
+	nav->OnContextMenu(event);
+}
+
+void frmStatus::OnRightClickLogGrid(wxListEvent& event)
+{
+	wxMenu* logListPopupMenu;
+	logListPopupMenu = nav->GetPopupMenu();
+	logList->PopupMenu(logListPopupMenu, event.GetPoint());
 }
 
 
