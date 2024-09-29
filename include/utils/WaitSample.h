@@ -1,6 +1,10 @@
-#pragma once
+#ifndef __WAITSAMPLE_H
+#define __WAITSAMPLE_H
+
 
 #include <map>
+//#include <frm/frmStatus.h>
+class frmStatus;
 struct Sample
 {
 	int btime;
@@ -56,11 +60,18 @@ struct key3p {
 };
 
 typedef std::vector<int> vec_int;
+enum class Color_GUI{
+	BG,
+	CURSOR_LINE,
+	GRID_LINE,
+	LABEL
+};
 class WaitSample
 {
 private:
 	int periodms = 10;
 	int history_size;
+	frmStatus *m_frmStatus;
 	wxJSONValue opt;
 	std::map<int, int> pids;
 	std::map<int, int> chkpids;
@@ -85,12 +96,14 @@ private:
 	long long basetime = 0;
 	int timebegiserios = 0, timeendserios = 0;
 	int start_index_serios;
+	std::vector<wxColour> color_gui;
 	/// <summary>
 	/// Получение номера группы по имени группы.
 	/// </summary>
 	/// <param name="wclass"></param>
 	/// <returns></returns>
 	int wait_class(wxString wclass);
+	wxString m_file_cache_sql;
 public:
 	void SaveFileSamples();
 	void LoadFileSamples();
@@ -171,17 +184,19 @@ public:
 	/// <returns></returns>
 	int getPositionByTime(int time);
 	inline int getPeriod() { return periodms; }
-	void SetConfig(long periodmills, long history_size) {
+	void SetConfig(long periodmills, long history_size,frmStatus *parent) {
 		periodms = periodmills;
 		this->history_size = history_size;
+		m_frmStatus = parent;
 	};
 	void Init();
 	
 	WaitSample() {
 		//c2.FromString("#3644ff");
 		Init();
+		m_frmStatus = NULL;
 	};
-	void BeginSeriosSample(long long timeserios) {
+		void BeginSeriosSample(long long timeserios) {
 		chkpids.clear();
 		if (basetime == 0) basetime = timeserios;
 		timebegiserios = timeendserios;
@@ -191,5 +206,8 @@ public:
 	}
 	void EndSeriosSample();
 	void AddSample(int pid, bool isXidTransation, wxString& active, const wxString& sample);
-
+	wxColour & GetColorGui(Color_GUI gui_index) { return color_gui[(int)gui_index]; }
+	bool RemoveFiles();
 };
+
+#endif

@@ -313,7 +313,8 @@ public:
     // wxPopupTransientWindow virtual methods are all overridden to log them
 
 private:
-    wxScrolledWindow* m_panel;
+    //wxScrolledWindow* m_panel;
+    wxPanel* m_panel;
     wxTopActivity* top;
     topDataViewCtrl* dvc;
     wxObjectDataPtr<MyIndexListModel> m_index_list_model;
@@ -376,13 +377,13 @@ class wxTopActivity : public wxControl
     int m_agg_int = 5000;
     int m_count_wait;
     int m_inter[9] = {
-        5000      ,
-        10000     ,
+        5000      ,// 5 sek
+        10000     ,//10 sek 
         30000     ,//30 s
         60000     ,//1 min
         5 * 60000 ,//5 min
         10 * 60000,//10 min
-        15 * 60000,//10 min
+        15 * 60000,//15 min
         30 * 60000,//30 min
         60 * 60000 //60 min
     };
@@ -433,6 +434,7 @@ public:
         //SetMinSize(wxSize(300,200));
         top = topactive;
         w = NULL;
+        m_win_s = NULL;
         w = top->getViewRange(agg, right_g);
         Bind(wxEVT_DATAVIEW_COLUMN_HEADER_CLICK, [&](wxDataViewEvent& event) {
             int col = event.GetColumn();
@@ -474,6 +476,82 @@ public:
             if (!ispidfirst) ispidfirst = col->GetTitle() == "QID" && event.GetColumn() == 1;
             CalcRowsDataView(true, ispidfirst);
             Refresh();
+            if (m_win_s != NULL)  m_win_s->Refresh();
+            });
+        Bind(wxEVT_CHAR, [&](wxKeyEvent& event) {
+            bool fnd = false;
+            wxChar charcode = event.GetUnicodeKey();
+            int l = m_find.length();
+            if (event.GetKeyCode() == WXK_ESCAPE) {
+                //GetParent()->Close(true);
+                m_find = "";
+                if (m_win_s != NULL) {
+                    m_win_s->Destroy();
+                    m_win_s = NULL;
+                }
+
+            } else
+            if (event.GetKeyCode() == WXK_F3) {
+                //GetParent()->Close(true);
+                fnd = true;
+
+            } else
+            if (event.GetKeyCode() == WXK_BACK) {
+
+                if (l > 0) m_find.RemoveLast();
+                //m_win_s->SetValue(m_find);
+                fnd = true;
+            } else
+            if (wxIsprint(charcode))
+            {
+                //txt->EmulateKeyPress(event);
+                m_find += charcode;
+                
+                fnd = true;
+            }
+            //else
+            //    event.Skip();
+            if (fnd && m_find.length() > 0) {
+                if (m_win_s == NULL) {
+                    wxWindow* t = this->GenericGetHeader();
+                    wxRect r;
+                    r.width=GetColumn(0)->GetWidth();
+                    r.height = t->GetSize().GetHeight();
+                    m_win_s = new wxTextCtrl(t->GetParent(), wxID_ANY, "",
+                        r.GetPosition(),
+                        r.GetSize(),
+                        wxTE_PROCESS_ENTER
+                        | wxTE_READONLY
+                    );
+                    
+                    m_win_s->SetInsertionPointEnd();
+                }
+                if (m_win_s != NULL) {
+                    m_win_s->SetValue(m_find); m_win_s->Refresh();
+                }
+                MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
+                wxDataViewItem item(GetCurrentItem());
+                long row = (long)item.GetID();
+                if (!(row < m->GetCount())) row = 0;
+
+                while (row != -1 && row < m->GetCount()) {
+                    key3 k = m->GetRowValue(row);
+
+                    wxString v=wxString::Format("%d,%llx",k.pid,k.qid);
+                   // m->GetValueByRow(v, row, 0);
+                    bool isfind = v.Contains(m_find);
+                    if (isfind) {
+                        wxDataViewItem it = GetItemByRow(row);
+                        SetCurrentItem(it);
+                        EnsureVisible(it);
+                        return;
+                    }
+                    row++;
+                }
+                return;
+            }
+            // end function
+            event.Skip();
             });
         GetMainWindow()->Bind(wxEVT_MOTION, [&](wxMouseEvent& event) {
             if (event.Dragging())
@@ -575,6 +653,8 @@ private:
     int agg, right_g, left_g;
     bool ignoreBG = false;
     bool ispidfirst = true;
+    wxString m_find;
+    wxTextCtrl *m_win_s;
     wxTopActivity* top;
     WaitSample* w;
 };

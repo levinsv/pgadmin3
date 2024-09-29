@@ -197,7 +197,8 @@ wxColour getColorFromString(const wxString& str) {
 		unsigned long tmp;
 		int scanned = wxSscanf(strcolor, "%lx", &tmp);
 		if (scanned == 1) {
-			wxColour c(strc);
+			wxColour c;
+			c.Set((tmp>>16) & 0xFF | (tmp  & 0x00FF00)| (tmp & 0xFF)<<16);
 			if (c.IsOk()) return c;
 		}
 	}

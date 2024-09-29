@@ -38,11 +38,12 @@ EVT_KILL_FOCUS(SimpleTransientPopup::OnKillFocus)
 wxEND_EVENT_TABLE()
 
 SimpleTransientPopup::SimpleTransientPopup(wxWindow* parent, bool scrolled, wxTopActivity* small_ctl, wxPoint p,wxString title)
-    :wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxFRAME_TOOL_WINDOW | wxCLOSE_BOX | wxTINY_CAPTION)
+    :wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxFRAME_NO_TASKBAR | wxRESIZE_BORDER | wxCLOSE_BOX | wxMAXIMIZE_BOX |wxTINY_CAPTION)
 {
-    m_panel = new wxScrolledWindow(this, wxID_ANY);
+    //m_panel = new wxScrolledWindow(this, wxID_ANY);
+    m_panel = new wxPanel(this, wxID_ANY);
     m_panel->SetBackgroundColour(*wxLIGHT_GREY);
-
+    wxBoxSizer* sizerF = new wxBoxSizer(wxVERTICAL);
     m_panel->Bind(wxEVT_MOTION, &SimpleTransientPopup::OnMouse, this);
     WaitSample* w = NULL;
     int agg, right_g;
@@ -50,8 +51,11 @@ SimpleTransientPopup::SimpleTransientPopup(wxWindow* parent, bool scrolled, wxTo
     wxSize top_sz = wxSize(1000, 500);
     top = new wxTopActivity(m_panel, w, top_sz);
     top->setViewRange(agg, right_g);
-    wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
-    topSizer->Add(top, 0, wxCENTRE | wxALL, 5);
+   // wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
+    wxFlexGridSizer* topSizer = new wxFlexGridSizer(1);
+    topSizer->AddGrowableCol(0);
+    topSizer->AddGrowableRow(0);
+    topSizer->Add(top, 1, wxEXPAND, 5);
     int style = 0;
     dvc = new topDataViewCtrl(m_panel, wxID_ANY,
         wxDefaultPosition,
@@ -59,14 +63,15 @@ SimpleTransientPopup::SimpleTransientPopup(wxWindow* parent, bool scrolled, wxTo
         style,
         top
     );
+    topSizer->Add(dvc, 0, wxEXPAND|wxALL, 2);
+    //dvc->SetMinSize(wxSize(-1,60));
     m_index_list_model = new MyIndexListModel(w);
     dvc->AssociateModel(m_index_list_model.get());
     dvc->BuildColumn(0);
     dvc->CalcRowsDataView(true, true);
     m_taskTimer.Start(100);
     m_taskTimer.Bind(wxEVT_TIMER, &SimpleTransientPopup::OnTimerEvent, this);
-
-    topSizer->Add(dvc, 0, wxCENTRE | wxALL, 2);
+    
     //dvc->AppendTextColumn("Pid", 0);
     //dvc->AppendTextColumn("String2", 1);
     wxPoint posScreen;
@@ -87,30 +92,23 @@ SimpleTransientPopup::SimpleTransientPopup(wxWindow* parent, bool scrolled, wxTo
     if (p.x + top_sz.x > sizeScreen.x) p.x = sizeScreen.x - top_sz.x - 20;
     if (p.y + top_sz.y > sizeScreen.y) p.y = sizeScreen.y - top_sz.y - 20;
     Move(p);
-    if (scrolled)
-    {
-        // Add a big window to ensure that scrollbars are shown when we set the
-        // panel size to a lesser size below.
-        topSizer->Add(new wxPanel(m_panel, wxID_ANY, wxDefaultPosition,
-            wxSize(600, 900)));
-    }
+    //topSizer->Add(new wxPanel(m_panel, wxID_ANY, wxDefaultPosition,        wxSize(600, 900)));
 
     m_panel->SetSizer(topSizer);
-    if (scrolled)
-    {
-        // Set the fixed size to ensure that the scrollbars are shown.
-        m_panel->SetSize(300, 300);
-
-        // And also actually enable them.
-        m_panel->SetScrollRate(10, 10);
-    }
-    else
-    {
+    //this->SetSizer(topSizer);
         // Use the fitting size for the panel if we don't need scrollbars.
-        topSizer->Fit(m_panel);
-    }
-
-    SetClientSize(m_panel->GetSize());
+    m_panel->Layout();
+    //topSizer->Fit(m_panel);
+    
+    sizerF->Add(m_panel, 1, wxCENTRE | wxALL| wxEXPAND, 2);
+    SetSizer(sizerF);
+    Layout();
+    //SetSize(m_panel->GetSize());
+   // SetClientSize(m_panel->GetSize());
+//    Layout();
+    Fit();
+    SetMinSize(wxSize(500, 350));
+    
 }
 
 SimpleTransientPopup::~SimpleTransientPopup()
@@ -124,6 +122,10 @@ SimpleTransientPopup::~SimpleTransientPopup()
 void SimpleTransientPopup::OnSize(wxSizeEvent& event)
 {
     //wxLogMessage("%p SimpleTransientPopup::OnSize", this);
+    //Fit();
+    //m_panel->Layout();
+    Layout();
+   // Fit();
     event.Skip();
 }
 
@@ -233,9 +235,10 @@ void wxTopActivity::SetFilter(long long qid) {
 void wxTopActivity::render(wxDC& dc)
 {
     wxColour c;
-    dc.SetBrush(*wxGREY_BRUSH);
-    // wxRect r=dc.GetWindow()->GetClientRect();
-
+    //dc.SetBrush(*wxGREY_BRUSH);
+    dc.SetBrush(ws->GetColorGui(Color_GUI::BG));
+    //dc.SetPen();
+    dc.SetTextForeground(ws->GetColorGui(Color_GUI::LABEL));
     wxRect r = GetClientRect();
     wxSize sz = r.GetSize();
     //dc.DrawRectangle(0, 0, r.width, r.height);
@@ -525,8 +528,8 @@ void wxTopActivity::render(wxDC& dc)
     t.height = yy - t.y + 3;
     if (LegengWidth > 0) dc.DrawRectangle(t.x, t.y, t.width, yy - t.y + 3);
 
-    dc.SetBrush(*wxGREY_BRUSH);
-    dc.SetPen(*wxBLACK_PEN);
+    dc.SetBrush(ws->GetColorGui(Color_GUI::BG));
+    dc.SetPen(ws->GetColorGui(Color_GUI::LABEL));
     dc.DrawRectangle(a.x, a.y, a.width, a.height);
     wxTimeSpan maxY = yAxis[0];
     wxLongLong t_maxYms = maxY.GetMilliseconds();
@@ -546,12 +549,12 @@ void wxTopActivity::render(wxDC& dc)
         y = a.y + a.height - i * (a.height / nlab);
         dc.DrawText(txt, x - dx.x - 4, y - dx.y / 2);
         fl += delta;
-        dc.SetPen(*wxBLACK_PEN);
+        dc.SetPen(ws->GetColorGui(Color_GUI::LABEL));
         wxPoint p1(a.x, y);
         wxPoint p2(a.x - 3, y);
         dc.DrawLine(p1, p2);
         {
-            wxDCPenChanger npen(dc, wxPen(*wxLIGHT_GREY, 1, wxPENSTYLE_LONG_DASH));
+            wxDCPenChanger npen(dc, wxPen(ws->GetColorGui(Color_GUI::GRID_LINE), 1, wxPENSTYLE_LONG_DASH));
             p2.x = a.x + a.width - 2;
             p1.x += 1;
             if (i != 0) dc.DrawLine(p1, p2);
@@ -566,7 +569,7 @@ void wxTopActivity::render(wxDC& dc)
     int Nlabel = (a.width - 1) / xAareaW;
     int stepx = (xAareaW / width_sample);
     if (stepx == 0) stepx = 1;
-    dc.SetPen(*wxBLACK_PEN);
+    dc.SetPen(ws->GetColorGui(Color_GUI::LABEL));
     wxRect rd;
     wxPoint ptest;
     for (int i = stepx / 2; i < xAxis.size() && LegengWidth > 0; i = i + stepx)
@@ -622,7 +625,7 @@ void wxTopActivity::render(wxDC& dc)
             p.y = p.y - pixY;
             up_poly.push_back(wxPoint(p));
             if (width_sample > 19 && i > 0) {
-                wxDCPenChanger npen(dc, wxPen(*wxLIGHT_GREY, 1, wxPENSTYLE_DOT_DASH));
+                wxDCPenChanger npen(dc, wxPen(ws->GetColorGui(Color_GUI::GRID_LINE), 1, wxPENSTYLE_DOT_DASH));
                 dc.DrawLine(wxPoint(p.x, down_poly[i].y - 1), wxPoint(p.x, a.y + 1));
             }
             wxPoint dis = mouse - p;
@@ -705,6 +708,7 @@ void wxTopActivity::render(wxDC& dc)
             sa = smp->at(ps++);
             if (sa.btime >= (start_t + m_agg_int)) break;
             long long q = sa.qid;
+            if (sa.wait_id >= m_count_wait) continue; // new wait append
             if (m_qid_filter != -1 && m_qid_filter != q) continue;
             int idx = -1;
             for (int i = 0; i < qid_.size(); i++) {
@@ -717,6 +721,7 @@ void wxTopActivity::render(wxDC& dc)
                 qid_wait_id_SUM.push_back(wait);
 
             }
+            
             qid_wait_id_SUM[idx][sa.wait_id] += sa.samples;
             key3 k{ q,sa.wait_id,sa.pid };
             sum_all[sa.wait_id] += sa.samples;
@@ -742,26 +747,6 @@ void wxTopActivity::render(wxDC& dc)
         int nwy = a.y + 5;
 
         wxRect pp(nwx, nwy, w_panel, h_panel);
-        if (m_fix_detail_idx == -1)
-            dc.SetPen(*wxBLACK_PEN);
-        else
-            dc.SetPen(*wxBLUE_PEN);
-
-        dc.SetBrush(*wxGREY_BRUSH);
-        dc.DrawRectangle(pp);
-        // Title
-        ypos = pp.y + 3;
-        {
-            wxDCFontChanger nfont(dc, dc.GetFont().Bold());
-            dt -= wxTimeSpan(0, 0, m_agg_int / 1000);
-            wxString tit = dt.Format("%d %H:%M:%S ") + wxString::Format("[period: %ds]", m_agg_int / 1000);
-            title_sz = dc.GetTextExtent(tit);
-            wxPoint p;
-            p.y = ypos;
-            p.x = pp.x + pp.width / 2 - title_sz.x / 2;
-            dc.DrawText(tit, p);
-            ypos += title_sz.y + VERT_SPC;
-        }
         key3 prev{ -1,-1,-1 };
         std::map<key3, int> qid_wait_countPID; //count(pid)  GROUP (qid,wait)
         for (const auto& pair : qid_wait_pid_count) {
@@ -774,153 +759,204 @@ void wxTopActivity::render(wxDC& dc)
             }
             ++qid_wait_countPID[prev];
         }
-        wxFont f = dc.GetFont();
-        f.SetPointSize(f.GetPointSize() - 1);
         wxString sql;
         int itog = 0;
         std::vector<int> map_sum_all = sort_vec_map(sum_all, itog);
         int period = ws->getPeriod();
         int total = itog;
         if (total != 0) {
+            {
+                wxDCFontChanger nfont(dc, dc.GetFont());
+                wxSize normal_sz = dc.GetTextExtent("H");
+                int max_title_sz_x = 0;
+                for (int level = 1; level < 3; ++level) {
+                    wxFont f = dc.GetFont();
+                    f.SetPointSize(f.GetPointSize() - 1);
+                    // panel
+                    if (m_fix_detail_idx == -1)
+                        dc.SetPen(ws->GetColorGui(Color_GUI::LABEL));
+                    else
+                        dc.SetPen(*wxBLUE_PEN);
 
-            for (int i = 0; i < map_sum_all.size(); i++) {
-                int wait_index = map_sum_all[i];
-                long long w_sum = (100 * sum_all[wait_index] / total);
-                float sek = (period * sum_all[wait_index]) / 1000.0;
-                if (sek < 1) continue;
-                wxString w_name = ws->GetName(wait_index, WAIT_NAME);
-                wxString w_grp = ws->GetName(wait_index, WAIT_GRP);
-                wxString pr = w_name + wxString::Format(" %lld%%(%.1fs)", w_sum, sek);
-                long clr = ws->GetColorByWaitName(w_grp);
-                c.Set(clr);
-                dc.SetBrush(c);
-                p.x = pp.x + 3;
-                p.y = ypos;
-                dc.DrawRectangle(p.x, p.y, title_sz.GetHeight(), title_sz.GetHeight());
-                p.x = p.x + title_sz.GetHeight() + 3;
-                wxString bgproc;
-                int v = -1;
-                // background wait
-                int sum_bg_w = 0;
-                for (const auto& pair : qid_wait_pid_BG_sum) {
-                    key3 k = pair.first;
-                    if (k.w == wait_index) {
-                        v = pair.second * period;
-                        sum_bg_w += v;
-                        int bt = -1;
-                        //if (pid_btype.find(k.pid)!= pid_btype.end()) bt= pid_btype.at(k.pid);
-                        bt = k.pid;
-                        wxString txt;
-                        if (bt >= 0) txt = ws->GetBackendTypeNameShort(bt);
-                        w_sum = v;
-                        float f = (float)w_sum / 1000;
-                        if (f < 0.1) continue;
-                        if (!bgproc.IsEmpty()) bgproc += ',';
-                        bgproc += wxString::Format("%s(%.1fs)", txt, (float)f);
-                        //title_sz = dc.GetTextExtent(txt + pr);
-                        //p.x = p.x + title_sz.GetHeight() + 3;
-//                        p.y = ypos;
-//                        dc.DrawText(txt + pr, p);
-//                        ypos = p.y + title_sz.GetHeight() + 1;
-
+                    dc.SetBrush(ws->GetColorGui(Color_GUI::BG));
+                    dc.DrawRectangle(pp);
+                    // Title
+                    ypos = pp.y + 3;
+                    {
+                        wxDCFontChanger nfont(dc, dc.GetFont().Bold());
+                        wxDateTime dttmp = dt;
+                        dttmp -= wxTimeSpan(0, 0, m_agg_int / 1000);
+                        wxString tit = dttmp.Format("%d %H:%M:%S ") + wxString::Format("[period: %ds]", m_agg_int / 1000);
+                        title_sz = dc.GetTextExtent(tit);
+                        wxPoint p;
+                        p.y = ypos;
+                        p.x = pp.x + pp.width / 2 - title_sz.x / 2;
+                        dc.DrawText(tit, p);
+                        ypos += title_sz.y + VERT_SPC;
                     }
-                }
-                if (!bgproc.IsEmpty()) {
-                    float f = (100 * sum_bg_w / (sum_all[wait_index] * period));
-                    bgproc = wxString::Format("BG[%d%%]: ", (int)f) + bgproc;
-                }
-                title_sz = dc.GetTextExtent(pr + bgproc);
+                    //
+                    for (int i = 0; i < map_sum_all.size(); i++) {
+                        int wait_index = map_sum_all[i];
+                        long long w_sum = (100 * sum_all[wait_index] / total);
+                        float sek = (period * sum_all[wait_index]) / 1000.0;
+                        if (sek < 1) continue;
+                        wxString w_name = ws->GetName(wait_index, WAIT_NAME);
+                        wxString w_grp = ws->GetName(wait_index, WAIT_GRP);
+                        wxString pr = w_name + wxString::Format(" %lld%%(%.1fs)", w_sum, sek);
+                        long clr = ws->GetColorByWaitName(w_grp);
+                        c.Set(clr);
+                        dc.SetBrush(c);
+                        p.x = pp.x + 3;
+                        p.y = ypos;
+                        dc.DrawRectangle(p.x, p.y, normal_sz.GetHeight(), normal_sz.GetHeight());
+                        p.x = p.x + normal_sz.GetHeight() + 3;
+                        wxString bgproc;
+                        int v = -1;
+                        // background wait
+                        int sum_bg_w = 0;
+                        for (const auto& pair : qid_wait_pid_BG_sum) {
+                            key3 k = pair.first;
+                            if (k.w == wait_index) {
+                                v = pair.second * period;
+                                sum_bg_w += v;
+                                int bt = -1;
+                                //if (pid_btype.find(k.pid)!= pid_btype.end()) bt= pid_btype.at(k.pid);
+                                bt = k.pid;
+                                wxString txt;
+                                if (bt >= 0) txt = ws->GetBackendTypeNameShort(bt);
+                                w_sum = v;
+                                float f = (float)w_sum / 1000;
+                                if (f < 0.1) continue;
+                                if (!bgproc.IsEmpty()) bgproc += ',';
+                                bgproc += wxString::Format("%s(%.1fs)", txt, (float)f);
+                                //title_sz = dc.GetTextExtent(txt + pr);
+                                //p.x = p.x + title_sz.GetHeight() + 3;
+        //                        p.y = ypos;
+        //                        dc.DrawText(txt + pr, p);
+        //                        ypos = p.y + title_sz.GetHeight() + 1;
 
-                dc.DrawText(pr + bgproc, p);
-                ypos = p.y + title_sz.GetHeight() + 2;
-                {
-                    wxDCFontChanger nfont(dc, f);
-                    // detail client
-                    std::vector<key3> sortv;
-                    for (const auto& pair : qid_wait_pid_FG_sum) {
-                        key3 k = pair.first;
-                        if (k.w == wait_index) {
-                            v = pair.second * period;
-                            k.sum = v;
-                            if (v < 100) continue;
-                            bool ff = true;
-                            for (int p = 0; p < sortv.size(); p++) {
-                                if (sortv[p].sum < v) {
-                                    sortv.insert(sortv.begin() + p, k);
-                                    ff = false;
-                                    break;
-                                }
                             }
-                            if (ff) sortv.push_back(k);
                         }
-                    }
-                    for (int j1 = 0; j1 < sortv.size(); j1++) {
-                        key3 k = sortv[j1];
-                        if (k.w == wait_index) {
-                            v = k.sum;
-                            wxString txt;
-                            w_sum = v;
-                            float fsek = (float)w_sum / 1000;
-                            if (fsek < 0.1) continue;
-                            unsigned long long ull = k.qid;
-                            int h = ull >> 32;
-                            int l = ull & 0xFFFFFFFF;
-                            wxString tqid = wxString::Format("%llx", ull);
-                            k.pid = -1;
-                            int cnt = qid_wait_countPID[k];
+                        if (!bgproc.IsEmpty()) {
+                            float f = (100 * sum_bg_w / (sum_all[wait_index] * period));
+                            bgproc = wxString::Format("BG[%d%%]: ", (int)f) + bgproc;
+                        }
+                        title_sz = dc.GetTextExtent(pr + bgproc);
 
-                            bgproc = wxString::Format("%s ( %.1fs ) [%d]", tqid, (float)fsek, cnt);
-                            title_sz = dc.GetTextExtent(bgproc);
-                            //p.x = p.x + title_sz.GetHeight() + 3;
-                            p.y = ypos;
-                            wxRect r(p.x, p.y, title_sz.GetWidth(), title_sz.GetHeight());
-                            if (r.Contains(mouse)) {
-                                wxDCFontChanger nfont(dc, f.Bold());
-                                dc.DrawText(bgproc, p);
-                                if (m_click == 0) {
-                                    // hint sql
-                                    sql = ws->GetQueryByQid(k.qid);
-                                }
-                                if (m_click == 2) { // RightUp
-                                    // set filter qid
-                                    if (wxTheClipboard->Open())
-                                    {
-                                        wxDataObjectComposite* dataobj = new wxDataObjectComposite();
-                                        dataobj->Add(new wxTextDataObject(tqid));
-                                        wxTheClipboard->SetData(dataobj);
-                                        wxTheClipboard->Close();
+                        dc.DrawText(pr + bgproc, p);
+                        ypos = p.y + normal_sz.GetHeight() + 1;
+                        if (max_title_sz_x < (p.x + title_sz.GetWidth())) max_title_sz_x = p.x + title_sz.GetWidth(); // max width
+                        {
+                            wxDCFontChanger nfont(dc, f);
+                            // detail client
+                            std::vector<key3> sortv;
+                            for (const auto& pair : qid_wait_pid_FG_sum) {
+                                key3 k = pair.first;
+                                if (k.w == wait_index) {
+                                    v = pair.second * period;
+                                    k.sum = v;
+                                    if (v < 100) continue;
+                                    bool ff = true;
+                                    for (int p = 0; p < sortv.size(); p++) {
+                                        if (sortv[p].sum < v) {
+                                            sortv.insert(sortv.begin() + p, k);
+                                            ff = false;
+                                            break;
+                                        }
                                     }
-                                    m_click = 0;
+                                    if (ff) sortv.push_back(k);
                                 }
-                                if (m_click == 1) { // LeftUp
-                                    // set filter qid
-                                    m_click = 0;
-                                    m_filter_detail = tqid;
-                                    m_qid_filter = k.qid;
-                                    m_regroup = true;
-                                    return;
-                                }
-
                             }
-                            else
-                                dc.DrawText(bgproc, p);
-                            ypos = p.y + title_sz.GetHeight() + 1;
+                            for (int j1 = 0; j1 < sortv.size(); j1++) {
+                                key3 k = sortv[j1];
+                                if (k.w == wait_index) {
+                                    v = k.sum;
+                                    wxString txt;
+                                    w_sum = v;
+                                    float fsek = (float)w_sum / 1000;
+                                    if (fsek < 0.1) continue;
+                                    unsigned long long ull = k.qid;
+                                    int h = ull >> 32;
+                                    int l = ull & 0xFFFFFFFF;
+                                    wxString tqid = wxString::Format("%llx", ull);
+                                    k.pid = -1;
+                                    int cnt = qid_wait_countPID[k];
 
+                                    bgproc = wxString::Format("%s ( %.1fs ) [%d]", tqid, (float)fsek, cnt);
+                                    title_sz = dc.GetTextExtent(bgproc);
+                                    //p.x = p.x + title_sz.GetHeight() + 3;
+                                    p.y = ypos;
+                                    wxRect r(p.x, p.y, title_sz.GetWidth(), title_sz.GetHeight());
+                                    if (r.Contains(mouse) && level == 2) {
+                                        wxDCFontChanger nfont(dc, f.Bold());
+                                        dc.DrawText(bgproc, p);
+                                        if (m_click == 0) {
+                                            // hint sql
+                                            sql = ws->GetQueryByQid(k.qid);
+                                        }
+                                        if (m_click == 2) { // RightUp
+                                            // set filter qid
+                                            if (wxTheClipboard->Open())
+                                            {
+                                                wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                                                dataobj->Add(new wxTextDataObject(tqid));
+                                                wxTheClipboard->SetData(dataobj);
+                                                wxTheClipboard->Close();
+                                            }
+                                            m_click = 0;
+                                        }
+                                        if (m_click == 1) { // LeftUp
+                                            // set filter qid
+                                            m_click = 0;
+                                            m_filter_detail = tqid;
+                                            m_qid_filter = k.qid;
+                                            m_regroup = true;
+                                            return;
+                                        }
+
+                                    }
+                                    else
+                                        dc.DrawText(bgproc, p);
+                                    ypos = p.y + title_sz.GetHeight() + 1;
+                                    if (max_title_sz_x < (p.x + title_sz.GetWidth())) max_title_sz_x = p.x + title_sz.GetWidth(); // max width
+                                }
+                            }
+                        }
+
+                    }
+                    if (!sql.IsEmpty() && level == 2) {
+                        FSQL::FormatterSQL f(sql);
+                        if (f.ParseSql(0) == 0) {
+                            wxRect r(a.x, a.y, 0, a.height);
+                            if (mouse.x > (a.x + a.width / 2)) r.width = mouse.x - a.x;
+                            else { r.width = a.x + a.width - mouse.x - 50; r.x = mouse.x + 50; }
+                            f.Formating(dc, r);
                         }
                     }
-                }
-
-            }
-            if (!sql.IsEmpty()) {
-                FSQL::FormatterSQL f(sql);
-                if (f.ParseSql(0) != 0) {
-                    wxRect r(a.x, a.y, 0, a.height);
-                    if (mouse.x > (a.x + a.width / 2)) r.width = mouse.x - a.x;
-                    else { r.width = a.x + a.width - mouse.x - 50; r.x = mouse.x + 50; }
-                    f.Formating(dc, r);
-                }
-            }
-
+                    // resize 
+                    if (level == 1) {
+                        if (max_title_sz_x > pp.x + pp.width) {
+                            pp.width = max_title_sz_x - pp.x;
+                        }
+                        if (ypos > pp.y + pp.height) pp.height = ypos - pp.y;
+                        if (ypos > sz.y) {
+                            wxFont fsmall = dc.GetFont();
+                            pp.y = 0;
+                            float kf = (sz.y - pp.y) / (float)(ypos - pp.y);
+                            if (kf < 0.5) kf = 0.5;
+                            int newSize = fsmall.GetPointSize() * kf;
+                            fsmall.SetPointSize(newSize);
+                            //int width, height;
+                            //wxBitmap emptyBitmap(30, 30, dc);
+                            //wxMemoryDC temp_dc;
+                            //temp_dc.SelectObject(emptyBitmap);
+                            //temp_dc.SetFont(fsmall);
+                            //temp_dc.GetTextExtent("H", &width, &height);
+                            dc.SetFont(fsmall);
+                        }
+                    }
+                } // level
+            } // fontchanger
         }
 
     }
@@ -967,7 +1003,7 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
                 wxPoint p1(cx - dx1, m_area.y + 1);
                 wxPoint p2(cx - dx1, m_area.y + m_area.height);
                 {
-                    wxDCPenChanger npen(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_SOLID));
+                    wxDCPenChanger npen(dc, wxPen(ws->GetColorGui(Color_GUI::CURSOR_LINE), 2, wxPENSTYLE_SOLID));
                     dc.DrawLine(p1, p2);
                 }
             }
@@ -980,7 +1016,7 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
                         wxPoint p1(cx - dx2, m_area.y + 1);
                         wxPoint p2(cx - dx2, m_area.y + m_area.height);
                         {
-                            wxDCPenChanger npen(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_SOLID));
+                            wxDCPenChanger npen(dc, wxPen(ws->GetColorGui(Color_GUI::CURSOR_LINE), 2, wxPENSTYLE_SOLID));
                             dc.DrawLine(p1, p2);
                         }
                     }
@@ -1008,6 +1044,7 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
                 dc.SetPen(*wxBLACK);
                 dc.DrawRectangle(r);
                 dc.DrawText(labeltext, p);
+                dc.SetPen(ws->GetColorGui(Color_GUI::CURSOR_LINE));
                 dc.DrawLine(p1, p2);
             }
         }
@@ -1022,10 +1059,10 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
         wxSize szf = dc.GetTextExtent(labelLeft);
         wxPoint p1(cx - dx1, m_area.y + 25);
         wxPoint p2(cx - dx2, m_area.y + 25);
-        dc.SetBrush(*wxBLACK);
-        dc.SetPen(*wxBLACK);
+        dc.SetBrush(wxBrush(ws->GetColorGui(Color_GUI::CURSOR_LINE)));
+        dc.SetPen(wxPen(ws->GetColorGui(Color_GUI::CURSOR_LINE)));
         {
-            wxDCPenChanger npen(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_SOLID));
+            wxDCPenChanger npen(dc, wxPen(ws->GetColorGui(Color_GUI::CURSOR_LINE), 2, wxPENSTYLE_SOLID));
             dc.DrawLine(p1, p2);
         }
 
@@ -1054,25 +1091,42 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
         wxString l3text = ElapsedTimeToStr(ll.GetValue());
         wxSize sz3 = dc.GetTextExtent(l3text);
         wxRect r2(tx2.x - 1, tx2.y, sz.x + 2, sz.y);
-        int maxx = 0;
+        int maxx = 0; bool isup = true;
         if (szf.x < (p2.x - p1.x)) {
-            dc.DrawRectangle(r);
-            dc.DrawText(labelLeft, tx1);
+            // | labelLeft 
+            dc.DrawRectangle(r); // inner
+            dc.DrawText(labelLeft, r.x+1,r.y);
             maxx = r.width;
         }
+        else {
+            // labelLeft |
+            r.x = tx1.x - 1 - r.width;
+            dc.DrawRectangle(r);
+            dc.DrawText(labelLeft, r.x + 1,r.y);
+        }
         if (sz.x + maxx < (p2.x - p1.x) && fix_pos_R.IsValid()) {
+            // labelRight |
             dc.DrawRectangle(r2);
-            dc.DrawText(labeltext, tx2);
+            dc.DrawText(labeltext, r2.x+1,r2.y);
             maxx += r2.width;
         }
-        if (sz3.x + maxx < (p2.x - p1.x)) {
+        else {
+            // | labelRight
+            r2.x = cx - dx2 + 2;
+            dc.DrawRectangle(r2);
+            dc.DrawText(labeltext, r2.x + 1,r2.y);
+        }
+        if (sz3.x + maxx < (p2.x - p1.x) && false) { // up 
             wxRect r3(r.x + r.width + (p2.x - p1.x - maxx) / 2 - sz3.x / 2, r.y, sz3.x + 2, sz3.y);
             dc.DrawRectangle(r3);
             dc.DrawText(l3text, r3.x + 1, r3.y);
             maxx += r3.width;
         }
-
-
+        else if (sz3.x < (p2.x - p1.x) ) { // down 
+            wxRect r3(tx1.x - 1 + (p2.x - p1.x ) / 2 - sz3.x / 2, points[0].y + 5, sz3.x + 2, sz3.y);
+            dc.DrawRectangle(r3);
+            dc.DrawText(l3text, r3.x + 1, r3.y);
+        }
     }
 
     if (m_click == 2 && !fix_pos_L.IsValid()) {
@@ -1540,7 +1594,7 @@ void wxCustomButton::render(wxDC& dc)
     if (pressedDown)
         dc.SetBrush(*wxRED_BRUSH);
     else
-        dc.SetBrush(*wxGREY_BRUSH);
+        dc.SetBrush(ws->GetColorGui(Color_GUI::BG));
     wxRect r = dc.GetWindow()->GetClientRect();
     wxSize sz = r.GetSize();
     //dc.DrawRectangle(0, 0, r.width, r.height);

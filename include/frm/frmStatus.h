@@ -186,6 +186,7 @@ public:
     frmStatus(frmMain *form, const wxString &_title, pgConn *conn);
     ~frmStatus();
     void Go();
+    bool getTextSqlbyQid(long long qid);
 
 private:
     wxAuiManager manager;
@@ -209,7 +210,7 @@ private:
     long backend_pid;
     int wait_event_type_col;
     bool isrecovery,track_commit_timestamp, is_read_log;
-    bool wait_sample, wait_enable, wait_save;
+    bool wait_sample, wait_enable, wait_save,std,pro;
     bool frm_exit = false; // need close form
     bool logisread = false; // need close form
     WaitSample WS;
@@ -351,7 +352,6 @@ private:
     void addLogFile(wxDateTime *dt, bool skipFirst);
     void addLogFile(const wxString &filename, const wxDateTime timestamp, long len, long &read, bool skipFirst);
     void addLogLine(const wxString &str, bool formatted = true, bool csv_log_format = false);
-
     void checkConnection();
 
     DECLARE_EVENT_TABLE()

@@ -6,35 +6,37 @@
 
 void WaitSample::Init() {
 	wxString clr = "h1 { \
-		region: \"IO:DataFileRead\", #3644ff;\n\
-region: \"IO:DataFileWrite\", #790808;\n\
+		region: \"IO:DataFileRead\", #2132bd;\n\
+region: \"IO:DataFileWrite\", #2132bd;\n\
 region: \"IO:BufFileRead\", #16658d;\n\
-region: \"IO:BufFileWrite\", #d30a0a;\n\
+region: \"IO:BufFileWrite\", #16658d;\n\
 region: \"IO:DataFileExtend\", #9720ba;\n\
-region: \"IO:DataFilePrefetch\", #c03ae8;\n\
-region: \"IO:DataFileFlush\", #b609ea;\n\
-region: \"IO:DataFileSync\", #b609ea;\n\
+region: \"IO:DataFilePrefetch\", #2132bd;\n\
+region: \"IO:DataFileFlush\", #2132bd;\n\
+region: \"IO:DataFileSync\", #2132bd;\n\
 region: \"IO:ReplicationSlotSync\", #b609ea;\n\
 region: \"IO:WALSync\", #ff6a00;\n\
 region: \"IO:WALWrite\", #ff6a00;\n\
 region: \"IO:WALInitWrite\", #ff6a00;\n\
-region: \"IO:WALRead\", #ba550e;\n\
+region: \"IO:WALRead\", #ff6a00;\n\
 region: \"IO\", #2132bd;\n\
 region: \"IPC\", #908b3b;\n\
 region: \"Lock\", #ff0000;\n\
 region: \"Client\", #0b6222;\n\
 region: \"BufferPin\", #a4a3a0;\n\
 region: \"Client:ClientWrite\", #76bb88;\n\
-region: \"IPC:ArchiveCommand\", #fff200;\n\
+region: \"IPC:ArchiveCommand\", #908b3b;\n\
 region: \"IPC:MessageQueueReceive\", #aaae4f;\n\
 region: \"IPC:MessageQueueSend\", #aaae4f;\n\
 region: \"LWLock\", #87f566;\n\
-region: \"LWLock:WALWrite\", #3bf61e;\n\
-region: \"LWLock:WALInsert\", #3bf61e;\n\
-region: \"LWLock:Autovacuum\", #20bb08;\n\
-region: \"LWLock:BufferContent\", #98db19;\n\
+region: \"LWLock:WALWrite\", #87f566;\n\
+region: \"LWLock:WALInsert\", #87f566;\n\
+region: \"LWLock:Autovacuum\", #87f566;\n\
+region: \"LWLock:BufferContent\", #87f566;\n\
+region: \"CPU\", #FFFA8A;\n\
 region: \"Timeout\", #6ce4c6;\n\
-region: \"Timeout:VacuumDelay\", #20bb08;\n\
+region: \"Timeout:VacuumDelay\", #6ce4c6;\n\
+region: \"Timeout:PgSleep\", #6ce4c6;\n\
 }";
 	wxStringTokenizer tk(clr, "\n", wxTOKEN_DEFAULT);
 	wxString cc;
@@ -48,18 +50,37 @@ region: \"Timeout:VacuumDelay\", #20bb08;\n\
 		wxString w = l.AfterFirst('"').BeforeFirst('"');
 		if (w.IsEmpty()) continue;
 		wxString c = l.AfterFirst('#').BeforeFirst(';');
-		unsigned long tmp;
+		unsigned long tmp=0;
 		wxSscanf(c, "%lx", &tmp);
+		tmp = (tmp >> 16) & 0xFF | (tmp & 0x00FF00) | (tmp & 0xFF) << 16;
 		wait_idx.emplace(w, tmp);
 		wxJSONValue e(wxJSONType::wxJSONTYPE_OBJECT);
-		wxColour cc3("#"+c);
-		e["enable"] = true;
+		wxColour cc3;
+		cc3.Set(tmp);
+		bool en = true;
+		if (w == "Timeout:PgSleep" ||
+			w == "Timeout:VacuumDelay" ||
+			w == "IPC:ArchiveCommand" ||
+			w == "Timeout:PgSleep")
+			en = false; // disable for example
+		e["enable"] = en;
 		e["color"] = "#" + c;
 		e["name"] = w;
 		events.Append(e);
 	}
 	wxJSONValue def(wxJSONType::wxJSONTYPE_OBJECT);
 	def["events"] = events;
+	wxString cstr;
+	cstr = "#808080";
+	wxJSONValue c1=wxString(cstr); //BG
+	wxJSONValue c2 = wxString("#000000"); //CURSOR_LINE
+	cstr = "#c0c0c0";
+	wxJSONValue c3 = wxString(cstr); //GRID_LINE
+	wxJSONValue c4 = wxString("#000000"); //LABEL
+	def["bg"] = c1;
+	def["cursorline"] = c2;
+	def["gridline"] = c3;
+	def["label"] = c4;
 	//def["autoloadcache_sql"] = true;
 	group.push_back("BufferPin");
 	group.push_back("Client");
@@ -69,6 +90,7 @@ region: \"Timeout:VacuumDelay\", #20bb08;\n\
 	group.push_back("Activity");
 	group.push_back("LWLock");
 	group.push_back("Timeout");
+	group.push_back("CPU");
 	settings->ReloadJsonFileIfNeed();
 	settings->ReadJsonObect("WaitEvents", opt, def);
 	//    settings->WriteJsonFile();
@@ -81,6 +103,7 @@ region: \"Timeout:VacuumDelay\", #20bb08;\n\
 			wxString c= e["color"].AsString();
 			unsigned long tmp;
 			wxSscanf(c, "#%lx", &tmp);
+			tmp = (tmp >> 16) & 0xFF | (tmp & 0x00FF00) | (tmp & 0xFF) << 16;
 			wxColour cc(tmp);
 			if (!cc.IsOk()) cc = *wxBLACK;
 			//wxSscanf(c, "%lx", &tmp);
@@ -90,7 +113,22 @@ region: \"Timeout:VacuumDelay\", #20bb08;\n\
 		}
 	}
 	else opt = def;
+	// color gui
+	wxColour cc1(opt["bg"].AsString());
+	if (cc1.IsOk()) color_gui.push_back(wxColour(cc1)); else
+		color_gui.push_back(wxColour(def["bg"].AsString()));
+	cc1.Set(opt["cursorline"].AsString());
+	if (cc1.IsOk()) color_gui.push_back(wxColour(cc1)); else
+		color_gui.push_back(wxColour(def["cursor_line"].AsString()));
+	cc1.Set(opt["gridline"].AsString());
+	if (cc1.IsOk()) color_gui.push_back(wxColour(cc1)); else
+		color_gui.push_back(wxColour(def["gridline"].AsString()));
+	cc1.Set(opt["label"].AsString());
+	if (cc1.IsOk()) color_gui.push_back(wxColour(cc1)); else
+		color_gui.push_back(wxColour(def["label"].AsString()));
+
 	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator() + "cache_sql.txt";
+	m_file_cache_sql = tempDir;
 	wxTextFile file(tempDir);
 	if (file.Exists()) file.Open();
 	if (file.IsOpened())
@@ -439,6 +477,13 @@ wxString WaitSample::GetQueryByQid(long long qid) {
 		wxString sql = qid_sql[qid];
 		return sql;
 	}
+	else {
+		// try get text sql
+		if (m_frmStatus && m_frmStatus->getTextSqlbyQid(qid)) {
+			wxString sql = qid_sql[qid];
+			return sql;
+		};
+	}
 	return wxEmptyString;
 
 }
@@ -593,7 +638,8 @@ void WaitSample::SaveFileSamples() {
 		file.Write(strnl);
 		file.Close();
 	}
-	tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator() + "cache_sql.txt";
+	
+	tempDir = m_file_cache_sql;
 	wxUtfFile file1(tempDir, wxFile::write, wxFONTENCODING_UTF8);
 	if (file1.IsOpened())
 	{
@@ -608,7 +654,14 @@ void WaitSample::SaveFileSamples() {
 		file1.Close();
 	}
 }
-
+bool WaitSample::RemoveFiles() {
+	bool rez = false;
+	if (wxFileExists(m_file_cache_sql)) {
+		wxRemoveFile(m_file_cache_sql);
+		rez = true;
+	}
+	return rez;
+}
 void WaitSample::AddSample(int pid, bool isXidTransation, wxString& btype, const wxString& sample) {
 	//PidWait pw(pid, basetime);;
 	// поиск
