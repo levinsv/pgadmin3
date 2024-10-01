@@ -22,6 +22,7 @@ region: \"IO:WALRead\", #ff6a00;\n\
 region: \"IO\", #2132bd;\n\
 region: \"IPC\", #908b3b;\n\
 region: \"Lock\", #ff0000;\n\
+region: \"Activity\", #9fde72;\n\
 region: \"Client\", #0b6222;\n\
 region: \"BufferPin\", #a4a3a0;\n\
 region: \"Client:ClientWrite\", #76bb88;\n\
@@ -61,6 +62,9 @@ region: \"Timeout:PgSleep\", #6ce4c6;\n\
 		if (w == "Timeout:PgSleep" ||
 			w == "Timeout:VacuumDelay" ||
 			w == "IPC:ArchiveCommand" ||
+			w == "Activity:RecoveryWalStream" ||
+			w == "Activity:WalReceiverMain" ||
+			w == "Activity:WalSenderMain" ||
 			w == "Timeout:PgSleep")
 			en = false; // disable for example
 		e["enable"] = en;
@@ -512,7 +516,6 @@ void WaitSample::LoadFileSamples() {
 			wxString l = tk.GetNextToken();
 			if (l.IsEmpty()) continue;
 			if (nl == 0) {
-				long long t;
 				wxSscanf(l, "%lld", &basetime);
 				nl++;
 				continue;

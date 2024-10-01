@@ -155,13 +155,13 @@ public:
             txtSize.SetHeight(txtSize.GetHeight() * lines + 1 * lines);
         }
         else {
-                #ifdef __WXGTK__
-                    txtSize.SetHeight(txtSize.GetHeight() + 3);
-                #else
-                    txtSize.SetHeight(-1);
-                #endif
+#ifdef __WXGTK__
+            txtSize.SetHeight(txtSize.GetHeight() + 3);
+#else
+            txtSize.SetHeight(-1);
+#endif
 
-            
+
         }
         if (col == 2) txtSize.SetWidth(-1);
         else
@@ -283,7 +283,7 @@ public:
     {
         return false;
     }
-    unsigned GetRow(const wxDataViewItem& item) const wxOVERRIDE { return (unsigned long)item.GetID()-1; } // 0 row = header 
+    unsigned GetRow(const wxDataViewItem& item) const wxOVERRIDE { return (unsigned long)item.GetID() - 1; } // 0 row = header 
     unsigned int GetColumnCount() const wxOVERRIDE { return 0; }
     wxString GetColumnType(unsigned int) const wxOVERRIDE { return ""; }
 
@@ -307,7 +307,7 @@ class SimpleTransientPopup : public wxFrame
 public:
     friend class wxTopActivity;
     friend class topDataViewCtrl;
-    SimpleTransientPopup(wxWindow* parent, bool scrolled, wxTopActivity* small_ctl, wxPoint p,wxString title);
+    SimpleTransientPopup(wxWindow* parent, bool scrolled, wxTopActivity* small_ctl, wxPoint p, wxString title);
     virtual ~SimpleTransientPopup();
 
     // wxPopupTransientWindow virtual methods are all overridden to log them
@@ -459,9 +459,9 @@ public:
             if (col == 0) { //pid
                 MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
                 key3 k = m->GetRowValue(row);
-                if (k.pid>0) s_pid_HIGHLIGH = k.pid; 
-                  //  else
-                  //      s_pid_HIGHLIGH = -1;
+                if (k.pid > 0) s_pid_HIGHLIGH = k.pid;
+                //  else
+                //      s_pid_HIGHLIGH = -1;
             }
             });
 
@@ -490,63 +490,76 @@ public:
                     m_win_s = NULL;
                 }
 
-            } else
-            if (event.GetKeyCode() == WXK_F3) {
-                //GetParent()->Close(true);
-                fnd = true;
-
-            } else
-            if (event.GetKeyCode() == WXK_BACK) {
-
-                if (l > 0) m_find.RemoveLast();
-                //m_win_s->SetValue(m_find);
-                fnd = true;
-            } else
-            if (wxIsprint(charcode))
-            {
-                //txt->EmulateKeyPress(event);
-                m_find += charcode;
-                
-                fnd = true;
             }
+            else
+                if (event.GetKeyCode() == WXK_F3) {
+                    //GetParent()->Close(true);
+                    fnd = true;
+
+                }
+                else
+                    if (event.GetKeyCode() == WXK_BACK) {
+
+                        if (l > 0) m_find.RemoveLast();
+                        //m_win_s->SetValue(m_find);
+                        fnd = true;
+                    }
+                    else
+                        if (wxIsprint(charcode))
+                        {
+                            //txt->EmulateKeyPress(event);
+                            m_find += charcode;
+
+                            fnd = true;
+                        }
             //else
             //    event.Skip();
-            if (fnd && m_find.length() > 0) {
-                if (m_win_s == NULL) {
-                    wxWindow* t = this->GenericGetHeader();
+            if (fnd) {
+                if (m_win_s == NULL && m_find.length() > 0) {
                     wxRect r;
-                    r.width=GetColumn(0)->GetWidth();
-                    r.height = t->GetSize().GetHeight();
-                    m_win_s = new wxTextCtrl(t->GetParent(), wxID_ANY, "",
+                    r.width = GetColumn(0)->GetWidth();
+#ifdef __WXGTK__
+                    r.height = GTKGetUniformRowHeight();
+#endif
+                    wxWindow* t = this;
+#ifdef WIN32
+                    //wxWindow* t = this->GenericGetHeader();
+                    r.height = this->GenericGetHeader()->GetSize().GetHeight();
+#else
+#endif
+                    m_win_s = new wxTextCtrl(t, wxID_ANY, "",
                         r.GetPosition(),
                         r.GetSize(),
                         wxTE_PROCESS_ENTER
                         | wxTE_READONLY
                     );
-                    
+
                     m_win_s->SetInsertionPointEnd();
                 }
                 if (m_win_s != NULL) {
                     m_win_s->SetValue(m_find); m_win_s->Refresh();
                 }
-                MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
-                wxDataViewItem item(GetCurrentItem());
-                long row = (long)item.GetID();
-                if (!(row < m->GetCount())) row = 0;
+                if (m_find.length() > 0) {
 
-                while (row != -1 && row < m->GetCount()) {
-                    key3 k = m->GetRowValue(row);
+                    MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
+                    wxDataViewItem item(GetCurrentItem());
+                    long row = (long)item.GetID();
+                    if (!(row < m->GetCount())) row = 0;
 
-                    wxString v=wxString::Format("%d,%llx",k.pid,k.qid);
-                   // m->GetValueByRow(v, row, 0);
-                    bool isfind = v.Contains(m_find);
-                    if (isfind) {
-                        wxDataViewItem it = GetItemByRow(row);
-                        SetCurrentItem(it);
-                        EnsureVisible(it);
-                        return;
+                    while (row != -1 && row < m->GetCount()) {
+                        key3 k = m->GetRowValue(row);
+
+                        wxString v = wxString::Format("%d,%llx", k.pid, k.qid);
+                        // m->GetValueByRow(v, row, 0);
+                        bool isfind = v.Contains(m_find);
+                        if (isfind) {
+                            wxDataViewItem it = wxDataViewItem(wxUIntToPtr(row + 1));
+                            SetCurrentItem(it);
+                            EnsureVisible(it);
+                            return;
+                        }
+                        row++;
                     }
-                    row++;
                 }
                 return;
             }
@@ -600,20 +613,21 @@ public:
                         }
 
                     }
-                    else if (column && column->GetModelColumn() == 0 ) {
+                    else if (column && column->GetModelColumn() == 0) {
                         // PID
                         MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
-                        key3 k=m->GetRowValue(row);
+                        key3 k = m->GetRowValue(row);
                         if (k.sum > 0) {
                             if (((lastcol != ncol) || (lastrow != row))) {
                                 wxString s = w->GetBackendTypeName(k.sum);
                                 GetMainWindow()->SetToolTip(s);
                                 lastrow = row;
                                 lastcol = ncol;
-                                
+
                             }
                         }
-                        else { GetMainWindow()->UnsetToolTip(); lastcol = -1;
+                        else {
+                            GetMainWindow()->UnsetToolTip(); lastcol = -1;
                         }
                     }
                     else
@@ -654,7 +668,7 @@ private:
     bool ignoreBG = false;
     bool ispidfirst = true;
     wxString m_find;
-    wxTextCtrl *m_win_s;
+    wxTextCtrl* m_win_s;
     wxTopActivity* top;
     WaitSample* w;
 };
