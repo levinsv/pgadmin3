@@ -151,6 +151,7 @@
 										<content>
 											<item>DDL COMMAND START</item>
 											<item>DDL COMMAND END</item>
+                                                                                        <item>LOGIN</item>
 											<item>SQL DROP</item>
 										</content>
 										<size>333,38</size>

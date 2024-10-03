@@ -505,7 +505,7 @@ wxString dlgColumn::GetSql()
 				sql += wxT("ALTER TABLE ") + table->GetQuotedFullIdentifier()
 				       +  wxT("\n   ALTER COLUMN ") + qtIdent(name);
 				if (txtAttstattarget->GetValue().IsEmpty())
-					sql += wxT(" SET STATISTICS -1");
+					if (connection->BackendMinimumVersion(17, 0)) sql += wxT(" SET STATISTICS DEFAULT"); else sql += wxT(" SET STATISTICS -1");
 				else
 					sql += wxT(" SET STATISTICS ") + txtAttstattarget->GetValue();
 				sql += wxT(";\n");

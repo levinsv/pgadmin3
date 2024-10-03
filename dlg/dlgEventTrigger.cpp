@@ -54,7 +54,7 @@ wxString dlgEventTrigger::GetSql()
 {
 	wxString sql = wxEmptyString;
 	wxString name = GetName();
-
+	wxString tmp;
 	if (eventTrigger)
 	{
 		if (!GetName().IsEmpty() && GetName() != eventTrigger->GetName())
@@ -67,9 +67,11 @@ wxString dlgEventTrigger::GetSql()
 			sql += wxT("ALTER EVENT TRIGGER ") + qtIdent(name) + ((rdbEnableStatus->GetSelection() == 1) ? wxT(" ENABLE REPLICA ;\n\n") : wxT(" ENABLE ALWAYS ;\n\n"));
 		else if (!chkEnable->GetValue())
 			sql += wxT("ALTER EVENT TRIGGER ") + qtIdent(name) + wxT(" DISABLE ;\n\n");
+		tmp = eventTrigger->GetEventName().Lower();
+		tmp.Replace("_", " ");
 	}
-	wxString tmp = eventTrigger->GetEventName().Lower();
-	tmp.Replace("_", " ");
+	
+	
 
 	if (!eventTrigger ||
 	        (
@@ -88,6 +90,8 @@ wxString dlgEventTrigger::GetSql()
 			sql += wxT(" DDL_COMMAND_START ");
 		else if (rdbEvents->GetSelection() == 1)
 			sql += wxT(" DDL_COMMAND_END ");
+		else if (rdbEvents->GetSelection() == 2)
+			sql += wxT(" LOGIN");
 		else
 			sql += wxT(" SQL_DROP ");
 
@@ -150,8 +154,10 @@ int dlgEventTrigger::Go(bool modal)
 			rdbEvents->SetSelection(0);
 		else if(eventTrigger->GetEventName().Lower() == wxT("ddl_command_end"))
 			rdbEvents->SetSelection(1);
-		else
+		else if (eventTrigger->GetEventName().Lower() == wxT("login"))
 			rdbEvents->SetSelection(2);
+		else
+			rdbEvents->SetSelection(3);
 
 		cbFunction->SetValue(eventTrigger->GetFunction());
 		cbOwner->SetValue(eventTrigger->GetOwner());
