@@ -2027,8 +2027,8 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent& event)
 						)isClientReadTransaction = true;
 
 					WS.AddSample(pid, isClientReadTransaction, backend_type, dataSet1->GetVal("wait_sample"));
-					wxULongLong qid = dataSet1->GetLongLong("query_id");
-					WS.AddQuery(qid.GetValue(), qry);
+					//wxULongLong qid = dataSet1->GetLongLong("query_id");
+					//WS.AddQuery(qid.GetValue(), qry);
 				}
 				statusList->SetItem(row, colpos++, blockedby);
 				if (!slinfo.IsEmpty()) {

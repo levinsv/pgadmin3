@@ -681,9 +681,11 @@ void wxTopActivity::render(wxDC& dc)
         /// Detail panel
         auto dt = xAxis[selIdx];
         int endt = ws->d_time(dt.GetValue().GetValue());
+        //if (endt < 0) endt = m_agg_int;
         //endt -= m_agg_int;
         std::vector<Sample>* smp = ws->GetSamples();
-        int start_t = ws->GetHomeInterval(m_RightTime, m_agg_int) - selIdx * m_agg_int;
+        //int start_t = ws->GetHomeInterval(m_RightTime, m_agg_int) - selIdx * m_agg_int;
+        int start_t = endt - m_agg_int;
         int ps = ws->getPositionByTime(start_t);
 
         Sample sa;
@@ -1298,6 +1300,7 @@ END_EVENT_TABLE()
 
 bool topDataViewCtrl::CalcRowsDataView(bool force, bool IsPidFirst) {
     int sel_left = top->getTimeSelRange(true);
+    agg = top->getAggregateInterval();
     int sel_right = top->getTimeSelRange(false);
     if (sel_left > -1 && sel_right > -1) {
         // set select range

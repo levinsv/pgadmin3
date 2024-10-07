@@ -588,12 +588,18 @@ void ctlTreeJSON::RefreshImageList() {
 
 		dc.DrawRectangle(0, 0, w, h);
 		images.push_back(wxBitmapBundle(bmp));
-		SetItemImage(item, n);
-		wxString s = GetItemText(item);
+		//SetItemImage(item, n);
+		//wxString s = GetItemText(item);
 		n++;
 	}
 	if (images.size() > 0) {
 		SetImages(images);
+		n = 0;
+		for (const auto& [item, color] : colors) {
+			SetItemImage(item, n);
+			n++;
+		}
+
 	}
 }
 void ctlTreeJSON::LoadInTree(wxJSONValue& jval, const wxTreeItemId& idParent) {

@@ -235,7 +235,7 @@ int WaitSample::GetHomeInterval(int timeEnd, int AggrigateInterval) {
 	//wxDateTime t(l);
 }
 int WaitSample::getPositionByTime(int time) {
-
+	if (time < 0) time = 0;
 	int max = smp.size() - 1;
 	int min = 0;
 	int i = (max - min) / 2;
@@ -422,7 +422,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 		}
 		else {
 			// new interval
-			wxLongLong l(basetime + homeInt);
+			wxLongLong l(basetime + homeInt+ groupInterval);
 			wxDateTime t(l);
 			xAxisValue.push_back(t);
 			std::vector<int> itog(summary.size());

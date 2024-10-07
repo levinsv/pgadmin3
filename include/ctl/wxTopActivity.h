@@ -392,6 +392,7 @@ class wxTopActivity : public wxControl
 public:
     wxTopActivity(wxWindow* parent, WaitSample* WS, wxSize sz);
     wxSize DoGetBestClientSize();
+    int getAggregateInterval() { return m_agg_int; };
     void setViewRange(int m_aggregate_interval, int RightTime);
     WaitSample* getViewRange(int& m_aggregate_interval, int& RightTime);
     void paintEvent(wxPaintEvent& evt);
