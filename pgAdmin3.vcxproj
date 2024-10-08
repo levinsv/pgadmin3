@@ -379,6 +379,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -499,6 +500,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -619,6 +621,7 @@
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -767,6 +770,11 @@
     <ClCompile Include="ctl\ctlGitPanel.cpp" />
     <ClCompile Include="ctl\ctlListView.cpp" />
     <ClCompile Include="ctl\ctlMenuToolbar.cpp" />
+    <ClCompile Include="ctl\ctlNavigatePanel.cpp" />
+    <ClCompile Include="ctl\wxTopActivity.cpp" />
+    <ClCompile Include="ctl\ctlTreeJSON.cpp" />
+    <ClCompile Include="ctl\xh_styledtext.cpp" />
+    <ClCompile Include="ctl\ctlStyledText.cpp" />
     <ClCompile Include="ctl\ctlSeclabelPanel.cpp" />
     <ClCompile Include="ctl\ctlSecurityPanel.cpp" />
     <ClCompile Include="ctl\ctlSQLBox.cpp" />
@@ -1044,8 +1052,10 @@
       </PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="utils\factory.cpp" />
+    <ClCompile Include="utils\dlgTransformText.cpp" />
     <ClCompile Include="utils\favourites.cpp" />
     <ClCompile Include="utils\json\jsonreader.cpp" />
+    <ClCompile Include="utils\WaitSample.cpp" />
     <ClCompile Include="utils\json\jsonval.cpp" />
     <ClCompile Include="utils\json\jsonwriter.cpp" />
     <ClCompile Include="utils\log\MyDataViewCtrl.cpp" />
@@ -1596,6 +1606,8 @@
     <ClInclude Include="include\schema\pgSubscription.h" />
     <ClInclude Include="include\svnversion.h" />
     <ClInclude Include="include\utils\align\AlignWrap.h" />
+    <ClInclude Include="include\utils\WaitSample.h" />
+    <ClInclude Include="include\utils\dlgTransformText.h" />
     <ClInclude Include="include\utils\align\Item.h" />
     <ClInclude Include="include\utils\json\jsonreader.h" />
     <ClInclude Include="include\utils\json\jsonval.h" />
@@ -1631,6 +1643,11 @@
     <ClInclude Include="include\ctl\ctlSeclabelPanel.h" />
     <ClInclude Include="include\ctl\ctlSecurityPanel.h" />
     <ClInclude Include="include\ctl\ctlSQLBox.h" />
+    <ClInclude Include="include\ctl\ctlNavigatePanel.h" />
+    <ClInclude Include="include\ctl\ctlStyledText.h" />
+    <ClInclude Include="include\ctl\ctlTreeJSON.h" />
+    <ClInclude Include="include\ctl\wxTopActivity.h" />
+    <ClInclude Include="include\ctl\xh_styledtext.h" />
     <ClInclude Include="include\ctl\ctlSQLGrid.h" />
     <ClInclude Include="include\ctl\ctlSQLResult.h" />
     <ClInclude Include="include\ctl\ctlTree.h" />

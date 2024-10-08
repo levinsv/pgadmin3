@@ -1678,6 +1678,28 @@
     <ClCompile Include="frm\frmAwr.cpp">
       <Filter>frm</Filter>
     </ClCompile>
+    <ClCompile Include="utils\WaitSample.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ctl\ctlNavigatePanel.cpp">
+      <Filter>include</Filter>
+    </ClCompile>
+    <ClCompile Include="ctl\wxTopActivity.cpp">
+      <Filter>ctl</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\dlgTransformText.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ctl\ctlStyledText.cpp">
+      <Filter>ctl</Filter>
+    </ClCompile>
+    <ClCompile Include="ctl\xh_styledtext.cpp">
+      <Filter>ctl</Filter>
+    </ClCompile>
+    <ClCompile Include="ctl\ctlTreeJSON.cpp">
+      <Filter>ctl</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\FormatterSQL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -3607,6 +3629,30 @@
     <ClInclude Include="include\frm\frmAwr.h">
       <Filter>include\frm</Filter>
     </ClInclude>
+    <ClInclude Include="include\utils\WaitSample.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\ctlNavigatePanel.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\wxTopActivity.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\dlgTransformText.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\ctlStyledText.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\xh_styledtext.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\ctlTreeJSON.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\FormatterSQL.h" />
+    <ClInclude Include="include\utils\popuphelp.h" />
+    <ClInclude Include="include\utils\FunctionPGHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <png2c Include="include\images\aggregate-sm.png">
