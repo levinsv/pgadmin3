@@ -848,7 +848,7 @@ void frmRestore::OnEndProcess(wxProcessEvent &ev)
 	}
 	else
 	{
-		wxRemoveFile(restoreTOCFilename);
+		if (!restoreTOCFilename.IsEmpty()) wxRemoveFile(restoreTOCFilename);
 	}
 }
 
