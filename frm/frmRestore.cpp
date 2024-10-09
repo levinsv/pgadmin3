@@ -689,6 +689,35 @@ void frmRestore::OnEndProcess(wxProcessEvent &ev)
 				// we'll keep the next column for the object's type
 				type = col.GetNextToken();
 			}
+			else if (type == wxT("FOREIGN"))
+			{
+				// type for FOREIGN TABLE
+				// 
+				type = type + " " + col.GetNextToken();
+			}
+			else if (type == wxT("MATERIALIZED"))
+			{
+				// type for MATERIALIZED VIEW
+				// 
+				type = type + " " + col.GetNextToken();
+				if (str.Find("MATERIALIZED VIEW DATA") > 0) {
+					//MATERIALIZED VIEW DATA
+					type = type + " " + col.GetNextToken();
+				}
+			}
+			else if (type == wxT("USER"))
+			{
+				// type for USER MAPPING
+				// 
+				type = type + " " + col.GetNextToken();
+			}
+			else if (type == wxT("INDEX"))
+			{
+				// type for INDEX ATTACH
+				// 
+				if (str.Find("INDEX ATTACH") > 0)
+					type = type + " " + col.GetNextToken();
+			}
 			else if (type == wxT("TABLE"))
 			{
 				if (col.CountTokens() == 4)
@@ -703,12 +732,8 @@ void frmRestore::OnEndProcess(wxProcessEvent &ev)
 				// We do not expect the 'DEFAULT <schema> <type> <name>' pattern here.
 				if (col.CountTokens() != 3)
 				{
-					type += wxT(" ") + col.GetNextToken();
-					if (type != wxT("DEFAULT ACL"))
-					{
-						wxLogError(wxString::Format(_("Unexpected DEFAULT statement found: '%s'!"), str.c_str()));
-						continue;
-					}
+					if (str.Find("DEFAULT ACL") > 0)
+						type += wxT(" ") + col.GetNextToken();
 				}
 			}
 
@@ -827,6 +852,12 @@ void frmRestore::OnEndProcess(wxProcessEvent &ev)
 					{
 						currentSchema = schema;
 						currentSchemaNode = schemaNode;
+					}
+					else if (type == wxT("ACL") && schema != "-") {
+						currentSchemaNode = root;
+					}
+					else if (schema == "-"|| schema == "public") {
+						currentSchemaNode = root;
 					}
 					// if we are treating a comment, we use the schema of its
 					// object (ie, the previous line)
