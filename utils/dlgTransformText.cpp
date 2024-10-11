@@ -359,11 +359,12 @@ void dlgTransformText::AppendTextControl(ctlStyledText* ctrl, const wxString app
 			limitChar -= appendtext.length();
 		else
 			isLimit = true;
+		if (!isLimit) ctrl->AppendText(appendtext);
 	}
 	else {
 		strResult.Append(appendtext);
+		ctrl->AppendText(appendtext);
 	}
-	if (!isLimit) ctrl->AppendText(appendtext);
 }
 wxJSONValue dlgTransformText::FillConfig() {
 	wxString s;

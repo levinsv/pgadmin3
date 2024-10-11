@@ -718,6 +718,22 @@ void frmRestore::OnEndProcess(wxProcessEvent &ev)
 				if (str.Find("INDEX ATTACH") > 0)
 					type = type + " " + col.GetNextToken();
 			}
+			else if (type == wxT("PUBLICATION"))
+			{
+				// type for 
+				// 
+				if (str.Find("PUBLICATION TABLES IN SCHEMA") > 0)
+					type = type + " " + col.GetNextToken() + " " + col.GetNextToken() + " " + col.GetNextToken();
+				else if (str.Find("PUBLICATION TABLE") > 0)
+					type = type + " " + col.GetNextToken();
+			}
+			else if (type == wxT("EVENT"))
+			{
+				// type for EVENT TRIGGER
+				// 
+				if (str.Find("EVENT TRIGGER") > 0)
+					type = type + " " + col.GetNextToken();
+			}
 			else if (type == wxT("TABLE"))
 			{
 				if (col.CountTokens() == 4)
