@@ -888,11 +888,13 @@ wxSize FormatterSQL::best_sizeAndDraw(wxDC& dc, wxPoint& pos, view_item& vi, int
     bool draw = true;
     if (mode == 2) {
         draw = false;
-        pos.x = vi.x;
-        pos.y = vi.y;
+        if (pos.x == -1) {
+            pos.x = vi.x;
+            pos.y = vi.y;
+        }
     }
     dc.SetTextForeground(*wxBLACK);
-    dc.SetFont(f.GetBaseFont());
+   // dc.SetFont(f.GetBaseFont());
     if (vi.type == keyword) {
         wxDCFontChanger nfont(dc, f.Bold());
 
@@ -1259,7 +1261,7 @@ void FormatterSQL::Formating(wxDC& dc, wxRect re, bool isTest) {
     max_exp_bracet_width = 200;
     pad = 16;
     casepad = 8;
-    wxPoint p(0, 0);
+    wxPoint p(rect.x + 1, 0);
     // calc size items
     for (auto& vv : items) {
         wxSize sz = best_sizeAndDraw(dc, p, vv, 0);
@@ -1269,10 +1271,29 @@ void FormatterSQL::Formating(wxDC& dc, wxRect re, bool isTest) {
     align_level(0, 0, rect.x, rect.y, 0);
     dc.SetBrush(*wxWHITE_BRUSH);
     dc.DrawRectangle(re);
+    wxSize sz;
+    int xmax = rect.x + rect.width;
+    int deltax = 0,deltay=0;
     for (auto& vv : items) {
         p.x = -1;
         if (vv.type == unknown) continue;
-        wxSize sz = best_sizeAndDraw(dc, p, vv, 2);
+        if (vv.x + vv.width > xmax) {
+            if (deltax == 0 || (rect.x + vv.width + deltax > xmax)) { deltax = 1; deltay += vv.height; }
+        }
+        else 
+            deltax = 0;
+        if (deltay != 0) {
+            p.y = vv.y+deltay;
+            if (deltax == 0)
+                p.x = vv.x;
+            else
+                p.x = rect.x + deltax;
+        }
+        sz = best_sizeAndDraw(dc, p, vv, 2);
+        if (vv.x + vv.width > xmax && deltax>0) {
+            deltax += vv.width;
+            
+        }
     }
 }
 // re - (0,0,width simbol max,height max)

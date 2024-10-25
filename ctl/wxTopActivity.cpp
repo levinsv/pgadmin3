@@ -766,6 +766,8 @@ void wxTopActivity::render(wxDC& dc)
         std::vector<int> map_sum_all = sort_vec_map(sum_all, itog);
         int period = ws->getPeriod();
         int total = itog;
+        float limit = 0.1;
+        if (m_agg_int >= 10 * 60000) limit = 1.0;
         if (total != 0) {
             {
                 wxDCFontChanger nfont(dc, dc.GetFont());
@@ -828,7 +830,7 @@ void wxTopActivity::render(wxDC& dc)
                                 if (bt >= 0) txt = ws->GetBackendTypeNameShort(bt);
                                 w_sum = v;
                                 float f = (float)w_sum / 1000;
-                                if (f < 0.1) continue;
+                                if (f < limit) continue;
                                 if (!bgproc.IsEmpty()) bgproc += ',';
                                 bgproc += wxString::Format("%s(%.1fs)", txt, (float)f);
                                 //title_sz = dc.GetTextExtent(txt + pr);
@@ -876,7 +878,7 @@ void wxTopActivity::render(wxDC& dc)
                                     wxString txt;
                                     w_sum = v;
                                     float fsek = (float)w_sum / 1000;
-                                    if (fsek < 0.1) continue;
+                                    if (fsek < limit) continue;
                                     unsigned long long ull = k.qid;
                                     int h = ull >> 32;
                                     int l = ull & 0xFFFFFFFF;

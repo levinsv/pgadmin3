@@ -627,9 +627,30 @@ public:
 
                             }
                         }
-                        else {
+                        else
+                           {
                             GetMainWindow()->UnsetToolTip(); lastcol = -1;
                         }
+                    }
+                    else if (column && column->GetModelColumn() == 1) {
+                        //qid
+                        MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
+                        key3 k = m->GetRowValue(row);
+                        if (k.qid != 0) {
+                            if (((lastcol != ncol) || (lastrow != row))) {
+                                wxString s = w->GetQueryByQid(k.qid);
+                                if (s.IsEmpty()) s = "not found sql text";
+                                GetMainWindow()->SetToolTip(s);
+                                lastrow = row;
+                                lastcol = ncol;
+
+                            }
+                        }
+                        else
+                        {
+                            GetMainWindow()->UnsetToolTip(); lastcol = -1; lastrow = -1;
+                        }
+
                     }
                     else
                     {
@@ -641,7 +662,7 @@ public:
             else
             {
                 GetMainWindow()->UnsetToolTip();
-                lastcol = -1;
+                lastcol = -1; ; lastrow = -1;
             }
 
             });
