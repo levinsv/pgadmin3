@@ -204,6 +204,108 @@ wxString pgRole::GetOptStr(wxString& rolename) {
 	if (!str.IsEmpty()) str = " WITH "+str;
 	return str;
 }
+
+wxString pgRole::FillOwnedGrant(ctlTree* browser, const wxString& query)
+{
+	pgCollection* databases = 0;
+
+	wxCookieType cookie;
+	wxTreeItemId item = browser->GetFirstChild(GetServer()->GetId(), cookie);
+	while (item)
+	{
+		databases = (pgCollection*)browser->GetObject(item);
+		if (databases && databases->GetMetaType() == PGM_DATABASE)
+			break;
+		else
+			databases = 0;
+
+		item = browser->GetNextChild(GetServer()->GetId(), cookie);
+	}
+	wxArrayString dblist = GetDbList(NULL);
+	wxString sql;
+	size_t i;
+	for (i = 0; i < dblist.GetCount(); i++)
+	{
+		wxString dbname = dblist.Item(i);
+		pgConn* conn = 0;
+		pgConn* tmpConn = 0;
+
+		if (GetServer()->GetDatabaseName() == dbname)
+			conn = GetServer()->GetConnection();
+		else
+		{
+			item = browser->GetFirstChild(databases->GetId(), cookie);
+			while (item)
+			{
+				pgDatabase* db = (pgDatabase*)browser->GetObject(item);
+				if (db && db->GetMetaType() == PGM_DATABASE && db->GetName() == dbname)
+				{
+					if (db->GetConnected())
+						conn = db->GetConnection();
+					break;
+				}
+				item = browser->GetNextChild(databases->GetId(), cookie);
+			}
+		}
+		if (conn && conn->GetStatus() != PGCONN_OK)
+			conn = 0;
+
+		if (!conn)
+		{
+			// only connect db used
+			continue;
+			//tmpConn = GetServer()->CreateConn(dbname);
+			//conn = tmpConn;
+		}
+
+		if (conn)
+		{
+			pgSet* roles = conn->ExecuteSet(query);
+
+			if (roles)
+			{
+				//GRANT SELECT ON TABLE public.v_b TO okomgr;
+				wxString prev = wxEmptyString;
+				wxString addgrant = wxEmptyString;
+				while (!roles->Eof())
+				{
+					bool ad = true;
+					if (wxT("tables") == roles->GetVal(wxT("type"))) {
+						addgrant += wxT("\nGRANT ") + roles->GetVal(wxT("priv")) + wxT(" ON TABLE ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.')) + wxT(".") + qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
+							+ wxT(" TO ") + qtIdent(GetName());
+					}
+					else if (wxT("routine") == roles->GetVal(wxT("type"))) {
+						addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.')) + wxT(".") + qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
+							+ wxT(" TO ") + qtIdent(GetName());
+					}
+					else if (wxT("schema") == roles->GetVal(wxT("type"))) {
+						addgrant += wxT("\nGRANT USAGE ON SCHEMA ") + qtIdent(roles->GetVal(wxT("objname")))
+							+ wxT(" TO ") + qtIdent(GetName());
+					}
+					else {
+						ad = false;
+					}
+					if (ad) addgrant += wxT(";");
+					roles->MoveNext();
+				}
+				if (!addgrant.IsEmpty()) {
+					sql += "\n--------------\n";
+					sql += "--- DATABASE : " + dbname + "\n";
+					sql += "--------------";
+
+					sql += wxT("\n") + addgrant + wxT("\n");
+				}
+				delete roles;
+			}
+		}
+
+		if (tmpConn)
+			delete tmpConn;
+	}
+	return sql;
+}
+
+
 wxString pgRole::GetSql(ctlTree *browser)
 {
 	if (sql.IsNull())
@@ -359,36 +461,9 @@ wxT("    select 'object'::text as type, object_name||'( '||object_type||')' as o
 wxT("    from information_schema.role_usage_grants\n")
 wxT("    where object_type <> 'COLLATION' and object_type <> 'DOMAIN'\n")
 wxT(") aa where aa.grantee='")+GetName()+("' group by type,objname,grantee order by 1,2;\n");
-	pgSet *roles = GetConnection()->ExecuteSet(query);
-
-	if (roles)
-	{
-		//GRANT SELECT ON TABLE public.v_b TO okomgr;
-		wxString prev=wxEmptyString;
-		wxString addgrant=wxEmptyString;
-		while (!roles->Eof())
-		{
-			bool ad = true;
-			if (wxT("tables")==roles->GetVal(wxT("type")) ) {
-				addgrant += wxT("\nGRANT ") + roles->GetVal(wxT("priv")) + wxT(" ON TABLE ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
-			       +  wxT(" TO ") + qtIdent(GetName());
-			} else if (wxT("routine")==roles->GetVal(wxT("type")) ) {
-					addgrant += wxT("\nGRANT EXECUTE ON FUNCTION ") + qtIdent(roles->GetVal(wxT("objname")).BeforeFirst('.'))+wxT(".")+qtIdent(roles->GetVal(wxT("objname")).AfterFirst('.'))
-						+  wxT(" TO ") + qtIdent(GetName());
-				} else if (wxT("schema")==roles->GetVal(wxT("type")) ) {
-					addgrant += wxT("\nGRANT USAGE ON SCHEMA ") + qtIdent(roles->GetVal(wxT("objname")))
-						+  wxT(" TO ") + qtIdent(GetName());
-				}
-				else {
-				ad = false;
-				}
-			if (ad) addgrant += wxT(";");
-			roles->MoveNext();
-		}
-		sql += wxT("\n")+ addgrant + wxT("\n");
-		delete roles;
-	}
-
+	//pgSet *roles = GetConnection()->ExecuteSet(query);
+	
+	sql+=FillOwnedGrant(winMain->GetBrowser(),query );
 
 		if (GetConnection()->BackendMinimumVersion(9, 2))
 			sql += GetSeqLabelsSql();
@@ -396,7 +471,40 @@ wxT(") aa where aa.grantee='")+GetName()+("' group by type,objname,grantee order
 	return sql;
 }
 
+const wxArrayString pgRole::GetDbList(ctlListView* referencedBy)
+{
+	wxArrayString dblist;
 
+	pgSet* set;
+	set = GetConnection()->ExecuteSet(
+		wxT("SELECT 'd' as type, datname, datallowconn, datdba\n")
+		wxT("  FROM pg_database db\n")
+		wxT("UNION\n")
+		wxT("SELECT 'M', spcname, null, null\n")
+		wxT("  FROM pg_tablespace where spcowner=") + GetOidStr() + wxT("\n")
+		wxT(" ORDER BY 1, 2"));
+
+	if (set)
+	{
+		while (!set->Eof())
+		{
+			wxString name = set->GetVal(wxT("datname"));
+			if (set->GetVal(wxT("type")) == wxT("d"))
+			{
+				if (set->GetBool(wxT("datallowconn")))
+					dblist.Add(name);
+				if (GetOidStr() == set->GetVal(wxT("datdba")))
+					if (referencedBy) referencedBy->AppendItem(databaseFactory.GetIconId(), _("Database"), name);
+			}
+			else
+				if (referencedBy) referencedBy->AppendItem(tablespaceFactory.GetIconId(), _("Tablespace"), wxEmptyString, name);
+
+			set->MoveNext();
+		}
+		delete set;
+	}
+	return dblist;
+}
 
 void pgRole::ShowDependents(frmMain *form, ctlListView *referencedBy, const wxString &where)
 {
@@ -409,37 +517,7 @@ void pgRole::ShowDependents(frmMain *form, ctlListView *referencedBy, const wxSt
 
 	wxString sysoid = NumToStr(GetConnection()->GetLastSystemOID());
 
-	wxArrayString dblist;
-
-	pgSet *set;
-	set = GetConnection()->ExecuteSet(
-	          wxT("SELECT 'd' as type, datname, datallowconn, datdba\n")
-	          wxT("  FROM pg_database db\n")
-	          wxT("UNION\n")
-	          wxT("SELECT 'M', spcname, null, null\n")
-	          wxT("  FROM pg_tablespace where spcowner=") + GetOidStr() + wxT("\n")
-	          wxT(" ORDER BY 1, 2"));
-
-	if (set)
-	{
-		while (!set->Eof())
-		{
-			wxString name = set->GetVal(wxT("datname"));
-			if (set->GetVal(wxT("type")) == wxT("d"))
-			{
-				if (set->GetBool(wxT("datallowconn")))
-					dblist.Add(name);
-				if (GetOidStr() == set->GetVal(wxT("datdba")))
-					referencedBy->AppendItem(databaseFactory.GetIconId(), _("Database"), name);
-			}
-			else
-				referencedBy->AppendItem(tablespaceFactory.GetIconId(), _("Tablespace"), wxEmptyString, name);
-
-			set->MoveNext();
-		}
-		delete set;
-	}
-
+	wxArrayString dblist=GetDbList(referencedBy);
 	// We ignore classid and refclassid here because we hope that oids are unique
 	// across system tables.
 	// Strictly speaking, we'd need to join pg_shdepend to each subquery
@@ -477,7 +555,7 @@ void pgRole::ShowDependents(frmMain *form, ctlListView *referencedBy, const wxSt
 	          wxT(" WHERE op.oid IN ") + depOids + wxT(" AND op.oid > ") + sysoid + wxT("\n")
 	          wxT(" ORDER BY 1,2,3"));
 
-	form->EndMsg(set != 0);
+	form->EndMsg(true);
 }
 
 

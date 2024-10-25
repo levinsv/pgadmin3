@@ -165,7 +165,8 @@ public:
 	// Tree object creation
 	void ShowTreeDetail(ctlTree *browser, frmMain *form = 0, ctlListView *properties = 0, ctlSQLBox *sqlPane = 0);
 	void ShowDependents(frmMain *form, ctlListView *referencedBy, const wxString &where);
-	
+	const wxArrayString GetDbList(ctlListView* referencedBy);
+	wxString FillOwnedGrant(ctlTree* browser, const wxString& query);
 	static wxString GetOptStr(wxString& rolename);
 	// virtual methods
 	wxString GetSql(ctlTree *browser);
