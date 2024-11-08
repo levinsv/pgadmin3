@@ -117,6 +117,14 @@ wxString pgForeignTable::GetSql(ctlTree *browser)
 
 		if (GetConnection()->BackendMinimumVersion(9, 1))
 			sql += GetSeqLabelsSql();
+		if (GetConnection()->BackendMinimumVersion(8, 4))
+		{
+			wxString g = GetGrant(wxT("arwdDxt"));
+			g.Replace("FOREIGN ", "");
+			sql += g;
+		}
+		
+
 	}
 
 	return sql;
@@ -184,6 +192,7 @@ void pgForeignTable::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView
 		properties->AppendItem(_("Name"), GetName());
 		properties->AppendItem(_("OID"), GetOid());
 		properties->AppendItem(_("Owner"), GetOwner());
+		properties->AppendItem(_("ACL"), GetAcl());
 		properties->AppendItem(_("Server"), GetForeignServer());
 		properties->AppendItem(_("Columns"), GetQuotedTypesList());
 		properties->AppendItem(_("Options"), GetOptionsList());
@@ -434,7 +443,7 @@ pgObject *pgForeignTableFactory::CreateObjects(pgCollection *collection, ctlTree
 	pgForeignTable *foreigntable = 0;
 
 	wxString sql =	wxT("SELECT c.oid AS ftoid, c.relname AS ftrelname, pg_get_userbyid(relowner) AS ftowner,\n")
-	                wxT("  ftoptions, srvname AS ftsrvname, description,\n")
+	                wxT("  ftoptions, srvname AS ftsrvname, description,c.relacl,\n")
 	                wxT("  (SELECT array_agg(label) FROM pg_seclabels sl1 WHERE sl1.objoid=c.oid) AS labels,\n")
 	                wxT("  (SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=c.oid) AS providers\n")
 	                wxT("  FROM pg_class c\n")
@@ -460,6 +469,7 @@ pgObject *pgForeignTableFactory::CreateObjects(pgCollection *collection, ctlTree
 			foreigntable->iSetComment(foreigntables->GetVal(wxT("description")));
 			foreigntable->iSetProviders(foreigntables->GetVal(wxT("providers")));
 			foreigntable->iSetLabels(foreigntables->GetVal(wxT("labels")));
+			foreigntable->iSetAcl(foreigntables->GetVal(wxT("relacl")));
 
 			if (browser)
 			{
