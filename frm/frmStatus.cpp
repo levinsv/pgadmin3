@@ -1841,7 +1841,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent& event)
 		) v) v\
 		";
 	bool iswalsend = false;
-	if (connection->BackendMinimumVersion(10, 0))
+	if (connection->BackendMinimumVersion(13, 0))
 	{
 		if (connection->BackendMinimumVersion(13, 0))
 		{
