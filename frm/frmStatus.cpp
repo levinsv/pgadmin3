@@ -1841,11 +1841,12 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent& event)
 		) v) v\
 		";
 	bool iswalsend = false;
-	if (connection->BackendMinimumVersion(13, 0))
+	if (connection->BackendMinimumVersion(10, 0))
 	{
 		if (connection->BackendMinimumVersion(13, 0))
 		{
 			q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info,case when backend_type='autovacuum launcher' then (select min(xmin::text::bigint) from pg_replication_slots) end av_replica\n");
+			iswalsend = true;
 			if (wait_sample && wait_enable) {
 				q += ",transaction_timestamp() tt,hs.wait_sample,hs.maxts";
 			}
@@ -1879,7 +1880,6 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent& event)
 			q += "group by pid, event_type, event,queryid \
 				) l group by pid) hs on p.pid = hs.pid\n";
 		}
-		iswalsend = true;
 		//backend_type
 	}
 	else
