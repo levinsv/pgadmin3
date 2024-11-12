@@ -2,6 +2,17 @@
 #include "pgAdmin3.h"
 #include <wx/clipbrd.h>
 #include "ctl/ctlStyledText.h"
+enum class eTypeGroup {
+	SIMPLE_TEXT      = -1,
+	USER_GROUP_START = -2,
+	USER_GROUP_END   = -3
+};
+struct interval {
+	size_t start = -1;
+	size_t len = 0;
+	int style = 0;
+};
+
 class dlgTransformText :
     public pgDialog
 {
@@ -29,6 +40,9 @@ private:
 		bool isGroup = false;
 		int nGroup = -1;
 		wxString text;
+		int flags = 0;
+		int start = -1;
+		int len = 0;
 	};
 	wxJSONValue LoadConfig(const wxString confname);
 	void CheckLimits();
@@ -38,7 +52,27 @@ private:
 	void SetStyled(ctlStyledText* s);
 	void showNumber(ctlStyledText* text, bool visible);
 	void AppendTextControl(ctlStyledText* ctrl, const wxString appendtext, bool isnewline = false);
+	/// <summary>
+	/// Обработка строки замены и подготовка специальной струкутуры.
+	/// Допустимые спец. комбинации \t \r\ \n
+	///   \g{n} Ссылка на группы wxRegExp n=0..N
+	///   \G{n} Не выводить содержимое группы. Имеет смысл использовать для замены текста группы на свой
+	///    [ ] Пользовальская группа обладающая следующим свойством:
+	///    Если в этой группе присутствуют \g{n} и они все пустые то вся группа [ ] считается пустой
+	///    Пользовательские группы могут быть вложенными.
+	/// </summary>
+	/// <param name="repstr"></param>
+	/// <returns></returns>
 	std::vector<replace_opt> BuildString(const wxString repstr);
+	wxString ReplaceFormatting(
+		const wxString& src,
+		const wxRegEx& r,
+		const std::vector<dlgTransformText::replace_opt> st,
+		int &position,
+		interval m2[],
+		int maxsizeintervalarray,
+		int &currindex,
+		size_t &start_frame);
 
 	wxString src;
 	

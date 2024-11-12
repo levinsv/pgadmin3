@@ -310,6 +310,7 @@ std::vector<dlgTransformText::replace_opt> dlgTransformText::BuildString(const w
 	wxString e;
 	for (int i = 0; i < repstr.length(); i++) {
 		wxChar c = repstr[i];
+		if (c == '\n'|| c=='\r') continue;
 		if (!isback && c == '\\') {
 			isback = true;
 			continue;
@@ -318,18 +319,20 @@ std::vector<dlgTransformText::replace_opt> dlgTransformText::BuildString(const w
 			if (c == 'r') c = '\r';
 			else if (c == 'n') c = '\n';
 			else if (c == 't') c = '\t';
-			else if (c == 'g') {
+			else if (c == 'g'|| c=='G') {
 				int l = repstr.length();
 				if (l - i > 2) {
 					int pos = repstr.find_first_of('}', i);
+					int flags = 0;
 					if (pos >= 0) {
 						wxString ngrp = repstr.substr(i + 2, pos - i - 2);
 						int ngroup = -1;
 						int scanned = wxSscanf(ngrp, "%d", &ngroup);
 						if (scanned == 1) {
-							if (a.length() > 0) rez.push_back({ false,-1,a });
+							if (a.length() > 0) rez.push_back({ false,(int)eTypeGroup::SIMPLE_TEXT,a });
 							a.clear();
-							rez.push_back({ true,ngroup,wxEmptyString });
+							if (c == 'G') flags |= 1;
+							rez.push_back({ true,ngroup,wxEmptyString,flags,i-1,pos-i+2 });
 							i = pos;
 							isback = false;
 							continue;
@@ -340,10 +343,22 @@ std::vector<dlgTransformText::replace_opt> dlgTransformText::BuildString(const w
 			}
 			isback = false;
 		}
+		else if (c == '[') {
+			if (a.length() > 0) rez.push_back({ false,(int)eTypeGroup::SIMPLE_TEXT,a });
+			a.clear();
+			rez.push_back({ true,(int)eTypeGroup::USER_GROUP_START,wxEmptyString });
+			continue;
+		}
+		else if (c == ']') {
+			if (a.length() > 0) rez.push_back({ false,(int)eTypeGroup::SIMPLE_TEXT,a });
+			a.clear();
+			rez.push_back({ true,(int)eTypeGroup::USER_GROUP_END,wxEmptyString });
+			continue;
+		}
 		a.Append(c);
 		if (e.length() > 0) break;
 	}
-	if (a.length() > 0) rez.push_back({ false,-1,a });
+	if (a.length() > 0) rez.push_back({ false,(int)eTypeGroup::SIMPLE_TEXT,a });
 	return rez;
 }
 void dlgTransformText::AppendTextControl(ctlStyledText* ctrl, const wxString appendtext, bool isnewline) {
@@ -568,6 +583,7 @@ void dlgTransformText::OnOk(wxCommandEvent& ev) {
 void dlgTransformText::SetStyled(ctlStyledText* s) {
 	int regstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
 	s->StyleClearAll();
+	s->ClearDocumentStyle();
 	countGroupColor = opt["colorGroup"].Size();
 	for (int i = regstyle; i < regstyle + countGroupColor; i++) {
 		wxString strcl = opt["colorGroup"][i - regstyle].AsString();
@@ -583,15 +599,72 @@ void dlgTransformText::SetStyled(ctlStyledText* s) {
 	}
 
 }
+
+wxString dlgTransformText::ReplaceFormatting(
+	const wxString &src,
+	const wxRegEx &r,
+	const std::vector<dlgTransformText::replace_opt> st,
+	int &position,
+	interval m2[],
+	int maxsizeintervalarray,
+	int &currindex,
+	size_t &start_frame)
+{
+	bool isEmptyGroup = true;
+	int maxgroup = r.GetMatchCount();
+	wxString replstr;
+	int ci=currindex;
+	size_t sf = start_frame;
+	while (position<st.size()) {
+		auto& j = st[position++];
+		wxString s;
+		if (j.isGroup && j.nGroup >= 0 && j.nGroup < maxgroup) {
+				s = r.GetMatch(src, j.nGroup);
+				if (ci >= maxsizeintervalarray) break;
+				if (s.length() > 0) isEmptyGroup = false;
+				// verify flags
+				if (j.flags && 1) {
+					// no print group
+					s = wxEmptyString;
+				}
+				m2[ci++] = { sf ,s.length(),j.nGroup };
+				replstr.Append(s);
+		}
+		else if (j.nGroup == (int)eTypeGroup::SIMPLE_TEXT) {
+			s = j.text;
+			replstr.Append(s);
+		}
+		else if (j.nGroup == (int)eTypeGroup::USER_GROUP_START) {
+			s = ReplaceFormatting(src, r, st, position, m2, 100, ci, sf);
+			if (s.length() > 0) {
+				isEmptyGroup = false;
+			}
+			replstr.Append(s);
+			continue;
+		}
+		else if (j.nGroup == (int)eTypeGroup::USER_GROUP_END) {
+			break;
+		}
+		sf += s.length();
+	}
+	if (isEmptyGroup) {
+
+		return wxEmptyString;
+	}
+	else {
+		// OK. save current posintion
+		currindex = ci;
+		start_frame = sf;
+		return replstr;
+	}
+
+}
 void dlgTransformText::TransformText(const wxRegEx &regfld) {
 // Check params
-	struct interval {
-		size_t start = -1;
-		size_t len = 0;
-		int style = 0;
-	};
 	interval m[100];
 	wxRegEx RegNewLine(srcRowSep, wxRE_NEWLINE);
+	int toplineSrc = srcText->GetFirstVisibleLine();
+	int toplineTrg = trgText->GetFirstVisibleLine();
 	srcText->StyleClearAll();
 	//srcText->SetText(src);
 	srcText->ClearAll();
@@ -606,6 +679,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 	int regstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
 	SetStyled(srcText);
 	SetStyled(trgText);
+	SetStyled(trgField);
 	//bool fieldexp = regfld.Compile(v, wxRE_NEWLINE);
 	if (regfld.IsValid()) {
 		int sstart = 0;
@@ -620,6 +694,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 //		wxString sepField = txtSepField->GetValue();
 		wxString trgFieldReg = trgField->GetText();
 		std::vector<replace_opt> repArray;
+		std::vector<int> colorizetrgField(countGroupColor,-1);
 		repArray = BuildString(trgFieldReg);
 		if (repArray.size() == 0) {
 			trgField->SetBackgroundColour(red);
@@ -645,7 +720,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 		bool isSepRowEndConst = true;
 		wxString SepRowEndConst;
 		for (auto& j : sepRowEndArray) {
-			if (j.isGroup) {
+			if (j.isGroup && j.nGroup>=0) {
 				isSepRowEndConst = false;
 				break;
 			}
@@ -676,7 +751,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 			}
 			else
 				for (auto& j : sepRowEndArray) {
-					if (j.isGroup) {
+					if (j.isGroup && j.nGroup >= 0) {
 						if (j.nGroup >= 0 && j.nGroup < maxgroup) {
 							wxString s = regfld.GetMatch(tmp, j.nGroup);
 							sepRend.Append(s);
@@ -794,26 +869,13 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 					int CharPosEnd = srcText->PositionRelative(CharPos, ii.len);
 					srcText->SetStyling(CharPosEnd - CharPos, ii.style);
 				}
+				
 				// build replace string
-				wxString replstr;
 				interval m2[100];
 				currentIdx = 0;
 				start_frame = 0;
-				for (auto& j : repArray) {
-					wxString s;
-					if (j.isGroup) {
-						if (j.nGroup >= 0 && j.nGroup < maxgroup) {
-							s = regfld.GetMatch(tmp, j.nGroup);
-							replstr.Append(s);
-							m2[currentIdx++] = { start_frame ,s.length(),j.nGroup };
-						}
-					}
-					else {
-						s = j.text;
-						replstr.Append(s);
-					}
-					start_frame += s.length();
-				}
+				int pos = 0;
+				wxString replstr = ReplaceFormatting(tmp, regfld,repArray, pos, m2, 100, currentIdx, start_frame);
 				//trgText->AddText(replstr);
 				//AppendTextControl(trgText, );
 				int start2 = trgText->GetTextLength();
@@ -828,9 +890,13 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 						continue;
 					}
 					trgText->StartStyling(CharPos);
-					if (ii.style > countGroupColor) ii.style = countGroupColor + regstyle - 1;
+					if (ii.style >= countGroupColor) ii.style = countGroupColor - 1;
 					int CharPosEnd = trgText->PositionRelative(CharPos, ii.len);
 					trgText->SetStyling(CharPosEnd - CharPos, ii.style + regstyle);
+					// colorize wxString trgFieldReg = trgField->GetText();
+					if (ii.style < colorizetrgField.size() && colorizetrgField[ii.style]==-1) {
+						colorizetrgField[ii.style] = ii.style;
+					}
 				}
 
 
@@ -854,6 +920,22 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 		limitLine = tmp_limitLine;
 		int srcl = src.length();
 		m_msg->SetLabelText(wxString::Format("Lines %d Char %d Matches %d", cntLines, srcl, cntMathes));
+		// colorize wxString trgFieldReg = trgField->GetText();
+		int pp = -1;
+		for (auto &stl: colorizetrgField) {
+			if (stl == -1) continue;
+			for (auto& j : repArray) {
+
+				if (j.isGroup && j.nGroup >= 0 && stl== j.nGroup) {
+					int CharPos = trgField->PositionRelative(0, j.start);
+					trgField->StartStyling(CharPos);
+					
+					int CharPosEnd = trgField->PositionRelative(CharPos, j.len);
+					trgField->SetStyling(CharPosEnd - CharPos, stl + regstyle);
+
+				}
+			}
+		}
 	}
 	else
 	{
@@ -861,7 +943,9 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 		srcText->SetText(src.Mid(0, limitChar));
 	}
 	if (srcText->GetTextLength()>= limitChar) srcText->AppendText("\n...");
+	srcText->SetFirstVisibleLine(toplineSrc);
+	trgText->SetFirstVisibleLine(toplineTrg);
 	srcText->Update();
 	txtField->Refresh();
-
+	trgField->Update();
 }
