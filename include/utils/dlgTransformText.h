@@ -83,6 +83,8 @@ private:
 	int limitChar;
 	wxString strResult;
 	// UI
+	int toplineTrg=0;
+	int toplineSrc=0;
 	bool inizialize;
 	bool isChange = false;
 	bool isNeedTransform = false;

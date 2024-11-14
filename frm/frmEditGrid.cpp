@@ -1332,8 +1332,21 @@ void frmEditGrid::ShowForm(bool filter)
 
 	if (relkind == 'r' || relkind == 'v' || relkind == 'x' || relkind == 'f')
 	{
+		wxJSONValue def(wxJSONType::wxJSONTYPE_OBJECT);
+		wxJSONValue opt(wxJSONType::wxJSONTYPE_OBJECT);
 		if (filter)
 		{
+			// load save filter
+			settings->ReloadJsonFileIfNeed();
+			settings->ReadJsonObect(dlgName, opt, def);
+			if (!opt.IsNull()) {
+
+			}
+			else opt = def;
+
+			if (opt[tableName].AsString() != "null") {
+				SetFilter(opt[tableName].AsString());
+			}
 			dlgEditGridOptions *winOptions = new dlgEditGridOptions(this, connection, tableName, sqlGrid);
 			abort = !(winOptions->ShowModal());
 		}
@@ -1347,6 +1360,16 @@ void frmEditGrid::ShowForm(bool filter)
 		}
 		else
 		{
+			if (filter) {
+				//save filter
+				wxString f = GetFilter();
+				if (f.IsEmpty())
+					opt.Remove(tableName);
+				else
+					opt[tableName] = f;
+				settings->WriteJsonObect(dlgName, opt);
+
+			};
 			Show(true);
 			Go();
 		}

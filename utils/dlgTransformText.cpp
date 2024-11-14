@@ -510,6 +510,9 @@ void dlgTransformText::OnIdle(wxIdleEvent& ev) {
 		wxLogNull logNo;
 		fieldexp = regfld.Compile(v, wxRE_NEWLINE);
 		if (!fieldexp) {
+			if (trgText->GetTextLength() > 0)
+				toplineTrg = trgText->GetFirstVisibleLine();
+
 			trgText->ClearAll();
 			m_msg->SetLabelText(wxString::Format("Error regexp compile!!!"));
 		}
@@ -623,7 +626,7 @@ wxString dlgTransformText::ReplaceFormatting(
 				if (ci >= maxsizeintervalarray) break;
 				if (s.length() > 0) isEmptyGroup = false;
 				// verify flags
-				if (j.flags && 1) {
+				if (j.flags & 1) {
 					// no print group
 					s = wxEmptyString;
 				}
@@ -663,8 +666,10 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 // Check params
 	interval m[100];
 	wxRegEx RegNewLine(srcRowSep, wxRE_NEWLINE);
-	int toplineSrc = srcText->GetFirstVisibleLine();
-	int toplineTrg = trgText->GetFirstVisibleLine();
+	if (trgText->GetTextLength()>0)
+		toplineTrg=trgText->GetFirstVisibleLine();
+	if (srcText->GetTextLength()>0)
+		toplineSrc = srcText->GetFirstVisibleLine();
 	srcText->StyleClearAll();
 	//srcText->SetText(src);
 	srcText->ClearAll();
@@ -943,8 +948,9 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 		srcText->SetText(src.Mid(0, limitChar));
 	}
 	if (srcText->GetTextLength()>= limitChar) srcText->AppendText("\n...");
-	srcText->SetFirstVisibleLine(toplineSrc);
-	trgText->SetFirstVisibleLine(toplineTrg);
+	if (srcText->GetTextLength() > 0) srcText->SetFirstVisibleLine(toplineSrc);
+	if (trgText->GetTextLength() > 0) trgText->SetFirstVisibleLine(toplineTrg);
+
 	srcText->Update();
 	txtField->Refresh();
 	trgField->Update();
