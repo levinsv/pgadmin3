@@ -1597,7 +1597,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 							sch = " and relnamespace =" + qtConnString(sch) + "::regnamespace";
 						}
 						if (tabn[0] == '"') tabn.Replace("\"", ""); else tabn = tabn.Lower();
-						wxString sql2 = wxT("select string_agg(a.attname,E'\t' ORDER BY attname) from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
+						wxString sql2 = wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
 							+ wxT(") and a.attisdropped IS FALSE and a.attnum>=0 ") + flt
 							+ wxT("");
 						//pgSet *res = m_database->ExecuteSet(sql);
@@ -1610,8 +1610,13 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 						int npos = pos - 2 - field.Len();
 						DeleteRange(npos, field.Len() + 2);
 						InsertText(npos, field + "."+r);
-					} else
+					}
+					else {
+						wxArrayString sort=wxSplit(r, '\t');
+						sort.Sort();
+						r=wxJoin(sort, '\t');
 						AutoCompShow(l2, r);
+					}
 				}
 				return;
 			}
