@@ -40,7 +40,7 @@ private:
     int width=20;
     int findwidth = 50;
     int border = 1;
-    wxColour bgcolor,framecolor, bordercolor,findcolor;
+    wxColour bgcolor,framecolor, bordercolor,findcolor,startdbcolor;
     wxJSONValue opt;
     std::vector<statistics_mark> mark_color;
     std::vector<long> items_mark; // rows mark
@@ -51,6 +51,10 @@ private:
     std::vector<long> items_find;
     wxString logFindString;
     int lastUseMark = -1;
+    // startdb intervals
+    std::vector<long> startdbintervals;
+    long sinterval, einterval;
+    
 
 protected:
     virtual wxSize DoGetBestSize() const wxOVERRIDE;

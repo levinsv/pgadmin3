@@ -22,6 +22,7 @@ END_EVENT_TABLE()
 
 void ctlNavigatePanel::Init(bool reorganization) {
     wxJSONValue def(wxJSONType::wxJSONTYPE_OBJECT);
+    startdbcolor = wxColour("#f655ee");
     if (!reorganization) {
         // run construction
         def["width"] = 20;
@@ -30,6 +31,7 @@ void ctlNavigatePanel::Init(bool reorganization) {
         framecolor = *wxBLACK;
         bordercolor = *wxBLACK;
         findcolor = *wxWHITE;
+        def["startdbcolor"]= startdbcolor.GetAsString(wxC2S_HTML_SYNTAX);
         def["backgroundcolor"] = bgcolor.GetAsString(wxC2S_HTML_SYNTAX);
         def["framecolor"] = framecolor.GetAsString(wxC2S_HTML_SYNTAX);
         def["bordercolor"] = bordercolor.GetAsString(wxC2S_HTML_SYNTAX);
@@ -152,7 +154,12 @@ void ctlNavigatePanel::Init(bool reorganization) {
             strcolor = opt["findcolor"].AsString();
             wxColour cc4(strcolor);
             if (cc4.IsOk()) findcolor = cc4;
+            strcolor=opt["startdbcolor"].AsString();
+            if (strcolor != "null") {
+                wxColour cc4(strcolor);
+                if (cc4.IsOk()) startdbcolor = cc4;
 
+            }
             int pr = opt["findmarkwidthprocent"].AsInt32();
             if (pr >= 0 && pr <= 100) {
                 findwidth = pr;
@@ -577,6 +584,32 @@ void ctlNavigatePanel::render(wxDC& dc) {
     // right risk
     dc.DrawLine(wxPoint(p11.x - 1, p11.y), p11);
     dc.DrawLine(wxPoint(p22.x - 1, p22.y), wxPoint(p22.x + 1, p22.y));
+    // start db intervals
+    {
+        wxDCPenChanger npen(dc, wxPen(startdbcolor, 2, wxPENSTYLE_SOLID));
+        //dc.SetPen(startdbcolor);
+
+        for (int i = 0; i < startdbintervals.size(); i++) {
+            long row = startdbintervals[i];
+            // start
+            f_frame_start = row * 1.0f / cnt;
+            pp1.y = border + f_frame_start * vpix;
+            pp1.x = xl;
+
+            //accept
+            if ((i + 1) == startdbintervals.size()) {
+                row = cnt - 1; //last row
+                // no accept
+            }
+            else
+                row = startdbintervals[i + 1];
+            f_frame_start = row * 1.0f / cnt;
+            pp2.y = border + f_frame_start * vpix;
+            pp2.x = pp1.x;
+            dc.DrawLine(pp1, pp2);
+            i++;
+        }
+    }
 }
 void ctlNavigatePanel::AddMarkItem(long item, int numcolor) {
     items_mark.push_back(item);
@@ -586,6 +619,8 @@ void ctlNavigatePanel::ClearMark() {
     items_mark.clear();
     color_items_mark.clear();
     items_find.clear();
+    startdbintervals.clear();
+    sinterval = -1; einterval = -1;
     for (auto &c : mark_color) {
         c.count = 0;
         c.enable = true;
@@ -910,6 +945,20 @@ int ctlNavigatePanel::TryMarkItem(long row, const wxString& str) {
     // find mark
     if (logFindString.length()>0 && (str.Find(logFindString) > -1)) {
         items_find.push_back(row);
+    }
+    // starting db
+    if (str.Find("LOG,00000,\"starting PostgreSQL") > -1 && sinterval==-1) {
+        // start db
+        sinterval = row;
+        startdbintervals.push_back(sinterval);
+        einterval = -1;
+    }
+    else if (str.Find("LOG,00000,\"database system is ready to a") > -1) {
+        // accept connect db
+        einterval = row;
+        if (sinterval==-1) startdbintervals.push_back(0);
+        startdbintervals.push_back(row);
+        sinterval = -1;
     }
 
     return numIndicator;
