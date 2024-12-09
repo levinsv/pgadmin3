@@ -869,13 +869,16 @@ int FormatterSQL::ParseSql(int flags) {
             }
             continue;
         }
+    // no sql command
+        return -3;
+
     }
     // end big loop
     if (str_literal) {
         return -2; // literal no close
     }
     if (bracket.size() > 0)
-        return -1;
+        return -1; // bracet no close
 
     return 0;
 }
