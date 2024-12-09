@@ -114,11 +114,15 @@
 #define pickerExtAlignCmd          CTRL_FILEPICKER("pickerExtAlignCmd")
 #define txtHistoryMaxQueries        CTRL_TEXT("txtHistoryMaxQueries")
 #define txtHistoryMaxQuerySize      CTRL_TEXT("txtHistoryMaxQuerySize")
+#define txtWidthCaretKeyboardLayout      CTRL_TEXT("txtWidthCaretKeyboardLayout")
 #define chkSQLUseSystemBackgroundColour  CTRL_CHECKBOX("chkSQLUseSystemBackgroundColour")
+#define chkCaretUseSystemBackgroundColour  CTRL_CHECKBOX("chkCaretUseSystemBackgroundColour")
 #define chkSQLUseSystemForegroundColour  CTRL_CHECKBOX("chkSQLUseSystemForegroundColour")
 #define pickerSQLBackgroundColour        CTRL_COLOURPICKER("pickerSQLBackgroundColour")
+#define pickerCaretBackgroundColour        CTRL_COLOURPICKER("pickerCaretBackgroundColour")
 #define pickerSQLForegroundColour        CTRL_COLOURPICKER("pickerSQLForegroundColour")
 #define stSQLCustomBackgroundColour      CTRL_STATIC("stSQLCustomBackgroundColour")
+#define stCaretCustomBackgroundColour      CTRL_STATIC("stCaretCustomBackgroundColour")
 #define stSQLCustomForegroundColour      CTRL_STATIC("stSQLCustomForegroundColour")
 #define pickerSQLMarginBackgroundColour  CTRL_COLOURPICKER("pickerSQLMarginBackgroundColour")
 #define pickerSQLColour1            CTRL_COLOURPICKER("pickerSQLColour1")
@@ -165,6 +169,7 @@ BEGIN_EVENT_TABLE(frmOptions, pgDialog)
 	EVT_CHECKBOX(XRCID("chkSuppressHints"),                       frmOptions::OnSuppressHints)
 	EVT_CHECKBOX(XRCID("chkResetHints"),                          frmOptions::OnResetHints)
 	EVT_CHECKBOX(XRCID("chkSQLUseSystemBackgroundColour"),        frmOptions::OnChangeSQLUseCustomColour)
+	EVT_CHECKBOX(XRCID("chkCaretUseSystemBackgroundColour"), frmOptions::OnChangeSQLUseCustomColour)
 	EVT_CHECKBOX(XRCID("chkSQLUseSystemForegroundColour"),        frmOptions::OnChangeSQLUseCustomColour)
 	EVT_BUTTON (wxID_OK,                                          frmOptions::OnOK)
 	EVT_BUTTON (wxID_HELP,                                        frmOptions::OnHelp)
@@ -299,6 +304,7 @@ frmOptions::frmOptions(frmMain *parent)
 	txtIndent->SetValidator(numval);
 	txtHistoryMaxQueries->SetValidator(numval);
 	txtHistoryMaxQuerySize->SetValidator(numval);
+	txtWidthCaretKeyboardLayout->SetValidator(numval);
 
 	pickerLogfile->SetPath(settings->GetLogFile());
 	radLoglevel->SetSelection(settings->GetLogLevel());
@@ -360,8 +366,9 @@ frmOptions::frmOptions(frmMain *parent)
 
 	txtHistoryMaxQueries->SetValue(NumToStr(settings->GetHistoryMaxQueries()));
 	txtHistoryMaxQuerySize->SetValue(NumToStr(settings->GetHistoryMaxQuerySize()));
-
+	txtWidthCaretKeyboardLayout->SetValue(NumToStr((long)settings->GetWidthCaretForKeyboardLayout()));
 	chkSQLUseSystemBackgroundColour->SetValue(settings->GetSQLBoxUseSystemBackground());
+	chkCaretUseSystemBackgroundColour->SetValue(settings->GetCaretUseSystemBackground());
 	chkSQLUseSystemForegroundColour->SetValue(settings->GetSQLBoxUseSystemForeground());
 	UpdateColourControls();
 
@@ -544,6 +551,19 @@ void frmOptions::UpdateColourControls()
 		pickerSQLBackgroundColour->SetColour(settings->GetSQLBoxColourBackground());
 		stSQLCustomBackgroundColour->Enable(true);
 	}
+	if (chkCaretUseSystemBackgroundColour->GetValue())
+	{
+		pickerCaretBackgroundColour->Enable(false);
+		pickerCaretBackgroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
+		stCaretCustomBackgroundColour->Enable(false);
+	}
+	else
+	{
+		pickerCaretBackgroundColour->Enable(true);
+		pickerCaretBackgroundColour->SetColour(settings->GetCaretColourBackground());
+		stCaretCustomBackgroundColour->Enable(true);
+		stCaretCustomBackgroundColour->Enable(true);
+	}
 
 	if (chkSQLUseSystemForegroundColour->GetValue())
 	{
@@ -693,6 +713,8 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	settings->SetCopyQuoteChar(cbCopyQuoteChar->GetValue());
 	settings->SetHistoryMaxQueries(StrToLong(txtHistoryMaxQueries->GetValue()));
 	settings->SetHistoryMaxQuerySize(StrToLong(txtHistoryMaxQuerySize->GetValue()));
+	settings->SetWidthCaretForKeyboardLayout((int)StrToLong(txtWidthCaretKeyboardLayout->GetValue()));
+	
 	settings->SetRefreshOnClick(cbRefreshOnClick->GetSelection());
 
 	wxString copySeparator = cbCopySeparator->GetValue();
@@ -833,6 +855,11 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 		changed = true;
 		settings->SetSQLBoxUseSystemBackground(chkSQLUseSystemBackgroundColour->GetValue());
 	}
+	if (settings->GetCaretUseSystemBackground() != chkCaretUseSystemBackgroundColour->GetValue())
+	{
+		changed = true;
+		settings->SetCaretUseSystemBackground(chkCaretUseSystemBackgroundColour->GetValue());
+	}
 
 	if (settings->GetSQLBoxUseSystemForeground() != chkSQLUseSystemForegroundColour->GetValue())
 	{
@@ -845,6 +872,12 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 		if (pickerSQLBackgroundColour->GetColourString() != settings->GetSQLBoxColourBackground())
 			changed = true;
 		settings->SetSQLBoxColourBackground(pickerSQLBackgroundColour->GetColourString());
+	}
+	if (!settings->GetCaretUseSystemBackground())
+	{
+		if (pickerCaretBackgroundColour->GetColourString() != settings->GetCaretColourBackground())
+			changed = true;
+		settings->SetCaretColourBackground(pickerCaretBackgroundColour->GetColourString());
 	}
 
 	if (!settings->GetSQLBoxUseSystemForeground())

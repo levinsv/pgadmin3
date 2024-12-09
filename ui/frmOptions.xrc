@@ -733,6 +733,29 @@
                           <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                           <border>4</border>
                         </object>
+                        <object class="sizeritem">
+                          <object class="wxCheckBox" name="chkCaretUseSystemBackgroundColour">
+                            <label>Use system background color caret line</label>
+                            <style></style>
+                          </object>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <border>4</border>
+                        </object>
+                        <object class="sizeritem">
+                          <object class="wxStaticText" name="stCaretCustomBackgroundColour">
+                            <label>Custom background</label>
+                          </object>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <border>4</border>
+                        </object>
+                        <object class="sizeritem">
+                          <object class="ctlColourPicker" name="pickerCaretBackgroundColour">
+                            <size>70,12d</size>
+                          </object>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <border>4</border>
+                        </object>
+
                       </object>
                       <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
@@ -763,6 +786,19 @@
                             <size>70,12d</size>
                           </object>
                           <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <border>4</border>
+                        </object>
+                        <object class="sizeritem">
+                          <object class="wxStaticText" name="stCaretKeyboardLayout">
+                            <label>Width for keyboard layout</label>
+                          </object>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <border>4</border>
+                        </object>
+                        <object class="sizeritem">
+                          <object class="wxTextCtrl" name="txtWidthCaretKeyboardLayout"/>
+                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                          <value>1</value>
                           <border>4</border>
                         </object>
                       </object>

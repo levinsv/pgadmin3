@@ -39,7 +39,7 @@ struct TextToFind
 };
 
 class sysProcess;
-
+enum { TIMER_REFRESHUICARRET_ID =300 };
 // Class declarations
 class ctlSQLBox : public wxStyledTextCtrl
 {
@@ -108,14 +108,17 @@ public:
 
 protected:
 	void OnEndProcess(wxProcessEvent &ev);
+	void OnRefreshUITimer(wxTimerEvent& event);
 	void UpdateTitle();
 
 	sysProcess *process;
 	long processID;
 	wxString processOutput, processErrorOutput;
 	int processExitCode;
-
+	int caretWidth = 1;
+	wxTimer* refreshUITimer;
 private:
+	void SetCaretWidthForKeyboardLayout();
 	void OnPositionStc(wxStyledTextEvent &event);
 	void OnDoubleClick(wxStyledTextEvent &event);
 	void OnMarginClick(wxStyledTextEvent &event);

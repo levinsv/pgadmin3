@@ -453,6 +453,17 @@ public:
 	{
 		WriteInt(wxT("LineEndingType"), newval);
 	}
+	int GetWidthCaretForKeyboardLayout() const
+	{
+		int i;
+		int defval = 1;
+		Read(wxT("WidthCaretForKeyboardLayout"), &i, defval);
+		return i;
+	}
+	void SetWidthCaretForKeyboardLayout(const int newval)
+	{
+		WriteInt(wxT("WidthCaretForKeyboardLayout"), newval);
+	}
 	wxString GetFavouritesFile();
 	void SetFavouritesFile(const wxString &newval)
 	{
@@ -599,6 +610,16 @@ public:
 	{
 		WriteBool(wxT("ctlSQLBox/UseSystemBackground"), newval);
 	}
+	bool GetCaretUseSystemBackground() const
+	{
+		bool b;
+		Read(wxT("ctlSQLBox/CaretUseSystemBackground"), &b, true);
+		return b;
+	}
+	void SetCaretUseSystemBackground(const bool newval)
+	{
+		WriteBool(wxT("ctlSQLBox/CaretUseSystemBackground"), newval);
+	}
 	bool GetSQLBoxUseSystemForeground() const
 	{
 		bool b;
@@ -608,6 +629,16 @@ public:
 	void SetSQLBoxUseSystemForeground(const bool newval)
 	{
 		WriteBool(wxT("ctlSQLBox/UseSystemForeground"), newval);
+	}
+	wxString GetCaretColourBackground() const
+	{
+		wxString s;
+		Read(wxT("ctlSQLBox/CaretColourBackground"), &s, wxT("#ffffff"));
+		return s;
+	}
+	void SetCaretColourBackground(const wxString& newval)
+	{
+		Write(wxT("ctlSQLBox/CaretColourBackground"), newval);
 	}
 
 	wxString GetSQLBoxColourBackground() const

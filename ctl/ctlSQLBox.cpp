@@ -53,6 +53,7 @@ BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_MENU(MNU_COPY, ctlSQLBox::OnCopy)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
+	EVT_TIMER(TIMER_REFRESHUICARRET_ID, ctlSQLBox::OnRefreshUITimer)
 //	EVT_ERASE_BACKGROUND(ctlSQLBox::OnBackGround)
 #ifdef __WXMAC__
 	EVT_STC_PAINTED(-1,  ctlSQLBox::OnPositionStc)
@@ -113,6 +114,11 @@ void ctlSQLBox::SetQueryBook(ctlAuiNotebook *query_book)
 {
 	sql_query_book=query_book;
 }
+void ctlSQLBox::OnRefreshUITimer(wxTimerEvent& event) {
+	refreshUITimer->Stop();
+	SetCaretWidthForKeyboardLayout();
+	refreshUITimer->Start(250);
+}
 void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, long style)
 {
 	wxStyledTextCtrl::Create(parent, id , pos, size, style);
@@ -121,8 +127,14 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	// Clear all styles
 	StyleClearAll();
 	m_name=NULL;
+	
 	// Font
 	extern sysSettings *settings;
+
+
+	caretWidth=settings->GetWidthCaretForKeyboardLayout();
+	refreshUITimer = new wxTimer(this, TIMER_REFRESHUICARRET_ID);
+	refreshUITimer->Start(250);
 	wxFont fntSQLBox = settings->GetSQLFont();
 	wxColour bgColor=SetSQLBoxColourBackground(false);
 	//wxColour bgColor = settings->GetSQLBoxColourBackground();
@@ -144,6 +156,16 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetSelForeground(true, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT));
 
 	SetCaretForeground(settings->GetSQLColourCaret());
+	if (!settings->GetCaretUseSystemBackground()) {
+		int r = bgColor.GetRed(); int g = bgColor.GetGreen(); int b = bgColor.GetBlue();
+		if (r > 130) r = r - 20; else r = r + 20;
+		if (g > 130) g = g - 20; else g = g + 20;
+		if (b > 130) b = b - 20; else b = b + 20;
+		//wxColour caretLine(r, g, b);
+		wxColour caretLine(settings->GetCaretColourBackground());
+		SetCaretLineBackground(caretLine);
+		SetCaretLineVisible(true);
+	}
 	autoreplace=0;
 	SetMarginWidth(1, 0);
 	SetTabWidth(settings->GetIndentSpaces());
@@ -509,7 +531,8 @@ bool ctlSQLBox::DoFind(const wxString &find, const wxString &replace, bool doRep
 	else
 	{
 		selStart = FindText(startPos, endPos, find, flags);
-		selEnd = selStart + find.Length();
+		selEnd = PositionRelative(selStart, find.Length());
+		//selEnd = selStart + find.Length();
 	}
 
 	if (selStart != (size_t)(-1))
@@ -550,7 +573,7 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	wxPoint p =  ClientToScreen( PointFromPosition(pos));
 	wxString current = GetSelectedText();
 	wxString key = "";
-	if (!current.IsEmpty()) 
+	if (!current.IsEmpty())
 			key = current;
 		else {
 			wxChar ch;
@@ -576,6 +599,8 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 
 void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 {
+
+
 	if (event.GetKeyCode() == WXK_ESCAPE && m_PopupHelp) { delete m_PopupHelp; m_PopupHelp = NULL; }
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
@@ -590,7 +615,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	if ((fix_pos!=-1)) {
 		//GetIndicatorCurrent()==s_indicHighlight
 		IndicatorClearRange(0,GetTextLength());
-		fix_pos=-1; 
+		fix_pos=-1;
 	}
 
 	// Check for braces that aren't in comment styles,
@@ -636,7 +661,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 #ifdef __WXGTK__
 	event.m_metaDown = false;
 #endif
-	if (m_name) 
+	if (m_name)
 	{
 		if (((event.GetKeyCode() == '0')&&(event.GetModifiers() == (wxMOD_SHIFT)))
 			||event.GetKeyCode() == WXK_UP
@@ -692,12 +717,12 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	)) {
 		//int ptip=CallTipPosAtStart();
 						int direction=1;
-					    if (event.GetKeyCode() == WXK_LEFT) 
+					    if (event.GetKeyCode() == WXK_LEFT)
 							direction=-1;
 						char c=GetCharAt(GetCurrentPos());
 						if (event.GetKeyCode() != ','&&c!=',' ) {
 							//direction=ct_hl;
-						} else 
+						} else
 						{
 							int pos=ct_hl+direction;
 							int a=0;
@@ -1089,7 +1114,7 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 				else
 					SetText(processOutput);
 				return _("Formatting Ok");
-			} else 
+			} else
 				return wxString::Format("Error parse sql %d",rez);
 		}
 		return _("You need to setup a "+msgword+"ing command");
@@ -1187,7 +1212,7 @@ long ctlSQLBox::SelectQuery(int startposition)
 		ch = GetCharAt(pos);
 		st = GetStyleAt(pos) & 0x1F;
 		if ((ch == ';') &&
-	        st != wxSTC_SQL_COMMENTLINE && 
+	        st != wxSTC_SQL_COMMENTLINE &&
 			st != wxSTC_SQL_STRING &&
 			st != wxSTC_SQL_CHARACTER &&
 			st!= wxSTC_SQL_COMMENT)
@@ -1286,6 +1311,23 @@ void ctlSQLBox::OnDoubleClick(wxStyledTextEvent &event)
 
 		}
 	}
+}
+void ctlSQLBox::SetCaretWidthForKeyboardLayout() {
+	int currentwidth = GetCaretWidth();
+	int newwidth = currentwidth;
+#ifdef __WXMSW__
+	HKL la = GetKeyboardLayout(0);
+	if (((int)la & 0xFFFF) == 0x409) {
+		//en
+		newwidth = 1;
+	}
+	else {
+		// locale
+		newwidth = caretWidth;
+	}
+#endif
+	if (newwidth != currentwidth) SetCaretWidth(newwidth);
+	return;
 }
 void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 {
@@ -1719,7 +1761,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 			while ( k>=0&&m_name->Item(k).StartsWith(f_name) ) k--;
 			k++;
 			wxString prev;
-			while ( (k<m_name->GetCount())&&m_name->Item(k).StartsWith(f_name) ) 
+			while ( (k<m_name->GetCount())&&m_name->Item(k).StartsWith(f_name) )
 				{
 					if (prev!=m_name->Item(k)) wxRet+=m_name->Item(k)+wxT("\t");
 					prev=m_name->Item(k);
@@ -1752,6 +1794,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 
 ctlSQLBox::~ctlSQLBox()
 {
+	delete refreshUITimer;
 	if (m_dlgFindReplace)
 	{
 		m_dlgFindReplace->Destroy();
