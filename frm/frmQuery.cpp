@@ -59,7 +59,7 @@
 #include "utils/misc.h"
 #include "pgscript/pgsApplication.h"
 #include "schema/pgPartition.h"
-
+#include "dlg/dlgVariable.h"
 // Icons
 #include "images/sql-32.pngc"
 
@@ -845,7 +845,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		lastDir = fn.GetPath();
 		lastPath = fn.GetFullPath();
 		OpenLastFile();
-		sqlQuery->Colourise(0, query.Length());
+		sqlQuery->Colourise(0, sqlQuery->GetLength());
 	}
 	else if (!query.IsNull())
 	{
@@ -853,7 +853,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		SqlBookAddPage(t);
 		sqlQuery->SetText(query);
 		SetLineEndingStyle();
-		sqlQuery->Colourise(0, query.Length());
+		sqlQuery->Colourise(0, sqlQuery->GetLength());
 		wxSafeYield();                            // needed to process sqlQuery modify event
 		sqlQuery->SetChanged(false);
 		sqlQuery->SetOrigin(ORIGIN_INITIAL);
@@ -919,7 +919,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 				SqlBookAddPage(filename);
 				//SqlBookAddPage(true);
 				sqlQuery->SetText(str);
-				sqlQuery->Colourise(0, str.Length());
+				sqlQuery->Colourise(0, sqlQuery->GetLength());
 				sqlQuery->EmptyUndoBuffer();
 				
 				sqlQuery->GotoPos(nl);
@@ -2297,8 +2297,8 @@ void frmQuery::OnCopy_TableToHtml(wxCommandEvent& ev)
 		if (q.IsEmpty()) return;
 		ctlSQLBox *box = new ctlSQLBox(sqlNotebook, CTL_SQLQUERY, wxDefaultPosition, wxSize(0,0), wxTE_MULTILINE |  wxTE_RICH2);
 		box->SetText(q);
-		box->Colourise(0, box->GetTextLength());
-		wxString html = box->TextToHtml(0, box->GetTextLength());
+		box->Colourise(0, box->GetLength());
+		wxString html = box->TextToHtml(0, box->GetLength());
 		delete box;
 		sqlResult->CopyTableToHtml(html);
 
@@ -2407,7 +2407,7 @@ void frmQuery::OpenLastFile()
 	if (!str.IsEmpty())
 	{
 		sqlQuery->SetText(str);
-		sqlQuery->Colourise(0, str.Length());
+		sqlQuery->Colourise(0, sqlQuery->GetLength());
 		sqlQuery->EmptyUndoBuffer();
 		wxSafeYield();                            // needed to process sqlQuery modify event
 		sqlQuery->SetFilename(lastPath);
@@ -2946,7 +2946,7 @@ bool frmQuery::updateFromGqb(bool executing)
 	if(canGenerate)
 	{
 		sqlQuery->SetText(newQuery + wxT("\n"));
-		sqlQuery->Colourise(0, sqlQuery->GetText().Length());
+		sqlQuery->Colourise(0, sqlQuery->GetLength());
 		wxSafeYield();                            // needed to process sqlQuery modify event
 		sqlNotebook->SetSelection(0);
 		sqlQuery->SetChanged(true);
@@ -2964,39 +2964,18 @@ void frmQuery::SelectQuery() {
 	bool selected = false;
 	//sqlQuery->GetSelection();
 	wxString name = sqlQuery->GetSelectedText();
-	wxString *q=new wxString[30];
 	int s,e,i=0;
 	if (!name.IsEmpty())
 	{
-		// get the word under cursor:
-		int endDoc = sqlQuery->GetLength();
-		int endPos = sqlQuery->GetSelectionEnd();
-		int startPos = sqlQuery->GetSelectionStart();
-		while(endPos<startPos)
-		{
-		p=sqlQuery->SelectQuery(startPos);
-		s=p>>16;
-		e=p & 65535;
-		q[i++]=sqlQuery->GetTextRange(s, e);
-		startPos=e+1;
-		}
-		querys=new wxString[i];
-		for (int j = 0; j < i; j++) {
-			querys[j]=q[j];
-		}
+		// never execute
 		//name = sqlQuery->GetTextRange(startPos, endPos);
 		//selected = false;
 	} else {
 		int curPos = sqlQuery->GetCurrentPos();
-		p=sqlQuery->SelectQuery(curPos);
-		s=p>>16;
-		e=p & 65535;
-		querys=new wxString[1];
-		querys[0]=sqlQuery->GetTextRange(s, e);
+		auto [s,e] = sqlQuery->SelectQuery(curPos);
 		// группы серверов/Серверы/serverN/Datebases/dbname
 		sqlQuery->SetSelection(s,e);
 	}
-	delete [] q;
 	
 }
 void frmQuery::OnExecuteShift(wxCommandEvent &event)
@@ -3031,8 +3010,7 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 		if (queryMenu->IsChecked(MNU_AUTOSELECTQUERY)) {
 			// Auto-select
 			SelectQuery();
-			//query = sqlQuery->GetSelectedText();
-			query = querys[0];
+			query = sqlQuery->GetSelectedText();
 		} else query = sqlQuery->GetText();
 
 	if (query.IsNull())
@@ -3050,6 +3028,49 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 			sqlQuery->MarkerAdd(i,1);
 		}
 		//sqlResult->SetRangeLineExecuteSQL(hline,eline);
+	}
+	if (settings->GetReplaceVars()) {
+		//check replace parameters
+		FSQL::FormatterSQL f(query);
+		FSQL::view_item v;
+		bool isddm = false;
+		std::vector<var_query> v_list;
+		while (f.GetNextPositionSqlParse() < query.length() && f.ParseSql(0) >= 0) { // many querys
+
+			int i = 0;
+			int n_check = 0;
+			while (f.GetItem(i++, v)) {
+				if (n_check == 0 && v.type == FSQL::type_item::keyword) {
+					wxString kw = v.txt.Upper();
+					if (kw == "WITH" || kw == "SELECT" || kw == "UPDATE" || kw == "INSERT" || kw == "DELETE") {
+						isddm = true;
+					}
+					n_check++;
+				}
+				// check bindarg
+				if (n_check == 1 && v.type == FSQL::type_item::bindarg) {
+					if (!isddm) break;
+
+					v_list.push_back({ v.srcpos,v.txt,"" });
+				}
+			}
+
+			if (isddm && v_list.size() > 0 && f.GetNextPositionSqlParse() >= query.length()) {
+				dlgVariable* m_dlgVar = new dlgVariable(sqlQuery, query, v_list);
+				int rez = m_dlgVar->ShowModal();
+				if (rez == wxID_OK) {
+					query = m_dlgVar->GetQuery();
+				}
+				else if (rez == wxID_IGNORE) {
+
+				}
+				else {
+				}
+				m_dlgVar->Destroy();
+				if (rez == wxID_CANCEL) { return; }
+				break;
+			}
+		}
 	}
 	execQuery(query);
 	sqlQuery->SetFocus();
@@ -4302,7 +4323,7 @@ void frmQuery::OnChangeQuery(wxCommandEvent &event)
 	if (query.Length() > 0)
 	{
 		sqlQuery->SetText(query);
-		sqlQuery->Colourise(0, query.Length());
+		sqlQuery->Colourise(0, sqlQuery->GetLength());
 		wxSafeYield();                            // needed to process sqlQuery modify event
 		sqlQuery->SetChanged(true);
 		sqlQuery->SetOrigin(ORIGIN_HISTORY);

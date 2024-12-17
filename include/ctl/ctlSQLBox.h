@@ -23,7 +23,7 @@
 #include "ctl/ctlAuiNotebook.h"
 #include "utils/popuphelp.h"
 #include "utils/dlgTransformText.h"
-
+#include <set>
 // These structs are from Scintilla.h which isn't easily #included :-(
 struct CharacterRange
 {
@@ -64,6 +64,7 @@ public:
 	void OnKillFocus(wxFocusEvent &event);
 //	void OnBackGround(wxEraseEvent &event);
 	void SetQueryBook(ctlAuiNotebook *query_book);
+	void Colourise(int start, int end);
 	ctlAuiNotebook* GetQueryBook()
 	{
 		return sql_query_book;
@@ -102,7 +103,7 @@ public:
 	void SetTitle(wxString &title);
 	wxString GetTitle(bool withChangeInd = true);
 	wxString GetChangeIndicator();
-	long SelectQuery(int startposition);
+	std::pair<int, int> SelectQuery(int startposition);
 	DECLARE_DYNAMIC_CLASS(ctlSQLBox)
 	DECLARE_EVENT_TABLE()
 
@@ -133,8 +134,14 @@ private:
 	dlgFindReplace *m_dlgFindReplace;
 	dlgTransformText *m_dlgTransformText;
 	pgConn *m_database;
-	bool m_autoIndent, m_autocompDisabled;
-
+	bool m_autoIndent, m_autocompDisabled, m_hint_mode;
+	struct InsensitiveCompare {
+		bool operator() (const wxString& a, const wxString& b) const {
+			return a.CmpNoCase(b)<0;
+			//return strcasecmp(a.c_str(), b.c_str()) < 0;
+		}
+	};
+	std::set<wxString, InsensitiveCompare> m_hint_words;
 	// Variables to track info per SQL box
 	wxString m_filename;
 	time_t time_file_mod;

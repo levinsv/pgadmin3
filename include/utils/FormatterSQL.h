@@ -105,6 +105,7 @@ namespace FSQL {
         { "having",  6, new_line_align_no_pad | end_from},
         { "except",  6, new_line_align_no_pad | end_from},
         { "offset", 6,  none | end_from},
+        { "cursor", 6,  none},
         { "nothing", 7,  none},
         { "lateral", 7,  none},
         { "between", 7,  none},
@@ -112,12 +113,16 @@ namespace FSQL {
         { "nothing", 7,  none},
         { "default", 7,  none},
         { "current", 7,  none},
+        { "prepare", 7,  none},
+        { "execute", 7,  none},
+        { "declare", 7,  none},
         { "distinct", 8,  special},
         { "conflict", 8,  none},
         { "recursive", 9,  none},
         { "intersect", 9,  new_line_align_no_pad | end_from},
         { "returning", 9,  none},
         { "ordinality", 10,  none},
+        { "deallocate", 10,  none},
         { "materialized", 12,  none},
     };
     struct complite_element {
@@ -152,8 +157,9 @@ namespace FSQL {
         //
         int ParseSql(int flags);
         wxString printParseArray();
-        void SetSql(const wxString& sqlsrc) { sql = sqlsrc; }
+        void SetSql(const wxString& sqlsrc) { sql = sqlsrc; lastposition = 0; }
         int  GetIndexItemNextSqlPosition(int sqlPosition);
+        int GetNextPositionSqlParse();
         bool GetItem(int index, FSQL::view_item& item);
     private:
         wxString get_list_columns(int startindex, union FSQL::Byte zone);
@@ -171,6 +177,7 @@ namespace FSQL {
         wxPoint neededNewLine; // добавляет новую строку перед первым встреченным не пробельным символом
         wxRect rect;
         wxString sql;
+        int lastposition = 0;
         std::vector<FSQL::view_item> items;
         std::vector<FSQL::complite_element> listTable; // перечень таблиц синонимов, подзапросов и функций с колонками
         //int recurse(int level);

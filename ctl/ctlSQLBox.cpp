@@ -90,7 +90,7 @@ ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	m_autocompDisabled = false;
 	process = 0;
 	processID = 0;
-
+	m_hint_mode = false;
 	Create(parent, id, pos, size, style);
 }
 //void ctlSQLBox::OnBackGround(wxEraseEvent &event) {
@@ -596,11 +596,70 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	}
 
 }
+void ctlSQLBox::Colourise(int start, int end)
+{
+	wxStyledTextCtrl::Colourise(start, end);
+	if (start == 0 && end == GetLength() && settings->GetUseHintWords()) {
+		// build hint dictionary
+		m_hint_words.clear();
+		wxString s = GetText();
+		int pos = start;
+		int pend = -1;
+		int endPos = end;
+		int hword = pos;
+		wxChar ch;
+		int st;
+		bool isword = false;
+		while (pos < endPos) {
+			ch = GetCharAt(pos);
+			st = GetStyleAt(pos) & 0x1F;
+			if (
+				//				st != wxSTC_SQL_COMMENTLINE &&
+				st == wxSTC_SQL_STRING
+             || st == wxSTC_SQL_CHARACTER
+				//				&& st != wxSTC_SQL_COMMENT
+				)
+			{
+				if (isword) goto add_dic;
+				goto nextchar;
+			}
+			if (wxIsalnum(ch)|| ch=='_') {
+				if (!isword || pos==0) {
+					isword = true; hword = pos;
+					goto nextchar;
+				}
+				else
+					goto nextchar;
+			}
+			else {
+				// no word
+				if (!isword) goto nextchar;
+			}
+			//
+		add_dic:
+			isword = false;
+			if (hword >= 0) {
+				wxString w = GetTextRange(hword, pos);
+				if (w.length() > 1 && !wxIsdigit(w[0])) {
+					auto [iter, has_been_inserted] = m_hint_words.insert(w);
+				}
+			}
+			hword = -1;
+			
+nextchar:
+#ifdef WIN32
+			int i = IsDBCSLeadByte(ch) ? 2 : 1;
+#else
+			int i = 1;
+			if (ch > 255) i = 2;
+#endif
+			pos = pos + i;
+		}
 
+	}
+}
 void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 {
-
-
 	if (event.GetKeyCode() == WXK_ESCAPE && m_PopupHelp) { delete m_PopupHelp; m_PopupHelp = NULL; }
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
@@ -639,6 +698,8 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		if (match != wxSTC_INVALID_POSITION)
 			BraceHighlight(pos, match);
 	}
+	int homewordpos = pos;
+	bool istop = false;
 	while ((pos--) >= 0)
 	{
 		ch = GetCharAt(pos);
@@ -654,9 +715,106 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 				BraceBadLight(pos);
 			}
 		}
+		if ((wxIsalnum(ch)|| ch =='_') && !istop && st != 7) homewordpos--; else istop = true;
 	}
+	// hints words
+	wxChar uc = event.GetUnicodeKey();
+	bool rep = event.IsAutoRepeat();
+	if (event.GetModifiers() == wxMOD_SHIFT && uc == '-') uc = '_';
+	pos = GetCurrentPos();
+	wxString s;
+	wxString hint;
+	int showpos;
+	if (settings->GetUseHintWords()) {
+		if (homewordpos >= 0 && homewordpos != pos && !rep) {
+			bool isAddDict = false;
+			s = GetTextRange(homewordpos, pos);
+			if (uc != WXK_NONE)
+				if (uc == 8) s = s.Left(s.length() - 1);
+				else if (uc >= 'A') s += uc;
+			if (uc >= ' ' && uc < 'A') isAddDict = true;
+			auto it = m_hint_words.lower_bound(s);
+			wxString strlist;
+			if (s.length() > 0) {
+				while (it != m_hint_words.end()) {
+					hint = *it++;
+					wxString f1 = s.Upper();
+					wxString f2 = hint.substr(0, s.length()).Upper();
+					if (!(f1 == f2)) {
+						hint = "";
+						break;
+					}
 
+					if (s.length() == hint.length()) {
+						hint = "";
+						isAddDict = false;
+						continue;
+					}
+					break;
+				}
+			}
+			showpos = PositionRelative(pos, -s.length());
+			if (isAddDict && hint.IsEmpty()) {
+				if (s.length() > 1 && !wxIsdigit(s[0])) {
+					auto [iter, has_been_inserted] = m_hint_words.insert(s);
+				}
 
+			}
+			if ((uc >= ' ' && uc < 'A')) hint = "";
+		}
+		if (m_hint_mode) {
+			if (event.GetKeyCode() == WXK_RIGHT && event.GetModifiers() == wxMOD_ALT && !hint.IsEmpty()) {
+				wxString ins = hint.substr(s.length());
+				InsertText(GetCurrentPos(), ins);
+				SetCurrentPos(GetCurrentPos() + ins.Length());
+				SetSelection(GetCurrentPos(), GetCurrentPos());
+				CallTipCancel();
+				m_hint_mode = false;
+				return;
+			}
+			if (hint.IsEmpty() && !(event.GetModifiers() == wxMOD_ALT || event.GetModifiers() == wxMOD_CONTROL)) {
+				m_hint_mode = false;
+				CallTipCancel();
+			}
+			else {
+				if (uc != WXK_NONE && !hint.IsEmpty()) {
+					if (uc == 8 && CallTipActive()) {
+						//CallTipSetPosAtStart(0);
+						CallTipSetHighlight(s.length(), hint.length());
+					}
+					else {
+						CallTipShow(showpos, hint);
+						CallTipSetPosAtStart(0);
+						CallTipSetHighlight(s.length(), hint.length());
+						m_hint_mode = true;
+					}
+				}
+			}
+		}
+		else {
+			if (!CallTipActive() && !hint.IsEmpty() && !(event.GetModifiers() == wxMOD_ALT || event.GetModifiers() == wxMOD_CONTROL)) {
+				if (uc != WXK_NONE) {
+					if (uc == 8) {
+						//showpos--;
+						showpos = showpos - 1;
+					}
+					else showpos += 1;
+					if (!CallTipActive()) CallTipShow(showpos, hint);
+					CallTipSetPosAtStart(0);
+					CallTipSetHighlight(s.length(), hint.length());
+					m_hint_mode = true;
+				}
+				else {
+					if (CallTipActive()) {
+						CallTipCancel();
+						m_hint_mode = false;
+					}
+				}
+			}
+
+		}
+		//
+	}
 	//wxString autoreplace[]={wxT("se"),wxT("select * from"),wxT("sc"),wxT("select count(*) from"),wxT("si"),wxT("select * from info_oper where"),wxT("sh"),wxT("select * from info_history where")};
 #ifdef __WXGTK__
 	event.m_metaDown = false;
@@ -670,6 +828,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 
 				if (CallTipActive()) CallTipCancel();
 			event.Skip();
+			m_hint_mode = false;
 			return;
 
 		}
@@ -702,7 +861,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 
 						CallTipShow(pos-l,calltip);
 					    CallTipSetHighlight(0,ct_hl);
-
+						m_hint_mode = false;
 
 			}
 			//t = GetTextRange(pos-rpl.Length(), pos);
@@ -1193,13 +1352,14 @@ void ctlSQLBox::AbortProcess()
 		processID = 0;
 	}
 }
-long ctlSQLBox::SelectQuery(int startposition)
+std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 {
+	struct result { int start; int end; };
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
 	wxChar nextch = GetCharAt(pos);
 	int st = GetStyleAt(pos - 1);
-	int endPos = GetTextLength();
+	int endPos = GetLength();
 	int pend=endPos;
 	int pstart=0;
 
@@ -1256,7 +1416,8 @@ long ctlSQLBox::SelectQuery(int startposition)
 
 	}
 		if (startposition<0) SetSelection(pstart,pend);
-		return (pstart <<16)+pend;
+		//return result {pstart,pend};
+		return std::make_pair(pstart, pend);
 		
 }
 void ctlSQLBox::HighlightBrace(int lb, int rb) {
@@ -1586,10 +1747,8 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), spaceidx + 1, what.Len() + 1, m_database);
 	wxString wxRet;
 	if ((tab_ret == NULL || tab_ret[0] == '\0')&&(what.Right(1)>' ')){
-			long p = SelectQuery(pos);
-			int s = p >> 16;
-			
-			wxString sql = GetTextRange(s, p & 65535);
+			auto [s,e] = SelectQuery(pos);
+			wxString sql = GetTextRange(s, e);
 		    FSQL::FormatterSQL f(sql);
 			int rez = f.ParseSql(0);
 			if (rez >= 0) {

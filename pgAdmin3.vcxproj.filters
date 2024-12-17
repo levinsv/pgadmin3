@@ -523,6 +523,9 @@
     <ClCompile Include="dlg\dlgView.cpp">
       <Filter>dlg</Filter>
     </ClCompile>
+    <ClCompile Include="dlg\dlgVariable.cpp">
+      <Filter>dlg</Filter>
+    </ClCompile>
     <ClCompile Include="frm\events.cpp">
       <Filter>frm</Filter>
     </ClCompile>
@@ -2618,6 +2621,9 @@
       <Filter>include\dlg</Filter>
     </ClInclude>
     <ClInclude Include="include\dlg\dlgView.h">
+      <Filter>include\dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dlg\dlgVariable.h">
       <Filter>include\dlg</Filter>
     </ClInclude>
     <ClInclude Include="include\frm\frmAbout.h">

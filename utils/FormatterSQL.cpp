@@ -25,7 +25,7 @@ int  FormatterSQL::GetIndexItemNextSqlPosition(int sqlPosition) {
         p++;
         if (it.srcpos < sqlPosition) continue;
 
-        while (p >= 0 && items[--p].srcpos == -1) {};
+        while (p > 0 && items[--p].srcpos == -1) {};
         vi = items[p];
         return p;
     }
@@ -421,13 +421,16 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     else
         return wxJoin(cols, ',');
 }
+int FormatterSQL::GetNextPositionSqlParse() {
+    return lastposition;
+}
 /// <summary>
 /// <c>ParseSql</c> Выполнение разбора текста как SQL выражения
 /// </summary>
 /// <param name="flags"></param>
 /// <returns>Возвращает код ошибки если SQL выражение было не полное или не корректное</returns>
 int FormatterSQL::ParseSql(int flags) {
-    int i = 0;
+    int i = lastposition;
     int lhome = 0;
     bool str_literal = false;
     bool ext = false;
@@ -708,6 +711,10 @@ int FormatterSQL::ParseSql(int flags) {
         if ((i - 1) > k) {
             if (items.size() != 0 && items[items.size() - 1].type == spaces) {
                 // multi space ---> one spaces
+                if (items[items.size() - 1].srcpos == -1) { // change real space
+                    items[items.size() - 1].srcpos = vi.srcpos;
+                    vi.srcpos = i - 1;
+                }
             }
             else
                 vi.type = spaces;
@@ -824,6 +831,18 @@ int FormatterSQL::ParseSql(int flags) {
                 continue;
             }
         }
+        // naming arg
+        if ((c==':') && ((c2 >= 'a' && c2 <= 'z') || ((c2 >= 'A' && c2 <= 'Z')))) {
+            k = i - 1;
+            while (wxIsalpha(c2) || c2 == '_') {
+                if (i < sql.length()) c2 = sql[i++]; else { i++; break; };
+            }
+            vi.txt = sql.substr(k, i - k - 1);
+            vi.type = bindarg;
+            i--;
+            continue;
+        }
+
         if (c == ';') break;
         // separat
         if (c == ',') {
@@ -879,7 +898,7 @@ int FormatterSQL::ParseSql(int flags) {
     }
     if (bracket.size() > 0)
         return -1; // bracet no close
-
+    lastposition = i;
     return 0;
 }
 // mode =2 draw position x,y

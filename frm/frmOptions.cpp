@@ -139,6 +139,8 @@
 #define chkASUTPstyle		        CTRL_CHECKBOX("chkASUTPstyle")
 #define chkHideQueryHistory		    CTRL_CHECKBOX("chkHideQueryHistory")
 #define chkAutosaveQuery		    CTRL_CHECKBOX("chkAutosaveQuery")
+#define chkUseHintWords	            CTRL_CHECKBOX("chkUseHintWords")
+#define chkReplaceVars	            CTRL_CHECKBOX("chkReplaceVars")
 #define chkJumpRoot     		    CTRL_CHECKBOX("chkJumpRoot")
 #define menus                		CTRL_TREE("menus")
 #define pnlBrowserDisplay           CTRL_PANEL("pnlBrowserDisplay")
@@ -386,6 +388,9 @@ frmOptions::frmOptions(frmMain *parent)
 	chkASUTPstyle->SetValue(settings->GetASUTPstyle());
 	chkHideQueryHistory->SetValue(settings->GetHideQueryHistory());
 	chkAutosaveQuery->SetValue(settings->GetAutosaveQuery());
+	chkUseHintWords->SetValue(settings->GetUseHintWords());
+	chkReplaceVars->SetValue(settings->GetReplaceVars());
+
 	chkJumpRoot->SetValue(settings->GetJumpRoot());
 	chkNumberPretty->SetValue(settings->GetNumberPretty());
 	cbLanguage->Append(_("Default"));
@@ -937,6 +942,16 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	{
 		changed = true;
 		settings->SetAutosaveQuery(chkAutosaveQuery->GetValue());
+	}
+	if (settings->GetUseHintWords() != chkUseHintWords->GetValue())
+	{
+		changed = true;
+		settings->SetUseHintWords(chkUseHintWords->GetValue());
+	}
+	if (settings->GetReplaceVars() != chkReplaceVars->GetValue())
+	{
+		changed = true;
+		settings->SetReplaceVars(chkReplaceVars->GetValue());
 	}
 	if (settings->GetJumpRoot() != chkJumpRoot->GetValue())
 	{

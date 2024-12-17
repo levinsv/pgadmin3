@@ -649,6 +649,36 @@
                     <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                     <border>4</border>
                   </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="stUseHintWords">
+                      <label>Use word hints</label>
+                    </object>
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxCheckBox" name="chkUseHintWords">
+                      <label></label>
+                      <checked>0</checked>
+                    </object>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="stReplaceVars">
+                      <label>Replace variables in a query</label>
+                    </object>
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxCheckBox" name="chkReplaceVars">
+                      <label></label>
+                      <checked>0</checked>
+                    </object>
+                    <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>4</border>
+                  </object>
                 </object>
               </object>
               <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>

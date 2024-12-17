@@ -856,6 +856,27 @@ public:
 	{
 		WriteBool(wxT("HideQueryHistory"), newval);
 	}
+	
+	bool GetUseHintWords() const
+	{
+		bool b;
+		Read(wxT("UseHintWords"), &b, false);
+		return b;
+	}
+	void SetUseHintWords(const bool newval)
+	{
+		WriteBool(wxT("UseHintWords"), newval);
+	}
+	bool GetReplaceVars() const
+	{
+		bool b;
+		Read(wxT("ReplaceVars"), &b, false);
+		return b;
+	}
+	void SetReplaceVars(const bool newval)
+	{
+		WriteBool(wxT("ReplaceVars"), newval);
+	}
 	bool GetAutosaveQuery() const
 	{
 		bool b;

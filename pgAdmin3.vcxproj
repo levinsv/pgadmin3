@@ -920,6 +920,7 @@
     <ClCompile Include="dlg\dlgUser.cpp" />
     <ClCompile Include="dlg\dlgUserMapping.cpp" />
     <ClCompile Include="dlg\dlgView.cpp" />
+    <ClCompile Include="dlg\dlgVariable.cpp" />
     <ClCompile Include="frm\events.cpp" />
     <ClCompile Include="frm\frmAbout.cpp" />
     <ClCompile Include="frm\frmAwr.cpp" />
@@ -1588,6 +1589,7 @@
     <ClInclude Include="include\ctl\ctlGitPanel.h" />
     <ClInclude Include="include\ctl\ctlShortCut.h" />
     <ClInclude Include="include\dlg\dlgProJob.h" />
+    <ClInclude Include="include\dlg\dlgVariable.h" />
     <ClInclude Include="include\dlg\dlgResourceGroup.h" />
     <ClInclude Include="include\frm\frmAwr.h" />
     <ClInclude Include="include\frm\frmLog.h" />

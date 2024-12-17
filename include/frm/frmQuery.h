@@ -157,7 +157,7 @@ private:
 	wxStringOutputStream pgsStringOutput;
 	wxTextOutputStream pgsOutput;
 	pgScriptTimer *pgsTimer;
-	wxString *querys;
+	//wxString *querys;
 	//GQB related
 	void OnChangeNotebook(wxAuiNotebookEvent &event);
 	void OnChangeNotebookOutpane(wxAuiNotebookEvent &event);
