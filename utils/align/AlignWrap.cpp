@@ -231,6 +231,10 @@ Item AlignWrap::parseItem(int& pos, bool& breakline) {
 		while (p < len)
 		{
 			c2 = str[p];
+			// end line and unclose literal
+			if ((c2 == '\n' || c2 == '\r') /* && CHKCFGPARAM(cfg, ALL_LINES) */ ) {
+				break;
+			}
 			if (c2 == c) {
 				if (p + 1 < len)
 					if (str[p+1] == c) { p = p + 2; continue; }
