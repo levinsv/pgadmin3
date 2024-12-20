@@ -593,7 +593,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxLogInfo(wxT("frmQuery::Create key map Ok"));
 	queryMenu->Enable(MNU_CANCEL, false);
 
-	int iWidths[7] = {0, -1, 40, 200, 80, 80, 80};
+	int iWidths[7] = {0, -1, 40, 250, 80, 80, 80};
 	statusBar = CreateStatusBar(7);
 	SetStatusBarPane(-1);
 	SetStatusWidths(7, iWidths);
@@ -2377,9 +2377,19 @@ void frmQuery::DoUpdatePositionStc(const wxStyledTextEvent &event)
 	selCount = selTo - selFrom;
 	editMenu->Enable(MNU_AUTOEDITOBJECT, selCount > 0);
 	wxString pos;
-	pos.Printf(_("Ln %d, Col %d, Ch %d"), sqlQuery->LineFromPosition(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetColumn(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetCurrentPos() + 1);
+	wxUniChar ch=0;
+	int p = sqlQuery->GetCurrentPos();
+	wxString simbol;
+	if (p < sqlQuery->GetLength()) {
+		simbol = sqlQuery->GetTextRange(p, sqlQuery->PositionRelative(p, 1));
+	}
+	if (!simbol.IsEmpty()) ch = simbol[0];
+	pos.Printf(_("Ln %d, Col %d, Ch %d"), sqlQuery->LineFromPosition(p) + 1, sqlQuery->GetColumn(p) + 1, ch);
 	//pos.Printf(_("Ln %d, Col %d, Ch %d, st %d"), sqlQuery->LineFromPosition(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetColumn(sqlQuery->GetCurrentPos()) + 1, sqlQuery->GetCurrentPos() + 1,sqlQuery->GetStyleAt(sqlQuery->GetCurrentPos() - 1));
-	
+	if (pos.length() > 24) {
+		pos.Printf("L %d,C %d,Ch %d", sqlQuery->LineFromPosition(p) + 1, sqlQuery->GetColumn(p) + 1, ch);
+
+	}
 	SetStatusText(pos, STATUSPOS_POS);
 	if (selCount < 1)
 		pos = wxEmptyString;
@@ -3659,12 +3669,14 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 					selStart = 0;
 
 				errPos -= qi->queryOffset;        // do not count EXPLAIN or similar
-
+				//  if exists UNICODE correct errPos
+				errPos = sqlQueryExec->PositionRelative(selStart, errPos - 1);
+				//if () errPos
 				// Set an indicator on the error word (break on any kind of bracket, a space or full stop)
-				int sPos = errPos + selStart - 1, wEnd = 1;
+				int sPos = errPos, wEnd = 1;
 				//sqlQueryExec->StartStyling(sPos, wxSTC_INDICS_MASK);
 				int c = sqlQueryExec->GetCharAt(sPos + wEnd);
-				size_t len = sqlQueryExec->GetText().Length();
+				size_t len = sqlQueryExec->GetLength();
 				while(c != ' ' && c != '(' && c != '{' && c != '[' && c != '.' &&
 				        (unsigned int)(sPos + wEnd) < len)
 				{
@@ -3674,7 +3686,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 				//sqlQueryExec->SetStyling(wEnd, wxSTC_INDIC0_MASK);
 
 				int line = 0, maxLine = sqlQueryExec->GetLineCount();
-				while (line < maxLine && sqlQueryExec->GetLineEndPosition(line) < errPos + selStart + 1)
+				while (line < maxLine && sqlQueryExec->GetLineEndPosition(line) < errPos + 1)
 					line++;
 				if (line < maxLine)
 				{
