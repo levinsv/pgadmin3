@@ -1234,6 +1234,7 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 			choiceCmpOpts.Add("All line (use all EOL)");
 			choiceCmpOpts.Add("First line pattern (ignore all but the first EOL)");
 			choiceCmpOpts.Add("Try looking for patterns above");
+			choiceCmpOpts.Add("Remove multi spaces");
 			wxMultiChoiceDialog dialog(this,
 				wxT("A multi-choice convenience dialog"),
 				wxT("Please select several align options"),
@@ -1247,6 +1248,7 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 						if (choiceSelectOpts[n] == 0) cfg |= AlignWrap::ALL_LINES;
 						if (choiceSelectOpts[n] == 1 ) cfg |= AlignWrap::FIRST_LINE ;
 						if (choiceSelectOpts[n] == 2) cfg |= AlignWrap::FIND_UP_LONG_LINE;
+						if (choiceSelectOpts[n] == 3) cfg |= AlignWrap::ONLY_SINGLE_SPACE;
 
 				}
 				if (CHKCFGPARAM(cfg, AlignWrap::ALL_LINES) && CHKCFGPARAM(cfg, AlignWrap::FIRST_LINE)) cfg -= AlignWrap::FIRST_LINE;

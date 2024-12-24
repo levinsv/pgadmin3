@@ -48,95 +48,106 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 	}
 	if (list.size() == 0) return strsrc;
 	nline.push_back(list.size() - 1);
-	for (size_t l = 1; l < nline.size() - 1; l++)
-	{
-		int index_u = nline[l - 1L];
-		int index_c = nline[l];
-		int CountItemU = index_c - index_u;
-		int maxIdxU = index_c;
-		int maxIdxC = nline[l + 1L];
-		
-		size_t ll = l;
-		if (CHKCFGPARAM(cfg, FIND_UP_LONG_LINE)) {
-			while ((ll > 0) && ((((int)nline[ll] - (int)nline[ll - 1L]) - (maxIdxC - maxIdxU)) < 0)) {
-				// верхняя строка короче чем текущяя поднимемся вверх для поиска более длинной
-				ll--;
-			}
-			if (ll == 0) ll = l;
+	if (CHKCFGPARAM(cfg, ONLY_SINGLE_SPACE)) {
+		wxString a;
+		for (int j = 0; j < list.size() - 1; j++) {
+			if (list[j].rs > 1) list[j].rs = 1;
 		}
-		index_u = nline[ll - 1L];
-		maxIdxU= nline[ll];
-		int size_u = 0;
-		int size_c = 0;
-		//  : 3456,(wwww)
-		//  , : 7,(a)
-		while (index_u < maxIdxU && index_c < maxIdxC) {
-			int idxU = find(index_u, maxIdxU, list[index_c]);
-			// проверим обратную ситуацию верхний найдём в текущей строке
-			int idxC = find(index_c, maxIdxC, list[index_u]);
-			if (idxU < 0)  idxU = index_u;
-			if (idxC < 0)  idxC = index_c;
-			int dc = (idxC - index_c);
-			int du = (idxU - index_u);
-			size_u = range_size(index_u, idxU);
-			size_c = range_size(index_c, idxC);
-			if (du==0 && dc==0 ) {
-				// элементы совпадают и их можно выровнять
-				// определим в какой строке это будем делать
-				list[index_c].setParent(index_u);
+
+	}
+	else {
+
+		for (size_t l = 1; l < nline.size() - 1; l++)
+		{
+			int index_u = nline[l - 1L];
+			int index_c = nline[l];
+			int CountItemU = index_c - index_u;
+			int maxIdxU = index_c;
+			int maxIdxC = nline[l + 1L];
+
+			size_t ll = l;
+			if (CHKCFGPARAM(cfg, FIND_UP_LONG_LINE)) {
+				while ((ll > 0) && ((((int)nline[ll] - (int)nline[ll - 1L]) - (maxIdxC - maxIdxU)) < 0)) {
+					// верхняя строка короче чем текущяя поднимемся вверх для поиска более длинной
+					ll--;
+				}
+				if (ll == 0) ll = l;
 			}
-			else {
-				// 4021196,'fffff',(
-				// (4155,'aaaa'
-				if (size_u > size_c) { // фиксируем верхний 
-					// будем нижний подгонять под верхний
-					size_u = range_size(index_u);
-					idxU = index_u;
-				} else
-					if (size_u < size_c) {
-						size_c = range_size(index_c);
-						idxC = index_c;
+			index_u = nline[ll - 1L];
+			maxIdxU = nline[ll];
+			int size_u = 0;
+			int size_c = 0;
+			//  : 3456,(wwww)
+			//  , : 7,(a)
+			while (index_u < maxIdxU && index_c < maxIdxC) {
+				int idxU = find(index_u, maxIdxU, list[index_c]);
+				// проверим обратную ситуацию верхний найдём в текущей строке
+				int idxC = find(index_c, maxIdxC, list[index_u]);
+				if (idxU < 0)  idxU = index_u;
+				if (idxC < 0)  idxC = index_c;
+				int dc = (idxC - index_c);
+				int du = (idxU - index_u);
+				size_u = range_size(index_u, idxU);
+				size_c = range_size(index_c, idxC);
+				if (du == 0 && dc == 0) {
+					// элементы совпадают и их можно выровнять
+					// определим в какой строке это будем делать
+					list[index_c].setParent(index_u);
+				}
+				else {
+					// 4021196,'fffff',(
+					// (4155,'aaaa'
+					if (size_u > size_c) { // фиксируем верхний 
+						// будем нижний подгонять под верхний
+						size_u = range_size(index_u);
+						idxU = index_u;
 					}
-				list[idxC].setParent(idxU);
+					else
+						if (size_u < size_c) {
+							size_c = range_size(index_c);
+							idxC = index_c;
+						}
+					list[idxC].setParent(idxU);
+				}
+				if (size_u < size_c) {
+					// вырхний короче, его дополняем
+					list[index_u].add_space(Item::align::LEFT, size_c - size_u);
+					Resize(index_u, list[index_u].getMaxSize());
+					idxU = idxU + 1;
+					idxC++;
+
+				}
+				if (size_u > size_c) {
+					// 
+					list[index_c].add_space(Item::align::LEFT, size_u - size_c);
+					Resize(index_c, list[index_c].getMaxSize());
+					idxC = idxC + 1;
+					idxU++;
+				}
+				if (size_u == size_c) {
+					idxC++;
+					idxU++;
+				}
+				index_c = idxC;
+				index_u = idxU;
 			}
-			if (size_u < size_c) {
-				// вырхний короче, его дополняем
-				list[index_u].add_space(Item::align::LEFT, size_c - size_u);
-				Resize(index_u, list[index_u].getMaxSize());
-				idxU = idxU + 1;
-				idxC++;
-				
-			}
-			if (size_u > size_c) {
-				// 
-				list[index_c].add_space(Item::align::LEFT, size_u - size_c);
-				Resize(index_c, list[index_c].getMaxSize());
-				idxC = idxC + 1;
-				idxU++;
-			}
-			if (size_u == size_c) {
-				idxC++;
-				idxU++;
-			}
-			index_c = idxC;
-			index_u = idxU;
-		}
-		// 
-		if (CHKCFGPARAM(cfg, FIRST_LINE)) {
-			if (index_u >= maxIdxU) {
-				list[(size_t)index_c - 1].br = true;
-				size_t id = (nline.size() - nrow - 1);
-				
-				if (nline[id] != index_c)
-					nline.insert(nline.end() - nrow - 1, index_c);
-				else nrow--;
-			}
-			else
-			{
-				// из за коментарией -- мы внесли перевод в неожидааных местах и их нужно учесть когда до них дойдём
-				if (nrow == 0) break;
-				nrow--;
-				cfg = cfg | FIND_UP_LONG_LINE;
+			// 
+			if (CHKCFGPARAM(cfg, FIRST_LINE)) {
+				if (index_u >= maxIdxU) {
+					list[(size_t)index_c - 1].br = true;
+					size_t id = (nline.size() - nrow - 1);
+
+					if (nline[id] != index_c)
+						nline.insert(nline.end() - nrow - 1, index_c);
+					else nrow--;
+				}
+				else
+				{
+					// из за коментарией -- мы внесли перевод в неожидааных местах и их нужно учесть когда до них дойдём
+					if (nrow == 0) break;
+					nrow--;
+					cfg = cfg | FIND_UP_LONG_LINE;
+				}
 			}
 		}
 	}
