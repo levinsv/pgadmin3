@@ -102,16 +102,17 @@ static wxCriticalSection gs_critsect;
 
 
 // Class declarations
-static wxMutex s_mutexDBLogReading;
-static wxSemaphore s_goReadLog(0, 1);
-static wxSemaphore s_ResultOkLog(0, 1);
-static wxSemaphore s_CloseLog(0, 1);
+//static wxSemaphore s_CloseLog(0, 1);
 
 class ReadLogThread : public wxThread
 {
 public:
     ReadLogThread(pgConn *conlog, wxWindow* p, wxMessageQueue<wxString> *queue)
     {
+        //wxSemaphore goReadLog(0,1);
+        //wxSemaphore ResultOkLog(0, 1);
+        //s_goReadLog=goReadLog;
+        //s_ResultOkLog = ResultOkLog;
 
         log_queue = queue;
         theParent = p;
@@ -165,6 +166,10 @@ private:
         e.SetString(s);
         theParent->GetEventHandler()->AddPendingEvent(e);
     }
+    wxMutex s_mutexDBLogReading;
+    wxSemaphore s_goReadLog;
+    wxSemaphore s_ResultOkLog;
+
     wxDateTime nextrun;
     wxWindow* theParent;
     bool m_exit = false;
@@ -187,7 +192,7 @@ public:
     ~frmStatus();
     void Go();
     bool getTextSqlbyQid(long long qid);
-
+    ReadLogThread* logThread = NULL;
 private:
     wxAuiManager manager;
 
@@ -198,7 +203,7 @@ private:
     bool logHasTimestamp, logFormatKnown;
     int logFmtPos;
     long logFinditem=-1;
-    ReadLogThread *logThread=NULL;
+    
     wxMessageQueue<wxString> log_queue;
     wxDateTime logfileTimestamp, latestTimestamp;
     wxString logDirectory, logfileName;

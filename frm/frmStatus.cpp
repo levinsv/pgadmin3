@@ -630,8 +630,8 @@ frmStatus::~frmStatus()
 		logThread->BreakRead();
 		wxMilliSleep(50);
 		logThread->DoTerminate();
-		s_CloseLog.Wait();
-		logThread = NULL;
+		//s_CloseLog.Wait();
+		while (logThread != NULL) wxMilliSleep(50) ;
 	}
 	if (logconn)
 	{
@@ -2543,8 +2543,9 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent& event)
 			logThread->BreakRead();
 			wxMilliSleep(50);
 			logThread->DoTerminate();
-			s_CloseLog.Wait();
-			logThread = NULL;
+			wxMilliSleep(5);
+			//s_CloseLog.Wait();
+			while (logThread != NULL) wxMilliSleep(5);
 		}
 		return;
 	}
@@ -3537,7 +3538,8 @@ void frmStatus::OnLoadLogfile(wxCommandEvent& event)
 	}
 }
 ReadLogThread::~ReadLogThread() {
-	s_CloseLog.Post();
+	//s_CloseLog.Post();
+	((frmStatus *) theParent)->logThread = NULL;
 }
 void ReadLogThread::BreakRead() {
 	if (!isReadyRows()) {
