@@ -562,7 +562,7 @@ int dlgTable::Go(bool modal)
 				settingFreezeMaxAge = setting;
 			else if (name == wxT("vacuum_freeze_table_age"))
 				settingFreezeTableAge = setting;
-			else
+			else if (name == wxT("autovacuum"))
 				settingAutoVacuum = avSet.GetBool(wxT("setting"));
 		}
 
@@ -683,7 +683,7 @@ int dlgTable::Go(bool modal)
 			chkVacEnabled->SetValue(settingAutoVacuum);
 		}
 
-		//txtBaseVac->SetValue(tableVacBaseThr);
+		txtBaseVac->SetValue(tableVacBaseThr);
 		txtBaseAn->SetValue(tableAnlBaseThr);
 		txtFactorVac->SetValue(tableVacFactor);
 		txtFactorAn->SetValue(tableAnlFactor);
