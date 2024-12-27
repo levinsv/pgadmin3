@@ -26,7 +26,7 @@
 
 #include <wx/arrimpl.cpp>
 
-defaultPrivilegesOn g_defPrivTables('r', wxT("Tables"), wxT("arwdDxt")),
+defaultPrivilegesOn g_defPrivTables17('r', wxT("Tables"), wxT("arwdDxtm")), g_defPrivTables('r', wxT("Tables"), wxT("arwdDxt")),
                     g_defPrivSequences('S', wxT("Sequences"), wxT("rwU")),
                     g_defPrivFunctions('f', wxT("Functions"), wxT("X")),
                     g_defPrivTypes('T', wxT("Types"), wxT("U"));
@@ -44,8 +44,10 @@ ctlDefaultSecurityPanel::ctlDefaultSecurityPanel(pgConn *conn, wxNotebook *nb, w
 	mainSizer->AddGrowableRow(0);
 
 	nbNotebook = new wxNotebook(this, -1, wxDefaultPosition, wxDefaultSize, 0, _("Default ACLs"));
-
-	m_defPrivOnTablesPanel = new ctlDefaultPrivilegesPanel(this, nbNotebook, g_defPrivTables, imgList);
+	if (conn->BackendMinimumVersion(17, 0)) 
+		m_defPrivOnTablesPanel = new ctlDefaultPrivilegesPanel(this, nbNotebook, g_defPrivTables17, imgList);
+	else
+		m_defPrivOnTablesPanel = new ctlDefaultPrivilegesPanel(this, nbNotebook, g_defPrivTables, imgList);
 	m_defPrivOnSeqsPanel   = new ctlDefaultPrivilegesPanel(this, nbNotebook, g_defPrivSequences, imgList);
 	m_defPrivOnFuncsPanel  = new ctlDefaultPrivilegesPanel(this, nbNotebook, g_defPrivFunctions, imgList);
 	if (conn->BackendMinimumVersion(9, 2))

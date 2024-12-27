@@ -43,6 +43,7 @@ BEGIN_EVENT_TABLE(ctlSecurityPanel, wxPanel)
 	EVT_CHECKBOX(CTL_PRIVCB + 12,         ctlSecurityPanel::OnPrivCheck)
 	EVT_CHECKBOX(CTL_PRIVCB + 14,         ctlSecurityPanel::OnPrivCheck)
 	EVT_CHECKBOX(CTL_PRIVCB + 16,         ctlSecurityPanel::OnPrivCheck)
+	EVT_CHECKBOX(CTL_PRIVCB + 18,         ctlSecurityPanel::OnPrivCheck) //MAINTAIN
 END_EVENT_TABLE();
 
 DEFINE_LOCAL_EVENT_TYPE(EVT_SECURITYPANEL_CHANGE)
@@ -160,6 +161,11 @@ void ctlSecurityPanel::SetConnection(pgConn *conn)
 	connection = conn;
 	if (connection && stGroup && connection->BackendMinimumVersion(8, 1))
 		stGroup->SetLabel(_("Role"));
+	if (connection && !connection->BackendMinimumVersion(17, 0))
+	{
+		DisablePrivilege("MAINTAIN");
+		;
+	}
 }
 
 wxString ctlSecurityPanel::GetUserPrivileges()
