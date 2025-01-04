@@ -95,7 +95,14 @@ void ctlSQLGrid::DrawRowLabel(wxDC& dc, int row) {
 	else {
 		//wxColour c = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT);
 		wxColour c = GetGridRowLabelWindow()->GetBackgroundColour();
-		wxColour c3(c.Red()+15,c.Green()+15,c.Blue()+15);
+		int d = 20;
+		int r = c.GetRed() + d; int g = c.GetGreen() + d; int b = c.GetBlue() + d;
+		if (r > 255 || g > 255 || b > 255) {
+			r = r - 2 * d;
+			g = g - 2 * d;
+			b = b - 2 * d;
+		}
+		wxColour c3(r, g, b);
 		wxDCBrushChanger setBrush(dc, c3);
 		wxDCPenChanger setPen(dc, *wxTRANSPARENT_PEN);
 		wxRect rect(0, GetRowTop(row), GetRowLabelSize(), GetRowHeight(row));
