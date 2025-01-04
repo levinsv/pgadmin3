@@ -73,6 +73,7 @@ public:
 		character_class_atom,
 		character_class,
 		conditional_pattern,
+		subroutine_reference,
 		call_out,
 
 		other,
@@ -119,7 +120,9 @@ public:
 		const char* const t7[] = { ".","\\V", "\\p{^ssa&}","\\psd" };
 		const char* const t8[] = { "[[:^digit:]]", "[[:digit:]]" };
 		const char* const t9[] = { "(?(sd)ffff)","(?(-23)cond_expr|no_expr_cond)" };
+		const char* const t10[] = { "(?1)"};
 
+		test_2(RegExpParser::defrule::pcre, t10, sizeof(t10) / sizeof(t10[0]));
 		test_2(RegExpParser::defrule::pcre, t5, sizeof(t5) / sizeof(t5[0]));
 		test_2(RegExpParser::defrule::conditional_pattern, t9, sizeof(t9) / sizeof(t9[0]));
 		test_2(RegExpParser::defrule::character_class, t8, sizeof(t8) / sizeof(t8[0]));
@@ -336,6 +339,7 @@ const RegExpParser::ERule rules[] = {
 		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::atomic_group),
 		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::lookaround),
 		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::backreference),
+		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::subroutine_reference),
 		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::conditional_pattern),
 		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::comment),
 		  USE_RULE(RegExpParser::rule_type::alternative, RegExpParser::defrule::capture),
@@ -562,6 +566,33 @@ const RegExpParser::ERule rules[] = {
 			USE_RULE(RegExpParser::rule_type::zero_one, RegExpParser::defrule::digits),
 			TEXTSIM(")"),
 			ZERO,
+		START_R_STYLE(RegExpParser::defrule::subroutine_reference, RegExpParser::rule_type::styled_ALL),
+		    TEXTSIM("(?"),
+			START_A_R(RegExpParser::rule_type::none),
+				TEXTSIM("R"),
+				TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::char_any | RegExpParser::rule_type::zero_one, "+-"),
+				USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::digits),
+				TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::text, "&"),
+				USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::name),
+				TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::text, "P>"),
+				USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::name),
+				ZERO,
+			TEXTSIM(")"),
+			TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::text, "\\g<"),
+			USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::name),
+			TEXTSIM(">"),
+			TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::text, "\\g\'"),
+			USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::name),
+			TEXTSIM("\'"),
+			TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::text, "\\g<"),
+			TEXT_TYPE(RegExpParser::rule_type::char_any | RegExpParser::rule_type::zero_one, "+-"),
+			USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::digits),
+			TEXTSIM(">"),
+			TEXT_TYPE(RegExpParser::rule_type::alternative | RegExpParser::rule_type::text, "\\g\'"),
+			TEXT_TYPE(RegExpParser::rule_type::char_any | RegExpParser::rule_type::zero_one, "+-"),
+			USE_RULE(RegExpParser::rule_type::none, RegExpParser::defrule::digits),
+			TEXTSIM("\'"),
+		    ZERO,
 		START_R(RegExpParser::defrule::conditional_pattern),
 			TEXTSIM("(?"),
 			START_A_R(RegExpParser::rule_type::none),

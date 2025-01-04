@@ -41,6 +41,7 @@ ctlStyledText::ctlStyledText(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	Create(parent, id, pos, size, style);
 	m_regparser.SetStyleControl(this);
 	setDecorate();
+	//RegExpParser::TEST();
 }
 void ctlStyledText::OnPositionStc(wxStyledTextEvent& event) {
 
@@ -140,13 +141,14 @@ void RegExpParser::SetStyleControl(wxStyledTextCtrl* ctrl) {
 	for (int i = 0; i < sizeof(stylemap) / sizeof(stylemap[0]); i++) stylemap[i] = -1;
 	wxColour bgdef = ctrl->GetBackgroundColour();
 	wxColour fgdef = ctrl->GetForegroundColour();
-	tablestyle.push_back(styletextdef{ fgdef,wxColour("#ddd0fe") }); // 00 verb
-	tablestyle.push_back(styletextdef{ fgdef,wxColour("#fed1ff") }); // 1 capture (reed)
+	tablestyle.push_back(styletextdef{ fgdef,wxColour("#ddd0fe") }); // 0 verb
+	tablestyle.push_back(styletextdef{ fgdef,wxColour("#fed1ff") }); // 1 conditional_pattern
 	tablestyle.push_back(styletextdef{ fgdef,wxColour("#e3e3e3") }); // 2 backslash
 	tablestyle.push_back(styletextdef{ fgdef,wxColour("#d3a776") }); // 3 class char 
 	tablestyle.push_back(styletextdef{ fgdef,wxColour("#99beff") }); // 4 quantifier
 	tablestyle.push_back(styletextdef{ wxColour("#989898"),bgdef }); // 5 comment
-	tablestyle.push_back(styletextdef{ fgdef,wxColour("#bae634") }); // 6 captute (green)
+	tablestyle.push_back(styletextdef{ fgdef,wxColour("#bae634") }); // 6 capture (green)
+	tablestyle.push_back(styletextdef{ fgdef,wxColour("#f5f45b") }); // 7 subroutine_reference
 
 	tablestyle.push_back(styletextdef{ fgdef,wxColour("#ed5c65") }); // last color.  error bg
 	stylemap[0] = tablestyle.size() - 1; // error bg
@@ -169,6 +171,8 @@ void RegExpParser::SetStyleControl(wxStyledTextCtrl* ctrl) {
 	stylemap[defrule::capture] = 6;
 	stylemap[defrule::capture_1] = 6;
 	stylemap[defrule::conditional_pattern] = 1;
+	stylemap[defrule::subroutine_reference] = 7;
+	
 	//wxLogNull logNo;
 	int count = 0;
 	int userstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
