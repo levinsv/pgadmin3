@@ -22,6 +22,7 @@ public:
 	void ShowTreeDetail(ctlTree *browser, frmMain *form = 0, ctlListView *properties = 0, ctlSQLBox *sqlPane = 0);
 	bool DropObject(wxFrame *frame, ctlTree *browse, bool cascadedr);
 	wxString GetDefinition();
+	wxString GetDefinitionCluster();
 	wxString GetCreate();
 	wxString GetSql(ctlTree *browser);
 	wxString GetHelpPage(bool forCreate) const

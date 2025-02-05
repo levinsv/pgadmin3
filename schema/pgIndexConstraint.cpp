@@ -102,7 +102,6 @@ bool pgIndexConstraint::DropObject(wxFrame *frame, ctlTree *browser, bool cascad
 	return GetDatabase()->ExecuteVoid(sql);
 }
 
-
 wxString pgIndexConstraint::GetDefinition()
 {
 	wxString sql = wxEmptyString;
@@ -146,6 +145,15 @@ wxString pgIndexConstraint::GetCreate()
 	return sql;
 };
 
+wxString pgIndexConstraint::GetDefinitionCluster()
+{
+	wxString sql;
+	if (GetIsClustered())
+		sql += wxT("ALTER TABLE ") + GetQuotedSchemaPrefix(GetIdxSchema()) + qtIdent(GetIdxTable())
+		+ wxT(" CLUSTER ON ") + qtIdent(GetName())
+		+ wxT(";\n");
+	return sql;
+}
 
 wxString pgIndexConstraint::GetSql(ctlTree *browser)
 {
@@ -164,6 +172,7 @@ wxString pgIndexConstraint::GetSql(ctlTree *browser)
 			sql += wxT("COMMENT ON CONSTRAINT ") + GetQuotedIdentifier() + wxT(" ON ") + GetQuotedSchemaPrefix(GetIdxSchema()) + qtIdent(GetIdxTable())
 			       + wxT(" IS ") + qtDbString(GetComment()) + wxT(";\n");
 		}
+
 	}
 	return sql;
 }

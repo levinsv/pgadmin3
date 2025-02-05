@@ -323,7 +323,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 	wxString cols_sql = wxEmptyString;
 	wxString cols_type = wxEmptyString;
 	wxString columnPrivileges;
-
+	wxString defpkcluster;
 	if (sql.IsNull())
 	{
 		// make sure all kids are appended
@@ -475,6 +475,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 					case PGM_UNIQUE:
 					case PGM_EXCLUDE:
 						cols_sql += ((pgIndexConstraint *)data)->GetDefinition();
+						if (data->GetMetaType()== PGM_PRIMARYKEY) defpkcluster= ((pgIndexConstraint*)data)->GetDefinitionCluster();
 						break;
 					case PGM_FOREIGNKEY:
 						cols_sql += ((pgForeignKey *)data)->GetDefinition();
@@ -748,6 +749,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 		}
 
 		AppendStuff(sql, browser, indexFactory);
+		if (!defpkcluster.IsEmpty()) sql += defpkcluster;
 		AppendStuff(sql, browser, ruleFactory);
 		AppendStuff(sql, browser, triggerFactory);
 
