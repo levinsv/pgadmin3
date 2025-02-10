@@ -844,6 +844,9 @@
     <ClCompile Include="utils\utffile.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="utils\TableColsMap.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
     <ClCompile Include="debugger\dbgController.cpp">
       <Filter>debugger</Filter>
     </ClCompile>
@@ -3560,6 +3563,9 @@
       <Filter>include\hotdraw\utilities</Filter>
     </ClInclude>
     <ClInclude Include="include\utils\sshTunnel.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\TableColsMap.h">
       <Filter>include\utils</Filter>
     </ClInclude>
     <ClInclude Include="include\schema\edbResourceGroup.h">

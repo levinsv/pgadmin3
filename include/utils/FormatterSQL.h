@@ -131,6 +131,7 @@ namespace FSQL {
         wxString columnList;
         int startIndex = -1;
         int endIndex = -1;
+        int level = 0;
     };
     struct bits {
         unsigned int from : 1;
@@ -154,6 +155,11 @@ namespace FSQL {
         wxString BuildAutoComplite(int startIndex, int level);
         wxString GetListTable(int cursorPos);
         wxString GetColsList(wxString what, wxString& listfieldOut, wxString& nameTableOut);
+        /// <summary>
+        /// Возращает количество таблиц слева от курсора и заполняет их имена и псевдонимы.
+        /// 
+        /// </summary>
+        int GetTableListBeforePosition(int positem, wxArrayString& listtable, wxArrayString& listalias);
         //
         int ParseSql(int flags);
         wxString printParseArray();
@@ -161,13 +167,14 @@ namespace FSQL {
         int  GetIndexItemNextSqlPosition(int sqlPosition);
         int GetNextPositionSqlParse();
         bool GetItem(int index, FSQL::view_item& item);
+        int next_item_no_space(int& index, int direction = 1);
     private:
         wxString get_list_columns(int startindex, union FSQL::Byte zone);
 
         wxPoint align_level(int start_i, int level, int Xpos, int Ypos, int flag);
         int check_bracket(int index);
         int get_prev_value(int indx, wxString keyword);
-        int next_item_no_space(int& index, int direction = 1);
+        
         wxSize max_width_size(int index); // index bracet
         wxSize best_sizeAndDraw(wxDC& dc, wxPoint& pos, FSQL::view_item& vi, int mode);
         int maxYheightLine = 0;

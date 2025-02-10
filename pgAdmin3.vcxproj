@@ -1088,6 +1088,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="utils\TableColsMap.cpp" />
     <ClCompile Include="utils\utffile.cpp" />
     <ClCompile Include="debugger\ctlMessageWindow.cpp" />
     <ClCompile Include="debugger\ctlResultGrid.cpp" />
@@ -1615,6 +1616,7 @@
     <ClInclude Include="include\utils\json\jsonval.h" />
     <ClInclude Include="include\utils\json\jsonwriter.h" />
     <ClInclude Include="include\utils\json\json_defs.h" />
+    <ClInclude Include="include\utils\TableColsMap.h" />
     <ClInclude Include="include\utils\sshTunnel.h" />
     <ClInclude Include="include\version.h" />
     <ClInclude Include="include\utils\csvfiles.h" />

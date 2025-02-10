@@ -29,6 +29,7 @@
 #include "utils/popuphelp.h"
 #include "utils/FormatterSQL.h"
 #include "utils/dlgTransformText.h"
+#include "utils/TableColsMap.h"
 
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
@@ -239,6 +240,7 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	AutoCompSetIgnoreCase(true);
 	AutoCompSetFillUps(wxT(" \t"));
 	AutoCompSetDropRestOfWord(true);
+	AutoCompSetMaxHeight(10);
 
 	SetEOLMode(settings->GetLineEndingType());
 }
@@ -1748,7 +1750,12 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 	else
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), spaceidx + 1, what.Len() + 1, m_database);
 	wxString wxRet;
-	if ((tab_ret == NULL || tab_ret[0] == '\0')&&(what.Right(1)>' ')){
+	if (tab_ret != NULL) {
+		wxRet = wxString(tab_ret, wxConvUTF8);
+		free(tab_ret);
+	}
+	if ((wxRet.IsEmpty())){ // my autocomplite
+		int extflag = 0;
 			auto [s,e] = SelectQuery(pos);
 			wxString sql = GetTextRange(s, e);
 		    FSQL::FormatterSQL f(sql);
@@ -1763,10 +1770,23 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 				if (vi.type == FSQL::spaces) {
 					ItemPos--;
 					f.GetItem(ItemPos, vi);
+					extflag += TableColsMap::Flag::NOT_ADD_FIRST_SPACE;
+				}
+				wxString leftexp;
+				if (vi.type == FSQL::separation && vi.txt == '=') {
+					f.GetItem(ItemPos, vi);
+					ItemPos--;
+					if (f.next_item_no_space(ItemPos, -1) != -1) {
+						f.GetItem(ItemPos, vi);
+						if (vi.type == FSQL::identifier || vi.type == FSQL::name) {
+							leftexp = vi.txt;
+						}
+						else return;
+					};
 				}
 				wxString field;
 				bool ast = false;
-				if (vi.type == FSQL::separation) {
+				if (vi.type == FSQL::separation && !CHKFLAG(extflag, TableColsMap::Flag::NOT_ADD_FIRST_SPACE)) {
 					ast=vi.txt == ".*";
 					while (f.GetItem(--ItemPos, vi)) {
 						if (vi.type == FSQL::identifier || vi.type == FSQL::name) {
@@ -1776,8 +1796,31 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 						if (vi.srcpos != -1) break;
 					};
 				}
-				else if (vi.type == FSQL::identifier) {
+				else if (vi.type == FSQL::identifier && !CHKFLAG(extflag, TableColsMap::Flag::NOT_ADD_FIRST_SPACE && leftexp.IsEmpty())) {
 					field = vi.txt;
+				}
+				else if (vi.type == FSQL::keyword || !leftexp.IsEmpty()) {
+					// where, on ,and , ...
+					wxArrayString tn, an;
+					int ccc=f.GetTableListBeforePosition(ItemPos,tn,an);
+					if (ccc > 1) {
+						// decode view select field
+						TableColsMap tmaps;
+						int flag = TableColsMap::Flag::ALL_LEFT_TO_RIGHT | TableColsMap::Flag::USE_TRANSIT_FK;
+						if (leftexp.IsEmpty()) {
+							if (vi.txt.Lower() == "where" || vi.txt.Lower() == "and" || vi.txt.Lower() == "or") flag = TableColsMap::Flag::SEQUENCE_LIST_TABLE | TableColsMap::Flag::USE_TRANSIT_FK;
+						} else flag = TableColsMap::Flag::SEQUENCE_LIST_TABLE | TableColsMap::Flag::USE_TRANSIT_FK;
+						flag |= extflag;
+						wxString list=tmaps.AddTableList(m_database, tn, an, (TableColsMap::Flag) flag,leftexp);
+						if (!list.IsEmpty()) {
+							int l2 = 0;
+							AutoCompShow(l2, list);
+						}
+
+						//
+						//wxString r = wxJoin(tn, '\t');
+					}
+					return;
 				}
 				if (!field.IsEmpty()) {
 					wxString lf;
@@ -1819,6 +1862,30 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 						sort.Sort();
 						r=wxJoin(sort, '\t');
 						AutoCompShow(l2, r);
+					}
+					return;
+				}
+				if (vi.type == FSQL::name) {
+					field = vi.txt;
+					// for any name found table
+					bool isok = false;
+					while (f.GetItem(ItemPos--, vi)) {
+						if (vi.endlevel != -1 && vi.endlevel < ItemPos) ItemPos = vi.endlevel;
+						if (vi.type == FSQL::keyword && vi.txt.Lower() == "from") { isok = true;  break; }
+						if (vi.type == FSQL::keyword && vi.txt.Lower() == "where") {  break; }
+						if (vi.type == FSQL::keyword && vi.txt.Lower() == "group") { break; }
+					}
+					if (isok) {
+						what = "from " + field;
+						spaceidx = what.Find(' ');
+						tab_ret = tab_complete(what.mb_str(wxConvUTF8), spaceidx + 1, what.Len() + 1, m_database);
+						if (tab_ret != NULL) {
+							wxString wxRet;
+							wxRet = wxString(tab_ret, wxConvUTF8);
+							bool empty = tab_ret[0] == '\0';
+							free(tab_ret);
+							if (!empty) AutoCompShow(what.Len() - spaceidx - 1, wxRet);
+						}
 					}
 				}
 				return;
@@ -1932,8 +1999,6 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 			spaceidx = -1;
 		//return; /* No autocomplete available for this string */
 	} else {
-		wxRet = wxString(tab_ret, wxConvUTF8);
-		free(tab_ret);
 	}
 	// Switch to the generic list control. Native doesn't play well with
 	// autocomplete on Mac.

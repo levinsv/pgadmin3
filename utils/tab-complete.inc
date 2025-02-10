@@ -178,7 +178,7 @@ static const SchemaQuery Query_for_list_of_tsv = {
 	/* catname */
 	"pg_catalog.pg_class c",
 	/* selcondition */
-	"c.relkind IN ('r', 'S', 'v')",
+	"c.relkind IN ('r', 'S', 'v','m','f','p')",
 	/* viscondition */
 	"pg_catalog.pg_table_is_visible(c.oid)",
 	/* namespace */
@@ -1627,6 +1627,9 @@ static char * psql_completion(char *text, int start, int end, void *dbptr)
 	else if (pg_strcasecmp(prev_wd, "FROM") == 0 &&
 			 pg_strcasecmp(prev3_wd, "COPY") != 0 &&
 			 pg_strcasecmp(prev3_wd, "\\copy") != 0)
+		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tsv, NULL);
+/* ... JOIN ... */
+	else if (pg_strcasecmp(prev_wd, "JOIN") == 0)
 		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tsv, NULL);
 
 

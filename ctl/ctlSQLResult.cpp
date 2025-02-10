@@ -536,6 +536,8 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	wxArrayString leg;
 	wxArrayInt colsY;
 	wxString rez="Draw plot";
+	wxString sss;
+	std::vector<long> typeCols;
 	if (IsSelection()) {
 			unsigned int i;
 			int col;
@@ -551,13 +553,20 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 				{
 					for (col = topLeft[i].GetCol(); col <= bottomRight[i].GetCol(); col++) {
 						//clearCellData(row, col);
+						wxString aa = wxString::Format(",%d,", col);
+						if (sss.Find(aa) != -1) continue;
+						sss += aa;
 						cols.Add(col);
+						typeCols.push_back(colTypClasses.Item(col));
 					}
 				}
 			}
 			wxArrayInt cls = GetSelectedCols();
 			for (i = 0; i < cls.Count(); i++) {
-				if (cols.Index(cls[i])== wxNOT_FOUND) cols.Add(cls[i]);
+				if (cols.Index(cls[i]) == wxNOT_FOUND) {
+					cols.Add(cls[i]);
+					typeCols.push_back(colTypClasses.Item(cls[i]));
+				}
 //				for (row = 1; row < GetNumberRows(); row++) {
 //					clearCellData(row, cols[i]);
 //				}
@@ -575,10 +584,10 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 		int legC = -1;
 		int xC = -1;
 		//cols = GetSelectedCols();
-		if (cols.Count() == 2) {
-			legC = cl1; idx++;
+		if (cols.Count() == 2 && typeCols[idx]!= PGTYPCLASS_NUMERIC) {
+			legC = cl1; idx++; // 1 cols = legend
 			cl1 = cols[idx];
-			if (colTypClasses.Item(cl1) != PGTYPCLASS_NUMERIC) { 
+			if (typeCols[idx] != PGTYPCLASS_NUMERIC) {
 				wxMessageBox("The number of selected column 2 needed Number type\nExample: LY", "Plot");
 				return "";
 			}
@@ -604,9 +613,14 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 		}
 		if (cols.Count() < 3) {
 
-			wxMessageBox("The number of selected columns must be more than 1\nExample: LXY or XYYYY...", "Plot");
-			return "";
+//			wxMessageBox("The number of selected columns must be more than 1\nExample: LXY or XYYYY...", "Plot");
+//			return "";
 		}
+	}
+	else {
+					wxMessageBox("The number of selected columns must be more than 0\nExample: LXY or Y or XYYYY...", "Plot");
+					return "";
+
 	}
 	int idx = 0;
 	int cl1 = cols[idx];
@@ -614,7 +628,14 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	int xC = -1;
 	int typeAxisX = mpX_DATETIME;
 	// Leg col
-	if (colTypClasses.Item(cl1) == PGTYPCLASS_STRING) { legC = cl1; idx++; }
+	if (typeCols[idx] == PGTYPCLASS_STRING) {
+		legC = cl1;
+		idx++;
+		if (cols.Count() < 2) {
+			wxMessageBox("Column 2 must be numeric\nExample: LY or LXY", "Plot");
+			return "";
+		}
+	}
 	cl1 = cols[idx];
 	// X col
 	wxString xA, yA;
@@ -622,6 +643,16 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 	if (colTypClasses.Item(cl1) == PGTYPCLASS_DATE) { xC = cl1; idx++; }
 		else if (colTypClasses.Item(cl1) == PGTYPCLASS_NUMERIC) { xC = cl1; typeAxisX = mpX_NORMAL; idx++; }
 	if (xC == -1) { wxMessageBox("The value type of column X must be a date or a number", "Plot"); return ""; }
+	if (cols.GetCount() == 1 && typeCols[0]!= PGTYPCLASS_NUMERIC) {
+		wxMessageBox("The value type of column Y must be a number", "Plot");
+		return "";
+	}
+	if (cols.GetCount() == 1 && typeCols[0] == PGTYPCLASS_NUMERIC) {
+		// only Y
+		xC = -1;
+		idx = 0;
+		xA = "NumRow";
+	}
 	// Y cols
 	for (size_t col = idx; col < cols.Count(); col++)
 	{
@@ -695,6 +726,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 		int fmttype = -1;
 		wxDateTime dt;
 		bool first = true;
+		if (cols.GetCount() == 1) first = false;
 		for (size_t col = 0; col < colsY.Count(); col++)
 		{
 			lg = leg[col];
@@ -725,6 +757,10 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 				}
 				y.push_back(yv);
 
+			}
+			if (cols.GetCount() == 1) {
+				double nrows = 1;
+				for (int i = 0; i < numRows; i++) x.push_back(nrows++);
 			}
 			frame->AddSeries(lg, x, y,lbar);
 			y.clear();

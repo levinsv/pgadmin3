@@ -76,6 +76,39 @@ wxString FormatterSQL::GetListTable(int cursorPos) {
     }
     return r;
 }
+int FormatterSQL::GetTableListBeforePosition(int positem, wxArrayString& listtable, wxArrayString& listalias) {
+    int s = 0;
+    complite_element* el;
+    int left_id = -1;
+    while (s < listTable.size()) {
+        el = &listTable[s++];
+        //r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
+        bool bet = el->startIndex <= positem && el->endIndex >= positem;
+        if (el->startIndex > positem) { s--; break; }
+        if (bet ) {
+            if (left_id != -1 && (el->endIndex - el->startIndex) >= (&listTable[left_id].endIndex - &listTable[left_id].startIndex)) continue;
+            left_id=s-1;
+        }
+    }
+    int c = 0;
+    if (s > 0) {
+        s = s - 1;
+        if (left_id != -1) s = left_id;
+        int level = -1;
+        while (s >= 0) {
+            el = &listTable[s--];
+            if (level == -1) level = el->level;
+            if (el->table != '@') {
+                if (level > el->level) break;
+                if (level < el->level) continue;
+                listtable.Add(el->table);
+                listalias.Add(el->alias);
+                c++;
+            }
+        }
+    }
+    return c;
+}
 wxString FormatterSQL::GetColsList(wxString what, wxString& listfieldOut, wxString& nameTableOut) {
     wxString r = "";
     wxString f = "";
@@ -181,7 +214,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     wxString cols_name;
     bool isfunction = false;
     bool isskipnext = false;
-    el.columnList = ""; el.alias = ""; el.table = "";
+    el.columnList = ""; el.alias = ""; el.table = ""; el.level = level;
     if (level == 0) listTable.clear();
     while (next_item_no_space(found_index) != -1) {
         view_item* vi = &items[found_index];
@@ -196,7 +229,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     if (!lastname.IsEmpty())cols.Add(lastname);
                 }
                 zone.b.from = 1; zone.b.select_list = 0;
-                objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = "";
+                objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = ""; el.level = level; el.startIndex = found_index;
             }
             if (vi->txt.Lower() == "with") {
                 zone.b.with = 1; zone.b.skip = 1;
@@ -209,7 +242,6 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 //el.startIndex = found_index + 1;
             }
             if (vi->txt.Lower().Find("join") > -1) {
-
                 goto close_element_from;
             }
             if (vi->txt.Lower() == "on") {
@@ -237,8 +269,9 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                         if (objName.GetCount() > 1) el.alias = objName[1];
                         el.columnList = "";
                     }
+                    el.endIndex = found_index;
                     listTable.push_back(el);
-                    el.columnList = ""; el.alias = ""; el.table = "";
+                    el.columnList = ""; el.alias = ""; el.table = ""; el.level = level;
                     objName.Clear();
                 }
             }
@@ -267,11 +300,14 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                         if (objName.GetCount() > 1) el.alias = objName[1];
                         el.columnList = "";
                     }
+                    el.endIndex = found_index-1;
                     listTable.push_back(el);
+                    el.startIndex = found_index;
+
                 }
 
             }
-            objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = "";
+            objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = ""; el.level = level;
             cols_name = "";
             if (vi->txt == ')') {
                 zone.b.from = 0;
@@ -323,6 +359,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 // запрос
                 found_index++;
                 if (next_item_no_space(found_index) != -1) {
+                    el.startIndex = found_index;
                     query_cols_list = BuildAutoComplite(found_index, level + 1);
                     if (zone.b.with) {
                         el.alias = lastname;
@@ -336,8 +373,11 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     }
                     else
                         el.columnList = query_cols_list;
+                    el.level = level;
+                    
                     isfunction = true;
                     found_index = jump + 1;
+                    el.endIndex = found_index;
                     continue;
                 }
             }
@@ -405,7 +445,6 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 // [ LATERAL ] имя_функции ( [ аргумент [, ...] ] ) [WITH ORDINALITY] [[ AS ] псевдоним
                 el.table = "@";
                 el.alias = lastname;
-
             }
             else {
                 //[ ONLY ] имя_таблицы [ * ] [ [ AS ] псевдоним 
@@ -413,6 +452,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 if (objName.GetCount() > 1) el.alias = objName[1];
                 el.columnList = "";
             }
+            el.endIndex = found_index;
             listTable.push_back(el);
         }
 
