@@ -28,12 +28,13 @@ public:
     };
 
     StorageModel(MyDataViewCtrl* view);
-
+    ~StorageModel();
     // helper methods to change the model
 
     bool Prepend(const wxString& text);
     void DeleteItem(const wxDataViewItem& item);
     void DeleteItems(const wxDataViewItemArray& items);
+    void DeleteAll() { store->Reset(); Reset(0); };
     void AddMany();
     bool setFilter(int col, wxString val, int flags, MyDataViewCtrl* view);
     void DropColFilter(int index);

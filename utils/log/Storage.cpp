@@ -58,6 +58,63 @@ void Storage::addLineFilterStr(wxString strflt,wxString fn) {
     LineFilter lf = getLineFilter(strflt,fn);
     filterload.push_back(lf);
 }
+void Storage::Reset() {
+    filterload.clear();
+    storage.clear();
+    
+    // hash Group to row
+    hashKeyToRow.clear();
+    hashKeyToCount.clear();
+    hashKeyTotal.clear();
+    //filter setting
+    frows.clear();
+    fCol.Clear();
+    fFlags.Clear();
+    fVal.Clear();
+    // признак ошибок.
+    err_msg=wxEmptyString;
+    currhost= wxEmptyString;
+    // режим группировки 
+    groupFilterUse = false;
+    faddgroup = false;
+    prevRow = -1;
+    detailGroup = -1;
+    //
+    m_cacheIndex = -1;
+    ClearRowsStat();
+    // load filter
+    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator();
+
+    wxString f = tempDir + "filter_load.txt";
+    if (wxFileExists(f)) {
+        wxString str;
+        wxUtfFile file(f, wxFile::read, wxFONTENCODING_UTF8);
+        if (file.IsOpened()) {
+            file.Read(str);
+            file.Close();
+            wxStringTokenizer tk(str, "\n", wxTOKEN_RET_EMPTY_ALL);
+            wxString Fname = wxEmptyString;
+            bool end = false;
+            LineFilter lf;
+            int cc = 1;
+            while (tk.HasMoreTokens())
+            {
+                wxString l = tk.GetNextToken();
+                if (end && l.IsEmpty()) { continue; };
+                if ((!l.IsEmpty()) && (l[0] == '#')) {
+                    Fname = l.substr(1);
+                    if (Fname.Contains("LoadSkip")) Fname = wxString::Format("LoadSkip %d", cc++);
+                    continue;
+                }
+                if (end && Fname.IsEmpty()) Fname = wxString::Format("LoadSkip %d", cc++);
+                addLineFilterStr(l, Fname);
+                Fname = wxEmptyString;
+                end = l.IsEmpty();
+            }
+            if (!end) addLineFilterStr("", "");
+        }
+    }
+}
 Storage::Storage() {
 
     bgErr[MyConst::iconIndex::log] = wxNullColour;
@@ -81,42 +138,8 @@ Storage::Storage() {
     colname[MyConst::colField::logSqlstate] = "Sql state";
     colname[MyConst::colField::logtag] = "Tag";
     colname[MyConst::colField::logtime] = "Time";
-    
+    Reset();
 
-    // load filter
-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator();
-    
-    wxString f = tempDir + "filter_load.txt";
-    if (wxFileExists(f)) {
-        wxString str;
-        wxUtfFile file(f, wxFile::read, wxFONTENCODING_UTF8);
-        if (file.IsOpened()) {
-            file.Read(str);
-            file.Close();
-            wxStringTokenizer tk(str, "\n", wxTOKEN_RET_EMPTY_ALL);
-            wxString Fname = wxEmptyString;
-            bool end = false;
-            LineFilter lf;
-            int cc = 1;
-            while (tk.HasMoreTokens())
-            {
-                wxString l = tk.GetNextToken();
-                if (end && l.IsEmpty()) {  continue; };
-                if ((!l.IsEmpty()) && (l[0] == '#')) {
-                    Fname = l.substr(1);
-                    if (Fname.Contains("LoadSkip")) Fname = wxString::Format("LoadSkip %d", cc++);
-                    continue;
-                }
-                if (end && Fname.IsEmpty()) Fname = wxString::Format("LoadSkip %d",cc++);
-                 addLineFilterStr(l,Fname);
-                 Fname = wxEmptyString;
-                 end = l.IsEmpty();
-            }
-            if (!end) addLineFilterStr("","");
-
-        }
-
-    }
 }
 void Storage::removeFilter(wxString FilterName) {
 
@@ -134,7 +157,7 @@ void Storage::removeFilter(wxString FilterName) {
         if (!add) p++;
     }
     int l = 0;
-    for (auto i = filterload.begin(); i != filterload.end(); )
+    for (auto i = filterload.begin(); i != filterload.end(); ++i)
     {
         if (l == p) {
             for (int y = 0; y < j; y++) i = filterload.erase(i);
@@ -476,6 +499,67 @@ wxString Storage::GetFieldStorage(int row, MyConst::colField col, bool filter) {
     if (row != m_cacheIndex) getLineToCache(row, filter);
     return get_field(m_cacheLine, col);
 }
+wxString replace_bind_parameters(const wxString& values_param, const wxString& targetstr, int& replacecount) {
+    wxString str;
+    str = targetstr;
+    // bind parameter parse
+    int idx = values_param.Find(':');
+    // unnamed portal with parameters: $1 = '15558430', $2 = '70469'
+#define FIND_DOLLS     1
+#define FIND_QUOTES    2
+#define FIND_OUTQUOTES 3
+#define NUM_PARAMETER  4
+    int mode = FIND_DOLLS;
+    wxString nstr;
+    int n = 0;
+    wxArrayString arS;
+    for (int j = idx + 1; j < values_param.Len(); j++) {
+        wxChar c = values_param[j];
+        if (mode == FIND_DOLLS) {
+            if (c == '$') mode = NUM_PARAMETER;
+
+            continue;
+        }
+        if (mode == NUM_PARAMETER) {
+            if (c != '=') continue;
+            j = j + 2;
+            nstr = "";
+            n++;
+            if (values_param[j] == '\'') mode = FIND_OUTQUOTES;
+            else
+            {
+                // NULL
+                arS.Add("NULL");
+                mode = FIND_DOLLS;
+            }
+
+            continue;
+        }
+        if (mode == FIND_OUTQUOTES) {
+
+            if (c != '\'') {
+                nstr.Append(c);
+                continue;
+            }
+            if (((j + 1) < values_param.Len()) && values_param[j + 1] == '\'') {
+                j++;
+                nstr.Append(c);
+                nstr.Append(c);
+                continue;
+            }
+            mode = FIND_DOLLS;
+            arS.Add("'" + nstr + "'");
+            continue;
+        }
+    }
+    // replace $N in query
+    int c = 0;
+    for (int k = arS.GetCount() - 1; k >= 0; k--) {
+        c = c + str.Replace(wxString::Format("$%d", k + 1), arS[k]);
+    }
+    replacecount = c;
+    return str;
+}
 Line Storage::getLineParse(const wxString& str, bool csv) {
     Line st;
     if (csv) {
@@ -544,63 +628,18 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
             logHint = logDebug;
         if (!logContext.IsEmpty() && logDetail.IsEmpty())
             logDetail = logContext;
+        //variant 1
         if (!logContext.IsEmpty()&& (logContext.BeforeFirst('=').AfterFirst(':')==" $1 ")) {
-            // bind parameter parse
-            int idx = logContext.Find(':');
-            // unnamed portal with parameters: $1 = '15558430', $2 = '70469'
-            #define FIND_DOLLS     1
-            #define FIND_QUOTES    2
-            #define FIND_OUTQUOTES 3
-            #define NUM_PARAMETER  4
-            int mode = FIND_DOLLS;
-            wxString nstr;
-            int n = 0;
-            wxArrayString arS;
-            for (int j = idx+1; j < logContext.Len(); j++) {
-                wxChar c = logContext[j];
-                if (mode == FIND_DOLLS ) {
-                    if (c == '$') mode = NUM_PARAMETER;
-                    
-                    continue;
-                }
-                if (mode == NUM_PARAMETER) {
-                    if (c != '=') continue;
-                    j = j + 2;
-                    nstr = "";
-                    n++;
-                    if (logContext[j]=='\'') mode = FIND_OUTQUOTES;
-                    else
-                    {
-                        // NULL
-                        arS.Add("NULL");
-                        mode = FIND_DOLLS;
-                    }
-                    
-                    continue;
-                }
-                if (mode == FIND_OUTQUOTES) {
-                    
-                    if (c != '\'') {
-                        nstr.Append(c);
-                        continue;
-                    }
-                    if (((j + 1) < logContext.Len()) && logContext[j + 1] == '\'') {
-                        j++;
-                        nstr.Append(c);
-                        nstr.Append(c);
-                        continue;
-                    }
-                    mode = FIND_DOLLS;
-                    arS.Add("'"+nstr+"'");
-                    continue;
-                }
-            }
-            // replace $N in query
             int c = 0;
-            for (int k = arS.GetCount() - 1; k >= 0; k--) {
-                c=c+logDebug.Replace(wxString::Format("$%d",k+1), arS[k]);
-            }
-            if (c>0) logHint = logDebug;
+            wxString newstr = replace_bind_parameters(logContext, logDebug, c);
+            if (c>0) logHint = newstr;
+        }
+        // varint 2
+        if (logDetail.BeforeFirst('=').AfterFirst(':') == " $1 ") {
+            int c = 0;
+            wxString newstr = replace_bind_parameters(logDetail, logMessage, c);
+            if (c > 0) logMessage = newstr;
+
         }
         st.logDetail = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logDetail.Len()) };
         t += logDetail;

@@ -45,6 +45,8 @@ EVT_BUTTON(ID_CLEAR_ALL_FILTER, frmLog::OnClearAllFilter)
 EVT_BUTTON(ID_ADD_FILTER, frmLog::OnAddFilterIgnore)
 EVT_BUTTON(ID_ADD_UFilter, frmLog::OnAddUFilter)
 EVT_BUTTON(ID_DEL_UFilter, frmLog::OnDelUFilter)
+EVT_BUTTON(ID_EXTENDED_LOG, frmLog::OnExtendedLog)
+EVT_TEXT_ENTER(ID_COUNT_FILES, frmLog::OnTextChange)
 EVT_BUTTON(ID_HELP_LOG, frmLog::OnHelp)
 EVT_COMBOBOX(ID_CBOX_UFilter, frmLog::OnChangeUFilter)
 EVT_COMBOBOX(ID_CBOX_SMART, frmLog::OnChangeSmart)
@@ -115,6 +117,28 @@ void frmLog::OnChangeUFilter(wxCommandEvent& event) {
 		my_view->ModUserFilter("", "ChangeFilter", listUserFilter, contentFilter);
 	}
 }
+void frmLog::OnExtendedLog(wxCommandEvent& event) {
+	//my_view->ModUserFilter("", "RemoveFilter", listUserFilter, contentFilter);
+	StorageModel* m = dynamic_cast<StorageModel*>(my_view->GetModel());
+	m->DeleteAll();
+	bool b = true;
+	b=group->GetValue();
+	my_view->setGroupMode(b);
+	detail->SetValue(false);
+	my_view->ViewGroup(false);
+
+}
+void frmLog::OnTextChange(wxCommandEvent& event) {
+	//my_view->ModUserFilter("", "RemoveFilter", listUserFilter, contentFilter);
+	wxTextCtrl* t = (wxTextCtrl*)event.GetEventObject();
+	wxString text = t->GetValue();
+	int count = 1;
+	if (wxSscanf(text, "%d", &count) > 0) {
+		bool isOk=DBthread->SetLimitFiles(count);
+		OnExtendedLog(event);
+	};
+}
+
 void frmLog::OnChangeSmart(wxCommandEvent& event) {
 	int n = event.GetSelection();
 	if (n >= 0) {
@@ -256,10 +280,10 @@ pgConn* frmLog::createConn(pgServer* srv) {
 void frmLog::AddNewConn(pgConn* con) {
 	if (con != NULL) {
 		if (!con->HasFeature(FEATURE_CSVLOG)) return;
-		logfileName.Add("");
-		savedPartialLine.Add("");
-		logfileLength.Add(0);
-		len.Add(0);
+		//logfileName.Add("");
+		//savedPartialLine.Add("");
+		//logfileLength.Add(0);
+		//len.Add(0);
 		conArray.Add(new RemoteConn2(con));
 	}
 }
@@ -292,6 +316,17 @@ void* MyThread::Entry() {
 	}
 
 	return NULL;
+}
+void MyThread::ResetInfoFiles() {
+	readfiles.clear();
+}
+bool MyThread::SetLimitFiles(int limit) {
+	if (limit != limitfiles) {
+		limitfiles = limit;
+		ResetInfoFiles();
+		return true;
+	}
+	return false;
 }
 wxString MyThread::AppendNewRows(MyDataViewCtrl* my_view, Storage* st) {
 	//Storage* st = m_storage_model->getStorage();
@@ -328,6 +363,7 @@ void MyThread::getFilename() {
 	pgSet* set;
 	namepage = "";
 	m_seticon = false;
+	wxString mask = ".csv$";
 	for (size_t i = 0; i < m_conArray.GetCount(); i++) {
 		if (m_exit) break;
 		RemoteConn2* po = (RemoteConn2*) m_conArray[i];
@@ -354,35 +390,54 @@ void MyThread::getFilename() {
 
 
 		}
-		set = po->conn->ExecuteSet(
-			wxT("select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n")
-			wxT("  FROM pg_ls_logdir()  where name ~ '.csv' ORDER BY modification DESC"));
+		wxString sql = wxString::Format(
+		"select * from ( \
+			select current_setting('log_directory') || '/' || name filename, modification filetime, size len \
+			FROM pg_ls_logdir()  where name ~ %s ORDER BY modification DESC limit %d) l order by  filetime ASC", po->conn->qtDbString(mask), limitfiles
+		);
+
+
+		set = po->conn->ExecuteSet(sql);
 		if (set)
 		{
 
 			//logfileTimestamp = set->GetDateTime(wxT("filetime"));
-			len[i] = set->GetLong(wxT("len"));
 			namepage += dbname;
-			//m_storage_model->getStorage()->SetHost(m_conArray[i].conn->GetHostName());
-			//m_startRowsSevers[i] = m_addNewRows.GetCount();
-			wxString fn = set->GetVal(wxT("filename"));
-			if (fn != logfileName[i]) {
-				logfileLength[i] = 0;
-				logfileName[i] = fn;
-
+			while (!set->Eof()) {
+				
+				wxString fn = set->GetVal(wxT("filename"));
+				wxString key = wxString::Format("%i_server_%s",i,fn);
+				info_files inf;
+				long len= set->GetLong(wxT("len"));
+				if (auto it = readfiles.find(key); it != readfiles.end()) {
+					inf = it->second;
+				}
+				else {
+					inf.filename = fn;
+					inf.readlastposition = 0;
+					inf.size = len;
+				}
+				//len[i] = set->GetLong(wxT("len"));
+				
+				//m_storage_model->getStorage()->SetHost(m_conArray[i].conn->GetHostName());
+				//m_startRowsSevers[i] = m_addNewRows.GetCount();
+				
+				if (inf.readlastposition != len) {
+					inf.size = len;
+					readLogFile(inf, po->conn);
+					readfiles[key] = inf;
+				}
+				set->MoveNext();
 			}
-			/// addLogFile(logfileName, logfileTimestamp, len, logfileLength, skipFirst);
-
 			delete set;
-			readLogFile(logfileName[i], len[i], logfileLength[i], savedPartialLine[i], po->conn);
-			//m_startRowsSevers[i] = m_addNewRows.GetCount();
-			//if (m_startRowsSevers[i] == m_addNewRows.GetCount()) m_startRowsSevers[i] = FLAG_MAX_LINE;
+			
 		}
 	}
-	//if (namepage.IsEmpty()) namepage = "not connect";
-	//if (m_notebook->GetPageText(0) != namepage) m_notebook->SetPageText(0, namepage);
+	sendText("LOAD OK");
 }
-void MyThread::readLogFile(wxString logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine, pgConn* conn) {
+void MyThread::readLogFile(info_files &inf,
+	//wxString logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine,
+	pgConn* conn) {
 	wxString line;
 
 	// If GPDB 3.3 and later, log is normally in CSV format.  Let's get a whole log line before calling addLogLine,
@@ -391,18 +446,19 @@ void MyThread::readLogFile(wxString logfileName, long& lenfile, long& logfileLen
 	// PostgreSQL can log in CSV format, as well as regular format.  Normally, we'd only see
 	// the regular format logs here, because pg_logdir_ls only returns those.  But if pg_logdir_ls is
 	// changed to return the csv format log files, we should handle it.
-
+	wxString logfileName = inf.filename;
+	long logfileLength = inf.readlastposition;
 	bool csv_log_format = logfileName.Right(4) == wxT(".csv");
 
-	if (csv_log_format && savedPartialLine.length() > 0)
+	if (csv_log_format && inf.savedPartialLine.length() > 0)
 	{
 		if (logfileLength == 0)  // Starting at beginning of log file
-			savedPartialLine.clear();
+			inf.savedPartialLine.clear();
 		else
-			line = savedPartialLine;
+			line = inf.savedPartialLine;
 	}
 	wxString funcname = "pg_read_binary_file(";
-	while (lenfile > logfileLength)
+	while (inf.size > logfileLength)
 	{
 		//statusBar->SetStatusText(_("Reading log from server..."));
 		if (m_exit) return;
@@ -475,7 +531,7 @@ void MyThread::readLogFile(wxString logfileName, long& lenfile, long& logfileLen
 		logfileLength += l;
 		wxString host = conn->GetHostName();
 		//status->SetLabelText(wxString::Format("%s Load bytes %ld", host, logfileLength));
-		sendText(wxString::Format("%s Load bytes %ld", host, logfileLength));
+		sendText(wxString::Format("%s file: %s Load bytes %ld", host, logfileName, logfileLength));
 		wxString str;
 		str = line + wxTextBuffer::Translate(wxString(raw, set->GetConversion()), wxTextFileType_Unix);
 		//if (wxString(wxString(raw, wxConvLibc).wx_str(), wxConvUTF8).Len() > 0)
@@ -531,26 +587,33 @@ void MyThread::readLogFile(wxString logfileName, long& lenfile, long& logfileLen
 		}
 	}
 
-	savedPartialLine.clear();
+	inf.savedPartialLine.clear();
 
 	if (!line.IsEmpty())
 	{
 		// We finished reading to the end of the log file, but still have some data left
 		if (csv_log_format)
 		{
-			savedPartialLine = line;    // Save partial log line for next read of the data file.
+			inf.savedPartialLine = line;    // Save partial log line for next read of the data file.
 			line.Clear();
 		}
 		else
 			//my_view->AddRow(line.Trim());
 			m_addNewRows.Add(line.Trim());
 	}
-
+	inf.readlastposition = logfileLength;
 
 }
 
 void frmLog::OnAddLabelTextThread(wxThreadEvent& event) {
 	wxString s=event.GetString();
+	if (s == "LOAD OK") {
+		//m_timer.Stop();
+		//wxTimerEvent ev;
+	//	OnTimer(ev);
+		//m_timer.Start(timerInterval);
+		return;
+	}
 	if (!msgtext.IsEmpty() && !s.IsEmpty()) s += " : ";
 	s += msgtext;
 	status->SetLabelText(s);
@@ -1003,6 +1066,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 
     my_view->Bind(wxEVT_MENU, &MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU, my_view);
     m_storage_model = new StorageModel(my_view);
+	//wxObjectDataPtr<StorageModel> m_storage_model(new StorageModel(my_view));
     my_view->AssociateModel(m_storage_model.get());
     
     m_storage_model->BuildColumns(my_view);
@@ -1032,6 +1096,10 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
     const wxSizerFlags border1 = wxSizerFlags().DoubleBorder();
 
     //wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
+	sSizer->Add(new wxButton(testPanel, ID_EXTENDED_LOG, "Clear table"), border1);
+	sSizer->Add(new wxStaticText(testPanel, wxID_ANY, "Load last file counts:"), border1);
+	sSizer->Add(new wxTextCtrl(testPanel, ID_COUNT_FILES, "1",wxDefaultPosition,wxDefaultSize, wxTE_PROCESS_ENTER), border1);
+
     sSizer->Add(new wxButton(testPanel, ID_CLEAR_ALL_FILTER, "Clear All Filter"), border1);
     //sSizer->Add(new wxButton(testPanel, ID_DELETE_SEL, "Delete selected"), border);
 	sSizer->Add(new wxButton(testPanel, ID_ADD_FILTER, "Add Filter Ignore"), border1);
@@ -1082,6 +1150,11 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 	lb->Append(vec);
 	wxString srvs;
 	wxString srvname = wxString::Format("%s:%d", srv->GetName(), srv->GetPort());
+	bool onlyOne = srv->GetConnected();
+	if (onlyOne) {
+		SetTitle(_title + wxString::Format("(%s)", srvname));
+		lb->Enable(false);
+	}
 	settings->Read(dlgName + "/AutoConnect", &srvs, "");
 	if (!srvs.IsEmpty()) srvs += ";";
 	srvs += srvname;
@@ -1092,11 +1165,12 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 		pgServer* s = getServer(l);
 		if (s != NULL) {
 			if (!CheckConn(s->GetName(), s->GetPort())) {
-				pgConn* conn = createConn(s);
-				AddNewConn(conn);
+				if (!onlyOne || (onlyOne && srvname == l)) {
+					pgConn* conn = createConn(s);
+						AddNewConn(conn);
+				}
 				for (unsigned int x = 0; x < lb->GetCount(); x++)
 					if (l==lb->GetString(x)) lb->Check(x, true);
-
 			}
 		}
 		
@@ -1148,7 +1222,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 	my_view->ModUserFilter("","Init", listUserFilter, contentFilter);
 //	if (mainForm) getFilename();
 	Connect(wxID_ANY, wxEVT_THREAD, wxThreadEventHandler(frmLog::OnAddLabelTextThread), NULL, this);
-	DBthread = new MyThread(conArray,this);
+	DBthread = new MyThread(conArray,this,1);
 	if (DBthread->Create() != wxTHREAD_NO_ERROR)
 	{
 		wxLogError(wxT("Can’t create thread!"));
@@ -1188,11 +1262,6 @@ pgServer* frmLog::getServer(wxString& strserver) {
 
 frmLog::~frmLog()
 {
-	// If the status window wasn't launched in standalone mode...
-	if (mainForm)
-		mainForm->RemoveFrame(this);
-
-
     // If connection is still available, delete it
 	SavePosition();
 	wxString srvs;
@@ -1207,6 +1276,10 @@ frmLog::~frmLog()
 	settings->WriteBool(dlgName + "/Mode", group->IsChecked());
 	Storage *st=m_storage_model->getStorage();
 	st->saveFilters();
+	// If the status window wasn't launched in standalone mode...
+	if (mainForm)
+		mainForm->RemoveFrame(this);
+
 	mainForm->Logfrm = NULL;
 }
 void frmLog::Go()

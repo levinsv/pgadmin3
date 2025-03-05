@@ -82,6 +82,7 @@ class Storage
 {
 public:
 	bool AddLineTextCSV(const wxString& strcsv);
+	void Reset();
 	wxString GetField(int row, MyConst::colField col);
 	wxString GetFieldStorage(int row, MyConst::colField col, bool filter);
 	Storage();

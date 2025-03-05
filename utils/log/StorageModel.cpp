@@ -363,6 +363,9 @@ void StorageModel::BuildColumns(MyDataViewCtrl* ctrl) {
 }
 #include <wx/textfile.h>
 #include "log/filter_xpm.xpm"
+StorageModel::~StorageModel() {
+    delete store;
+}
 StorageModel::StorageModel(MyDataViewCtrl* view) :
     wxDataViewVirtualListModel(INITIAL_NUMBER_OF_ITEMS)
 {

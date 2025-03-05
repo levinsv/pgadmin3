@@ -63,6 +63,8 @@ enum
     MNU_SEND_MAIL=216,
     MNU_FIND_TEXT=217,
     ID_HELP_LOG=218,
+    ID_EXTENDED_LOG = 219,
+    ID_COUNT_FILES,
     ID_NEXT_MAX
 };
 
@@ -108,21 +110,29 @@ public:
         int* x_extent)  wxOVERRIDE;
 
 };
+
 class MyThread : public wxThread
 {
+    typedef struct info_files {
+        wxString filename;
+        long size=0;
+        long readlastposition=0;
+        wxString savedPartialLine;
+    } info_files;
 public:
-    MyThread(RemoteConnArray2 &conArray, wxWindow* p)
+    MyThread(RemoteConnArray2 &conArray, wxWindow* p,int lastfilecount)
     {
         
         //m_addNewRows = addNewRows;
         //m_serversName = serversName;
         //m_startRowsSevers = startRowsSevers;
+        limitfiles = lastfilecount;
         theParent = p;
         for (size_t i = 0; i < conArray.GetCount(); i++) {
-            logfileName.Add("");
-            savedPartialLine.Add("");
-            logfileLength.Add(0);
-            len.Add(0);
+            //logfileName.Add("");
+            //savedPartialLine.Add("");
+            //logfileLength.Add(0);
+            //len.Add(0);
             RemoteConn2* po = (RemoteConn2*)&conArray[i];
             wxString db = po->conn->GetDbname();
             m_conArray.Add(po);
@@ -149,10 +159,11 @@ public:
         //wxLogError("Semafore return error");
 		return false;
 	}
-
+    bool SetLimitFiles(int limit);
     virtual void* Entry();
 private:
-	void readLogFile(wxString logfileName, long& lenfile, long& logfileLength, wxString& savedPartialLine, pgConn* conn);
+    void ResetInfoFiles();
+	void readLogFile(info_files &inf, pgConn* conn);
 	void getFilename();
     void sendText(wxString s) {
         wxThreadEvent e(wxEVT_THREAD);
@@ -167,12 +178,13 @@ private:
     bool m_exit = false;
 	bool m_seticon = false;
     wxString namepage;
-	
+    std::map<wxString, info_files> readfiles;
+    int limitfiles = 1;
     //
-    wxArrayString logfileName;
-    wxArrayString savedPartialLine;
-    wxArrayLong logfileLength;
-    wxArrayLong len;
+    //wxArrayString logfileName;
+    //wxArrayString savedPartialLine;
+    //wxArrayLong logfileLength;
+    //wxArrayLong len;
 
 };
 
@@ -210,16 +222,18 @@ private:
     wxArrayString serversName;  // 
     wxArrayLong   startRowsSevers;
 //
-    wxArrayString logfileName;
-    wxArrayString savedPartialLine;
-    wxArrayLong logfileLength;
-    wxArrayLong len;
+    //wxArrayString logfileName;
+    //wxArrayString savedPartialLine;
+    //wxArrayLong logfileLength;
+    //wxArrayLong len;
 
     void OnSetGroup(wxCommandEvent& event);
     void OnSetDetailGroup(wxCommandEvent& event);
     void OnClearAllFilter(wxCommandEvent& event);
     void OnAddFilterIgnore(wxCommandEvent& event);
     void OnAddUFilter(wxCommandEvent& event);
+    void OnExtendedLog(wxCommandEvent& event);
+    void OnTextChange(wxCommandEvent& event);
     void OnDelUFilter(wxCommandEvent& event);
     void OnChangeUFilter(wxCommandEvent& event);
     void OnChangeSmart(wxCommandEvent& event);
