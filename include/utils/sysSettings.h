@@ -29,6 +29,12 @@ public:
 	// Display options
 	bool GetDisplayOption(const wxString &objtype, bool GetDefault = false);
 	void SetDisplayOption(const wxString &objtype, bool display);
+	bool GetFirstGroup(wxString& str, long& lIndex) { return wxConfig::GetFirstGroup(str,lIndex); };
+	bool GetNextGroup(wxString& str, long& lIndex) { return wxConfig::GetNextGroup(str, lIndex); };
+	bool GetFirstEntry(wxString& str, long& lIndex) { return wxConfig::GetFirstEntry(str, lIndex); };
+	bool GetNextEntry(wxString& str, long& lIndex) { return wxConfig::GetNextEntry(str, lIndex); };
+	EntryType GetEntryType(wxString& str) { return wxConfig::GetEntryType(str); };
+	void SetPath(wxString& str) { return wxConfig::SetPath(str); };
 
 	void FlushChanges()
 	{

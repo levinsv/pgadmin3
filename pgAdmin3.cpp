@@ -367,6 +367,7 @@ bool pgAdmin3::OnInit()
 		{wxCMD_LINE_OPTION, "cp", NULL, _("edit pgpass configuration file"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_MULTIPLE},
 		{wxCMD_LINE_OPTION, "c", NULL, _("edit configuration files in cluster directory"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_MULTIPLE},
 		{wxCMD_LINE_SWITCH, "t", NULL, _("dialog translation test mode"), wxCMD_LINE_VAL_NONE},
+		{wxCMD_LINE_SWITCH, "el", NULL, _("export servers configuration to file pgadmin3.ini"), wxCMD_LINE_VAL_NONE},
 #else
 		{wxCMD_LINE_SWITCH, wxT("v"), wxT("version"), _("show the version, and quit"), wxCMD_LINE_VAL_NONE},
 		{wxCMD_LINE_SWITCH, wxT("h"), wxT("help"), _("show the help message, and quit"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
@@ -856,6 +857,67 @@ bool pgAdmin3::OnInit()
 			SetTopWindow(NULL);
 			frmQuery *fq = new frmQuery(NULL, wxEmptyString, conn, wxEmptyString, fn);
 			fq->Go();
+		}
+		else if (cmdParser.Found(wxT("el"))) {
+			wxLogInfo(wxT("Starting export configuration to file .pagadmin3"));
+#ifdef __WXMSW__
+
+			wxFileConfig fc(appearanceFactory->GetShortAppName());
+			fc.EnableAutoSave();
+			wxArrayString gname;
+			// enumeration variables
+			wxString str,path="";
+			long dummy;
+			// first enum all entries
+			bool save = false;
+			while (1)
+			{
+				bool bCont = settings->GetFirstEntry(str, dummy);
+				while (bCont) {
+					if (save && bCont) {
+						wxString pp = path + "/" + str;
+						if (settings->GetEntryType(str) == wxConfigBase::EntryType::Type_Integer) {
+							long v,def=0;
+							if (settings->Read(str,&v,def)) {
+								fc.Write(pp, v);
+							}
+						}
+						else {
+							wxString v;
+							if (settings->Read(str, &v, wxEmptyString)) {
+								if (!(str=="SchemaRestriction" && v.IsEmpty()))
+									fc.Write(pp, v);
+							}
+						}
+					}
+					bCont = settings->GetNextEntry(str, dummy);
+				}
+				bCont = settings->GetFirstGroup(str, dummy);
+				while (bCont) {
+
+					if (str.StartsWith("Servers") && !save) {
+						gname.Add("/"+str);
+						save = true;
+						break;
+					}
+					if (save)
+						gname.Add(path+"/"+str);
+					bCont = settings->GetNextGroup(str, dummy);
+				}
+				if (gname.Count() > 0) {
+					path = gname[gname.Count() - 1];
+					settings->SetPath(path);
+					gname.RemoveAt(gname.Count() - 1);
+				}
+				else
+					break;
+			}
+			wxString file=fc.GetLocalFileName(appearanceFactory->GetShortAppName());
+			wxPrintf(wxT("Import servers configure to file %s\n"), file.c_str());
+			wxLogWarning(wxT("Import servers configure to file %s"), file.c_str());
+			return false;
+#endif
+
 		}
 		else
 		{
