@@ -74,6 +74,21 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     //SetUseNativeColLabels(true);
     //UseNativeColHeader(true);
     SetCellHighlightColour(wxColor(0, 0, 0));
+#ifdef __WXGTK__
+    wxColour selbg = GetSelectionBackground();
+    wxColour labbg = GetLabelBackgroundColour();
+    wxString t1 = selbg.GetAsString();
+    wxString t2 = labbg.GetAsString();
+    wxColour cline = GetGridLineColour();
+    wxString t3 = cline.GetAsString();
+    if (labbg.GetRGB() == cline.GetRGB()) {
+        int min = wxMin(labbg.GetBlue(), labbg.GetGreen());
+        min = wxMin(min, labbg.GetRed());
+        if (min > 200) min = min - 30; else min = min + 30;
+        wxColour labbgn(min, min, min);
+        SetLabelBackgroundColour(labbgn);
+    }
+#endif
     grp = NULL;
     isSort = false;
     searchStr = "";
@@ -118,7 +133,6 @@ void ctlSQLGrid::DrawColLabel(wxDC& dc, int col) {
 
     wxRect rect(colLeft, 0, GetColWidth(col), m_colLabelHeight);
     sqlResultTable* t = (sqlResultTable*)GetTable();
-
     wxHeaderSortIconType sortArrow = t->getSortColumn(col) != 0
         ? t->getSortColumn(col) > 0
         ? wxHDR_SORT_ICON_UP

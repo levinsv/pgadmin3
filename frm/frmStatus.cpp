@@ -98,7 +98,7 @@ EVT_TIMER(TIMER_REFRESHUI_ID, frmStatus::OnRefreshUITimer)
 
 EVT_TIMER(TIMER_STATUS_ID, frmStatus::OnRefreshStatusTimer)
 EVT_LIST_ITEM_SELECTED(CTL_STATUSLIST, frmStatus::OnSelStatusItem)
-EVT_LIST_ITEM_DESELECTED(CTL_STATUSLIST, frmStatus::OnSelStatusItem)
+//EVT_LIST_ITEM_DESELECTED(CTL_STATUSLIST,      frmStatus::OnSelStatusItem)
 EVT_LIST_ITEM_RIGHT_CLICK(CTL_STATUSLIST, frmStatus::OnRightClickStatusItem)
 EVT_LIST_COL_CLICK(CTL_STATUSLIST, frmStatus::OnSortStatusGrid)
 EVT_LIST_COL_RIGHT_CLICK(CTL_STATUSLIST, frmStatus::OnRightClickStatusGrid)
@@ -902,9 +902,9 @@ void frmStatus::AddLockPane()
 	{
 		// Get column
 		lockList->GetColumn(col, item);
-
+		int currwidth = lockList->GetColumnWidth(col);
 		// Reinitialize column's width
-		settings->Read(wxT("frmStatus/LockPane_") + item.GetText() + wxT("_Width"), &savedwidth, item.GetWidth());
+		settings->Read(wxT("frmStatus/LockPane_") + item.GetText() + wxT("_Width"), &savedwidth, currwidth);
 		if (savedwidth > 0)
 			lockList->SetColumnWidth(col, savedwidth);
 		else
@@ -1002,9 +1002,9 @@ void frmStatus::AddXactPane()
 	{
 		// Get column
 		xactList->GetColumn(col, item);
-
+		int currwidth = xactList->GetColumnWidth(col);
 		// Reinitialize column's width
-		settings->Read(wxT("frmStatus/XactPane_") + item.GetText() + wxT("_Width"), &savedwidth, item.GetWidth());
+		settings->Read(wxT("frmStatus/XactPane_") + item.GetText() + wxT("_Width"), &savedwidth, currwidth);
 		if (savedwidth > 0)
 			xactList->SetColumnWidth(col, savedwidth);
 		else
@@ -1075,7 +1075,6 @@ void frmStatus::AddQuerystatePane()
 	querystateList->AddColumn(_("Plan"), 300);
 	querystateList->AddColumn(wxT("Leader_pid"), 20);
 
-
 	// Get through the list of columns to build the popup menu
 	querystatePopupMenu = new wxMenu();
 	wxListItem item;
@@ -1085,9 +1084,10 @@ void frmStatus::AddQuerystatePane()
 	{
 		// Get column
 		querystateList->GetColumn(col, item);
-
+		wxString namec=item.GetText();
+		int currwidth=querystateList->GetColumnWidth(col);
 		// Reinitialize column's width
-		settings->Read(wxT("frmStatus/QuerystatePane_") + item.GetText() + wxT("_Width"), &savedwidth, item.GetWidth());
+		settings->Read(wxT("frmStatus/QuerystatePane_") + namec + wxT("_Width"), &savedwidth, currwidth);
 		if (savedwidth > 0)
 			querystateList->SetColumnWidth(col, savedwidth);
 		else
@@ -2133,14 +2133,29 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent& event)
 			WS.EndSeriosSample();
 		}
 		bool selverify = true;
-		while (row < statusList->GetItemCount()) {
+		long r = statusList->GetItemCount();
+		long fuck_rows=0;
+		while ((row) < statusList->GetItemCount()) {
 			statusList->Select(row, false);
 			long item = -1;
 			item = statusList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
-			if (item >= row) statusList->Focus(row - 1);
-			if (statusList->GetItemCount() > row) statusList->DeleteItem(row);
+			if (item>=row && row>0) statusList->Focus(row-1);
+			if (statusList->GetItemCount()>row)
+			{
+				#ifdef __WXGTK__
+					//DeleteItem in GTK flicker problem
+					if (row+1 == r && filterColumn.size()>0) {
+						for(int cc=0;cc<statusList->GetColumnCount();cc++)
+							statusList->SetItem(row, cc, " ");
+						fuck_rows=1;
+						break;
+					} else statusList->DeleteItem(row);
+				#else
+				statusList->DeleteItem(row);
+				#endif
+			}
 		}
-		long r = statusList->GetItemCount();
+		r = statusList->GetItemCount()-fuck_rows;
 		wxString tit = _("Activity") + "(" + NumToStr(r) + ")";
 		wxString old = manager.GetPane(wxT("Activity")).caption;
 		if (tit != old) {
@@ -3939,6 +3954,7 @@ void frmStatus::OnStatusMenu(wxCommandEvent& event)
 	{
 		// Save column's width in a variable so that we can restore the old width
 		// if we make this column "invisible"
+		int currwidth= statusList->GetColumnWidth(i);
 		if (statusList->GetColumnWidth(i) > 0)
 			statusColWidth[i] = statusList->GetColumnWidth(i);
 
@@ -3950,7 +3966,7 @@ void frmStatus::OnStatusMenu(wxCommandEvent& event)
 
 		// Save current width to restore it at next launch
 		statusList->GetColumn(i, column);
-		if (column.GetWidth() > 0)
+		if (currwidth > 0)
 			settings->WriteInt(wxT("frmStatus/StatusPane_") + column.GetText() + wxT("_Width"),
 				statusColWidth[i]);
 		else
@@ -3969,6 +3985,7 @@ void frmStatus::OnLockMenu(wxCommandEvent& event)
 	{
 		// Save column's width in a variable so that we can restore the old width
 		// if we make this column "invisible"
+		int currwidth = lockList->GetColumnWidth(i);
 		if (lockList->GetColumnWidth(i) > 0)
 			lockColWidth[i] = lockList->GetColumnWidth(i);
 
@@ -3980,7 +3997,7 @@ void frmStatus::OnLockMenu(wxCommandEvent& event)
 
 		// Save current width to restore it at next launch
 		lockList->GetColumn(i, column);
-		if (column.GetWidth() > 0)
+		if (currwidth > 0)
 			settings->WriteInt(wxT("frmStatus/LockPane_") + column.GetText() + wxT("_Width"),
 				lockColWidth[i]);
 		else
@@ -3999,6 +4016,7 @@ void frmStatus::OnXactMenu(wxCommandEvent& event)
 	{
 		// Save column's width in a variable so that we can restore the old width
 		// if we make this column "invisible"
+		int currwidth = xactList->GetColumnWidth(i);
 		if (xactList->GetColumnWidth(i) > 0)
 			xactColWidth[i] = xactList->GetColumnWidth(i);
 
@@ -4010,7 +4028,7 @@ void frmStatus::OnXactMenu(wxCommandEvent& event)
 
 		// Save current width to restore it at next launch
 		xactList->GetColumn(i, column);
-		if (column.GetWidth() > 0)
+		if (currwidth > 0)
 			settings->WriteInt(wxT("frmStatus/XactPane_") + column.GetText() + wxT("_Width"),
 				xactColWidth[i]);
 		else
@@ -4027,6 +4045,7 @@ void frmStatus::OnQuerystateMenu(wxCommandEvent& event)
 	{
 		// Save column's width in a variable so that we can restore the old width
 		// if we make this column "invisible"
+		int currwidth=querystateList->GetColumnWidth(i);
 		if (querystateList->GetColumnWidth(i) > 0)
 			querystateColWidth[i] = querystateList->GetColumnWidth(i);
 
@@ -4038,7 +4057,7 @@ void frmStatus::OnQuerystateMenu(wxCommandEvent& event)
 
 		// Save current width to restore it at next launch
 		querystateList->GetColumn(i, column);
-		if (column.GetWidth() > 0)
+		if (currwidth > 0)
 			settings->WriteInt(wxT("frmStatus/QuerystatePane_") + column.GetText() + wxT("_Width"),
 				querystateColWidth[i]);
 		else
@@ -4167,7 +4186,7 @@ void frmStatus::OnRollback(wxCommandEvent& event)
 
 void frmStatus::OnSelStatusItem(wxListEvent& event)
 {
-#ifdef __WXGTK__
+#ifdef __WXGTK__1
 	manager.GetPane(wxT("Activity")).SetFlag(wxAuiPaneInfo::optionActive, true);
 	manager.GetPane(wxT("Locks")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Transactions")).SetFlag(wxAuiPaneInfo::optionActive, false);
@@ -4222,7 +4241,7 @@ void frmStatus::OnSelStatusItem(wxListEvent& event)
 
 void frmStatus::OnSelLockItem(wxListEvent& event)
 {
-#ifdef __WXGTK__
+#ifdef __WXGTK__1
 	manager.GetPane(wxT("Activity")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Locks")).SetFlag(wxAuiPaneInfo::optionActive, true);
 	manager.GetPane(wxT("Transactions")).SetFlag(wxAuiPaneInfo::optionActive, false);
@@ -4269,7 +4288,7 @@ void frmStatus::OnSelLockItem(wxListEvent& event)
 
 void frmStatus::OnSelXactItem(wxListEvent& event)
 {
-#ifdef __WXGTK__
+#ifdef __WXGTK__1
 	manager.GetPane(wxT("Activity")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Locks")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Transactions")).SetFlag(wxAuiPaneInfo::optionActive, true);
@@ -4309,7 +4328,7 @@ void frmStatus::OnSelXactItem(wxListEvent& event)
 
 void frmStatus::OnSelQuerystateItem(wxListEvent& event)
 {
-#ifdef __WXGTK__
+#ifdef __WXGTK__1
 	manager.GetPane(wxT("Activity")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Locks")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Transactions")).SetFlag(wxAuiPaneInfo::optionActive, false);
@@ -4361,7 +4380,7 @@ void frmStatus::ActivatePane(wxString name) {
 
 void frmStatus::OnSelLogItem(wxListEvent& event)
 {
-#ifdef __WXGTK__
+#ifdef __WXGTK__1
 	manager.GetPane(wxT("Activity")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Locks")).SetFlag(wxAuiPaneInfo::optionActive, false);
 	manager.GetPane(wxT("Transactions")).SetFlag(wxAuiPaneInfo::optionActive, false);
