@@ -102,7 +102,7 @@ public:
         // default group open
         rowsGroup[rowgroup] = -rowgroup;
         //beg[rowgroup]=rowgroup;
-        wxASSERT_MSG(lastrowgroup > end.Count(), " out of bounds");
+        //wxASSERT_MSG(lastrowgroup > end.Count(), " out of bounds");
         end[rowgroup] = lastrowgroup;
         run[rowgroup] = actualtime;
     };

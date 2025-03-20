@@ -685,7 +685,7 @@ wxString Storage::getStrGroup(wxString source) {
     wxString n;
     bool quote = false;
     while (i < l) {
-        char c = source[i++];
+        wxChar c = source[i++];
         if (c >= '0' && c <= '9' && !quote) continue;
         if (c == '"') {
 

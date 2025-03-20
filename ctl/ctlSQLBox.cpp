@@ -1170,7 +1170,9 @@ void ctlSQLBox::UpdateLineNumber()
 		if (width != GetMarginWidth(0))
 		{
 			SetMarginWidth(0, width);
+#ifndef __WXGTK__
 			Update();
+#endif
 		}
 	}
 	else

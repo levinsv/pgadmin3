@@ -104,8 +104,10 @@ void MyDataViewCtrl::setGroupMode(bool mode) {
     wxString l = wxString::Format("rows %d", m->GetRowCount());
     st->SetLabelText(l);
 
-    if (!SetHeaderAttr(attr))
-        wxLogMessage("Sorry, header attributes not supported on this platform");
+    if (!SetHeaderAttr(attr)) {
+        //wxLogMessage("Sorry, header attributes not supported on this platform");
+    }
+        
 
 }
 void MyDataViewCtrl::ViewGroup(bool view) {
@@ -381,6 +383,8 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event) {
 void MyDataViewCtrl::OnContextMenu(wxDataViewEvent& event) {
     //wxString title = m_music_model->GetTitle(event.GetItem());
     //wxLogMessage("wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, Item: %s", title);
+    int c = event.GetColumn();
+    if (c < 0) return;
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
     int row = m->GetRow(event.GetItem());
     int ncol;
