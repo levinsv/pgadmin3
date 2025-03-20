@@ -44,9 +44,11 @@ public:
 	void SetExplainString(const wxString &str);
 	void Clear();
 	void SaveAsImage(const wxString &fileName, wxBitmapType imageType);
-
+	bool isneedoptimizedraw=false;
 private:
 	void OnMouseMotion(wxMouseEvent &ev);
+	void OnMouseWhell(wxMouseEvent& ev);
+	
 
 	ExplainShape *rootShape;
 	ExplainPopup *popup;
@@ -65,6 +67,20 @@ public:
 	{
 		if (condition.Length() == 0) condition = str;
 		else condition += wxT(" ") + str;
+	}
+	void SetConditionAndReplaceLabel(const wxString& str)
+	{
+		wxString replace= "Planning Time:";
+		if (!str.StartsWith(replace)) {
+			replace = "Execution Time:";
+				if (!str.StartsWith(replace)) {
+					condition += wxT(" ") + str;
+					return;
+				}
+		}
+		condition = label+ wxT(" ") + condition;
+		label = str;
+		description = str;
 	}
 	long GetLevel()
 	{

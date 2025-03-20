@@ -21,6 +21,8 @@
 #include <wx/docview.h>
 
 #include "images/ex_aggregate.pngc"
+#include "images/ex_partial_aggregate.pngc"
+#include "images/ex_finalize_aggregate.pngc"
 #include "images/ex_append.pngc"
 #include "images/ex_bmp_and.pngc"
 #include "images/ex_bmp_heap.pngc"
@@ -80,6 +82,7 @@ ExplainShape::ExplainShape(const wxImage &bmp, const wxString &description, long
 {
 	SetBitmap(wxBitmap(bmp));
 	SetLabel(description, tokenNo, detailNo);
+	SetDisableLabel(true);
 	kidCount = 0;
 	totalShapes = 0;
 	usedShapes = 0;
@@ -135,21 +138,132 @@ void ExplainShape::OnDraw(wxDC &dc)
 	// We do not draw the root shape
 	if (m_rootShape)
 		return;
+	wxRect trg=GetCanvas()->GetClientRect();
+	wxMouseEvent ev;
+	ev.m_x = 0;
+	ev.m_y = 0;
+	wxPoint logPos(ev.GetLogicalPosition(dc));
+	ev.m_x = trg.x+trg.width;
+	ev.m_y = trg.height;
+	wxPoint logPos2(ev.GetLogicalPosition(dc));
+	wxRect cliprect(logPos, logPos2);
+	double width = 0.0, height = 0.0;
+	GetBoundingBoxMin(&width,&height);
+	wxRect sp((int)(GetX()), (int)(GetY()), (int) (width), (int)(height));
+	//int x = (int)(GetX() + (width ));
+	//int y = (int)(GetY() + (height));
+	if (!cliprect.Intersects(sp)) {
+		if (dynamic_cast<ExplainCanvas *>(GetCanvas())->isneedoptimizedraw) return;
+		
+	}
+	// dynamic bitmap
+	bool bmpdynamic = false;
+	wxBitmap bmpm(bmp.GetWidth(),bmp.GetHeight());
+	if (label.StartsWith("Memoize")) {
+		wxPen p = dc.GetPen();
+		wxMemoryDC dc2;
+		dc2.SelectObject(bmpm);
+		//dc2.SetBackgroundMode(wxBRUSHSTYLE_SOLID);
+		dc2.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)));
+		dc2.Clear();
+		int w = bmpm.GetWidth();
+		int h = bmpm.GetHeight();
+		dc2.DrawRectangle(0, 0, w, h);
+		wxRegEx r("Hits: (\\d+)  Misses: (\\d+)  Evictions: (\\d+)  Overflows: (\\d+)  Memory Usage: (\\d+\\S+)");
+		long hit=0, mis=0, evi=0, ovr=0;
+		wxString mem;
+		int x = 0, y = 0;
+		int tw, th;
+		wxString txt = _("Cache");
+		wxFont f(GetCanvas()->GetFont());
+		f.SetPointSize(8);
+		mem = f.GetNativeFontInfoDesc();
+		dc2.SetFont(f);
+		dc2.SetPen(p);
+		//dc2.SetTextForeground(*wxBLACK);
+		//dc2.SetTextBackground(*wxWHITE);
+		dc2.GetTextExtent(txt, &tw, &th);
+		int border = 2;
+		y += border;
+		x = (w - tw) / 2;
+		dc2.DrawText(txt, x, y);
+		y += th+ border;
+		//dc2.DrawText("TEst", 0, 0);
+		mem = wxEmptyString;
+		if (r.Matches(condition)) {
+			hit=StrToLong( r.GetMatch(condition, 1));
+			mis = StrToLong(r.GetMatch(condition, 2));
+			evi = StrToLong(r.GetMatch(condition, 3));
+			ovr = StrToLong(r.GetMatch(condition, 4));
+			mem = (r.GetMatch(condition, 5));
+		}
+		wxRect rect(border, y, w - 2 * border, th / 2);
+		//dc2.DrawRectangle(0, 0, w, h);
+		if ((mis + hit) > 0) {
+			int hitwidth = rect.width * hit * 1.0 / (mis + hit);
+			{
+				wxDCPenChanger ppen(dc2, *wxTRANSPARENT_PEN);
+				//wxColour c(wxString("#00FF00"));
+				wxColour c(*wxGREEN);
+				wxDCBrushChanger br(dc2, wxBrush(c));
+				//dc2.SetBrush(*wxGREEN_BRUSH);
+				dc2.DrawRectangle(BMP_BORDER, y, hitwidth, rect.height);
+				dc2.SetPen(dc.GetPen());
+				dc2.SetBrush(*wxTRANSPARENT_BRUSH);
+				dc2.DrawRectangle(rect);
+			}
+			y += rect.height + border;
+		}
+		else {
+			wxDCBrushChanger br(dc2, wxBrush(p.GetColour(), wxHATCHSTYLE_BDIAGONAL));
+			rect.x = 0; rect.width = w; rect.height = h - y;
+			dc2.DrawRectangle(rect);
+		}
+		if (!mem.IsEmpty()) {
+			mem = "" + mem;
+			dc2.DrawText(mem, border, y);
+			y += th;
+		}
+		x = border;
+		if (evi > 0) {
+			wxDCBrushChanger br(dc2, wxBrush(*wxBLUE));
+			int r = 4;
+			wxPoint p(x+r,y+r);
+			dc2.DrawCircle(p, r);
+			//y + 2 * r + 1;
+			x += 2 * r + r;
+		}
+		if (ovr > 0) {
+			wxDCBrushChanger br(dc2, wxBrush(*wxRED));
+			int r = 4;
+			wxPoint p(x + r, y + r);
+			dc2.DrawCircle(p, r);
+			x += 2 * r + 3;
+		}
 
+		{
+			wxPen p = dc.GetPen();
+			wxDCPenChanger ppen(dc2, wxPen(p.GetColour(), 2));
+			//dc2.DrawLine(wxPoint(0, 0), wxPoint(w, h));
+			//dc2.DrawLine(wxPoint(w, 0), wxPoint(0, h));
+		}
+		dc2.SelectObject(wxNullBitmap);
+		bmpdynamic = true;
+	}
 	int x, y;
 	x = WXROUND(m_xpos - bmp.GetWidth() / 2.0);
 	y = WXROUND(m_ypos - GetHeight() / 2.0);
 
-	dc.DrawBitmap(bmp, x, y, true);
+	if (bmpdynamic) dc.DrawBitmap(bmpm, x, y, true); else dc.DrawBitmap(bmp, x, y, true);
 
 	int w, h;
 	dc.SetFont(GetCanvas()->GetFont());
-	dc.GetTextExtent(label, &w, &h);
+	dc.GetTextExtent(label.Trim(), &w, &h);
 
 	x = WXROUND(m_xpos - w / 2.0);
 	y += bmp.GetHeight() + BMP_BORDER;
 
-	dc.DrawText(label, x, y);
+	dc.DrawText(label.Trim(), x, y);
 }
 
 
@@ -238,6 +352,8 @@ ExplainShape *ExplainShape::Create(long level, ExplainShape *last, const wxStrin
 	else if (token == wxT("Result"))        s = new ExplainShape(*ex_result_png_img, descr);
 	else if (token == wxT("Append"))        s = new ExplainShape(*ex_append_png_img, descr);
 	else if (token == wxT("Gather"))	    s = new ExplainShape(*ex_gatcher_png_img, descr);
+	else if (token == wxT("Partial") && token2 == wxT("GroupAggregate"))  s = new ExplainShape(*ex_partial_aggregate_png_img, descr);
+	else if (token == wxT("Finalize") && token2 == wxT("GroupAggregate"))  s = new ExplainShape(*ex_finalize_aggregate_png_img, descr);
 	else if (token == wxT("Nested"))
 	{
 		if (token2 == wxT("Loop") && token4 == wxT("Join"))

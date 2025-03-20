@@ -2159,6 +2159,7 @@
     <png2c Include="include\images\ex_broadcast_motion.png" />
     <png2c Include="include\images\ex_cte_scan.png" />
     <png2c Include="include\images\ex_delete.png" />
+    <png2c Include="include\images\ex_finalize_aggregate.png" />
     <png2c Include="include\images\ex_foreign_scan.png" />
     <png2c Include="include\images\ex_gatcher.png" />
     <png2c Include="include\images\ex_gather.png" />
@@ -2186,6 +2187,7 @@
     <png2c Include="include\images\ex_nested.png" />
     <png2c Include="include\images\ex_nested_loop_anti_join.png" />
     <png2c Include="include\images\ex_nested_loop_semi_join.png" />
+    <png2c Include="include\images\ex_partial_aggregate.png" />
     <png2c Include="include\images\ex_recursive_union.png" />
     <png2c Include="include\images\ex_redistribute_motion.png" />
     <png2c Include="include\images\ex_result.png" />

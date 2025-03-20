@@ -3961,6 +3961,9 @@
     <png2c Include="include\images\ex_delete.png">
       <Filter>include\images</Filter>
     </png2c>
+    <png2c Include="include\images\ex_finalize_aggregate.png">
+      <Filter>include\images</Filter>
+    </png2c>
     <png2c Include="include\images\ex_foreign_scan.png">
       <Filter>include\images</Filter>
     </png2c>
@@ -4034,6 +4037,9 @@
       <Filter>include\images</Filter>
     </png2c>
     <png2c Include="include\images\ex_nested_loop_semi_join.png">
+      <Filter>include\images</Filter>
+    </png2c>
+    <png2c Include="include\images\ex_partial_aggregate.png">
       <Filter>include\images</Filter>
     </png2c>
     <png2c Include="include\images\ex_recursive_union.png">

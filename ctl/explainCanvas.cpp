@@ -21,6 +21,7 @@
 
 BEGIN_EVENT_TABLE(ExplainCanvas, wxShapeCanvas)
 	EVT_MOTION(ExplainCanvas::OnMouseMotion)
+	EVT_MOUSEWHEEL(ExplainCanvas::OnMouseWhell)
 END_EVENT_TABLE()
 
 
@@ -102,7 +103,7 @@ void ExplainCanvas::SetExplainString(const wxString &str)
 	int maxLevel = 0;
 
 	wxStringTokenizer lines(flt, wxT("\n"));
-
+	bool isstat = false;
 	while (lines.HasMoreTokens())
 	{
 		wxString tmp = lines.GetNextToken();
@@ -143,6 +144,21 @@ void ExplainCanvas::SetExplainString(const wxString &str)
 					last->SetCondition(line);
 					continue;
 				}
+			}
+			else {
+				if ((line.StartsWith("Query Identifier:") ||
+					line.StartsWith("Planning:") ||
+					line.StartsWith("Planning Time:") ||
+					line.StartsWith("Execution Time:"))
+					&& !isstat
+					)
+					isstat = true;
+				else 
+					if (last != rootShape && isstat) {
+						// all rows append condition
+						last->SetConditionAndReplaceLabel(line);
+						continue;
+					}
 			}
 
 			while (last != rootShape && level <= last->GetLevel())
@@ -216,9 +232,14 @@ void ExplainCanvas::SetExplainString(const wxString &str)
 	int h = (rootShape->totalShapes * yoffs + y0 * 2 + PIXPERUNIT - 1) / PIXPERUNIT;
 
 	SetScrollbars(PIXPERUNIT, PIXPERUNIT, w, h);
+	isneedoptimizedraw = false;
+	if (rootShape->totalShapes > 300) isneedoptimizedraw = true;
 }
 
-
+void ExplainCanvas::OnMouseWhell(wxMouseEvent& ev)
+{
+	HandleOnMouseWheel(ev);
+}
 void ExplainCanvas::OnMouseMotion(wxMouseEvent &ev)
 {
 	ev.Skip(true);
