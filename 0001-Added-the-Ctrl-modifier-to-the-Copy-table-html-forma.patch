@@ -1,0 +1,55 @@
+From f40a7fb3883e43bbd93093747dbe3fd94b891709 Mon Sep 17 00:00:00 2001
+From: lsv <gtm7@yandex.ru>
+Date: Thu, 27 Mar 2025 10:10:52 +0500
+Subject: [PATCH 1/2] Added the Ctrl modifier to the "Copy table html format"
+ command.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+При выборе команды "Copy table html format" и удержании Ctrl
+будет выполнено копирование только строк результата запроса.
+---
+ frm/frmQuery.cpp | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/frm/frmQuery.cpp b/frm/frmQuery.cpp
+index 798dd8d..b3564be 100644
+--- a/frm/frmQuery.cpp
++++ b/frm/frmQuery.cpp
+@@ -2292,14 +2292,25 @@ void frmQuery::OnCopy_TableToHtml(wxCommandEvent& ev)
+ {
+ 	//	if (currentControl() == sqlResult)
+ 	{
+-		wxString s = wxT("Table html format copy buffer.");
++		wxString s = wxT("Query and table HTML format copy.");
++		bool press = wxGetKeyState(WXK_CONTROL);
+ 		wxString q = sqlResult->sqlquerytext;
+-		if (q.IsEmpty()) return;
+-		ctlSQLBox *box = new ctlSQLBox(sqlNotebook, CTL_SQLQUERY, wxDefaultPosition, wxSize(0,0), wxTE_MULTILINE |  wxTE_RICH2);
+-		box->SetText(q);
+-		box->Colourise(0, box->GetLength());
+-		wxString html = box->TextToHtml(0, box->GetLength());
+-		delete box;
++		wxString html;
++		if (!press) {
++			if (q.IsEmpty()) {
++				SetStatusText("Problem: Query not found.", STATUSPOS_MSGS);
++				return;
++			}
++			ctlSQLBox* box = new ctlSQLBox(sqlNotebook, CTL_SQLQUERY, wxDefaultPosition, wxSize(0, 0), wxTE_MULTILINE | wxTE_RICH2);
++			box->SetText(q);
++			box->Colourise(0, box->GetLength());
++			html = box->TextToHtml(0, box->GetLength());
++			delete box;
++		}
++		else {
++			html = "";
++			s = wxT("ONLY table HTML format copy.");
++		}
+ 		sqlResult->CopyTableToHtml(html);
+ 
+ 		SetStatusText(s, STATUSPOS_MSGS);
+-- 
+2.41.0.windows.1
+
