@@ -36,6 +36,7 @@ public:
     Storage* st;
     int row;
     int countRows = 0;
+    wxColour quoteselcolor;
     // This renderer can be either activatable or editable, for demonstration
     // purposes. In real programs, you should select whether the user should be
     // able to activate or edit the cell and it doesn't make sense to switch
@@ -46,12 +47,25 @@ public:
         EnableEllipsize(wxELLIPSIZE_END);
         col = column;
         st = NULL;
+        wxColour textColour;
+#ifdef __WXGTK__
+        textColour = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
+#else
+        textColour = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+#endif // __WXGTK__
+        if (ContrastColorBlackOrWhite(textColour) == "#000000") {
+            quoteselcolor = wxColour(wxString("#7f7f7f"));
+        }
+        else quoteselcolor = *wxYELLOW;
     }
 
     virtual bool Render(wxRect rect, wxDC* dc, int state) wxOVERRIDE
     {
         //dc->SetBrush( *wxLIGHT_GREY_BRUSH );
-        dc->SetBrush(*wxYELLOW_BRUSH);
+        if (state & wxDATAVIEW_CELL_SELECTED)
+            dc->SetBrush(quoteselcolor);
+        else
+            dc->SetBrush(*wxYELLOW_BRUSH);
         dc->SetPen(*wxTRANSPARENT_PEN);
         rect.Deflate(2);
         wxRect orig = rect;
@@ -71,7 +85,6 @@ public:
         int startX = 0;
 
         wxRect rectCol;
-
         while (i < s.Len()) {
 
             t = "";
@@ -105,16 +118,12 @@ public:
                 t += s[i];
                 i++;
             }
-            RenderText(t,
-                x, // no offset
-                //wxRect(dc->GetTextExtent(m_value)).CentreIn(rect),
-                rect,
-                dc,
-                state);
+            RenderText(t, x, rect, dc, state);
             rect.y = rect.y + h.GetHeight() + 0;
             rect.height = rect.height - (h.GetHeight() + 0);
-
+            ex = true;
         }
+        if (!ex) RenderText(t, x, rect, dc, state);
 
         if (countRows > 0 && col == StorageModel::cols::Col_Host) {
             dc->SetBrush(*wxGREEN_BRUSH);
@@ -170,8 +179,12 @@ public:
         if (lines > 1) {
             wxString position;
             position = wxString::Format("lines %d,hieght 1 row %d full h=%d", lines, txtSize.GetHeight(), txtSize.GetHeight() * lines + 1 * lines);
-            // wxLogMessage("MyCustomRendererText GetSize() %s", position);
+#ifdef __WXGTK__
+            wxSize charSize = GetTextExtent("H");
+            txtSize.SetHeight(txtSize.GetHeight() + charSize.GetHeight()/2);
+#else
             txtSize.SetHeight(txtSize.GetHeight() * lines + 1 * lines);
+#endif
         }
         else
             txtSize.SetHeight(-1);
