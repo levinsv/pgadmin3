@@ -2292,14 +2292,25 @@ void frmQuery::OnCopy_TableToHtml(wxCommandEvent& ev)
 {
 	//	if (currentControl() == sqlResult)
 	{
-		wxString s = wxT("Table html format copy buffer.");
+		wxString s = wxT("Query and table HTML format copy.");
+		bool press = wxGetKeyState(WXK_CONTROL);
 		wxString q = sqlResult->sqlquerytext;
-		if (q.IsEmpty()) return;
-		ctlSQLBox *box = new ctlSQLBox(sqlNotebook, CTL_SQLQUERY, wxDefaultPosition, wxSize(0,0), wxTE_MULTILINE |  wxTE_RICH2);
-		box->SetText(q);
-		box->Colourise(0, box->GetLength());
-		wxString html = box->TextToHtml(0, box->GetLength());
-		delete box;
+		wxString html;
+		if (!press) {
+			if (q.IsEmpty()) {
+				SetStatusText("Problem: Query not found.", STATUSPOS_MSGS);
+				return;
+			}
+			ctlSQLBox* box = new ctlSQLBox(sqlNotebook, CTL_SQLQUERY, wxDefaultPosition, wxSize(0, 0), wxTE_MULTILINE | wxTE_RICH2);
+			box->SetText(q);
+			box->Colourise(0, box->GetLength());
+			html = box->TextToHtml(0, box->GetLength());
+			delete box;
+		}
+		else {
+			html = "";
+			s = wxT("ONLY table HTML format copy.");
+		}
 		sqlResult->CopyTableToHtml(html);
 
 		SetStatusText(s, STATUSPOS_MSGS);
