@@ -1,0 +1,303 @@
+From 6e1d55f43250a77f5919a79c5eb466d702bf9642 Mon Sep 17 00:00:00 2001
+From: lsv <gtm7@yandex.ru>
+Date: Wed, 16 Apr 2025 14:06:05 +0500
+Subject: [PATCH] fixed bugs in the Linux version and performance
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Исправлены пути к файлам для AWR отчетов и сохранения фильтров Log View.
+Исправлена падение при вызове "Script Recreate Cascade".
+Убрано повтороное назначение Ctrl-G для "View Filtered Rows" теперь вызов происходит по Ctrl-F.
+Исправлена работа ctlComboBox.
+Для повышение производительности отключен поиск не парной скобки для текстов запросов
+более 100000 байт.
+---
+ ctl/ctlComboBox.cpp    |  8 +++++-
+ ctl/ctlSQLBox.cpp      | 57 ++++++++++++++++++++++++------------------
+ frm/frmAwr.cpp         |  2 +-
+ frm/frmEditGrid.cpp    |  4 +--
+ schema/pgObject.cpp    | 40 ++++++++++++-----------------
+ schema/pgPartition.cpp |  2 +-
+ schema/pgTable.cpp     |  2 +-
+ schema/pgView.cpp      |  2 +-
+ utils/FormatterSQL.cpp |  1 +
+ utils/log/Storage.cpp  |  2 +-
+ 10 files changed, 63 insertions(+), 57 deletions(-)
+
+diff --git a/ctl/ctlComboBox.cpp b/ctl/ctlComboBox.cpp
+index 78214a8..67fefbc 100644
+--- a/ctl/ctlComboBox.cpp
++++ b/ctl/ctlComboBox.cpp
+@@ -179,7 +179,7 @@ ctlComboBox::ctlComboBox(wxWindow *wnd, int id, wxPoint pos, wxSize siz, long at
+ 	: ctlComboBoxFix(wnd, id, pos, siz, attr)
+ {
+ #ifdef __WXGTK__
+-	SetEditable(false);
++	//SetEditable(false);
+ #endif
+ }
+ 
+@@ -196,6 +196,12 @@ int ctlComboBox::GuessSelection(wxCommandEvent &ev)
+ 
+ 		long sel, count = GetCount();
+ 		int len = str.Length();
++#ifdef __WXGTK__
++		int sel_element = GetSelection();
++		if (sel_element >= 0) {
++			return sel;
++		}
++#endif		
+ 		for (sel = 0 ; sel < count ; sel++)
+ 		{
+ 			if (str == GetString(sel).Left(len))
+diff --git a/ctl/ctlSQLBox.cpp b/ctl/ctlSQLBox.cpp
+index ef1cdcc..1eaf84a 100644
+--- a/ctl/ctlSQLBox.cpp
++++ b/ctl/ctlSQLBox.cpp
+@@ -702,22 +702,26 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
+ 	}
+ 	int homewordpos = pos;
+ 	bool istop = false;
+-	while ((pos--) >= 0)
+-	{
+-		ch = GetCharAt(pos);
+-		st = GetStyleAt(pos);
+-		if ((ch == '{' || ch == '}' ||
+-		        ch == '[' || ch == ']' ||
+-		        ch == '(' || ch == ')') &&
+-		        st != 1 &&st != 2 && st != 6 && st != 7)
++	int sqllen = GetLength();
++	if (sqllen < 100000) {
++
++		while ((pos--) >= 0)
+ 		{
+-			match = BraceMatch(pos);
+-			if (match == wxSTC_INVALID_POSITION)
++			ch = GetCharAt(pos);
++			st = GetStyleAt(pos);
++			if ((ch == '{' || ch == '}' ||
++				ch == '[' || ch == ']' ||
++				ch == '(' || ch == ')') &&
++				st != 1 && st != 2 && st != 6 && st != 7)
+ 			{
+-				BraceBadLight(pos);
++				match = BraceMatch(pos);
++				if (match == wxSTC_INVALID_POSITION)
++				{
++					BraceBadLight(pos);
++				}
+ 			}
++			if ((wxIsalnum(ch) || ch == '_') && !istop && st != 7) homewordpos--; else istop = true;
+ 		}
+-		if ((wxIsalnum(ch)|| ch =='_') && !istop && st != 7) homewordpos--; else istop = true;
+ 	}
+ 	// hints words
+ 	wxChar uc = event.GetUnicodeKey();
+@@ -1516,21 +1520,24 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
+ 	// Roll back through the doc and highlight any unmatched braces
+ 	int tmp=pos;
+ 	list_table.Clear();
+-	while ((pos--) >= 0)
+-	{
+-		ch = GetCharAt(pos);
+-		st = GetStyleAt(pos);
+-		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')&&startsql==0) startsql=pos+1;
+-		if ((ch == '{' || ch == '}' ||
+-		        ch == '[' || ch == ']' ||
+-		        ch == '(' || ch == ')') &&
+-		        st != 1 &&st != 2 && st != 6 && st != 7)
++	int sqllen = GetLength();
++	if (sqllen < 100000) {
++		while ((pos--) >= 0)
+ 		{
+-			match = BraceMatch(pos);
+-			if (match == wxSTC_INVALID_POSITION)
++			ch = GetCharAt(pos);
++			st = GetStyleAt(pos);
++			if (st != 1 && st != 2 && st != 6 && st != 7 && (ch == ';') && startsql == 0) startsql = pos + 1;
++			if ((ch == '{' || ch == '}' ||
++				ch == '[' || ch == ']' ||
++				ch == '(' || ch == ')') &&
++				st != 1 && st != 2 && st != 6 && st != 7)
+ 			{
+-				event.Skip();
+-				return;
++				match = BraceMatch(pos);
++				if (match == wxSTC_INVALID_POSITION)
++				{
++					event.Skip();
++					return;
++				}
+ 			}
+ 		}
+ 	}
+diff --git a/frm/frmAwr.cpp b/frm/frmAwr.cpp
+index 9ce5dfc..69d6ebc 100644
+--- a/frm/frmAwr.cpp
++++ b/frm/frmAwr.cpp
+@@ -167,7 +167,7 @@ void frmAwr::GeterateReport() {
+ 			dataSet1->MoveNext();
+ 		}
+ 		delete dataSet1;
+-		fn = wxStandardPaths::Get().GetTempDir() + wxT("\\awr_report.html");
++		fn = wxStandardPaths::Get().GetTempDir() + sepPath + wxT("awr_report.html");
+ 		fn.MakeAbsolute();
+ 		wxFile file4(fn.GetFullPath(), wxFile::write);
+ 		if (!file4.IsOpened())
+diff --git a/frm/frmEditGrid.cpp b/frm/frmEditGrid.cpp
+index edc8339..ef47260 100644
+--- a/frm/frmEditGrid.cpp
++++ b/frm/frmEditGrid.cpp
+@@ -3380,8 +3380,8 @@ wxWindow *editGridFactory::StartDialog(frmMain *form, pgObject *obj)
+ #include "images/viewfiltereddata.pngc"
+ editGridFilteredFactory::editGridFilteredFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : editGridFactoryBase(list)
+ {
+-	mnu->Append(id, _("View F&iltered Rows...\tCtrl-G"), _("Apply a filter and view the data in the selected object."));
+-	toolbar->AddTool(id, _("View Filtered Rows\tCtrl-G"), GetBundleSVG(viewfiltereddata_png_bmp, "viewfiltereddata.svg", wxSize(32, 32)) , _("Apply a filter and view the data in the selected object."), wxITEM_NORMAL);
++	mnu->Append(id, _("View F&iltered Rows...\tCtrl-F"), _("Apply a filter and view the data in the selected object."));
++	toolbar->AddTool(id, _("View Filtered Rows\tCtrl-F"), GetBundleSVG(viewfiltereddata_png_bmp, "viewfiltereddata.svg", wxSize(32, 32)) , _("Apply a filter and view the data in the selected object."), wxITEM_NORMAL);
+ 	context = false;
+ }
+ 
+diff --git a/schema/pgObject.cpp b/schema/pgObject.cpp
+index f6c7bf7..24b278b 100644
+--- a/schema/pgObject.cpp
++++ b/schema/pgObject.cpp
+@@ -2251,38 +2251,30 @@ if (1==0) {
+ 						
+ 						
+ 						wxTreeItemId id=item;
+-							while ( id.IsOk() &&
++						wxString collTypeName;
++						while ( id.IsOk() &&
+ 									(  browser->GetItemText(id) == wxT("Dummy") && !browser->GetItemData(id) 
+ 									  || true ))
+-							{
++						{
+ 								pgObject *oo= ((pgObject *) browser->GetItemData(id));
+ 								if (oo) {
+ 									pgaFactory *ff=oo->GetFactory();
+-									fn=ff->GetTypeName();
+-								fn=oo->GetName();
+-								if (fn==wxT("debug**info_history2")) {
+-									fn=oo->GetFullName();
+-									pgaFactory *ff=oo->GetFactory();
+-									fn=ff->GetTypeName();
+-									if (ff==&pg_partitionFactory) {
+-										fn=oo->GetFullName();
+-									};
+-									//oo->ShowTreeDetail(browser);
+-								}
+-								if ((oo->GetFactory()==&viewFactory || oo->GetFactory()==&tableFactory
+-									|| oo->GetFactory()==&pg_partitionFactory )
+-									&& fn==table) {
+-									break;
+-								}
++									collTypeName =ff->GetTypeName();
++									fn=oo->GetName();
++									if ((oo->GetFactory()==&viewFactory || oo->GetFactory()==&tableFactory
++										|| oo->GetFactory()==&pg_partitionFactory )
++										&& fn==table) {
++										break;
++									}
+ 								}
+ 								wxCookieType cookie;
+ 								if ( browser->HasChildren(id) &&((oo->GetFactory()==&viewFactory || oo->GetFactory()==&tableFactory
+ 									|| oo->GetFactory()==&pg_partitionFactory 
+ 									|| oo->GetFactory()==&schemaFactory 
+-									||oo->GetFactory()->GetTypeName()==whatfindt
+-									||oo->GetFactory()->GetTypeName()==wxT("Constraints")
+-									||oo->GetFactory()->GetTypeName()==wxT("Partitions")
+-									||oo->GetFactory()->GetTypeName()==wxT("Views")
++									|| collTypeName ==whatfindt
++									|| collTypeName ==wxT("Constraints")
++									|| collTypeName ==wxT("Partitions")
++									|| collTypeName ==wxT("Views")
+ 									)))
+ 								{
+ 									if (oo) oo->ShowTreeDetail(browser);
+@@ -2301,7 +2293,7 @@ if (1==0) {
+ 									while (p.IsOk() && !toFind.IsOk());
+ 									id = toFind;
+ 								}
+-							}
++						}
+ 						if ( id.IsOk() ) {
+ 							// найден нужный элемнт
+ 							pgObject *db=(pgTable *) browser->GetItemData(id);
+@@ -2362,7 +2354,7 @@ if (1==0) {
+ 				}
+ 				else
+ 					collectSchEl = 0;
+-				item = browser->GetNextChild(collect, cookie);
++				item = browser->GetNextChild(collect->GetId(), cookie);
+ 			}
+ 
+         }
+diff --git a/schema/pgPartition.cpp b/schema/pgPartition.cpp
+index 89e3ae0..d13674e 100644
+--- a/schema/pgPartition.cpp
++++ b/schema/pgPartition.cpp
+@@ -482,6 +482,6 @@ pgCollection *pgPartitionFactory::CreateCollection(pgObject *obj)
+ }
+ 
+ pgPartitionFactory pg_partitionFactory;
+-static pgaCollectionFactory cf(&pg_partitionFactory, __("Partitions"), tables_png_img);
++static pgaCollectionFactory cpf(&pg_partitionFactory, __("Partitions"), tables_png_img);
+ 
+ 
+diff --git a/schema/pgTable.cpp b/schema/pgTable.cpp
+index 3da9740..c05f616 100644
+--- a/schema/pgTable.cpp
++++ b/schema/pgTable.cpp
+@@ -1844,7 +1844,7 @@ pgCollection *pgTableFactory::CreateCollection(pgObject *obj)
+ }
+ 
+ pgTableFactory tableFactory;
+-static pgaCollectionFactory cf(&tableFactory, __("Tables"), tables_png_img);
++static pgaCollectionFactory ctf(&tableFactory, __("Tables"), tables_png_img);
+ 
+ 
+ pgCollection *pgTableObjFactory::CreateCollection(pgObject *obj)
+diff --git a/schema/pgView.cpp b/schema/pgView.cpp
+index a68e7eb..fe2b0a9 100644
+--- a/schema/pgView.cpp
++++ b/schema/pgView.cpp
+@@ -910,7 +910,7 @@ pgCollection *pgViewFactory::CreateCollection(pgObject *obj)
+ }
+ 
+ pgViewFactory viewFactory;
+-static pgaCollectionFactory cf(&viewFactory, __("Views"), views_png_img);
++static pgaCollectionFactory cvf(&viewFactory, __("Views"), views_png_img);
+ 
+ refreshMatViewFactory::refreshMatViewFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
+ {
+diff --git a/utils/FormatterSQL.cpp b/utils/FormatterSQL.cpp
+index 509a69e..54524bc 100644
+--- a/utils/FormatterSQL.cpp
++++ b/utils/FormatterSQL.cpp
+@@ -929,6 +929,7 @@ int FormatterSQL::ParseSql(int flags) {
+             continue;
+         }
+     // no sql command
++        if (ex) break;
+         return -3;
+ 
+     }
+diff --git a/utils/log/Storage.cpp b/utils/log/Storage.cpp
+index 0f7ee8e..0429d13 100644
+--- a/utils/log/Storage.cpp
++++ b/utils/log/Storage.cpp
+@@ -199,7 +199,7 @@ int Storage::getFilterNames(wxArrayString& arr) {
+ }
+ void Storage::saveFilters() {
+     if (filterload.size() == 0) return;
+-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\");
++    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator();
+     wxString f = tempDir + "filter_load.txt";
+     wxUtfFile file(f, wxFile::write, wxFONTENCODING_UTF8);
+     if (file.IsOpened())
+-- 
+2.41.0.windows.1
+
