@@ -910,7 +910,7 @@ pgCollection *pgViewFactory::CreateCollection(pgObject *obj)
 }
 
 pgViewFactory viewFactory;
-static pgaCollectionFactory cf(&viewFactory, __("Views"), views_png_img);
+static pgaCollectionFactory cvf(&viewFactory, __("Views"), views_png_img);
 
 refreshMatViewFactory::refreshMatViewFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {

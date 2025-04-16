@@ -199,7 +199,7 @@ int Storage::getFilterNames(wxArrayString& arr) {
 }
 void Storage::saveFilters() {
     if (filterload.size() == 0) return;
-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\");
+    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator();
     wxString f = tempDir + "filter_load.txt";
     wxUtfFile file(f, wxFile::write, wxFONTENCODING_UTF8);
     if (file.IsOpened())

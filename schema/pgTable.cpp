@@ -1844,7 +1844,7 @@ pgCollection *pgTableFactory::CreateCollection(pgObject *obj)
 }
 
 pgTableFactory tableFactory;
-static pgaCollectionFactory cf(&tableFactory, __("Tables"), tables_png_img);
+static pgaCollectionFactory ctf(&tableFactory, __("Tables"), tables_png_img);
 
 
 pgCollection *pgTableObjFactory::CreateCollection(pgObject *obj)

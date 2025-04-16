@@ -2251,38 +2251,30 @@ if (1==0) {
 						
 						
 						wxTreeItemId id=item;
-							while ( id.IsOk() &&
+						wxString collTypeName;
+						while ( id.IsOk() &&
 									(  browser->GetItemText(id) == wxT("Dummy") && !browser->GetItemData(id) 
 									  || true ))
-							{
+						{
 								pgObject *oo= ((pgObject *) browser->GetItemData(id));
 								if (oo) {
 									pgaFactory *ff=oo->GetFactory();
-									fn=ff->GetTypeName();
-								fn=oo->GetName();
-								if (fn==wxT("debug**info_history2")) {
-									fn=oo->GetFullName();
-									pgaFactory *ff=oo->GetFactory();
-									fn=ff->GetTypeName();
-									if (ff==&pg_partitionFactory) {
-										fn=oo->GetFullName();
-									};
-									//oo->ShowTreeDetail(browser);
-								}
-								if ((oo->GetFactory()==&viewFactory || oo->GetFactory()==&tableFactory
-									|| oo->GetFactory()==&pg_partitionFactory )
-									&& fn==table) {
-									break;
-								}
+									collTypeName =ff->GetTypeName();
+									fn=oo->GetName();
+									if ((oo->GetFactory()==&viewFactory || oo->GetFactory()==&tableFactory
+										|| oo->GetFactory()==&pg_partitionFactory )
+										&& fn==table) {
+										break;
+									}
 								}
 								wxCookieType cookie;
 								if ( browser->HasChildren(id) &&((oo->GetFactory()==&viewFactory || oo->GetFactory()==&tableFactory
 									|| oo->GetFactory()==&pg_partitionFactory 
 									|| oo->GetFactory()==&schemaFactory 
-									||oo->GetFactory()->GetTypeName()==whatfindt
-									||oo->GetFactory()->GetTypeName()==wxT("Constraints")
-									||oo->GetFactory()->GetTypeName()==wxT("Partitions")
-									||oo->GetFactory()->GetTypeName()==wxT("Views")
+									|| collTypeName ==whatfindt
+									|| collTypeName ==wxT("Constraints")
+									|| collTypeName ==wxT("Partitions")
+									|| collTypeName ==wxT("Views")
 									)))
 								{
 									if (oo) oo->ShowTreeDetail(browser);
@@ -2301,7 +2293,7 @@ if (1==0) {
 									while (p.IsOk() && !toFind.IsOk());
 									id = toFind;
 								}
-							}
+						}
 						if ( id.IsOk() ) {
 							// найден нужный элемнт
 							pgObject *db=(pgTable *) browser->GetItemData(id);
@@ -2362,7 +2354,7 @@ if (1==0) {
 				}
 				else
 					collectSchEl = 0;
-				item = browser->GetNextChild(collect, cookie);
+				item = browser->GetNextChild(collect->GetId(), cookie);
 			}
 
         }

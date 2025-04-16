@@ -3380,8 +3380,8 @@ wxWindow *editGridFactory::StartDialog(frmMain *form, pgObject *obj)
 #include "images/viewfiltereddata.pngc"
 editGridFilteredFactory::editGridFilteredFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : editGridFactoryBase(list)
 {
-	mnu->Append(id, _("View F&iltered Rows...\tCtrl-G"), _("Apply a filter and view the data in the selected object."));
-	toolbar->AddTool(id, _("View Filtered Rows\tCtrl-G"), GetBundleSVG(viewfiltereddata_png_bmp, "viewfiltereddata.svg", wxSize(32, 32)) , _("Apply a filter and view the data in the selected object."), wxITEM_NORMAL);
+	mnu->Append(id, _("View F&iltered Rows...\tCtrl-F"), _("Apply a filter and view the data in the selected object."));
+	toolbar->AddTool(id, _("View Filtered Rows\tCtrl-F"), GetBundleSVG(viewfiltereddata_png_bmp, "viewfiltereddata.svg", wxSize(32, 32)) , _("Apply a filter and view the data in the selected object."), wxITEM_NORMAL);
 	context = false;
 }
 

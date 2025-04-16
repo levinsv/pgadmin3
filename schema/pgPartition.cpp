@@ -482,6 +482,6 @@ pgCollection *pgPartitionFactory::CreateCollection(pgObject *obj)
 }
 
 pgPartitionFactory pg_partitionFactory;
-static pgaCollectionFactory cf(&pg_partitionFactory, __("Partitions"), tables_png_img);
+static pgaCollectionFactory cpf(&pg_partitionFactory, __("Partitions"), tables_png_img);
 
 

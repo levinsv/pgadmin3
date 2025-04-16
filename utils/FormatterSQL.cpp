@@ -929,6 +929,7 @@ int FormatterSQL::ParseSql(int flags) {
             continue;
         }
     // no sql command
+        if (ex) break;
         return -3;
 
     }

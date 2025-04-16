@@ -179,7 +179,7 @@ ctlComboBox::ctlComboBox(wxWindow *wnd, int id, wxPoint pos, wxSize siz, long at
 	: ctlComboBoxFix(wnd, id, pos, siz, attr)
 {
 #ifdef __WXGTK__
-	SetEditable(false);
+	//SetEditable(false);
 #endif
 }
 
@@ -196,6 +196,12 @@ int ctlComboBox::GuessSelection(wxCommandEvent &ev)
 
 		long sel, count = GetCount();
 		int len = str.Length();
+#ifdef __WXGTK__
+		int sel_element = GetSelection();
+		if (sel_element >= 0) {
+			return sel;
+		}
+#endif		
 		for (sel = 0 ; sel < count ; sel++)
 		{
 			if (str == GetString(sel).Left(len))

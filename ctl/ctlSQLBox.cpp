@@ -702,22 +702,26 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	}
 	int homewordpos = pos;
 	bool istop = false;
-	while ((pos--) >= 0)
-	{
-		ch = GetCharAt(pos);
-		st = GetStyleAt(pos);
-		if ((ch == '{' || ch == '}' ||
-		        ch == '[' || ch == ']' ||
-		        ch == '(' || ch == ')') &&
-		        st != 1 &&st != 2 && st != 6 && st != 7)
+	int sqllen = GetLength();
+	if (sqllen < 100000) {
+
+		while ((pos--) >= 0)
 		{
-			match = BraceMatch(pos);
-			if (match == wxSTC_INVALID_POSITION)
+			ch = GetCharAt(pos);
+			st = GetStyleAt(pos);
+			if ((ch == '{' || ch == '}' ||
+				ch == '[' || ch == ']' ||
+				ch == '(' || ch == ')') &&
+				st != 1 && st != 2 && st != 6 && st != 7)
 			{
-				BraceBadLight(pos);
+				match = BraceMatch(pos);
+				if (match == wxSTC_INVALID_POSITION)
+				{
+					BraceBadLight(pos);
+				}
 			}
+			if ((wxIsalnum(ch) || ch == '_') && !istop && st != 7) homewordpos--; else istop = true;
 		}
-		if ((wxIsalnum(ch)|| ch =='_') && !istop && st != 7) homewordpos--; else istop = true;
 	}
 	// hints words
 	wxChar uc = event.GetUnicodeKey();
@@ -1516,21 +1520,24 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 	// Roll back through the doc and highlight any unmatched braces
 	int tmp=pos;
 	list_table.Clear();
-	while ((pos--) >= 0)
-	{
-		ch = GetCharAt(pos);
-		st = GetStyleAt(pos);
-		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')&&startsql==0) startsql=pos+1;
-		if ((ch == '{' || ch == '}' ||
-		        ch == '[' || ch == ']' ||
-		        ch == '(' || ch == ')') &&
-		        st != 1 &&st != 2 && st != 6 && st != 7)
+	int sqllen = GetLength();
+	if (sqllen < 100000) {
+		while ((pos--) >= 0)
 		{
-			match = BraceMatch(pos);
-			if (match == wxSTC_INVALID_POSITION)
+			ch = GetCharAt(pos);
+			st = GetStyleAt(pos);
+			if (st != 1 && st != 2 && st != 6 && st != 7 && (ch == ';') && startsql == 0) startsql = pos + 1;
+			if ((ch == '{' || ch == '}' ||
+				ch == '[' || ch == ']' ||
+				ch == '(' || ch == ')') &&
+				st != 1 && st != 2 && st != 6 && st != 7)
 			{
-				event.Skip();
-				return;
+				match = BraceMatch(pos);
+				if (match == wxSTC_INVALID_POSITION)
+				{
+					event.Skip();
+					return;
+				}
 			}
 		}
 	}

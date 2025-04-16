@@ -167,7 +167,7 @@ void frmAwr::GeterateReport() {
 			dataSet1->MoveNext();
 		}
 		delete dataSet1;
-		fn = wxStandardPaths::Get().GetTempDir() + wxT("\\awr_report.html");
+		fn = wxStandardPaths::Get().GetTempDir() + sepPath + wxT("awr_report.html");
 		fn.MakeAbsolute();
 		wxFile file4(fn.GetFullPath(), wxFile::write);
 		if (!file4.IsOpened())
