@@ -620,7 +620,7 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
 
 	wxString sql =
 	    wxT("SELECT att.*, def.*, pg_catalog.pg_get_expr(def.adbin, def.adrelid) AS defval, CASE WHEN att.attndims > 0 THEN 1 ELSE 0 END AS isarray, format_type(ty.oid,NULL) AS typname, format_type(ty.oid,att.atttypmod) AS displaytypname, tn.nspname as typnspname, et.typname as elemtypname,\n")
-	    wxT("  ty.typstorage AS defaultstorage, cl.relname, na.nspname, coalesce(att.attstattarget,-1), description, cs.relname AS sername, ns.nspname AS serschema,\n")
+	    wxT("  ty.typstorage AS defaultstorage, cl.relname, na.nspname, coalesce(att.attstattarget,-1) attstattarget2, description, cs.relname AS sername, ns.nspname AS serschema,\n")
 	    wxT("  (SELECT count(1) FROM pg_type t2 WHERE t2.typname=ty.typname) > 1 AS isdup, indkey");
 
 	if (database->BackendMinimumVersion(9, 1))
@@ -637,7 +637,7 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
 		sql += wxT(",\n(SELECT array_agg(label) FROM pg_seclabels sl1 WHERE sl1.objoid=att.attrelid AND sl1.objsubid=att.attnum) AS labels");
 		sql += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=att.attrelid AND sl2.objsubid=att.attnum) AS providers");
 	}
-	
+
 	sql += wxT("\n")
 	       wxT("  FROM pg_attribute att\n")
 	       wxT("  JOIN pg_type ty ON ty.oid=atttypid\n")
@@ -686,7 +686,7 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
 				column->iSetCompression(compres);
 			}
 
-			
+
 
 			column->iSetPkCols(columns->GetVal(wxT("indkey")));
 			if (database->BackendMinimumVersion(7, 4))
@@ -694,7 +694,6 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
 
 			if (columns->GetBool(wxT("atthasdef")))
 				column->iSetDefault(columns->GetVal(wxT("defval")));
-			column->iSetStatistics(columns->GetLong(wxT("attstattarget")));
 
 			wxString storage = columns->GetVal(wxT("attstorage"));
 			column->iSetStorage(
@@ -737,7 +736,7 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
 				column->iSetInheritedTableName(it->second);
 
 			column->iSetIsLocal(columns->GetBool(wxT("attislocal")));
-			column->iSetAttstattarget(columns->GetLong(wxT("attstattarget")));
+			column->iSetAttstattarget(columns->GetLong(wxT("attstattarget2")));
 			if (database->BackendMinimumVersion(8, 5))
 			{
 				wxString str = columns->GetVal(wxT("attoptions"));
