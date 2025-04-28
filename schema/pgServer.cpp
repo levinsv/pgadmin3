@@ -805,7 +805,11 @@ int pgServer::Connect(frmMain *form, bool askPassword, const wxString &pwd, bool
 			iPort = port;
 		}
 		wxString usr=wxEmptyString;
-		wxGetEnv(wxT("USERNAME"),&usr);
+#ifndef __WXMSW__
+		wxGetEnv(wxT("USER"), &usr);
+#else
+		wxGetEnv(wxT("USERNAME"), &usr);
+#endif
 		if (database.IsEmpty())
 		{
 			conn = new pgConn(host, service, hostaddr, DEFAULT_PG_DATABASE, username, password, iPort, rolename,connstr, ssl, 0, appearanceFactory->GetLongAppName() +wxT(" - ")+ usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);

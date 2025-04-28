@@ -420,6 +420,9 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 					case 'i':
 						depFactory = &indexFactory;
 						break;
+					case 'I':
+						depFactory = &indexFactory;
+						break;
 					case 'E':
 						depFactory = &extensionFactory;
 						break;
@@ -545,6 +548,18 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 					case 'p':
 						deptype = wxT("pin");
 						typname = wxEmptyString;
+						break;
+					case 'S':
+						deptype = wxT("sec_partition");
+						break;
+					case 'P':
+						deptype = wxT("pri_partition");
+						break;
+					case 'e':
+						deptype = _("extension");
+						break;
+					case 'x':
+						deptype = _("auto");
 						break;
 					default:
 						break;
@@ -903,7 +918,7 @@ void pgObject::ShowDependents(frmMain* form, ctlListView* referencedBy, const wx
 		wxString strQuery =
 		    wxT("SELECT ref.relname AS refname, d2.refclassid, dep.deptype AS deptype\n")
 		    wxT("  FROM pg_depend dep\n")
-		    wxT("  LEFT JOIN pg_depend d2 ON dep.objid=d2.objid AND dep.refobjid != d2.refobjid\n")
+		    wxT("  LEFT JOIN pg_depend d2 ON dep.objid=d2.objid AND dep.refobjid != d2.refobjid AND d2.classid=dep.classid\n")
 		    wxT("  LEFT JOIN pg_class ref ON ref.oid=d2.refobjid\n")
 		    wxT("  LEFT JOIN pg_attribute att ON d2.refclassid=att.attrelid AND d2.refobjsubid=att.attnum\n")
 		    + where +
@@ -1566,15 +1581,24 @@ void pgDatabaseObject::DisplayStatistics(ctlListView *statistics, const wxString
 			wxArrayInt a;
 			int vmax = -1;
 			int lt = -1;
+			wxWindowDC dc(statistics);
+			int wspc, wR = 0, h, wtext, widhspace = 50;
+			wxString rowmark(L"\x21d2");
+			dc.GetTextExtent(' ', &wspc, &h);
+			dc.GetTextExtent(rowmark, &wR, &h);
+			if (wR == 0) {
+				rowmark = "R";
+				dc.GetTextExtent(rowmark, &wR, &h);
+			}
 			for (col = 0 ; col < stats->NumCols() ; col++)
 			{
 				if (!stats->ColName(col).IsEmpty()) {
 					wxString name = stats->ColName(col);
 					wxString vl = stats->GetVal(col);
 					if (vl.IsNumber() && vl.Length()>0) {
-						int l = vl.Length();
-						if (l > vmax) vmax = l;
-						a.Add(l);
+						dc.GetTextExtent(vl, &wtext, &h);
+						if (wtext > vmax) vmax = wtext;
+						a.Add(wtext);
 						if (_("Live Tuples") == name) lt = a.GetCount() - 1;
 					} else
 						a.Add(-1);
@@ -1588,8 +1612,13 @@ void pgDatabaseObject::DisplayStatistics(ctlListView *statistics, const wxString
 						wxLongLong l = StrToLongLong(str);
 						wxString h = NumToStrHuman(l);
 						if (h.IsEmpty()) continue;
-						str += generate_spaces(vmax - a[i] + 5) + h;
-						if (lt == i) str[vmax + 2] = 'R';
+						int nspc = (vmax - a[i] + widhspace) / wspc;
+						if (lt == i) {
+							nspc = (vmax - a[i]) / wspc;
+							wxString s = generate_spaces((widhspace - wR) / wspc / 2);
+							str += generate_spaces(nspc) + s + rowmark + s + h;
+						}
+						else str += generate_spaces(nspc) + h;
 						statistics->SetItem(i, 1, str);
 					}
 
