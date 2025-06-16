@@ -67,6 +67,12 @@ void TableColsMap::checkDBconn(pgConn* dbconn) {
     }
     //alias.clear();
 }
+/// <summary>
+///  map Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ РїСЂРѕР±СЂРѕС€РµРЅРЅС‹РјРё С‡РµСЂРµР· РІСЊСЋС…Рё СЃРІСЏР·Р°РЅРЅС‹РјРё С‚Р°Р±Р»РёС†Р°РјРё Рё РєРѕР»РѕРЅРєР°РјРё
+/// </summary>
+/// <param name="reltab"></param>
+/// <param name="alias"></param>
+/// <param name="map"></param>
 void TableColsMap::BuildMapTableColumnsToSQLexp(Table *reltab, const wxString &alias, std::map<tab_col_struct, wxString> &map) {
     if (reltab != NULL) {
         Table tmp = *reltab;
@@ -110,7 +116,7 @@ wxString TableColsMap::AddTableList(pgConn* dbconn, const wxArrayString& tables,
     MapViewColToRelCol(flag);
     wxString rezstr;
 
-    if (CHKFLAG(flag, TableColsMap::Flag::SEQUENCE_LIST_TABLE)) {
+    if (CHKFLAG(flag, TableColsMap::Flag::SEQUENCE_LIST_TABLE) || true) {
         std::vector<std::map<tab_col_struct, wxString>> all_maps;
         std::vector<Table*> all_tables;
         for (int i = tables.GetCount()-1; i >=0; i--) {
@@ -134,7 +140,9 @@ wxString TableColsMap::AddTableList(pgConn* dbconn, const wxArrayString& tables,
         std::unordered_set<wxString> full;
         for (int i = 0; i < all_maps.size(); i++) {
             //Table* r = all_tables[i];
-            for (int j = i + 1; j < all_maps.size(); j++) {
+            int position = i + 1;
+            if (CHKFLAG(flag, TableColsMap::Flag::ALL_LEFT_TO_RIGHT) && ((i+1)!= all_maps.size())) position = all_maps.size() - 1; // only right table
+            for (int j = position; j < all_maps.size(); j++) {
                 wxString tmp= MapTableToTable(all_maps[i], all_maps[j],flag,leftexp);
                 if (tmp.length() > 0) {
                     if (tmp.Find('\t') == -1) {
@@ -243,6 +251,13 @@ Table* TableColsMap::GetTablebyOID(const wxString oid) {
     }
     return NULL;
 }
+/// <summary>
+///  Р РµРєСѓСЂСЃРёРІРЅС‹Р№ СЃРїСѓСЃРє РїРѕ view РґРѕ С‚Р°Р±Р»РёС†С‹ Рё РІРѕР·РІСЂР°С‚ С‚Р°Р±Р»РёС†С‹ Рё СЂРµР°Р»СЊРЅРѕР№ РєРѕР»РѕРЅРєРё
+/// </summary>
+/// <param name="oid"></param>
+/// <param name="ncolview"></param>
+/// <param name="outrelcol"></param>
+/// <returns></returns>
 Table* TableColsMap::GetRelTableForViewCol(const wxString oid, int ncolview, int& outrelcol) {
     Table *tt = GetTablebyOID(oid);
     if (tt != NULL) {
@@ -285,7 +300,7 @@ void TableColsMap::MapViewColToRelCol(const TableColsMap::Flag flag) {
                     if (rel != NULL) {
                         cl.relTable = rel;
                     }
-                    t->SetCol(c, cl);
+                    t->SetCol(c, cl); // save cl 
                 }
 
             }
@@ -441,12 +456,12 @@ select cv.oid,cv.relname,cv.relnamespace::regnamespace, cv.relkind, a.attnum,a.a
                     }
                     else {
                         // first table
+                        // СЃРѕС…СЂР°РЅРёРј oid РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ FK
                         onlyoid = onlyoid + ((onlyoid.length() > 0 ? "," : "") + wxString::Format("'%s'", oid));
                         t = new Table();
                         t->Set(kind, sc, oid, tn);
                         oids.insert({ oid, t });
                     }
-                        
                 }
                 t->AddColumn(ncol, colname, "", "");
             }
@@ -494,6 +509,12 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
                         //if (all_fk_table.size()>0) tablechild_fk[tf] = fk;
                     }
                     t = it->second;
+                    bool flag_pk = false;
+                    if (foid.IsEmpty()) {
+                        flag_pk = true;
+                        foid = oid; // PK = self FK
+                        colflist = collist;
+                    }
                     wxArrayString ar = wxSplit(collist, ',');
                     wxArrayString arf = wxSplit(colflist, ',');
                     Table tmp = *t;
@@ -505,9 +526,8 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
                     for (int k = 0; k < ar.GetCount(); k++) {
                         int i = (int)StrToLong(ar[k]);
                         fk.colsp.push_back(i);
-                        if (foid.IsEmpty()) {
+                        if (flag_pk) {
                             tmp[i - 1].pk = true;
-                            continue;
                         }
                         int fi = (int)StrToLong(arf[k]);
                         fk.colsc.push_back(fi);
@@ -522,8 +542,8 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
                             wxString key = foid +','+ arf[k];
                             
                             if (auto it2 = forein_unknown_tab.find(key); it2 != forein_unknown_tab.end()) {
-                                // Уже была эта таблица и колонка. Свяжем две наши таблицы через третью.
-                                // можно связать наши таблицы через неизвестную .Увы только один уровень вложенности.
+                                // РЈР¶Рµ Р±С‹Р»Р° СЌС‚Р° С‚Р°Р±Р»РёС†Р° Рё РєРѕР»РѕРЅРєР°. РЎРІСЏР¶РµРј РґРІРµ РЅР°С€Рё С‚Р°Р±Р»РёС†С‹ С‡РµСЂРµР· С‚СЂРµС‚СЊСЋ.
+                                // РјРѕР¶РЅРѕ СЃРІСЏР·Р°С‚СЊ РЅР°С€Рё С‚Р°Р±Р»РёС†С‹ С‡РµСЂРµР· РЅРµРёР·РІРµСЃС‚РЅСѓСЋ .РЈРІС‹ С‚РѕР»СЊРєРѕ РѕРґРёРЅ СѓСЂРѕРІРµРЅСЊ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё.
                                 tab_col_struct parent= it2->second;
                                 tf = parent.t;
                                 tmp[i - 1].linkTable = tf;
@@ -531,7 +551,7 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
                                 if (fk.child == NULL) fk.child = tf;
                             }
                             else {
-                                // ссылка на не известную таблицу запомним её и Нашу таблицу
+                                // СЃСЃС‹Р»РєР° РЅР° РЅРµ РёР·РІРµСЃС‚РЅСѓСЋ С‚Р°Р±Р»РёС†Сѓ Р·Р°РїРѕРјРЅРёРј РµС‘ Рё РќР°С€Сѓ С‚Р°Р±Р»РёС†Сѓ
                                 tab_col_struct parent = { t,i };
                                 forein_unknown_tab.insert({ key,parent });
                             }
@@ -540,7 +560,7 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
                         if (fk.child != NULL) {
                             tab_col_struct parent = { t,i }, child = {tf,fi};
                             all_fk_index.insert({ parent,child });
-                            all_fk_index.insert({ child,parent }); // учтем комутативность a=b , то b=a
+                            all_fk_index.insert({ child,parent }); // СѓС‡С‚РµРј РєРѕРјСѓС‚Р°С‚РёРІРЅРѕСЃС‚СЊ a=b , С‚Рѕ b=a
                             // uniq index
                             uniq_fk_index.insert({ parent,child });
                             uniq_fk_index.insert({ child,parent });
@@ -561,7 +581,7 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
     }
     
     if (CHKFLAG(flag, TableColsMap::Flag::USE_TRANSIT_FK)) {
-    // добавим транзитивности a=b b=c , то a=c
+    // РґРѕР±Р°РІРёРј С‚СЂР°РЅР·РёС‚РёРІРЅРѕСЃС‚Рё a=b b=c , С‚Рѕ a=c
         std::set<fk_full_struct> transit;
         int lvl = 0;
         for (auto e: all_fk_index) {
