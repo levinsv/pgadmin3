@@ -1062,6 +1062,7 @@
     <ClCompile Include="utils\pgconfig.cpp" />
     <ClCompile Include="utils\registry.cpp" />
     <ClCompile Include="utils\sshTunnel.cpp" />
+    <ClCompile Include="utils\PreviewHtml.cpp" />
     <ClCompile Include="utils\sysLogger.cpp" />
     <ClCompile Include="utils\sysProcess.cpp" />
     <ClCompile Include="utils\sysSettings.cpp" />
@@ -1613,6 +1614,7 @@
     <ClInclude Include="include\utils\json\json_defs.h" />
     <ClInclude Include="include\utils\TableColsMap.h" />
     <ClInclude Include="include\utils\sshTunnel.h" />
+    <ClInclude Include="include\utils\PreviewHtml.h" />
     <ClInclude Include="include\version.h" />
     <ClInclude Include="include\utils\csvfiles.h" />
     <ClInclude Include="include\utils\factory.h" />

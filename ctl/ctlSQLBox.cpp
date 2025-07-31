@@ -30,6 +30,7 @@
 #include "utils/FormatterSQL.h"
 #include "utils/dlgTransformText.h"
 #include "utils/TableColsMap.h"
+#include "wx/display.h"
 
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
@@ -591,9 +592,40 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 			for (int i = tmp.Len()-1; i >=0; i--) key+=tmp[i];
 	}
 	delete 	m_PopupHelp;
-	m_PopupHelp = new popuphelp(this->GetParent(), key.Lower(), fh);
+	wxSize rr(450, 370);
+	m_PopupHelp = new popuphelp(this->GetParent(), key.Lower(), fh,p,rr);
+	if (m_PopupHelp && m_PopupHelp->IsValid() && rr != m_PopupHelp->GetSizePopup()) {
+		// recreate with new size
+		rr = m_PopupHelp->GetSizePopup();
+		delete 	m_PopupHelp;
+		m_PopupHelp = new popuphelp(this->GetParent(), key.Lower(), fh, p, rr);
+
+	}
 	if (m_PopupHelp && m_PopupHelp->IsValid()) {
-		m_PopupHelp->Position(p, wxSize(0, 17));
+		//m_PopupHelp->UpdateWindowUI(true);
+		wxSize top_sz=m_PopupHelp->GetSizePopup();
+		wxPoint posScreen;
+		wxSize sizeScreen;
+		const int displayNum = wxDisplay::GetFromPoint(p);
+		if (displayNum != wxNOT_FOUND)
+		{
+			const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
+			posScreen = rectScreen.GetPosition();
+			sizeScreen = rectScreen.GetSize();
+		}
+		else // outside of any display?
+		{
+			// just use the primary one then
+			posScreen = wxPoint(0, 0);
+			sizeScreen = wxGetDisplaySize();
+		}
+		wxSize top_new(top_sz);
+		wxPoint oldp(p);
+		if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;
+		if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
+		if (oldp==p) p.x = p.x + 20;
+		m_PopupHelp->Move(p);
+		//m_PopupHelp->Position(p, wxSize(0, 17));
 		m_PopupHelp->Popup();
 	}
 
@@ -1659,7 +1691,7 @@ void ctlSQLBox::OnMarginClick(wxStyledTextEvent &event)
 
 	event.Skip();
 }
-wxString ctlSQLBox::TextToHtml(int start, int end) {
+wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine) {
 	wxColor frColor[40];
 	wxString str;
 	wxColour frc = settings->GetSQLBoxColourForeground();
@@ -1691,10 +1723,16 @@ wxString ctlSQLBox::TextToHtml(int start, int end) {
 	wxString sz;
 	sz.Printf("%d", fntSQLBox.GetPixelSize().GetHeight());
 
-	str = wxT("<div style=\"font-family: ") + fontName + wxT("; font-size: " + sz + "px\"><font>");
+	//str = wxT("<div style=\"font-family: ") + fontName + wxT("; font-size: " + sz + "px\"><font>");
+	str = wxString::Format("<div style=\"font-family: %s; font-size: %spx\"><font face=\"%s\" >", fontName, sz, fontName);
 	int k = 0;
 	int l = 1;
-	while (startp < endp) {
+	wxString newline = "<br>";
+	if (isAddNewLine) newline = L"\u2936<br>";
+	//if (isAddNewLine) newline = L"&ldca;<br>";
+	//if (isAddNewLine) newline = L"<br>\x0b78";
+	int lenstr = selText.Length();
+	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
 		if (prevColor != tColor) {
@@ -1703,15 +1741,16 @@ wxString ctlSQLBox::TextToHtml(int start, int end) {
 		}
 		//str.append(str[k].GetValue());
 		l = 1;
-		if (!selText[k].IsAscii()) l++;
+		wxUniChar c = selText[k];
+		if (!c.IsAscii()) l++;
 		int s = 0;
-		wxUniChar c = selText[k].GetValue();
+		//wxUniChar c = selText[k].GetValue();
 		if (c == '\r') { startp = startp + l; k++; continue; };
-		if (c == '\n') { str += wxT("<br>"); startp = startp + l; k++; continue; };
+		if (c == '\n') { str += newline; startp = startp + l; k++; continue; };
 		if (c == 9) s = 5;
 		if (c == 32) s = 1;
 		if (s > 0) for (int tt = 0; tt < s; tt++) str += wxT("&nbsp;");
-		else str += selText[k];
+		else str += c;
 		startp = startp + l; k++;
 	}
 	str = str + wxT("</font></div>");

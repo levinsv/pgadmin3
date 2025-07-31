@@ -560,7 +560,7 @@ wxString replace_bind_parameters(const wxString& values_param, const wxString& t
     replacecount = c;
     return str;
 }
-Line Storage::getLineParse(const wxString& str, bool csv) {
+Line Storage::getLineParse(const wxString& str, bool csv,const wxString &host) {
     Line st;
     if (csv) {
         CSVTokenizer tk(str);
@@ -575,7 +575,7 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
         st.loguser = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logUser.Len()) };
         t += logUser;
         wxString logDatabase = tk.GetNextToken();
-        if (logDatabase.IsEmpty()) logDatabase = GetHost();
+        if (logDatabase.IsEmpty()) logDatabase = host;
         st.logdb = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logDatabase.Len()) };
         
         t += logDatabase;
@@ -659,7 +659,7 @@ Line Storage::getLineParse(const wxString& str, bool csv) {
         wxString logType = tk.GetNextToken();
         st.logbtype = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logType.Len()) };
         t += logType;
-        logCursorpos = GetHost();
+        logCursorpos = host;
         st.logSERVER = { static_cast<unsigned short int>(t.Len()),static_cast<unsigned short int>(logCursorpos.Len()) };
         t += logCursorpos;
         //fields.Add(logType);
@@ -785,7 +785,7 @@ bool Storage::checkFilter(Line& l) {
     return false;
 }
 bool Storage::AddLineTextCSV(const wxString& strcsv) {
-    Line st = getLineParse(strcsv, true);
+    Line st = getLineParse(strcsv, true,GetHost());
 
     if (checkFilter(st)) {
         rowsignore++;

@@ -15,6 +15,8 @@
 // wxWindows headers
 #include <wx/grid.h>
 #include <wx/brush.h>
+#include "utils/popuphelp.h"
+
 class GroupRows;
 
 class ctlSQLGrid : public wxGrid
@@ -52,6 +54,8 @@ public:
     void OnGridSelectCell(wxGridEvent& evt);
     void OnLabelClick(wxGridEvent& event);
     void OnCellRightClick(wxGridEvent& event);
+    void OnMouseEvent(wxMouseEvent& event);
+    void OnShowPopup(wxThreadEvent& event);
     bool FullArrayCollapseRowsPlan(bool clear);
     void AutoSizeColumn(int col, bool setAsMin = false, bool doLimit = true);
     void AutoSizeColumns(bool setAsMin);
@@ -83,7 +87,11 @@ private:
     // Max size for each column
     wxArrayInt colMaxSizes;
     bool isSort;
-
+    // viewr
+    popuphelp* m_Popup = NULL;
+    int rcol, rrow;
+    wxPoint rpos;
+    //FunctionPGHelper fh;
 };
 
 class GroupRows

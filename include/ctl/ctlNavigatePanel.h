@@ -68,6 +68,7 @@ public:
     int GetIndexColor(const wxColour &color) const;
     void ClearMark();
     void RowVisibleCenter(long row);
+    void SetFindString(const wxString &findstr);
     int  GetCountMark();
     wxMenu* GetPopupMenu();
     bool RunKeyCommand(wxKeyEvent& event,int numCmd=-1);

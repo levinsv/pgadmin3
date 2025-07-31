@@ -155,10 +155,11 @@ public:
 	int getCountGroup(int row);
 	int GetTotalCountGroup(int rowfilter);
 	wxArrayString GetAllFields(int row, bool isfilter);
+	// use for parse csv log file
+	static Line getLineParse(const wxString& str, bool csv = false, const wxString& host=wxEmptyString);
+	static wxString get_field(Line& l, MyConst::colField col);
 private:
 	bool checkFilter(Line& l);
-	Line getLineParse(const wxString& str, bool csv = false);
-	wxString get_field(Line& l, MyConst::colField col);
 	LineFilter getLineFilter(wxString strflt,wxString fn);
 	void getLineToCache(int row, bool filter = true);
 	bool CompareFilterLine(int row, bool filter);

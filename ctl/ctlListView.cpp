@@ -132,7 +132,14 @@ wxString ctlListView::GetText(long row, long col)
 	item.SetColumn(col);
 	item.SetMask(wxLIST_MASK_TEXT);
 	GetItem(item);
-	return item.GetText();
+	wxString v = item.GetText();
+	if (storelongstring) {
+		int len = v.Length();
+		if (len==200 && row >= 0 && col==0 && row < longstring.size()) {
+			return  longstring[row];
+		}
+	}
+	return v;
 };
 
 
@@ -151,7 +158,19 @@ void ctlListView::AddColumn(const wxString& text, int size, int format)
 
 long ctlListView::AppendItem(int icon, const wxString& val, const wxString& val2, const wxString& val3, const wxString& val4)
 {
-	long pos = InsertItem(GetItemCount(), val, icon);
+	long idx = GetItemCount();
+	long pos;
+	if (storelongstring) {
+		if (val.Length() > 200) {
+			longstring.push_back(val);
+			pos = InsertItem(idx, val.Mid(0,200), icon);
+		}
+		else {
+			longstring.push_back(wxEmptyString);
+			pos = InsertItem(idx, val, icon);
+		}
+	} else
+		pos = InsertItem(idx, val, icon);
 	if (!val2.IsEmpty())
 		SetItem(pos, 1, val2);
 	if (!val3.IsEmpty())

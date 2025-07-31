@@ -25,10 +25,18 @@ private:
 	void OnSortGrid(wxListEvent& event);
 	bool nosort; // если кто то пользуется SetItemData то не будем сортировать такие ctlListView
 	int order, prev_col;
+	// будем сохранять длинные строки 0 колонки в этом массиве
+	bool storelongstring = false;
+	std::vector<wxString> longstring;
 public:
 	bool SetItemData(long item, long data) {
 		nosort = true;
 		return wxListView::SetItemData(item, data);
+	}
+	void SetModeStoreLongString() { storelongstring = true; }
+	bool DeleteAllItems() {
+		longstring.clear();
+		return wxListView::DeleteAllItems();
 	}
 	ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr = 0);
 	long GetSelection();

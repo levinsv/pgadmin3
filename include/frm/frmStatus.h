@@ -63,12 +63,14 @@ enum
     MNU_QUERYSTATETRIGGER,
     MNU_WAITENABLE,
     MNU_WAITSAVE,
+    CMD_EVENT_FIND_STR,
     TIMER_REFRESHUI_ID,
     TIMER_STATUS_ID,
     TIMER_LOCKS_ID,
     TIMER_XACT_ID,
     TIMER_LOG_ID,
-    TIMER_QUERYSTATE_ID
+    TIMER_QUERYSTATE_ID,
+    TIMER_LOGHINT_ID
 };
 
 
@@ -80,9 +82,6 @@ enum
     PANE_LOG,
     PANE_QUERYSTATE
 };
-
-
-//
 // This number MUST be incremented if changing any of the default perspectives
 //
 #define FRMSTATUS_PERSPECTIVE_VER wxT("8275")
@@ -241,6 +240,7 @@ private:
 
     wxTimer *refreshUITimer;
     wxTimer *statusTimer, *locksTimer, *xactTimer, *logTimer, *querystateTimer;
+    wxTimer *delayHitLog;
     int statusRate, locksRate, xactRate, logRate, querystateRate;
     
     ctlListView   *statusList;
@@ -261,6 +261,9 @@ private:
     wxArrayString filterValue;
 
     int statusColWidth[12], lockColWidth[10], xactColWidth[5], querystateColWidth[5];
+    popuphelp* m_Popup = NULL;
+    long lastlogitem = -1, lastlogitemShow=-1;
+    wxPoint lastmouse;
 
     int cboToRate();
     wxString rateToCboString(int rate);
@@ -288,6 +291,8 @@ private:
     void OnToggleWaitEnable(wxCommandEvent& event);
     void OnEmptyAction(wxCommandEvent &event);
     void OnLogContextMenu(wxCommandEvent& event);
+    void OnMoveMouseLog(wxMouseEvent& event);
+    void OnTimerHintLog(wxTimerEvent& event);
 
     void OnToggleToolBar(wxCommandEvent &event);
     void OnDefaultView(wxCommandEvent &event);
@@ -348,6 +353,7 @@ private:
     void OnLogKeyUp(wxKeyEvent& event);
     void OnAddLabelTextThread(wxThreadEvent& event);
     void ActivatePane(wxString name);
+    void OnCmdFindStrLog(wxCommandEvent& event);
 
     void OnChangeDatabase(wxCommandEvent &ev);
 

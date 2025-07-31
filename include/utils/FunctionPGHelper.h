@@ -9,12 +9,27 @@
 #include <wx/textfile.h>
 #include <wx/filename.h>
 
-extern sysSettings *settings;
+extern sysSettings* settings;
 
 class FunctionPGHelper
 {
 public:
     FunctionPGHelper() {};
+    /// <summary>
+    /// Создать только  переданный в конструкторе html текст с именем "content"
+    /// </summary>
+    /// <param name="content"></param>
+    FunctionPGHelper(const wxString& content) {
+        body.clear();
+        Add("content", content);
+        isload = true;
+    };
+    int Size() {
+        return body.size();
+    }
+    void SetTimerClose(int ms) { m_interval = ms; }
+    int GetTimerClose() { return m_interval; }
+    void Add(const wxString& key, const wxString& v) { body.emplace(key, v); }
     wxString getHelpString(wxString fnd, bool isPart = true) {
         if (!isValid()) return wxEmptyString;
         auto search = body.find(fnd);
@@ -46,9 +61,9 @@ public:
     wxString getSqlCommandHelp(wxString fnd) {
         wxUniChar sep = wxFileName::GetPathSeparator();
         fnd.Replace(" ", "");
-        wxString f = wxFindFirstFile(path + sep+"sql-"+fnd+"*.html");
-        wxString last,txt;
-        
+        wxString f = wxFindFirstFile(path + sep + "sql-" + fnd + "*.html");
+        wxString last, txt;
+
         int c = 0;
         while (!f.empty())
         {
@@ -61,7 +76,7 @@ public:
         if (last.empty()) {
             return wxEmptyString;
         }
-        else if (c==1) {
+        else if (c == 1) {
             return getHelpFile(last);
         }
         else {
@@ -100,6 +115,7 @@ public:
     }
 private:
     bool isload = false;
+    int m_interval = -1;
     wxString path;
     std::map<wxString, wxString> body;
     void loadfile() {
