@@ -1742,7 +1742,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
     }
 
     wxCriticalSectionLocker lock(gs_critsect);
-
+    wxLongLong startTime = wxGetLocalTimeMillis();
     long row = 0;
     wxString q = wxT("SELECT ");
     wait_enable = waitMenu->IsChecked(MNU_WAITENABLE);
@@ -1800,12 +1800,12 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
         q += wxT("backend_xid::text, backend_xmin::text, ");
 
     // Blocked by...
-    q +=   wxT("(SELECT min(l1.pid) FROM pg_locks l1 WHERE GRANTED AND (")
-           wxT("relation IN (SELECT relation FROM pg_locks l2 WHERE l2.pid=") + pidcol + wxT(" AND NOT granted)")
-           wxT(" OR ")
-           wxT("transactionid IN (SELECT transactionid FROM pg_locks l3 WHERE l3.pid=") + pidcol + wxT(" AND NOT granted)")
-           wxT(")) AS blockedby,\n");
-
+    //q +=   wxT("(SELECT min(l1.pid) FROM pg_locks l1 WHERE GRANTED AND (")
+    //       wxT("relation IN (SELECT relation FROM pg_locks l2 WHERE l2.pid=") + pidcol + wxT(" AND NOT granted)")
+    //       wxT(" OR ")
+    //       wxT("transactionid IN (SELECT transactionid FROM pg_locks l3 WHERE l3.pid=") + pidcol + wxT(" AND NOT granted)")
+    //       wxT(")) AS blockedby,\n");
+    q += "pg_blocking_pids(p.pid) AS blockedby,\n";
     // Query
     q += querycol + wxT(" AS query,\n");
 
@@ -2030,6 +2030,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
                     statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("wait_event")));
                 }
                 wxString blockedby = dataSet1->GetVal(wxT("blockedby"));
+                blockedby=blockedby.substr(1, blockedby.Length() - 2);
                 if (wait_sample && wait_enable) {
                     bool isClientReadTransaction = false;
                     //if ( spt.count>1 && ll!=0) isClientReadTransaction = true;
@@ -2067,10 +2068,10 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
                     if (dataSet1->GetBool(wxT("slowquery")))
                         statusList->SetItemBackgroundColour(row,
                                                             wxColour(settings->GetSlowProcessColour()));
-                    if (dataSet1->GetVal(wxT("blockedby")).Length() > 0) {
+                    if (blockedby.Length() > 0) {
                         statusList->SetItemBackgroundColour(row,
                                                             wxColour(settings->GetBlockedProcessColour()));
-                        blocked += dataSet1->GetVal(wxT("blockedby"));
+                        blocked += blockedby;
                         blocked += wxT(",");
                     }
                     if (!slinfo.IsEmpty()) {
@@ -2179,13 +2180,16 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
         
         wxListEvent ev;
         //OnSelStatusItem(ev);
+        wxString run_interval = ElapsedTimeToStr(
+            wxGetLocalTimeMillis() - startTime);
+
         if (msgerror.length() > 0) {
             statusBar->SetStatusText(msgerror);
         }
         else
         {
 
-            statusBar->SetStatusText(_("Done."));
+            statusBar->SetStatusText(_("Done.")+ run_interval);
         }
     }
     else
