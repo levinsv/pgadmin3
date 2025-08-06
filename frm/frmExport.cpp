@@ -386,7 +386,7 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 		  ;
 	file.Write(line, wxConvUTF8);
 	file.Close();
-#ifdef WIN32	
+#ifdef __WXMSW__
     wxAutomationObject excelObject; 
 	if (excelObject.CreateInstance(wxT("Excel.Application"))) {
 		 //excelObject.GetObject(xlbook,wxT("Workbooks.Add"));

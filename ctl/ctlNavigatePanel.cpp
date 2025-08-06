@@ -389,7 +389,7 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
             if (isok && (cmdName == "FindState")) ncmd = 2;
             if (isok && (ncmd>0)) {
                 long itemFocus = ctrl->GetFocusedItem();
-                wxString str = ctrl->GetText(itemFocus);
+                wxString str = ctrl->GetTextLong(itemFocus);
                 CSVTokenizer tk(str);
 
                 // Get the fields from the CSV log.
@@ -700,7 +700,7 @@ void ctlNavigatePanel::OnMouse(wxMouseEvent& evt) {
     wxString tt;
     if (i >= 0 && i < items_mark.size() && items_mark[i] > pos) i--;
     if (i >= 0 && i < items_mark.size() ) {
-        tt = ctrl->GetText(items_mark[i]);
+        tt = ctrl->GetTextLong(items_mark[i]);
         this->SetToolTip(tt);
     }
     else
@@ -990,7 +990,7 @@ int ctlNavigatePanel::FindText(wxString findtext, int position, bool directionUp
             // this item is selected - do whatever is needed with it
             //wxLogMessage("Item %ld is focused.", item);
             //long fpos = logList->FindItem(item, logFindString, true);
-            wxString s = ctrl->GetText(item);
+            wxString s = ctrl->GetTextLong(item);
             item++;
             if (!(s.Find(logFindString) > -1)) {
                 continue;

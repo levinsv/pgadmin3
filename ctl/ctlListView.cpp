@@ -37,6 +37,7 @@ ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr
 	nosort = false;
 	order = 1;
 	prev_col = -1;
+	storelongstring = false;
 	Connect(wxID_ANY, wxEVT_LIST_COL_CLICK, wxListEventHandler(ctlListView::OnSortGrid));
 }
 #include <map>
@@ -124,8 +125,7 @@ long ctlListView::GetSelection()
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
-
-wxString ctlListView::GetText(long row, long col)
+wxString ctlListView::GetTextLong(long row, long col)
 {
 	wxListItem item;
 	item.SetId(row);
@@ -135,10 +135,21 @@ wxString ctlListView::GetText(long row, long col)
 	wxString v = item.GetText();
 	if (storelongstring) {
 		int len = v.Length();
-		if (len==200 && row >= 0 && col==0 && row < longstring.size()) {
+		if (len == 200 && row >= 0 && col == 0 && row < longstring.size()) {
 			return  longstring[row];
 		}
 	}
+	return v;
+};
+
+wxString ctlListView::GetText(long row, long col)
+{
+	wxListItem item;
+	item.SetId(row);
+	item.SetColumn(col);
+	item.SetMask(wxLIST_MASK_TEXT);
+	GetItem(item);
+	wxString v = item.GetText();
 	return v;
 };
 
@@ -160,16 +171,31 @@ long ctlListView::AppendItem(int icon, const wxString& val, const wxString& val2
 {
 	long idx = GetItemCount();
 	long pos;
+	pos = InsertItem(idx, val, icon);
+	if (!val2.IsEmpty())
+		SetItem(pos, 1, val2);
+	if (!val3.IsEmpty())
+		SetItem(pos, 2, val3);
+	if (!val4.IsEmpty())
+		SetItem(pos, 3, val4);
+
+	return pos;
+}
+long ctlListView::AppendItemLong(int icon, const wxString& val, const wxString& val2, const wxString& val3, const wxString& val4)
+{
+	long idx = GetItemCount();
+	long pos;
 	if (storelongstring) {
 		if (val.Length() > 200) {
 			longstring.push_back(val);
-			pos = InsertItem(idx, val.Mid(0,200), icon);
+			pos = InsertItem(idx, val.Mid(0, 200), icon);
 		}
 		else {
 			longstring.push_back(wxEmptyString);
 			pos = InsertItem(idx, val, icon);
 		}
-	} else
+	}
+	else
 		pos = InsertItem(idx, val, icon);
 	if (!val2.IsEmpty())
 		SetItem(pos, 1, val2);

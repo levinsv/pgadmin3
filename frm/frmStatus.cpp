@@ -1192,7 +1192,7 @@ void frmStatus::AddLogPane()
     // if server release is less than 8.0 or if server has no adminpack
     if (!is_read_log) {
         logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, 700);
-        logList->AppendItem(-1, _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."));
+        logList->AppendItemLong(-1, _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."));
         logList->Enable(false);
         logTimer = NULL;
         // We're done
@@ -1223,7 +1223,7 @@ void frmStatus::AddLogPane()
         if (!connection->HasFeature(FEATURE_FILEREAD, true))
         {
             logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE_USEHEADER);
-            logList->AppendItem(-1,_("Logs are not available for this server."));
+            logList->AppendItemLong(-1,_("Logs are not available for this server."));
             logList->Enable(false);
             logTimer = NULL;
             // We're done
@@ -2713,9 +2713,9 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
             return;
             logDirectory = wxT("-");
             if (connection->BackendMinimumVersion(8, 3))
-                logList->AppendItem(-1, wxString(_("logging_collector not enabled or log_filename misconfigured")));
+                logList->AppendItemLong(-1, wxString(_("logging_collector not enabled or log_filename misconfigured")));
             else
-                logList->AppendItem(-1, wxString(_("redirect_stderr not enabled or log_filename misconfigured")));
+                logList->AppendItemLong(-1, wxString(_("redirect_stderr not enabled or log_filename misconfigured")));
             cbLogfiles->Disable();
             btnRotateLog->Disable();
         }
@@ -3143,7 +3143,7 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
     }
 
     if (!logFormatKnown) {
-        logList->AppendItem(-1, str);
+        logList->AppendItemLong(-1, str);
         int colorindex = nav->TryMarkItem(row, str);
         if (colorindex>=0)
             logList->SetItemBackgroundColour(row, nav->GetColorByIndex(colorindex));
@@ -4640,7 +4640,7 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
                 }
                 else {
                 }
-                s = logList->GetText(lastlogitem);
+                s = logList->GetTextLong(lastlogitem);
                 lastlogitemShow = lastlogitem;
                 lastlogitem = -1;
                 wxSize rr(350, 25);

@@ -41,10 +41,12 @@ public:
 	ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr = 0);
 	long GetSelection();
 	wxString GetText(long row, long col = 0);
+	wxString GetTextLong(long row, long col = 0);
 	void CreateColumns(wxImageList* images, const wxString& left, const wxString& right, int leftSize = 60);
 	void CreateColumns(wxImageList* images, const wxString& str1, const wxString& str2, const wxString& str3, int leftSize = 60);
 
 	void AddColumn(const wxString& text, int size = wxLIST_AUTOSIZE_USEHEADER, int format = wxLIST_FORMAT_LEFT);
+	long AppendItemLong(int icon, const wxString& val, const wxString& val2 = wxString(), const wxString& val3 = wxString(), const wxString& val4 = wxString());
 
 	long AppendItem(int icon, const wxString& val, const wxString& val2 = wxString(), const wxString& val3 = wxString(), const wxString& val4 = wxString());
 	long AppendItem(const wxString& val, const wxString& val2 = wxString(), const wxString& val3 = wxString())
