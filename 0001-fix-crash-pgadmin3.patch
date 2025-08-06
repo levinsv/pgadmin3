@@ -1,0 +1,219 @@
+From 7d4b2e8ba38ea7855e864df8d25e1a4804af9e5b Mon Sep 17 00:00:00 2001
+From: lsv <gtm7@yandex.ru>
+Date: Wed, 6 Aug 2025 09:51:50 +0500
+Subject: [PATCH] fix crash pgadmin3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Исправлена ошибка которая стала появлятся после новых изменений.
+Ошибка вызвана особенностями работы диалоговых окон.
+---
+ ctl/ctlListView.cpp       | 36 +++++++++++++++++++++++++++++++-----
+ ctl/ctlNavigatePanel.cpp  |  6 +++---
+ frm/frmExport.cpp         |  2 +-
+ frm/frmStatus.cpp         | 12 ++++++------
+ include/ctl/ctlListView.h |  2 ++
+ 5 files changed, 43 insertions(+), 15 deletions(-)
+
+diff --git a/ctl/ctlListView.cpp b/ctl/ctlListView.cpp
+index 27bdb4e..f8f97c1 100644
+--- a/ctl/ctlListView.cpp
++++ b/ctl/ctlListView.cpp
+@@ -37,6 +37,7 @@ ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr
+ 	nosort = false;
+ 	order = 1;
+ 	prev_col = -1;
++	storelongstring = false;
+ 	Connect(wxID_ANY, wxEVT_LIST_COL_CLICK, wxListEventHandler(ctlListView::OnSortGrid));
+ }
+ #include <map>
+@@ -124,8 +125,7 @@ long ctlListView::GetSelection()
+ 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+ }
+ 
+-
+-wxString ctlListView::GetText(long row, long col)
++wxString ctlListView::GetTextLong(long row, long col)
+ {
+ 	wxListItem item;
+ 	item.SetId(row);
+@@ -135,13 +135,24 @@ wxString ctlListView::GetText(long row, long col)
+ 	wxString v = item.GetText();
+ 	if (storelongstring) {
+ 		int len = v.Length();
+-		if (len==200 && row >= 0 && col==0 && row < longstring.size()) {
++		if (len == 200 && row >= 0 && col == 0 && row < longstring.size()) {
+ 			return  longstring[row];
+ 		}
+ 	}
+ 	return v;
+ };
+ 
++wxString ctlListView::GetText(long row, long col)
++{
++	wxListItem item;
++	item.SetId(row);
++	item.SetColumn(col);
++	item.SetMask(wxLIST_MASK_TEXT);
++	GetItem(item);
++	wxString v = item.GetText();
++	return v;
++};
++
+ 
+ void ctlListView::AddColumn(const wxString& text, int size, int format)
+ {
+@@ -157,19 +168,34 @@ void ctlListView::AddColumn(const wxString& text, int size, int format)
+ 
+ 
+ long ctlListView::AppendItem(int icon, const wxString& val, const wxString& val2, const wxString& val3, const wxString& val4)
++{
++	long idx = GetItemCount();
++	long pos;
++	pos = InsertItem(idx, val, icon);
++	if (!val2.IsEmpty())
++		SetItem(pos, 1, val2);
++	if (!val3.IsEmpty())
++		SetItem(pos, 2, val3);
++	if (!val4.IsEmpty())
++		SetItem(pos, 3, val4);
++
++	return pos;
++}
++long ctlListView::AppendItemLong(int icon, const wxString& val, const wxString& val2, const wxString& val3, const wxString& val4)
+ {
+ 	long idx = GetItemCount();
+ 	long pos;
+ 	if (storelongstring) {
+ 		if (val.Length() > 200) {
+ 			longstring.push_back(val);
+-			pos = InsertItem(idx, val.Mid(0,200), icon);
++			pos = InsertItem(idx, val.Mid(0, 200), icon);
+ 		}
+ 		else {
+ 			longstring.push_back(wxEmptyString);
+ 			pos = InsertItem(idx, val, icon);
+ 		}
+-	} else
++	}
++	else
+ 		pos = InsertItem(idx, val, icon);
+ 	if (!val2.IsEmpty())
+ 		SetItem(pos, 1, val2);
+diff --git a/ctl/ctlNavigatePanel.cpp b/ctl/ctlNavigatePanel.cpp
+index 4aed5db..d5c7c63 100644
+--- a/ctl/ctlNavigatePanel.cpp
++++ b/ctl/ctlNavigatePanel.cpp
+@@ -389,7 +389,7 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
+             if (isok && (cmdName == "FindState")) ncmd = 2;
+             if (isok && (ncmd>0)) {
+                 long itemFocus = ctrl->GetFocusedItem();
+-                wxString str = ctrl->GetText(itemFocus);
++                wxString str = ctrl->GetTextLong(itemFocus);
+                 CSVTokenizer tk(str);
+ 
+                 // Get the fields from the CSV log.
+@@ -700,7 +700,7 @@ void ctlNavigatePanel::OnMouse(wxMouseEvent& evt) {
+     wxString tt;
+     if (i >= 0 && i < items_mark.size() && items_mark[i] > pos) i--;
+     if (i >= 0 && i < items_mark.size() ) {
+-        tt = ctrl->GetText(items_mark[i]);
++        tt = ctrl->GetTextLong(items_mark[i]);
+         this->SetToolTip(tt);
+     }
+     else
+@@ -990,7 +990,7 @@ int ctlNavigatePanel::FindText(wxString findtext, int position, bool directionUp
+             // this item is selected - do whatever is needed with it
+             //wxLogMessage("Item %ld is focused.", item);
+             //long fpos = logList->FindItem(item, logFindString, true);
+-            wxString s = ctrl->GetText(item);
++            wxString s = ctrl->GetTextLong(item);
+             item++;
+             if (!(s.Find(logFindString) > -1)) {
+                 continue;
+diff --git a/frm/frmExport.cpp b/frm/frmExport.cpp
+index 2da0a47..f2017c8 100644
+--- a/frm/frmExport.cpp
++++ b/frm/frmExport.cpp
+@@ -386,7 +386,7 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
+ 		  ;
+ 	file.Write(line, wxConvUTF8);
+ 	file.Close();
+-#ifdef WIN32	
++#ifdef __WXMSW__
+     wxAutomationObject excelObject; 
+ 	if (excelObject.CreateInstance(wxT("Excel.Application"))) {
+ 		 //excelObject.GetObject(xlbook,wxT("Workbooks.Add"));
+diff --git a/frm/frmStatus.cpp b/frm/frmStatus.cpp
+index 5812034..6606592 100644
+--- a/frm/frmStatus.cpp
++++ b/frm/frmStatus.cpp
+@@ -1192,7 +1192,7 @@ void frmStatus::AddLogPane()
+     // if server release is less than 8.0 or if server has no adminpack
+     if (!is_read_log) {
+         logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, 700);
+-        logList->AppendItem(-1, _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."));
++        logList->AppendItemLong(-1, _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."));
+         logList->Enable(false);
+         logTimer = NULL;
+         // We're done
+@@ -1223,7 +1223,7 @@ void frmStatus::AddLogPane()
+         if (!connection->HasFeature(FEATURE_FILEREAD, true))
+         {
+             logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE_USEHEADER);
+-            logList->AppendItem(-1,_("Logs are not available for this server."));
++            logList->AppendItemLong(-1,_("Logs are not available for this server."));
+             logList->Enable(false);
+             logTimer = NULL;
+             // We're done
+@@ -2713,9 +2713,9 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
+             return;
+             logDirectory = wxT("-");
+             if (connection->BackendMinimumVersion(8, 3))
+-                logList->AppendItem(-1, wxString(_("logging_collector not enabled or log_filename misconfigured")));
++                logList->AppendItemLong(-1, wxString(_("logging_collector not enabled or log_filename misconfigured")));
+             else
+-                logList->AppendItem(-1, wxString(_("redirect_stderr not enabled or log_filename misconfigured")));
++                logList->AppendItemLong(-1, wxString(_("redirect_stderr not enabled or log_filename misconfigured")));
+             cbLogfiles->Disable();
+             btnRotateLog->Disable();
+         }
+@@ -3143,7 +3143,7 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
+     }
+ 
+     if (!logFormatKnown) {
+-        logList->AppendItem(-1, str);
++        logList->AppendItemLong(-1, str);
+         int colorindex = nav->TryMarkItem(row, str);
+         if (colorindex>=0)
+             logList->SetItemBackgroundColour(row, nav->GetColorByIndex(colorindex));
+@@ -4640,7 +4640,7 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
+                 }
+                 else {
+                 }
+-                s = logList->GetText(lastlogitem);
++                s = logList->GetTextLong(lastlogitem);
+                 lastlogitemShow = lastlogitem;
+                 lastlogitem = -1;
+                 wxSize rr(350, 25);
+diff --git a/include/ctl/ctlListView.h b/include/ctl/ctlListView.h
+index d887abd..2c2a14a 100644
+--- a/include/ctl/ctlListView.h
++++ b/include/ctl/ctlListView.h
+@@ -41,10 +41,12 @@ public:
+ 	ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr = 0);
+ 	long GetSelection();
+ 	wxString GetText(long row, long col = 0);
++	wxString GetTextLong(long row, long col = 0);
+ 	void CreateColumns(wxImageList* images, const wxString& left, const wxString& right, int leftSize = 60);
+ 	void CreateColumns(wxImageList* images, const wxString& str1, const wxString& str2, const wxString& str3, int leftSize = 60);
+ 
+ 	void AddColumn(const wxString& text, int size = wxLIST_AUTOSIZE_USEHEADER, int format = wxLIST_FORMAT_LEFT);
++	long AppendItemLong(int icon, const wxString& val, const wxString& val2 = wxString(), const wxString& val3 = wxString(), const wxString& val4 = wxString());
+ 
+ 	long AppendItem(int icon, const wxString& val, const wxString& val2 = wxString(), const wxString& val3 = wxString(), const wxString& val4 = wxString());
+ 	long AppendItem(const wxString& val, const wxString& val2 = wxString(), const wxString& val3 = wxString())
+-- 
+2.41.0.windows.1
+
