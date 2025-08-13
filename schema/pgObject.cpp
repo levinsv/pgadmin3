@@ -31,6 +31,7 @@
 #include "schema/pgType.h"
 #include "schema/pgOperator.h"
 #include "schema/pgLanguage.h"
+#include "schema/pgPublication.h"
 #include "schema/pgConversion.h"
 #include "schema/pgTablespace.h"
 #include "schema/pgGroup.h"
@@ -339,7 +340,7 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
 		delete stats;
 	}
 	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
-
+	statistics->ReSort();
 }
 
 
@@ -401,8 +402,9 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 				wxString typestr = set->GetVal(wxT("type"));
 				pgaFactory *depFactory = 0;
 				int icon=-1;
-				switch ((wxChar)typestr.c_str()[0])
-				{
+				if (typestr.Length() > 0) {
+					switch ((wxChar)typestr.c_str()[0])
+					{
 					case 'c':
 					case 's':   // we don't know these; internally handled
 					case 't':
@@ -426,7 +428,7 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 					case 'E':
 						depFactory = &extensionFactory;
 						break;
-						
+
 					case 'S':
 						depFactory = &sequenceFactory;
 						break;
@@ -435,7 +437,7 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 						break;
 					case 'm':
 						depFactory = &viewFactory;
-						icon=viewFactory.GetMaterializedIconId();
+						icon = viewFactory.GetMaterializedIconId();
 						break;
 					case 'x':
 						depFactory = &extTableFactory;
@@ -455,9 +457,12 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 					case 'f':
 						depFactory = &foreignTableFactory;
 						break;
-						
+
 					case 'l':
 						depFactory = &languageFactory;
+						break;
+					case 'P':
+						depFactory = &publicationFactory;
 						break;
 					case 'R':
 					{
@@ -470,24 +475,24 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 					{
 						switch ((wxChar)typestr.c_str()[1])
 						{
-							case 'c':
-								depFactory = &checkFactory;
-								break;
-							case 'f':
-								refname += set->GetVal(wxT("ownertable")) + wxT(".");
-								depFactory = &foreignKeyFactory;
-								break;
-							case 'p':
-								depFactory = &primaryKeyFactory;
-								break;
-							case 'u':
-								depFactory = &uniqueFactory;
-								break;
-							case 'x':
-								depFactory = &excludeFactory;
-								break;
-							default:
-								break;
+						case 'c':
+							depFactory = &checkFactory;
+							break;
+						case 'f':
+							refname += set->GetVal(wxT("ownertable")) + wxT(".");
+							depFactory = &foreignKeyFactory;
+							break;
+						case 'p':
+							depFactory = &primaryKeyFactory;
+							break;
+						case 'u':
+							depFactory = &uniqueFactory;
+							break;
+						case 'x':
+							depFactory = &excludeFactory;
+							break;
+						default:
+							break;
 						}
 						break;
 					}
@@ -508,8 +513,8 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString 
 					}
 					default:
 						break;
+					}
 				}
-
 				refname += _refname;
 
 				wxString typname;
@@ -691,10 +696,11 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	               wxT("            WHEN ad.oid IS NOT NULL THEN 'A'::text\n")
 				   wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
 				   wxT("            WHEN pub.oid IS NOT NULL THEN 'r'::text\n")
-	               wxT("            ELSE '' END AS type,\n")
+		           wxT("            WHEN pub2.oid IS NOT NULL THEN 'P'::text\n")
+		           wxT("            ELSE '' END AS type,\n")
 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname\n")
-	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text)\n")
+	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text,pubname.pubname)\n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
 	               wxT("  FROM pg_depend dep join pg_class nc on nc.oid=dep.refclassid\n")
@@ -716,6 +722,8 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const 
 	               wxT("  LEFT JOIN pg_namespace ns ON dep.refobjid=ns.oid and nc.relname='pg_namespace'\n")
 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.adrelid=att.attrelid AND ad.adnum=att.attnum\n")
 				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid and nc.relname='pg_publication_rel'\n")
+				   wxT("  LEFT JOIN pg_publication_rel pub2 ON dep.objid=pub2.oid and nc.relname='pg_publication_rel'\n")
+		           wxT("  LEFT JOIN pg_publication pubname on pubname.oid=pub2.prpubid \n")
 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.refobjid\n")
 	               + where, wxT("refclassid"));
 
@@ -863,11 +871,12 @@ void pgObject::ShowDependents(frmMain* form, ctlListView* referencedBy, const wx
 	               wxT("            WHEN co.oid IS NOT NULL THEN 'C'::text || contype::text\n")
 	               wxT("            WHEN ad.oid IS NOT NULL THEN 'A'::text\n")
 				   wxT("            WHEN pub.oid IS NOT NULL THEN 'r'::text\n")
-				   wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
+				   wxT("            WHEN pub2.oid IS NOT NULL THEN 'P'::text\n")
+		           wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
 	               wxT("            ELSE '' END AS type,\n")
 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname \n")
-	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text) \n")
+	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text,pubname.pubname) \n")
 	               wxT("       END AS refname,\n")
 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
 	               wxT("  FROM pg_depend dep join pg_class nc on nc.oid=dep.classid\n")
@@ -890,6 +899,8 @@ void pgObject::ShowDependents(frmMain* form, ctlListView* referencedBy, const wx
 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.oid=dep.objid and nc.relname='pg_attrdef'\n")
 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.objid and nc.relname='pg_extension'\n")
 				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid and nc.relname='pg_publication_rel'\n")
+		           wxT("  LEFT JOIN pg_publication_rel pub2 ON dep.objid=pub2.oid and nc.relname='pg_publication_rel'\n")
+		           wxT("  LEFT JOIN pg_publication pubname on pubname.oid=pub2.prpubid \n")
 	               + where, wxT("classid"));
 	
 	/*

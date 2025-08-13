@@ -121,6 +121,7 @@ wxString NumToStr(OID value);
 wxString NumToStr(wxLongLong value);
 wxString DateToStr(const wxDateTime &datetime);
 wxString ElapsedTimeToStr(wxLongLong msec);
+double ConvertSizeToMB(const wxString& sourcestringsize);
 wxString ContrastColorBlackOrWhite(wxColour& bgColor);
 
 // Quoting

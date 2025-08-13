@@ -2865,6 +2865,11 @@ void frmQuery::OnExplain(wxCommandEvent &event)
 			sql += wxT("COSTS on, ");
 		else
 			sql += wxT("COSTS off, ");
+		if (conn->BackendMinimumVersion(13, 0))
+		{
+				sql += wxT("SUMMARY on, ");
+		}
+
 		if (buffers)
 			sql += wxT("BUFFERS on");
 		else

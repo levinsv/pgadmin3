@@ -41,11 +41,31 @@ ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr
 	Connect(wxID_ANY, wxEVT_LIST_COL_CLICK, wxListEventHandler(ctlListView::OnSortGrid));
 }
 #include <map>
-void ctlListView::OnSortGrid(wxListEvent& event)
-{
+bool ctlListView::IsNumberColumn(const wxString& columnlabel) {
+	bool asnum = false;
+	if (columnlabel == _("CFS fragmentation") ||
+		columnlabel == (_("Tuples inserted")) ||
+		columnlabel == (_("Tuples updated")) ||
+		columnlabel == (_("Tuples deleted")) ||
+		columnlabel == (_("Tuples HOT updated")) ||
+		columnlabel == (_("Live tuples")) ||
+		columnlabel == (_("Dead tuples")) ||
+		columnlabel == (_("CFS %")) ||
+		columnlabel == (_("Autovacuum counter")) ||
+		columnlabel == (_("Autoanalyze counter")) ||
+		columnlabel == (_("Index Scans")) ||
+		columnlabel == (_("Index Tuples Read")) ||
+		columnlabel == (_("Index Tuples Fetched"))
+		) {
+		asnum = true;
+		}
+	return asnum;
+
+}
+void ctlListView::SortGrid(int colsort, bool isevent) {
 	if (!nosort) {
-		int col = event.GetColumn();
-		if (col == prev_col) order = order * -1;
+		int col = colsort;
+		if (col == prev_col && isevent) order = order * -1;
 		int rows = GetItemCount();
 		wxListItem listitem;
 		listitem.SetMask(wxLIST_MASK_TEXT);
@@ -53,23 +73,7 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 		wxString label = listitem.GetText();
 		bool issize = label == _("Size");
 		bool astext = true;
-		if (label == _("CFS fragmentation") ||
-			label == (_("Tuples inserted")) ||
-			label == (_("Tuples updated")) ||
-			label == (_("Tuples deleted")) ||
-			label == (_("Tuples HOT updated")) ||
-			label == (_("Live tuples")) ||
-			label == (_("Dead tuples")) ||
-			label == (_("CFS %")) ||
-			label == (_("Autovacuum counter")) ||
-			label == (_("Autoanalyze counter")) ||
-			label == (_("Index Scans")) ||
-			label == (_("Index Tuples Read")) ||
-			label == (_("Index Tuples Fetched")) ||
-			issize
-			) {
-			astext = false;
-		}
+		if (IsNumberColumn(label)|| issize) astext = false;
 		//sort numeric column
 		if (astext) {
 			std::multimap<wxString, int> mp;
@@ -89,8 +93,10 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 		{
 			std::multimap<double, int> mp;
 			double d;
+
 			for (int i = 0; i < rows; i++) {
 				wxString val = GetItemText(i, col);
+				d = 0;
 				if (val == "NaN") val = "0";
 				if (val.ToCDouble(&d))
 				{
@@ -98,11 +104,9 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 				}
 				else
 				{
-					
-					if (issize)
-						if (val.Right(2) == "kB") d = d / 1024;
-						else if (val.Right(2) == "GB") d = d * 1024;
-						else if (val.Right(5) == "bytes") d = d / 1024 / 1024;
+
+					if (issize) // convert => MB
+						d=ConvertSizeToMB(val);
 				}
 				mp.insert(std::pair<double, int>(d, i));
 			}
@@ -119,6 +123,21 @@ void ctlListView::OnSortGrid(wxListEvent& event)
 		Refresh();
 		prev_col = col;
 	}
+}
+bool ctlListView::ReSort() {
+	int ncols = GetColumnCount();
+	if (prev_col >= 0 && prev_col < ncols)
+			SortGrid(prev_col, false);
+		else
+			return false;
+	return true;
+
+}
+
+void ctlListView::OnSortGrid(wxListEvent& event)
+{
+	int col = event.GetColumn();
+	SortGrid(col, true);
 }
 long ctlListView::GetSelection()
 {

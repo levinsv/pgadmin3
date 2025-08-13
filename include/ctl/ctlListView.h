@@ -23,6 +23,12 @@ class ctlListView : public wxListView
 {
 private:
 	void OnSortGrid(wxListEvent& event);
+	/// <summary>
+	/// Sort list event or program
+	/// </summary>
+	/// <param name="colsort"></param>
+	/// <param name="resort"></param>
+	void SortGrid(int colsort, bool isevent);
 	bool nosort; // если кто то пользуется SetItemData то не будем сортировать такие ctlListView
 	int order, prev_col;
 	// будем сохранять длинные строки 0 колонки в этом массиве
@@ -33,6 +39,8 @@ public:
 		nosort = true;
 		return wxListView::SetItemData(item, data);
 	}
+	bool ReSort();
+	bool IsNumberColumn(const wxString& columnlabel);
 	void SetModeStoreLongString() { storelongstring = true; }
 	bool DeleteAllItems() {
 		longstring.clear();

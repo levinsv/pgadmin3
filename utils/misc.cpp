@@ -249,6 +249,24 @@ wxString ContrastColorBlackOrWhite(wxColour &bgColor) {
 	float k = bgColor.GetRed() * 0.299 + bgColor.GetGreen() * 0.587 + bgColor.GetBlue() * 0.114;
 	if (k <= 150) return "#FFFFFF"; else return "#000000";
 }
+/// <summary>
+/// 
+/// </summary>
+/// <param name="sourcestringsize"> NN MB , N bytes, N kB, N GB</param>
+/// <returns> size MB</returns>
+double ConvertSizeToMB(const wxString& sourcestringsize) {
+	double d = 0;
+	if (sourcestringsize.ToCDouble(&d)) {
+		d = 0;
+	}
+	else {
+		if (sourcestringsize.Right(2) == "kB") d = d / 1024; //kB => MB
+		else if (sourcestringsize.Right(2) == "GB") d = d * 1024;//GB => MB
+		else if (sourcestringsize.Right(2) == "TB") d = d * 1024 * 1024;//TB => MB
+		else if (sourcestringsize.Right(5) == "bytes") d = d / 1024 / 1024; //bytes => MB
+	}
+	return d;
+}
 wxString ElapsedTimeToStr(wxLongLong msec)
 {
 	wxTimeSpan tsMsec(0, 0, 0, msec);

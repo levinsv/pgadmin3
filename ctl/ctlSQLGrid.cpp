@@ -1190,9 +1190,13 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
             //
             lastnode = 0;
             if (text.at(p) == '-') {
-                // ��������� ����� ������ ����
+                // 
                 double m = 1;
                 // ->  Nested Loop  (cost=205.13..273.44 rows=4 width=188) (actual time=13.157..13.157 rows=0 loops=1)
+                bool isstd = false;
+                if (text.Contains("(never executed)")) {
+                    isstd = true;
+                }
                 wxRegEx foundstr(wxT("actual time=.*?\\.\\.([0-9.]+).*?loops=([0-9]+)\\)"), wxRE_ADVANCED);
                 if (foundstr.Matches(text)) {
                     wxString v = foundstr.GetMatch(text, 1);
@@ -1202,12 +1206,15 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
                     lastnode = lastnode * m;
                     leveltime = leveltime + lastnode;
                 }
-                g->grp->ColoriseRow(row, wxColour(248, 240, 130));
+                if (isstd)
+                        g->grp->ColoriseRow(row, wxColour(224, 255, 224)); // green
+                    else
+                        g->grp->ColoriseRow(row, wxColour(248, 240, 130)); // yellow
 
             }
             else
             {
-                g->grp->ColoriseRow(row, wxColour(224, 255, 224));
+                g->grp->ColoriseRow(row, wxColour(224, 255, 224)); // green
                 g->GetTable()->SetRowLabelValue(row, wxEmptyString);
             }
             row++;

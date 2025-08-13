@@ -61,24 +61,189 @@
 #define chkBrowser        CTRL_CHECKBOX("chkBrowser")
 
 BEGIN_EVENT_TABLE(frmReport, pgDialog)
-	EVT_RADIOBUTTON(XRCID("rbHtml"),        frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbXml"),         frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbHtmlBuiltin"), frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbHtmlEmbed"),   frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbHtmlLink"),    frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbXmlPlain"),    frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbXmlLink"),     frmReport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbXmlProcess"),  frmReport::OnChange)
-	EVT_TEXT(XRCID("txtHtmlFile"),          frmReport::OnChange)
-	EVT_TEXT(XRCID("txtXmlFile"),           frmReport::OnChange)
-	EVT_TEXT(XRCID("txtHtmlStylesheet"),    frmReport::OnChange)
-	EVT_TEXT(XRCID("txtXmlStylesheet"),     frmReport::OnChange)
-	EVT_BUTTON(XRCID("btnFile"),            frmReport::OnBrowseFile)
-	EVT_BUTTON(XRCID("btnStylesheet"),      frmReport::OnBrowseStylesheet)
-	EVT_BUTTON(wxID_HELP,                   frmReport::OnHelp)
-	EVT_BUTTON(wxID_OK,                     frmReport::OnOK)
-	EVT_BUTTON(wxID_CANCEL,                 frmReport::OnCancel)
+EVT_RADIOBUTTON(XRCID("rbHtml"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbXml"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbHtmlBuiltin"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbHtmlEmbed"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbHtmlLink"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbXmlPlain"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbXmlLink"), frmReport::OnChange)
+EVT_RADIOBUTTON(XRCID("rbXmlProcess"), frmReport::OnChange)
+EVT_TEXT(XRCID("txtHtmlFile"), frmReport::OnChange)
+EVT_TEXT(XRCID("txtXmlFile"), frmReport::OnChange)
+EVT_TEXT(XRCID("txtHtmlStylesheet"), frmReport::OnChange)
+EVT_TEXT(XRCID("txtXmlStylesheet"), frmReport::OnChange)
+EVT_BUTTON(XRCID("btnFile"), frmReport::OnBrowseFile)
+EVT_BUTTON(XRCID("btnStylesheet"), frmReport::OnBrowseStylesheet)
+EVT_BUTTON(wxID_HELP, frmReport::OnHelp)
+EVT_BUTTON(wxID_OK, frmReport::OnOK)
+EVT_BUTTON(wxID_CANCEL, frmReport::OnCancel)
 END_EVENT_TABLE()
+
+typedef std::vector<double> vectord;
+template<typename A, typename B>
+std::pair<B, A> flip_pair(const std::pair<A, B>& p)
+{
+	return std::pair<B, A>(p.second, p.first);
+}
+template<typename A, typename B>
+std::multimap<B, A> flip_map(const std::map<A, B>& src)
+{
+	std::multimap<B, A> dst;
+	std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()),
+		flip_pair<A, B>);
+	return dst;
+}
+const static wxString names[] = { "Count","Sum","Min","Max","Avg","Mediana","Moda"};
+class Stats
+{
+	std::vector<vectord> columns;
+	std::vector<int> types_col;
+	std::map<wxString, double> metrics;
+	int rows = 0;
+public:
+	Stats(int rows, int cols, const std::vector<int> &types) {
+
+		for (int x = 0; x < cols; x++) {
+			vectord arrays(rows);
+			columns.push_back(arrays);
+		}
+		types_col = types;
+		this->rows = rows;
+	}
+	void addValue(int row,int col,double d) {
+		if (types_col[col] < 1) return;
+		if (col == 0) {
+			return; // no use 0 column
+		}
+		columns[col][row] = d;
+	}
+	int getCountMetrics() {
+		return 7;
+	}
+	void calc() {
+		metrics.clear();
+		// Count
+		{
+			//wxString k = names[nm];
+			for (int col = 1; col < columns.size(); col++) {
+				if (types_col[col] < 1) continue;
+				vectord elements=columns[col];
+				//elements.reserve(1000);
+				double sum = 0.0;
+				double avg = 0;
+				double med = 0;
+				std::size_t n = elements.size();
+				std::sort(elements.begin(), elements.end());
+				
+				//std::cout << "max=" << elements.back() << std::endl;
+				double max = elements.back();
+				metrics[getKey(names[3], col)] = max; //max
+				//std::cout << "min=" << elements.front() << std::endl;
+				metrics[getKey(names[2], col)] = elements.front(); //min
+				for (auto& x : elements) {
+					sum += x;
+				}
+				if (n == 0) continue;
+				//std::cout << "avg=" << sum / n << std::endl;
+				metrics[getKey(names[1], col)] = sum;
+				avg = sum / n;
+				metrics[getKey(names[4], col)] = avg;
+				if (n == 1) {
+					//std::cout << "med=" << elements[0] << std::endl;
+					med = elements[0];
+				}
+				else if (n % 2 == 0) {
+					std::size_t i = n / 2;
+					//std::cout << "med=" << (double)(elements[i] + elements[i - 1]) / 2.0 << std::endl;
+					med = (elements[i] + elements[i - 1]) / 2.0;
+				}
+				else {
+					//std::cout << "med=" << elements[n / 2] << std::endl;
+					med = elements[n / 2];
+				}
+				metrics[getKey(names[5], col)] = med;
+				std::set<double> elements_set;
+				for (auto& x : elements) {
+					elements_set.insert(x);
+				}
+				std::map<double, std::size_t> elements_count;
+				for (auto& x : elements_set) {
+					elements_count.insert(std::pair<int, std::size_t>(x, std::count(elements.begin(), elements.end(), x)));
+				}
+				std::multimap<std::size_t, double> count_elements;
+				count_elements = flip_map(elements_count);
+				//std::cout << "mod: ";
+				std::size_t count_mod = count_elements.rbegin()->first;
+				for (auto& x : count_elements) {
+					if (x.first == count_mod) {
+						//std::cout << x.second << ", ";
+						metrics[getKey(names[6], col)] = x.second;
+					}
+					else {}
+				}
+				//std::cout << "(" << count_mod << ")" << std::endl;
+				wxString s_count_mod = "(" + NumToStr((long)count_mod) + ")";
+			}
+		}
+	}
+	wxArrayString GetRowForTable(int numMetric) {
+		wxArrayString footcols;
+		wxString name;
+		bool isEmpty = true;
+		if (numMetric >= getCountMetrics()) return footcols;
+		for (int x = 0; x < columns.size();x++) {
+			if (x == 0) { 
+				// Title
+				name = names[numMetric];
+				footcols.Add(name);
+			}
+			else {
+				if (numMetric==0) {
+					if (x == 1) footcols.Add(NumToStr((long)rows)); 
+						else
+							 footcols.Add("");
+					isEmpty = false;
+				}
+				else {
+					wxString k = getKey(name, x);
+					wxString v;
+					auto it = metrics.find(k);
+					double d;
+					if (it != metrics.end()) {
+						d = it->second;
+						//if 
+						wxString suff;
+
+						if (types_col[x] == 2) {
+							if (d > 1024) {
+								d = d / 1024;
+								suff = "GB";
+							}
+							else suff = "MB";
+						}
+						
+						if (suff.Length() > 0) v.Printf(wxT("%.2lf %s"), d, suff);
+							else v.Printf(wxT("%.2lf"), d);
+					} else {
+						
+					}
+					footcols.Add(v);
+					if (v.Length() > 0) isEmpty = false;
+				}
+			}
+
+		}
+		if (isEmpty) footcols.Clear();
+		return footcols;
+	}
+	wxString getKey(const wxString& name, int col) {
+		return wxString::Format("%s_%d", name,col);
+	}
+
+};
+
+
 
 frmReport::frmReport(wxWindow *p)
 {
@@ -551,7 +716,15 @@ const wxString frmReport::GetDefaultCss()
 	       wxT("      h2 { font-size: 130%; padding-bottom: 0.5ex; color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; border-bottom-style: solid; border-bottom-width: 2px; }\n")
 	       wxT("      h3 { font-size: 110%; padding-bottom: 0.5ex; color: #000000; }\n")
 	       wxT("      th { text-align: left; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; }\n")
-	       wxT("      #ReportHeader { padding: 10px; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; border-bottom-style: solid; border-bottom-width: 2px; border-color: #999999; }\n")
+		   wxT("      .tableFixHead {\n")
+		   wxT("        overflow-y: auto; /* make the table scrollable if height is more than 200 px  */\n")
+           wxT("        height: 300px; /* gives an initial height of 200px to the table */\n")
+		   wxT("      }\n")
+		   wxT("      .tableFixHead thead th {\n")
+           wxT("        position: sticky; /* make the table heads sticky */\n")
+           wxT("        top: 0px; /* table head will be placed from the top of the table and sticks to it */\n")
+           wxT("      }\n")
+		wxT("      #ReportHeader { padding: 10px; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; border-bottom-style: solid; border-bottom-width: 2px; border-color: #999999; }\n")
 	       wxT("      #ReportHeader th { width: 25%; white-space: nowrap; vertical-align: top; }\n")
 	       wxT("      #ReportHeader td { vertical-align: top; color: #eeeeee; }\n")
 	       wxT("      #ReportNotes { padding: 10px; background-color: #eeeeee; font-size: 80%; border-bottom-style: solid; border-bottom-width: 2px; border-color: #999999; }\n")
@@ -561,8 +734,9 @@ const wxString frmReport::GetDefaultCss()
 	       wxT("      #ReportDetails th { border-bottom-color: #777777; border-bottom-style: solid; border-bottom-width: 2px; }\n")
 	       wxT("      .ReportDetailsOddDataRow { background-color: #dddddd; }\n")
 	       wxT("      .ReportDetailsEvenDataRow { background-color: #eeeeee; }\n")
+		   wxT("      .ReportDetailsFootDataRow { font-weight: bold; background-color: #cccccc; }\n")
 	       wxT("      .ReportTableHeaderCell { background-color: #dddddd; color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; vertical-align: top; font-size: 80%; white-space: nowrap; }\n")
-	       wxT("      .ReportTableValueCell { vertical-align: top; font-size: 80%; white-space: nowrap; }\n")
+	       wxT("      .ReportTableValueCell { vertical-align: top; font-size: 80%; white-space: nowrap; padding: 2px; }\n")
 	       wxT("      .ReportTableInfo { font-size: 80%; font-style: italic; }\n")
 	       wxT("      #ReportFooter { font-weight: bold; font-size: 80%; text-align: right; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; margin-top: 10px; padding: 2px; border-bottom-style: solid; border-bottom-width: 2px; border-top-style: solid; border-top-width: 2px; border-color: #999999; }\n")
 	       wxT("      #ReportFooter a { color: #ffffff; text-decoration: none; }\n");
@@ -667,6 +841,25 @@ wxString frmReport::GetDefaultXsl(const wxString &css)
 	        wxT("\n")
 	        wxT("    <br />\n")
 	        wxT("  </body>\n")
+		wxT("<script>\n")
+		wxT("<xsl:comment><xsl:text disable-output-escaping=\"yes\"> <![CDATA[\n")
+		wxT("function adjustTableBodyHeight() {\n")
+		wxT("  var cnt=document.querySelectorAll('.tableFixHead').length;\n")
+		wxT("  if (cnt!=1) {\n")
+		wxT("    [...document.querySelectorAll('.tableFixHead')].forEach(el => { el.classList.remove('tableFixHead'); });\n")
+		wxT("  } else {\n")
+		wxT("   \n")
+		wxT("   var tableBody = document.querySelector('.tableFixHead');\n")
+		wxT("   var rf=document.getElementById('ReportFooter');\n")
+		wxT("   var wh=window.innerHeight;\n")
+		wxT("   var availableHeight = wh - tableBody.getBoundingClientRect().top - rf.getBoundingClientRect().height;\n")
+		wxT("   tableBody.style.height = Math.max(availableHeight, 100) + 'px';\n")
+		wxT("  }\n")
+		wxT("}\n")
+		wxT("window.onload = adjustTableBodyHeight;\n")
+		wxT("window.onresize = adjustTableBodyHeight;\n")
+		wxT("]]></xsl:text></xsl:comment>\n")
+		wxT("</script>\n")
 	        wxT("</html>\n")
 	        wxT("\n")
 	        wxT("</xsl:template>\n")
@@ -677,19 +870,19 @@ wxString frmReport::GetDefaultXsl(const wxString &css)
 	        wxT("  </xsl:if>\n")
 	        wxT("\n")
 	        wxT("  <xsl:if test=\"count(../section[@id = current()/@id]/table/columns/column) > 0\">\n")
-	        wxT("    <div style=\"overflow:auto;\">\n")
+	        wxT("    <div class=\"tableFixHead\" >\n")
 	        wxT("      <table>\n")
-	        wxT("        <tr>\n")
+	        wxT("        <thead><tr>\n")
 	        wxT("          <xsl:apply-templates select=\"../section[@id = current()/@id]/table/columns/column\">\n")
 	        wxT("            <xsl:sort select=\"@number\" data-type=\"number\" order=\"ascending\" />\n")
 	        wxT("            <xsl:with-param name=\"count\" select=\"count(../section[@id = current()/@id]/table/columns/column)\" />\n")
 	        wxT("          </xsl:apply-templates>\n")
-	        wxT("        </tr>\n")
+	        wxT("        </tr></thead><tbody>\n")
 	        wxT("        <xsl:apply-templates select=\"../section[@id = current()/@id]/table/rows/*\" mode=\"rows\">\n")
 	        wxT("          <xsl:sort select=\"@number\" data-type=\"number\" order=\"ascending\" />\n")
 	        wxT("          <xsl:with-param name=\"column-meta\" select=\"../section[@id = current()/@id]/table/columns/column\" />\n")
 	        wxT("        </xsl:apply-templates>\n")
-	        wxT("      </table>\n")
+	        wxT("      </tbody></table>\n")
 	        wxT("    </div>\n")
 	        wxT("    <br />\n")
 	        wxT("    <xsl:if test=\"../section[@id = current()/@id]/table/info != ''\">\n")
@@ -720,9 +913,12 @@ wxString frmReport::GetDefaultXsl(const wxString &css)
 	        wxT("  <xsl:param name=\"column-meta\" />\n")
 	        wxT("  <tr>\n")
 	        wxT("  <xsl:choose>\n")
-	        wxT("  <xsl:when test=\"position() mod 2 != 1\">\n")
-	        wxT("    <xsl:attribute name=\"class\">ReportDetailsOddDataRow</xsl:attribute>\n")
-	        wxT("  </xsl:when>\n")
+	        wxT("  <xsl:when test=\"(@foot)\">\n")
+	        wxT("    <xsl:attribute name=\"class\">ReportDetailsFootDataRow</xsl:attribute>\n")
+		    wxT("  </xsl:when>\n")
+		    wxT("  <xsl:when test=\"position() mod 2 != 1\">\n")
+		    wxT("    <xsl:attribute name=\"class\">ReportDetailsOddDataRow</xsl:attribute>\n")
+		    wxT("  </xsl:when>\n")
 	        wxT("  <xsl:otherwise>\n")
 	        wxT("    <xsl:attribute name=\"class\">ReportDetailsEvenDataRow</xsl:attribute>\n")
 	        wxT("  </xsl:otherwise>\n")
@@ -860,16 +1056,23 @@ void frmReport::XmlAddSectionTableFromListView(const int section, ctlListView *l
 {
 	// Get the column headers
 	int cols = list->GetColumnCount();
-
 	wxString data;
 	wxListItem itm;
-
+	//double sum = 0;
+	//double max = -DBL_MAX;
+	//double min = -DBL_MAX;
+	std::vector<int> isTypeNumber;
 	// Build the columns
 	for (int x = 0; x < cols; x++)
 	{
 		itm.SetMask(wxLIST_MASK_TEXT);
 		list->GetColumn(x, itm);
+		
 		wxString label = itm.GetText();
+		if (label == _("Size")) isTypeNumber.push_back(2);
+			else if (list->IsNumberColumn(label)) isTypeNumber.push_back(1);
+			else
+				isTypeNumber.push_back(0); // string
 		data += wxT("        <column id=\"c");
 		data += NumToStr((long)(x + 1));
 		data += wxT("\" number=\"");
@@ -879,26 +1082,49 @@ void frmReport::XmlAddSectionTableFromListView(const int section, ctlListView *l
 		data += wxT("\" />\n");
 	}
 	sectionTableHeader[section - 1] = data;
-
 	// Build the rows
 	int rows = list->GetItemCount();
-
-	for (int y = 0; y < rows; y++)
+	wxArrayString footcols;
+	Stats st(rows, cols, isTypeNumber);
+	int footrows = st.getCountMetrics();
+	
+	for (int y = 0; y < rows + footrows; y++)
 	{
+		if (y >= rows) {
+			if (y == rows) st.calc();
+			// foot rows
+			footcols = st.GetRowForTable(y - rows);
+			if (footcols.Count() == 0) continue;
+		}
 		data = wxT("        <row id=\"r");
 		data += NumToStr((long)(y + 1));
 		data += wxT("\" number=\"");
 		data += NumToStr((long)(y + 1));
 		data += wxT("\"");
-
-		for (int x = 0; x < cols; x++)
-		{
-			data += wxT(" c");
-			data += NumToStr((long)(x + 1));
-			data += wxT("=\"");
-			data += HtmlEntities(list->GetText(y, x));
-			data += wxT("\"");
-		}
+			for (int x = 0; x < cols; x++)
+			{
+				data += wxT(" c");
+				data += NumToStr((long)(x + 1));
+				data += wxT("=\"");
+				if (y >= rows)
+					data += HtmlEntities(footcols[x]);
+				else {
+					wxString val = list->GetText(y, x);
+					if (val == "NaN") val = "0";
+					double d = 0;
+					int t = isTypeNumber[x];
+					if (t == 2) { d = ConvertSizeToMB(val); }
+					else
+					{
+						if (val.ToCDouble(&d)) {
+						}
+					}
+					st.addValue(y, x, d);
+					data += HtmlEntities(val);
+				}
+				data += wxT("\"");
+			}
+		if (y >= rows) data = data + " foot=\"yes\"";
 		data += wxT(" />\n");
 		sectionTableRows[section - 1] += data;
 	}

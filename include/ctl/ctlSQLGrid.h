@@ -128,7 +128,7 @@ public:
                     g->HideRow(i);
                 }
                 wxGridCellAttr* pAttrg = new wxGridCellAttr;
-                pAttrg->SetBackgroundColour(wxColour(200, 191, 232));
+                pAttrg->SetBackgroundColour(wxColour(200, 191, 232)); // close group
                 g->SetRowAttr(row, pAttrg);
             }
             else
@@ -138,7 +138,11 @@ public:
                 int sizerow = g->GetDefaultRowSize();
                 //pAttr->SetBackgroundColour(wxColour(0,162,232));
                 wxGridCellAttr* pAttrg = new wxGridCellAttr;
-                pAttrg->SetBackgroundColour(wxColour(248, 240, 130));
+                if (g->GetCellValue(row, 0).Contains("(never executed)") ) {
+                    // not higtligth this row
+                    pAttrg->SetBackgroundColour(wxColour(224, 255, 224)); // green
+                } else 
+                    pAttrg->SetBackgroundColour(wxColour(248, 240, 130)); // yellow
                 g->SetRowAttr(row, pAttrg);
                 for (int i = r; i < (endg + 1); i++) {
                     gg = IsGroupRow(i);
