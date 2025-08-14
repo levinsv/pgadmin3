@@ -384,6 +384,8 @@ static char *complete_create_command(char *text)
 		 if (pg_strncasecmp(text, words_after_create[i].name, string_length) == 0)
 			 size += strlen(words_after_create[i].name);
 	 }
+	 if (size == 0)
+		 return NULL;
 
 	 r = calloc(size + i*2 + 1, 1);
 	 for (i = 0; words_after_create[i].name != NULL; i++)
@@ -394,7 +396,7 @@ static char *complete_create_command(char *text)
 			strcat(r," \t");
 		 }
 	 }
-	 r[strlen(r)-1] = '\0'; /* Chop of trailing space */
+		r[strlen(r)-1] = '\0'; /* Chop of trailing space */
 	 return r;
 }
 
