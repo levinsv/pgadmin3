@@ -45,6 +45,14 @@ public:
 	{
 		tables = s;
 	}
+	wxString GetiSchemasList() const
+	{
+		return schemas;
+	}
+	void iSetSchemasList(const wxString& s)
+	{
+		schemas = s;
+	}
 	wxString GetVersion() const
 	{
 		return version;
@@ -89,7 +97,35 @@ public:
 	{
 		publish_via_partition_root = b;
 	}
+	wxString GetTableColumns(const wxString& table) {
+		auto it = tablesdetail.find(table);
+		wxString v;
+		if (it != tablesdetail.end()) {
+			v = it->second;
+		}
+		return v;
+	}
+	wxString GetTableFilter(const wxString& table) {
+		wxString key = " where table filter for " + table;
+		return GetTableColumns(key);
+	}
+	void iAppendTable(const wxString& table, const wxString& listcolumns) {
+		auto it = tablesdetail.find(table);
+		wxString v;
+		if (it != tablesdetail.end()) {
+			v = it->second;
+			wxASSERT("failure uniq keymap columns");
+			wxTrap();
+		}
+		else {
+			tablesdetail.insert({ table,listcolumns });
+		}
 
+	}
+	void iAppendTableFilter(const wxString& table, const wxString& listcolumns) {
+		wxString key = " where table filter for " + table;
+		iAppendTable(key,listcolumns);
+	}
 	wxString GetStrOper() const
 	{
 		wxString s = wxT("");
@@ -123,8 +159,9 @@ public:
 	}
 
 private:
-	wxString tables, version;
+	wxString tables, schemas, version;
 	bool all,ins,upd,del, publish_via_partition_root;
+	std::map<wxString, wxString> tablesdetail;
 };
 
 class pgPublicationCollection : public pgDatabaseObjCollection
