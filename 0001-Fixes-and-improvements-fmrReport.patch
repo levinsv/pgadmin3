@@ -1,0 +1,847 @@
+From 4f4d78f0b66a50bf70d58d29ad77cc2e84f29c07 Mon Sep 17 00:00:00 2001
+From: lsv <gtm7@yandex.ru>
+Date: Wed, 13 Aug 2025 16:36:36 +0500
+Subject: [PATCH 1/3] Fixes and improvements (fmrReport)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+1. Сортировка колонок на вкладках Статистика сохряняется по возможности.
+2. Узлы плана которые помечены как (never executed) не подсвечиваются.
+3. При построении плана всегда добавляется опция "SUMMARY on"
+4. Исправлено не корректное отображение зависимостей для таблиц из публикаций.
+5. В отчетах о статистике добавлена итоговая информация по таблицам отчета.
+---
+ ctl/ctlListView.cpp       |  71 +++++----
+ ctl/ctlSQLGrid.cpp        |  13 +-
+ frm/frmQuery.cpp          |   5 +
+ frm/frmReport.cpp         | 306 +++++++++++++++++++++++++++++++++-----
+ include/ctl/ctlListView.h |   8 +
+ include/ctl/ctlSQLGrid.h  |   8 +-
+ include/utils/misc.h      |   1 +
+ schema/pgObject.cpp       |  69 +++++----
+ utils/misc.cpp            |  18 +++
+ 9 files changed, 399 insertions(+), 100 deletions(-)
+
+diff --git a/ctl/ctlListView.cpp b/ctl/ctlListView.cpp
+index f8f97c1..61d6adf 100644
+--- a/ctl/ctlListView.cpp
++++ b/ctl/ctlListView.cpp
+@@ -41,11 +41,31 @@ ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr
+ 	Connect(wxID_ANY, wxEVT_LIST_COL_CLICK, wxListEventHandler(ctlListView::OnSortGrid));
+ }
+ #include <map>
+-void ctlListView::OnSortGrid(wxListEvent& event)
+-{
++bool ctlListView::IsNumberColumn(const wxString& columnlabel) {
++	bool asnum = false;
++	if (columnlabel == _("CFS fragmentation") ||
++		columnlabel == (_("Tuples inserted")) ||
++		columnlabel == (_("Tuples updated")) ||
++		columnlabel == (_("Tuples deleted")) ||
++		columnlabel == (_("Tuples HOT updated")) ||
++		columnlabel == (_("Live tuples")) ||
++		columnlabel == (_("Dead tuples")) ||
++		columnlabel == (_("CFS %")) ||
++		columnlabel == (_("Autovacuum counter")) ||
++		columnlabel == (_("Autoanalyze counter")) ||
++		columnlabel == (_("Index Scans")) ||
++		columnlabel == (_("Index Tuples Read")) ||
++		columnlabel == (_("Index Tuples Fetched"))
++		) {
++		asnum = true;
++		}
++	return asnum;
++
++}
++void ctlListView::SortGrid(int colsort, bool isevent) {
+ 	if (!nosort) {
+-		int col = event.GetColumn();
+-		if (col == prev_col) order = order * -1;
++		int col = colsort;
++		if (col == prev_col && isevent) order = order * -1;
+ 		int rows = GetItemCount();
+ 		wxListItem listitem;
+ 		listitem.SetMask(wxLIST_MASK_TEXT);
+@@ -53,23 +73,7 @@ void ctlListView::OnSortGrid(wxListEvent& event)
+ 		wxString label = listitem.GetText();
+ 		bool issize = label == _("Size");
+ 		bool astext = true;
+-		if (label == _("CFS fragmentation") ||
+-			label == (_("Tuples inserted")) ||
+-			label == (_("Tuples updated")) ||
+-			label == (_("Tuples deleted")) ||
+-			label == (_("Tuples HOT updated")) ||
+-			label == (_("Live tuples")) ||
+-			label == (_("Dead tuples")) ||
+-			label == (_("CFS %")) ||
+-			label == (_("Autovacuum counter")) ||
+-			label == (_("Autoanalyze counter")) ||
+-			label == (_("Index Scans")) ||
+-			label == (_("Index Tuples Read")) ||
+-			label == (_("Index Tuples Fetched")) ||
+-			issize
+-			) {
+-			astext = false;
+-		}
++		if (IsNumberColumn(label)|| issize) astext = false;
+ 		//sort numeric column
+ 		if (astext) {
+ 			std::multimap<wxString, int> mp;
+@@ -89,8 +93,10 @@ void ctlListView::OnSortGrid(wxListEvent& event)
+ 		{
+ 			std::multimap<double, int> mp;
+ 			double d;
++
+ 			for (int i = 0; i < rows; i++) {
+ 				wxString val = GetItemText(i, col);
++				d = 0;
+ 				if (val == "NaN") val = "0";
+ 				if (val.ToCDouble(&d))
+ 				{
+@@ -98,11 +104,9 @@ void ctlListView::OnSortGrid(wxListEvent& event)
+ 				}
+ 				else
+ 				{
+-					
+-					if (issize)
+-						if (val.Right(2) == "kB") d = d / 1024;
+-						else if (val.Right(2) == "GB") d = d * 1024;
+-						else if (val.Right(5) == "bytes") d = d / 1024 / 1024;
++
++					if (issize) // convert => MB
++						d=ConvertSizeToMB(val);
+ 				}
+ 				mp.insert(std::pair<double, int>(d, i));
+ 			}
+@@ -120,6 +124,21 @@ void ctlListView::OnSortGrid(wxListEvent& event)
+ 		prev_col = col;
+ 	}
+ }
++bool ctlListView::ReSort() {
++	int ncols = GetColumnCount();
++	if (prev_col >= 0 && prev_col < ncols)
++			SortGrid(prev_col, false);
++		else
++			return false;
++	return true;
++
++}
++
++void ctlListView::OnSortGrid(wxListEvent& event)
++{
++	int col = event.GetColumn();
++	SortGrid(col, true);
++}
+ long ctlListView::GetSelection()
+ {
+ 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+diff --git a/ctl/ctlSQLGrid.cpp b/ctl/ctlSQLGrid.cpp
+index 204a208..4ac24b5 100644
+--- a/ctl/ctlSQLGrid.cpp
++++ b/ctl/ctlSQLGrid.cpp
+@@ -1190,9 +1190,13 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
+             //
+             lastnode = 0;
+             if (text.at(p) == '-') {
+-                // ��������� ����� ������ ����
++                // 
+                 double m = 1;
+                 // ->  Nested Loop  (cost=205.13..273.44 rows=4 width=188) (actual time=13.157..13.157 rows=0 loops=1)
++                bool isstd = false;
++                if (text.Contains("(never executed)")) {
++                    isstd = true;
++                }
+                 wxRegEx foundstr(wxT("actual time=.*?\\.\\.([0-9.]+).*?loops=([0-9]+)\\)"), wxRE_ADVANCED);
+                 if (foundstr.Matches(text)) {
+                     wxString v = foundstr.GetMatch(text, 1);
+@@ -1202,12 +1206,15 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
+                     lastnode = lastnode * m;
+                     leveltime = leveltime + lastnode;
+                 }
+-                g->grp->ColoriseRow(row, wxColour(248, 240, 130));
++                if (isstd)
++                        g->grp->ColoriseRow(row, wxColour(224, 255, 224)); // green
++                    else
++                        g->grp->ColoriseRow(row, wxColour(248, 240, 130)); // yellow
+ 
+             }
+             else
+             {
+-                g->grp->ColoriseRow(row, wxColour(224, 255, 224));
++                g->grp->ColoriseRow(row, wxColour(224, 255, 224)); // green
+                 g->GetTable()->SetRowLabelValue(row, wxEmptyString);
+             }
+             row++;
+diff --git a/frm/frmQuery.cpp b/frm/frmQuery.cpp
+index b3564be..a86903f 100644
+--- a/frm/frmQuery.cpp
++++ b/frm/frmQuery.cpp
+@@ -2865,6 +2865,11 @@ void frmQuery::OnExplain(wxCommandEvent &event)
+ 			sql += wxT("COSTS on, ");
+ 		else
+ 			sql += wxT("COSTS off, ");
++		if (conn->BackendMinimumVersion(13, 0))
++		{
++				sql += wxT("SUMMARY on, ");
++		}
++
+ 		if (buffers)
+ 			sql += wxT("BUFFERS on");
+ 		else
+diff --git a/frm/frmReport.cpp b/frm/frmReport.cpp
+index c68e8df..4476434 100644
+--- a/frm/frmReport.cpp
++++ b/frm/frmReport.cpp
+@@ -61,25 +61,190 @@
+ #define chkBrowser        CTRL_CHECKBOX("chkBrowser")
+ 
+ BEGIN_EVENT_TABLE(frmReport, pgDialog)
+-	EVT_RADIOBUTTON(XRCID("rbHtml"),        frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbXml"),         frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbHtmlBuiltin"), frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbHtmlEmbed"),   frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbHtmlLink"),    frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbXmlPlain"),    frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbXmlLink"),     frmReport::OnChange)
+-	EVT_RADIOBUTTON(XRCID("rbXmlProcess"),  frmReport::OnChange)
+-	EVT_TEXT(XRCID("txtHtmlFile"),          frmReport::OnChange)
+-	EVT_TEXT(XRCID("txtXmlFile"),           frmReport::OnChange)
+-	EVT_TEXT(XRCID("txtHtmlStylesheet"),    frmReport::OnChange)
+-	EVT_TEXT(XRCID("txtXmlStylesheet"),     frmReport::OnChange)
+-	EVT_BUTTON(XRCID("btnFile"),            frmReport::OnBrowseFile)
+-	EVT_BUTTON(XRCID("btnStylesheet"),      frmReport::OnBrowseStylesheet)
+-	EVT_BUTTON(wxID_HELP,                   frmReport::OnHelp)
+-	EVT_BUTTON(wxID_OK,                     frmReport::OnOK)
+-	EVT_BUTTON(wxID_CANCEL,                 frmReport::OnCancel)
++EVT_RADIOBUTTON(XRCID("rbHtml"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbXml"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbHtmlBuiltin"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbHtmlEmbed"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbHtmlLink"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbXmlPlain"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbXmlLink"), frmReport::OnChange)
++EVT_RADIOBUTTON(XRCID("rbXmlProcess"), frmReport::OnChange)
++EVT_TEXT(XRCID("txtHtmlFile"), frmReport::OnChange)
++EVT_TEXT(XRCID("txtXmlFile"), frmReport::OnChange)
++EVT_TEXT(XRCID("txtHtmlStylesheet"), frmReport::OnChange)
++EVT_TEXT(XRCID("txtXmlStylesheet"), frmReport::OnChange)
++EVT_BUTTON(XRCID("btnFile"), frmReport::OnBrowseFile)
++EVT_BUTTON(XRCID("btnStylesheet"), frmReport::OnBrowseStylesheet)
++EVT_BUTTON(wxID_HELP, frmReport::OnHelp)
++EVT_BUTTON(wxID_OK, frmReport::OnOK)
++EVT_BUTTON(wxID_CANCEL, frmReport::OnCancel)
+ END_EVENT_TABLE()
+ 
++typedef std::vector<double> vectord;
++template<typename A, typename B>
++std::pair<B, A> flip_pair(const std::pair<A, B>& p)
++{
++	return std::pair<B, A>(p.second, p.first);
++}
++template<typename A, typename B>
++std::multimap<B, A> flip_map(const std::map<A, B>& src)
++{
++	std::multimap<B, A> dst;
++	std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()),
++		flip_pair<A, B>);
++	return dst;
++}
++const static wxString names[] = { "Count","Sum","Min","Max","Avg","Mediana","Moda"};
++class Stats
++{
++	std::vector<vectord> columns;
++	std::vector<int> types_col;
++	std::map<wxString, double> metrics;
++	int rows = 0;
++public:
++	Stats(int rows, int cols, const std::vector<int> &types) {
++
++		for (int x = 0; x < cols; x++) {
++			vectord arrays(rows);
++			columns.push_back(arrays);
++		}
++		types_col = types;
++		this->rows = rows;
++	}
++	void addValue(int row,int col,double d) {
++		if (types_col[col] < 1) return;
++		if (col == 0) {
++			return; // no use 0 column
++		}
++		columns[col][row] = d;
++	}
++	int getCountMetrics() {
++		return 7;
++	}
++	void calc() {
++		metrics.clear();
++		// Count
++		{
++			//wxString k = names[nm];
++			for (int col = 1; col < columns.size(); col++) {
++				if (types_col[col] < 1) continue;
++				vectord elements=columns[col];
++				//elements.reserve(1000);
++				double sum = 0.0;
++				double avg = 0;
++				double med = 0;
++				std::size_t n = elements.size();
++				std::sort(elements.begin(), elements.end());
++				
++				//std::cout << "max=" << elements.back() << std::endl;
++				double max = elements.back();
++				metrics[getKey(names[3], col)] = max; //max
++				//std::cout << "min=" << elements.front() << std::endl;
++				metrics[getKey(names[2], col)] = elements.front(); //min
++				for (auto& x : elements) {
++					sum += x;
++				}
++				if (n == 0) continue;
++				//std::cout << "avg=" << sum / n << std::endl;
++				metrics[getKey(names[1], col)] = sum;
++				avg = sum / n;
++				metrics[getKey(names[4], col)] = avg;
++				if (n == 1) {
++					//std::cout << "med=" << elements[0] << std::endl;
++					med = elements[0];
++				}
++				else if (n % 2 == 0) {
++					std::size_t i = n / 2;
++					//std::cout << "med=" << (double)(elements[i] + elements[i - 1]) / 2.0 << std::endl;
++					med = (elements[i] + elements[i - 1]) / 2.0;
++				}
++				else {
++					//std::cout << "med=" << elements[n / 2] << std::endl;
++					med = elements[n / 2];
++				}
++				metrics[getKey(names[5], col)] = med;
++				std::set<double> elements_set;
++				for (auto& x : elements) {
++					elements_set.insert(x);
++				}
++				std::map<double, std::size_t> elements_count;
++				for (auto& x : elements_set) {
++					elements_count.insert(std::pair<int, std::size_t>(x, std::count(elements.begin(), elements.end(), x)));
++				}
++				std::multimap<std::size_t, double> count_elements;
++				count_elements = flip_map(elements_count);
++				//std::cout << "mod: ";
++				std::size_t count_mod = count_elements.rbegin()->first;
++				for (auto& x : count_elements) {
++					if (x.first == count_mod) {
++						//std::cout << x.second << ", ";
++						metrics[getKey(names[6], col)] = x.second;
++					}
++					else {}
++				}
++				//std::cout << "(" << count_mod << ")" << std::endl;
++				wxString s_count_mod = "(" + NumToStr((long)count_mod) + ")";
++			}
++		}
++	}
++	wxArrayString GetRowForTable(int numMetric) {
++		wxArrayString footcols;
++		wxString name;
++		bool isEmpty = true;
++		if (numMetric >= getCountMetrics()) return footcols;
++		for (int x = 0; x < columns.size();x++) {
++			if (x == 0) { 
++				// Title
++				name = names[numMetric];
++				footcols.Add(name);
++			}
++			else {
++				if (numMetric==0) {
++					if (x == 1) footcols.Add(NumToStr((long)rows)); 
++						else
++							 footcols.Add("");
++					isEmpty = false;
++				}
++				else {
++					wxString k = getKey(name, x);
++					wxString v;
++					auto it = metrics.find(k);
++					double d;
++					if (it != metrics.end()) {
++						d = it->second;
++						//if 
++						wxString suff;
++
++						if (types_col[x] == 2) {
++							if (d > 1024) {
++								d = d / 1024;
++								suff = "GB";
++							}
++							else suff = "MB";
++						}
++						
++						if (suff.Length() > 0) v.Printf(wxT("%.2lf %s"), d, suff);
++							else v.Printf(wxT("%.2lf"), d);
++					} else {
++						
++					}
++					footcols.Add(v);
++					if (v.Length() > 0) isEmpty = false;
++				}
++			}
++
++		}
++		if (isEmpty) footcols.Clear();
++		return footcols;
++	}
++	wxString getKey(const wxString& name, int col) {
++		return wxString::Format("%s_%d", name,col);
++	}
++
++};
++
++
++
+ frmReport::frmReport(wxWindow *p)
+ {
+ 	parent = p;
+@@ -551,7 +716,15 @@ const wxString frmReport::GetDefaultCss()
+ 	       wxT("      h2 { font-size: 130%; padding-bottom: 0.5ex; color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; border-bottom-style: solid; border-bottom-width: 2px; }\n")
+ 	       wxT("      h3 { font-size: 110%; padding-bottom: 0.5ex; color: #000000; }\n")
+ 	       wxT("      th { text-align: left; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; }\n")
+-	       wxT("      #ReportHeader { padding: 10px; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; border-bottom-style: solid; border-bottom-width: 2px; border-color: #999999; }\n")
++		   wxT("      .tableFixHead {\n")
++		   wxT("        overflow-y: auto; /* make the table scrollable if height is more than 200 px  */\n")
++           wxT("        height: 300px; /* gives an initial height of 200px to the table */\n")
++		   wxT("      }\n")
++		   wxT("      .tableFixHead thead th {\n")
++           wxT("        position: sticky; /* make the table heads sticky */\n")
++           wxT("        top: 0px; /* table head will be placed from the top of the table and sticks to it */\n")
++           wxT("      }\n")
++		wxT("      #ReportHeader { padding: 10px; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; border-bottom-style: solid; border-bottom-width: 2px; border-color: #999999; }\n")
+ 	       wxT("      #ReportHeader th { width: 25%; white-space: nowrap; vertical-align: top; }\n")
+ 	       wxT("      #ReportHeader td { vertical-align: top; color: #eeeeee; }\n")
+ 	       wxT("      #ReportNotes { padding: 10px; background-color: #eeeeee; font-size: 80%; border-bottom-style: solid; border-bottom-width: 2px; border-color: #999999; }\n")
+@@ -561,8 +734,9 @@ const wxString frmReport::GetDefaultCss()
+ 	       wxT("      #ReportDetails th { border-bottom-color: #777777; border-bottom-style: solid; border-bottom-width: 2px; }\n")
+ 	       wxT("      .ReportDetailsOddDataRow { background-color: #dddddd; }\n")
+ 	       wxT("      .ReportDetailsEvenDataRow { background-color: #eeeeee; }\n")
++		   wxT("      .ReportDetailsFootDataRow { font-weight: bold; background-color: #cccccc; }\n")
+ 	       wxT("      .ReportTableHeaderCell { background-color: #dddddd; color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; vertical-align: top; font-size: 80%; white-space: nowrap; }\n")
+-	       wxT("      .ReportTableValueCell { vertical-align: top; font-size: 80%; white-space: nowrap; }\n")
++	       wxT("      .ReportTableValueCell { vertical-align: top; font-size: 80%; white-space: nowrap; padding: 2px; }\n")
+ 	       wxT("      .ReportTableInfo { font-size: 80%; font-style: italic; }\n")
+ 	       wxT("      #ReportFooter { font-weight: bold; font-size: 80%; text-align: right; background-color: ") + appearanceFactory->GetReportKeyColour().GetAsString(wxC2S_HTML_SYNTAX) + wxT("; color: #eeeeee; margin-top: 10px; padding: 2px; border-bottom-style: solid; border-bottom-width: 2px; border-top-style: solid; border-top-width: 2px; border-color: #999999; }\n")
+ 	       wxT("      #ReportFooter a { color: #ffffff; text-decoration: none; }\n");
+@@ -667,6 +841,25 @@ wxString frmReport::GetDefaultXsl(const wxString &css)
+ 	        wxT("\n")
+ 	        wxT("    <br />\n")
+ 	        wxT("  </body>\n")
++		wxT("<script>\n")
++		wxT("<xsl:comment><xsl:text disable-output-escaping=\"yes\"> <![CDATA[\n")
++		wxT("function adjustTableBodyHeight() {\n")
++		wxT("  var cnt=document.querySelectorAll('.tableFixHead').length;\n")
++		wxT("  if (cnt!=1) {\n")
++		wxT("    [...document.querySelectorAll('.tableFixHead')].forEach(el => { el.classList.remove('tableFixHead'); });\n")
++		wxT("  } else {\n")
++		wxT("   \n")
++		wxT("   var tableBody = document.querySelector('.tableFixHead');\n")
++		wxT("   var rf=document.getElementById('ReportFooter');\n")
++		wxT("   var wh=window.innerHeight;\n")
++		wxT("   var availableHeight = wh - tableBody.getBoundingClientRect().top - rf.getBoundingClientRect().height;\n")
++		wxT("   tableBody.style.height = Math.max(availableHeight, 100) + 'px';\n")
++		wxT("  }\n")
++		wxT("}\n")
++		wxT("window.onload = adjustTableBodyHeight;\n")
++		wxT("window.onresize = adjustTableBodyHeight;\n")
++		wxT("]]></xsl:text></xsl:comment>\n")
++		wxT("</script>\n")
+ 	        wxT("</html>\n")
+ 	        wxT("\n")
+ 	        wxT("</xsl:template>\n")
+@@ -677,19 +870,19 @@ wxString frmReport::GetDefaultXsl(const wxString &css)
+ 	        wxT("  </xsl:if>\n")
+ 	        wxT("\n")
+ 	        wxT("  <xsl:if test=\"count(../section[@id = current()/@id]/table/columns/column) > 0\">\n")
+-	        wxT("    <div style=\"overflow:auto;\">\n")
++	        wxT("    <div class=\"tableFixHead\" >\n")
+ 	        wxT("      <table>\n")
+-	        wxT("        <tr>\n")
++	        wxT("        <thead><tr>\n")
+ 	        wxT("          <xsl:apply-templates select=\"../section[@id = current()/@id]/table/columns/column\">\n")
+ 	        wxT("            <xsl:sort select=\"@number\" data-type=\"number\" order=\"ascending\" />\n")
+ 	        wxT("            <xsl:with-param name=\"count\" select=\"count(../section[@id = current()/@id]/table/columns/column)\" />\n")
+ 	        wxT("          </xsl:apply-templates>\n")
+-	        wxT("        </tr>\n")
++	        wxT("        </tr></thead><tbody>\n")
+ 	        wxT("        <xsl:apply-templates select=\"../section[@id = current()/@id]/table/rows/*\" mode=\"rows\">\n")
+ 	        wxT("          <xsl:sort select=\"@number\" data-type=\"number\" order=\"ascending\" />\n")
+ 	        wxT("          <xsl:with-param name=\"column-meta\" select=\"../section[@id = current()/@id]/table/columns/column\" />\n")
+ 	        wxT("        </xsl:apply-templates>\n")
+-	        wxT("      </table>\n")
++	        wxT("      </tbody></table>\n")
+ 	        wxT("    </div>\n")
+ 	        wxT("    <br />\n")
+ 	        wxT("    <xsl:if test=\"../section[@id = current()/@id]/table/info != ''\">\n")
+@@ -720,9 +913,12 @@ wxString frmReport::GetDefaultXsl(const wxString &css)
+ 	        wxT("  <xsl:param name=\"column-meta\" />\n")
+ 	        wxT("  <tr>\n")
+ 	        wxT("  <xsl:choose>\n")
+-	        wxT("  <xsl:when test=\"position() mod 2 != 1\">\n")
+-	        wxT("    <xsl:attribute name=\"class\">ReportDetailsOddDataRow</xsl:attribute>\n")
+-	        wxT("  </xsl:when>\n")
++	        wxT("  <xsl:when test=\"(@foot)\">\n")
++	        wxT("    <xsl:attribute name=\"class\">ReportDetailsFootDataRow</xsl:attribute>\n")
++		    wxT("  </xsl:when>\n")
++		    wxT("  <xsl:when test=\"position() mod 2 != 1\">\n")
++		    wxT("    <xsl:attribute name=\"class\">ReportDetailsOddDataRow</xsl:attribute>\n")
++		    wxT("  </xsl:when>\n")
+ 	        wxT("  <xsl:otherwise>\n")
+ 	        wxT("    <xsl:attribute name=\"class\">ReportDetailsEvenDataRow</xsl:attribute>\n")
+ 	        wxT("  </xsl:otherwise>\n")
+@@ -860,16 +1056,23 @@ void frmReport::XmlAddSectionTableFromListView(const int section, ctlListView *l
+ {
+ 	// Get the column headers
+ 	int cols = list->GetColumnCount();
+-
+ 	wxString data;
+ 	wxListItem itm;
+-
++	//double sum = 0;
++	//double max = -DBL_MAX;
++	//double min = -DBL_MAX;
++	std::vector<int> isTypeNumber;
+ 	// Build the columns
+ 	for (int x = 0; x < cols; x++)
+ 	{
+ 		itm.SetMask(wxLIST_MASK_TEXT);
+ 		list->GetColumn(x, itm);
++		
+ 		wxString label = itm.GetText();
++		if (label == _("Size")) isTypeNumber.push_back(2);
++			else if (list->IsNumberColumn(label)) isTypeNumber.push_back(1);
++			else
++				isTypeNumber.push_back(0); // string
+ 		data += wxT("        <column id=\"c");
+ 		data += NumToStr((long)(x + 1));
+ 		data += wxT("\" number=\"");
+@@ -879,26 +1082,49 @@ void frmReport::XmlAddSectionTableFromListView(const int section, ctlListView *l
+ 		data += wxT("\" />\n");
+ 	}
+ 	sectionTableHeader[section - 1] = data;
+-
+ 	// Build the rows
+ 	int rows = list->GetItemCount();
+-
+-	for (int y = 0; y < rows; y++)
++	wxArrayString footcols;
++	Stats st(rows, cols, isTypeNumber);
++	int footrows = st.getCountMetrics();
++	
++	for (int y = 0; y < rows + footrows; y++)
+ 	{
++		if (y >= rows) {
++			if (y == rows) st.calc();
++			// foot rows
++			footcols = st.GetRowForTable(y - rows);
++			if (footcols.Count() == 0) continue;
++		}
+ 		data = wxT("        <row id=\"r");
+ 		data += NumToStr((long)(y + 1));
+ 		data += wxT("\" number=\"");
+ 		data += NumToStr((long)(y + 1));
+ 		data += wxT("\"");
+-
+-		for (int x = 0; x < cols; x++)
+-		{
+-			data += wxT(" c");
+-			data += NumToStr((long)(x + 1));
+-			data += wxT("=\"");
+-			data += HtmlEntities(list->GetText(y, x));
+-			data += wxT("\"");
+-		}
++			for (int x = 0; x < cols; x++)
++			{
++				data += wxT(" c");
++				data += NumToStr((long)(x + 1));
++				data += wxT("=\"");
++				if (y >= rows)
++					data += HtmlEntities(footcols[x]);
++				else {
++					wxString val = list->GetText(y, x);
++					if (val == "NaN") val = "0";
++					double d = 0;
++					int t = isTypeNumber[x];
++					if (t == 2) { d = ConvertSizeToMB(val); }
++					else
++					{
++						if (val.ToCDouble(&d)) {
++						}
++					}
++					st.addValue(y, x, d);
++					data += HtmlEntities(val);
++				}
++				data += wxT("\"");
++			}
++		if (y >= rows) data = data + " foot=\"yes\"";
+ 		data += wxT(" />\n");
+ 		sectionTableRows[section - 1] += data;
+ 	}
+diff --git a/include/ctl/ctlListView.h b/include/ctl/ctlListView.h
+index 2c2a14a..eb22dc5 100644
+--- a/include/ctl/ctlListView.h
++++ b/include/ctl/ctlListView.h
+@@ -23,6 +23,12 @@ class ctlListView : public wxListView
+ {
+ private:
+ 	void OnSortGrid(wxListEvent& event);
++	/// <summary>
++	/// Sort list event or program
++	/// </summary>
++	/// <param name="colsort"></param>
++	/// <param name="resort"></param>
++	void SortGrid(int colsort, bool isevent);
+ 	bool nosort; // если кто то пользуется SetItemData то не будем сортировать такие ctlListView
+ 	int order, prev_col;
+ 	// будем сохранять длинные строки 0 колонки в этом массиве
+@@ -33,6 +39,8 @@ public:
+ 		nosort = true;
+ 		return wxListView::SetItemData(item, data);
+ 	}
++	bool ReSort();
++	bool IsNumberColumn(const wxString& columnlabel);
+ 	void SetModeStoreLongString() { storelongstring = true; }
+ 	bool DeleteAllItems() {
+ 		longstring.clear();
+diff --git a/include/ctl/ctlSQLGrid.h b/include/ctl/ctlSQLGrid.h
+index f4900e0..4eb1b78 100644
+--- a/include/ctl/ctlSQLGrid.h
++++ b/include/ctl/ctlSQLGrid.h
+@@ -128,7 +128,7 @@ public:
+                     g->HideRow(i);
+                 }
+                 wxGridCellAttr* pAttrg = new wxGridCellAttr;
+-                pAttrg->SetBackgroundColour(wxColour(200, 191, 232));
++                pAttrg->SetBackgroundColour(wxColour(200, 191, 232)); // close group
+                 g->SetRowAttr(row, pAttrg);
+             }
+             else
+@@ -138,7 +138,11 @@ public:
+                 int sizerow = g->GetDefaultRowSize();
+                 //pAttr->SetBackgroundColour(wxColour(0,162,232));
+                 wxGridCellAttr* pAttrg = new wxGridCellAttr;
+-                pAttrg->SetBackgroundColour(wxColour(248, 240, 130));
++                if (g->GetCellValue(row, 0).Contains("(never executed)") ) {
++                    // not higtligth this row
++                    pAttrg->SetBackgroundColour(wxColour(224, 255, 224)); // green
++                } else 
++                    pAttrg->SetBackgroundColour(wxColour(248, 240, 130)); // yellow
+                 g->SetRowAttr(row, pAttrg);
+                 for (int i = r; i < (endg + 1); i++) {
+                     gg = IsGroupRow(i);
+diff --git a/include/utils/misc.h b/include/utils/misc.h
+index 6b1a817..de2e0d3 100644
+--- a/include/utils/misc.h
++++ b/include/utils/misc.h
+@@ -121,6 +121,7 @@ wxString NumToStr(OID value);
+ wxString NumToStr(wxLongLong value);
+ wxString DateToStr(const wxDateTime &datetime);
+ wxString ElapsedTimeToStr(wxLongLong msec);
++double ConvertSizeToMB(const wxString& sourcestringsize);
+ wxString ContrastColorBlackOrWhite(wxColour& bgColor);
+ 
+ // Quoting
+diff --git a/schema/pgObject.cpp b/schema/pgObject.cpp
+index 1b7233c..7fe1516 100644
+--- a/schema/pgObject.cpp
++++ b/schema/pgObject.cpp
+@@ -31,6 +31,7 @@
+ #include "schema/pgType.h"
+ #include "schema/pgOperator.h"
+ #include "schema/pgLanguage.h"
++#include "schema/pgPublication.h"
+ #include "schema/pgConversion.h"
+ #include "schema/pgTablespace.h"
+ #include "schema/pgGroup.h"
+@@ -339,7 +340,7 @@ void pgObject::ShowStatisticsTables(frmMain* form, ctlListView* statistics, pgOb
+ 		delete stats;
+ 	}
+ 	statistics->SetColumnWidth(0, wxLIST_AUTOSIZE);
+-
++	statistics->ReSort();
+ }
+ 
+ 
+@@ -401,8 +402,9 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString
+ 				wxString typestr = set->GetVal(wxT("type"));
+ 				pgaFactory *depFactory = 0;
+ 				int icon=-1;
+-				switch ((wxChar)typestr.c_str()[0])
+-				{
++				if (typestr.Length() > 0) {
++					switch ((wxChar)typestr.c_str()[0])
++					{
+ 					case 'c':
+ 					case 's':   // we don't know these; internally handled
+ 					case 't':
+@@ -426,7 +428,7 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString
+ 					case 'E':
+ 						depFactory = &extensionFactory;
+ 						break;
+-						
++
+ 					case 'S':
+ 						depFactory = &sequenceFactory;
+ 						break;
+@@ -435,7 +437,7 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString
+ 						break;
+ 					case 'm':
+ 						depFactory = &viewFactory;
+-						icon=viewFactory.GetMaterializedIconId();
++						icon = viewFactory.GetMaterializedIconId();
+ 						break;
+ 					case 'x':
+ 						depFactory = &extTableFactory;
+@@ -455,10 +457,13 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString
+ 					case 'f':
+ 						depFactory = &foreignTableFactory;
+ 						break;
+-						
++
+ 					case 'l':
+ 						depFactory = &languageFactory;
+ 						break;
++					case 'P':
++						depFactory = &publicationFactory;
++						break;
+ 					case 'R':
+ 					{
+ 						refname = _refname + wxT(" ON ") + refname + set->GetVal(wxT("ownertable"));
+@@ -470,24 +475,24 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString
+ 					{
+ 						switch ((wxChar)typestr.c_str()[1])
+ 						{
+-							case 'c':
+-								depFactory = &checkFactory;
+-								break;
+-							case 'f':
+-								refname += set->GetVal(wxT("ownertable")) + wxT(".");
+-								depFactory = &foreignKeyFactory;
+-								break;
+-							case 'p':
+-								depFactory = &primaryKeyFactory;
+-								break;
+-							case 'u':
+-								depFactory = &uniqueFactory;
+-								break;
+-							case 'x':
+-								depFactory = &excludeFactory;
+-								break;
+-							default:
+-								break;
++						case 'c':
++							depFactory = &checkFactory;
++							break;
++						case 'f':
++							refname += set->GetVal(wxT("ownertable")) + wxT(".");
++							depFactory = &foreignKeyFactory;
++							break;
++						case 'p':
++							depFactory = &primaryKeyFactory;
++							break;
++						case 'u':
++							depFactory = &uniqueFactory;
++							break;
++						case 'x':
++							depFactory = &excludeFactory;
++							break;
++						default:
++							break;
+ 						}
+ 						break;
+ 					}
+@@ -508,8 +513,8 @@ void pgObject::ShowDependency(pgDatabase *db, ctlListView *list, const wxString
+ 					}
+ 					default:
+ 						break;
++					}
+ 				}
+-
+ 				refname += _refname;
+ 
+ 				wxString typname;
+@@ -691,10 +696,11 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const
+ 	               wxT("            WHEN ad.oid IS NOT NULL THEN 'A'::text\n")
+ 				   wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
+ 				   wxT("            WHEN pub.oid IS NOT NULL THEN 'r'::text\n")
+-	               wxT("            ELSE '' END AS type,\n")
++		           wxT("            WHEN pub2.oid IS NOT NULL THEN 'P'::text\n")
++		           wxT("            ELSE '' END AS type,\n")
+ 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
+ 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname\n")
+-	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text)\n")
++	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text,pubname.pubname)\n")
+ 	               wxT("       END AS refname,\n")
+ 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
+ 	               wxT("  FROM pg_depend dep join pg_class nc on nc.oid=dep.refclassid\n")
+@@ -716,6 +722,8 @@ void pgObject::ShowDependencies(frmMain *form, ctlListView *Dependencies, const
+ 	               wxT("  LEFT JOIN pg_namespace ns ON dep.refobjid=ns.oid and nc.relname='pg_namespace'\n")
+ 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.adrelid=att.attrelid AND ad.adnum=att.attnum\n")
+ 				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid and nc.relname='pg_publication_rel'\n")
++				   wxT("  LEFT JOIN pg_publication_rel pub2 ON dep.objid=pub2.oid and nc.relname='pg_publication_rel'\n")
++		           wxT("  LEFT JOIN pg_publication pubname on pubname.oid=pub2.prpubid \n")
+ 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.refobjid\n")
+ 	               + where, wxT("refclassid"));
+ 
+@@ -863,11 +871,12 @@ void pgObject::ShowDependents(frmMain* form, ctlListView* referencedBy, const wx
+ 	               wxT("            WHEN co.oid IS NOT NULL THEN 'C'::text || contype::text\n")
+ 	               wxT("            WHEN ad.oid IS NOT NULL THEN 'A'::text\n")
+ 				   wxT("            WHEN pub.oid IS NOT NULL THEN 'r'::text\n")
+-				   wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
++				   wxT("            WHEN pub2.oid IS NOT NULL THEN 'P'::text\n")
++		           wxT("            WHEN ext.oid IS NOT NULL THEN 'E'::text\n")
+ 	               wxT("            ELSE '' END AS type,\n")
+ 	               wxT("       COALESCE(coc.relname, clrw.relname) AS ownertable,\n")
+ 	               wxT("       CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname \n")
+-	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text) \n")
++	               wxT("            ELSE COALESCE(ext.extname,cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname,pub.prrelid::regclass::text,pubname.pubname) \n")
+ 	               wxT("       END AS refname,\n")
+ 	               wxT("       COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n")
+ 	               wxT("  FROM pg_depend dep join pg_class nc on nc.oid=dep.classid\n")
+@@ -890,6 +899,8 @@ void pgObject::ShowDependents(frmMain* form, ctlListView* referencedBy, const wx
+ 	               wxT("  LEFT JOIN pg_attrdef ad ON ad.oid=dep.objid and nc.relname='pg_attrdef'\n")
+ 				   wxT("  LEFT JOIN pg_extension ext ON ext.oid=dep.objid and nc.relname='pg_extension'\n")
+ 				   wxT("  LEFT JOIN pg_publication_rel pub ON dep.objid=pub.oid AND pub.prpubid=dep.refobjid and nc.relname='pg_publication_rel'\n")
++		           wxT("  LEFT JOIN pg_publication_rel pub2 ON dep.objid=pub2.oid and nc.relname='pg_publication_rel'\n")
++		           wxT("  LEFT JOIN pg_publication pubname on pubname.oid=pub2.prpubid \n")
+ 	               + where, wxT("classid"));
+ 	
+ 	/*
+diff --git a/utils/misc.cpp b/utils/misc.cpp
+index 793acc2..1a6b53c 100644
+--- a/utils/misc.cpp
++++ b/utils/misc.cpp
+@@ -249,6 +249,24 @@ wxString ContrastColorBlackOrWhite(wxColour &bgColor) {
+ 	float k = bgColor.GetRed() * 0.299 + bgColor.GetGreen() * 0.587 + bgColor.GetBlue() * 0.114;
+ 	if (k <= 150) return "#FFFFFF"; else return "#000000";
+ }
++/// <summary>
++/// 
++/// </summary>
++/// <param name="sourcestringsize"> NN MB , N bytes, N kB, N GB</param>
++/// <returns> size MB</returns>
++double ConvertSizeToMB(const wxString& sourcestringsize) {
++	double d = 0;
++	if (sourcestringsize.ToCDouble(&d)) {
++		d = 0;
++	}
++	else {
++		if (sourcestringsize.Right(2) == "kB") d = d / 1024; //kB => MB
++		else if (sourcestringsize.Right(2) == "GB") d = d * 1024;//GB => MB
++		else if (sourcestringsize.Right(2) == "TB") d = d * 1024 * 1024;//TB => MB
++		else if (sourcestringsize.Right(5) == "bytes") d = d / 1024 / 1024; //bytes => MB
++	}
++	return d;
++}
+ wxString ElapsedTimeToStr(wxLongLong msec)
+ {
+ 	wxTimeSpan tsMsec(0, 0, 0, msec);
+-- 
+2.41.0.windows.1
+

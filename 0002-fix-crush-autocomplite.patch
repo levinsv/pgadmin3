@@ -1,0 +1,51 @@
+From ee05f331dc6e9c41858cadc11466f7042c3e57e8 Mon Sep 17 00:00:00 2001
+From: lsv <gtm7@yandex.ru>
+Date: Thu, 14 Aug 2025 15:02:08 +0500
+Subject: [PATCH 2/3] fix crush autocomplite
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Исправлено падение после автозавершения после слова "create".
+---
+ utils/tab-complete.inc | 1 +
+ utils/tabcomplete.c    | 4 +++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/utils/tab-complete.inc b/utils/tab-complete.inc
+index 5912e08..1f51254 100644
+--- a/utils/tab-complete.inc
++++ b/utils/tab-complete.inc
+@@ -329,6 +329,7 @@ typedef struct
+ 
+ static const pgsql_thing_t words_after_create[] = {
+ 	{"AGGREGATE", NULL, &Query_for_list_of_aggregates},
++	{"PUBLICATION", NULL, NULL},
+ 	{"CAST", NULL, NULL},		/* Casts have complex structures for names, so
+ 								 * skip it */
+ 
+diff --git a/utils/tabcomplete.c b/utils/tabcomplete.c
+index f8cba05..1d34ec5 100644
+--- a/utils/tabcomplete.c
++++ b/utils/tabcomplete.c
+@@ -384,6 +384,8 @@ static char *complete_create_command(char *text)
+ 		 if (pg_strncasecmp(text, words_after_create[i].name, string_length) == 0)
+ 			 size += strlen(words_after_create[i].name);
+ 	 }
++	 if (size == 0)
++		 return NULL;
+ 
+ 	 r = calloc(size + i*2 + 1, 1);
+ 	 for (i = 0; words_after_create[i].name != NULL; i++)
+@@ -394,7 +396,7 @@ static char *complete_create_command(char *text)
+ 			strcat(r," \t");
+ 		 }
+ 	 }
+-	 r[strlen(r)-1] = '\0'; /* Chop of trailing space */
++		r[strlen(r)-1] = '\0'; /* Chop of trailing space */
+ 	 return r;
+ }
+ 
+-- 
+2.41.0.windows.1
+
