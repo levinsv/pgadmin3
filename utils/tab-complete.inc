@@ -66,6 +66,20 @@ static const SchemaQuery Query_for_list_of_aggregates = {
 	/* qualresult */
 	NULL
 };
+static const SchemaQuery Query_for_list_of_publication = {
+	/* catname */
+	"pg_catalog.pg_publication p",
+	/* selcondition */
+	"pg_catalog.has_database_privilege(current_database(),'CREATE')",
+	/* viscondition */
+	NULL,
+	/* namespace */
+	"-",
+	/* result */
+	"pg_catalog.quote_ident(p.pubname)",
+	/* qualresult */
+	NULL
+};
 
 static const SchemaQuery Query_for_list_of_datatypes = {
 	/* catname */
@@ -148,7 +162,49 @@ static const SchemaQuery Query_for_list_of_tables = {
 	/* catname */
 	"pg_catalog.pg_class c",
 	/* selcondition */
-	"c.relkind IN ('r')",
+	"c.relkind IN ('r') and pg_catalog.has_table_privilege(c.oid, 'select')",
+	/* viscondition */
+	"pg_catalog.pg_table_is_visible(c.oid)",
+	/* namespace */
+	"c.relnamespace",
+	/* result */
+	"pg_catalog.quote_ident(c.relname)",
+	/* qualresult */
+	NULL
+};
+static const SchemaQuery Query_for_list_of_tables_insert = {
+	/* catname */
+	"pg_catalog.pg_class c",
+	/* selcondition */
+	"c.relkind IN ('r','v') and pg_catalog.has_table_privilege(c.oid, 'insert')",
+	/* viscondition */
+	"pg_catalog.pg_table_is_visible(c.oid)",
+	/* namespace */
+	"c.relnamespace",
+	/* result */
+	"pg_catalog.quote_ident(c.relname)",
+	/* qualresult */
+	NULL
+};
+static const SchemaQuery Query_for_list_of_tables_update = {
+	/* catname */
+	"pg_catalog.pg_class c",
+	/* selcondition */
+	"c.relkind IN ('r','v') and pg_catalog.has_table_privilege(c.oid, 'update')",
+	/* viscondition */
+	"pg_catalog.pg_table_is_visible(c.oid)",
+	/* namespace */
+	"c.relnamespace",
+	/* result */
+	"pg_catalog.quote_ident(c.relname)",
+	/* qualresult */
+	NULL
+};
+static const SchemaQuery Query_for_list_of_tables_delete = {
+	/* catname */
+	"pg_catalog.pg_class c",
+	/* selcondition */
+	"c.relkind IN ('r','v') and pg_catalog.has_table_privilege(c.oid, 'delete')",
 	/* viscondition */
 	"pg_catalog.pg_table_is_visible(c.oid)",
 	/* namespace */
@@ -178,7 +234,7 @@ static const SchemaQuery Query_for_list_of_tsv = {
 	/* catname */
 	"pg_catalog.pg_class c",
 	/* selcondition */
-	"c.relkind IN ('r', 'S', 'v','m','f','p')",
+	"c.relkind IN ('r', 'S', 'v','m','f','p') and pg_catalog.has_table_privilege(c.oid, 'select')",
 	/* viscondition */
 	"pg_catalog.pg_table_is_visible(c.oid)",
 	/* namespace */
@@ -193,7 +249,7 @@ static const SchemaQuery Query_for_list_of_views = {
 	/* catname */
 	"pg_catalog.pg_class c",
 	/* selcondition */
-	"c.relkind IN ('v')",
+	"c.relkind IN ('v') and pg_catalog.has_table_privilege(c.oid, 'select')",
 	/* viscondition */
 	"pg_catalog.pg_table_is_visible(c.oid)",
 	/* namespace */
@@ -249,7 +305,7 @@ static const SchemaQuery Query_for_list_of_views = {
 
 #define Query_for_list_of_schemas \
 "SELECT pg_catalog.quote_ident(nspname) FROM pg_catalog.pg_namespace "\
-" WHERE substring(pg_catalog.quote_ident(nspname),1,%d)='%s'"
+" WHERE substring(pg_catalog.quote_ident(nspname),1,%d)='%s' and pg_catalog.has_schema_privilege(oid,'usage')"
 
 #define Query_for_list_of_set_vars \
 "SELECT name FROM "\
@@ -329,7 +385,8 @@ typedef struct
 
 static const pgsql_thing_t words_after_create[] = {
 	{"AGGREGATE", NULL, &Query_for_list_of_aggregates},
-	{"PUBLICATION", NULL, NULL},
+	{"PUBLICATION", NULL, &Query_for_list_of_publication},
+        {"SUBSCRIPTION", NULL, NULL},
 	{"CAST", NULL, NULL},		/* Casts have complex structures for names, so
 								 * skip it */
 
@@ -428,6 +485,8 @@ static char * psql_completion(char *text, int start, int end, void *dbptr)
 	/* If no previous word, suggest one of the basic sql commands */
 	else if (!prev_wd)
 		COMPLETE_WITH_LIST(sql_commands);
+	else if (prev_wd[strlen(prev_wd)-1] == ',')
+		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables, NULL);
 
 /* CREATE or DROP but not ALTER (TABLE|DOMAIN|GROUP) sth DROP */
 	/* complete with something you can create or drop */
@@ -448,9 +507,9 @@ static char * psql_completion(char *text, int start, int end, void *dbptr)
 			 pg_strcasecmp(prev3_wd, "TABLE") != 0)
 	{
 		static const char *const list_ALTER[] =
-		{"AGGREGATE", "CONVERSION", "DATABASE", "DOMAIN", "FUNCTION",
-			"GROUP", "INDEX", "LANGUAGE", "OPERATOR", "ROLE", "SCHEMA", "SEQUENCE", "TABLE",
-		"TABLESPACE", "TRIGGER", "TYPE", "USER", NULL};
+		{"AGGREGATE","CONVERSION","DATABASE","DOMAIN","FUNCTION","GROUP","INDEX","LANGUAGE"
+                 ,"OPERATOR","PUBLICATION","ROLE","SCHEMA","SEQUENCE","SUBSCRIPTION","TABLE"
+                 ,"TABLESPACE","TRIGGER","TYPE","USER", NULL};
 
 		COMPLETE_WITH_LIST(list_ALTER);
 	}
@@ -1058,7 +1117,7 @@ static char * psql_completion(char *text, int start, int end, void *dbptr)
 	/* Complete DELETE FROM with a list of tables */
 	else if (pg_strcasecmp(prev2_wd, "DELETE") == 0 &&
 			 pg_strcasecmp(prev_wd, "FROM") == 0)
-		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables, NULL);
+		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables_delete, NULL);
 	/* Complete DELETE FROM <table> */
 	else if (pg_strcasecmp(prev3_wd, "DELETE") == 0 &&
 			 pg_strcasecmp(prev2_wd, "FROM") == 0)
@@ -1273,7 +1332,7 @@ static char * psql_completion(char *text, int start, int end, void *dbptr)
 	/* Complete INSERT INTO with table names */
 	else if (pg_strcasecmp(prev2_wd, "INSERT") == 0 &&
 			 pg_strcasecmp(prev_wd, "INTO") == 0)
-		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables, NULL);
+		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables_insert, NULL);
 	/* Complete "INSERT INTO <table> (" with attribute names */
 	else if (rl_line_buffer[start - 1] == '(' &&
 			 pg_strcasecmp(prev3_wd, "INSERT") == 0 &&
@@ -1553,7 +1612,7 @@ static char * psql_completion(char *text, int start, int end, void *dbptr)
 /* UPDATE */
 	/* If prev. word is UPDATE suggest a list of tables */
 	else if (pg_strcasecmp(prev_wd, "UPDATE") == 0)
-		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables, NULL);
+		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_tables_update, NULL);
 	/* Complete UPDATE <table> with "SET" */
 	else if (pg_strcasecmp(prev2_wd, "UPDATE") == 0)
 		COMPLETE_WITH_CONST("SET");

@@ -227,26 +227,26 @@ static char *complete_from_const(const char *text, const char *string)
 	return strdup(string);
 }
 
-static char *_complete_from_query(const char *text, const char *query, const SchemaQuery *squery, const char *addon, void *dbptr)
+static char* _complete_from_query(const char* text, const char* query, const SchemaQuery* squery, const char* addon, void* dbptr)
 {
 	int string_length = strlen(text);
-	char *e_text;
-	char *complete_query = NULL;
-	char *t;
+	char* e_text;
+	char* complete_query = NULL;
+	char* t;
 
-	e_text = malloc(string_length*2+1);
+	e_text = malloc(string_length * 2 + 1);
 	PQescapeString(e_text, text, string_length);
 
 	if (query != NULL)
 	{
 		/* Normal query */
 		int bufsize = 1024;
-		char *e_addon;
+		char* e_addon;
 
 		/* Normal query needs escaped string */
 		if (addon)
 		{
-			e_addon = malloc(strlen(addon)*2+1);
+			e_addon = malloc(strlen(addon) * 2 + 1);
 			PQescapeString(e_addon, addon, strlen(addon));
 		}
 		else
@@ -259,7 +259,7 @@ static char *_complete_from_query(const char *text, const char *query, const Sch
 #ifdef WIN32
 			r = _snprintf(complete_query, bufsize, query, string_length, e_text, e_addon);
 #else
-            r = snprintf(complete_query, bufsize, query, string_length, e_text, e_addon);
+			r = snprintf(complete_query, bufsize, query, string_length, e_text, e_addon);
 #endif
 			if (r < 0 || r >= bufsize)
 				bufsize *= 2;
@@ -271,29 +271,29 @@ static char *_complete_from_query(const char *text, const char *query, const Sch
 	else
 	{
 		/* Schema query */
-		char *selcondition = NULL;
-		char *viscondition = NULL;
-		char *suppress_str = NULL;
-		const char *qualresult;
+		char* selcondition = NULL;
+		char* viscondition = NULL;
+		char* suppress_str = NULL;
+		const char* qualresult;
 		int bufsize = 2048;
 
 		if (squery->selcondition)
 		{
-			selcondition = malloc(strlen(squery->selcondition)+10);
-			sprintf(selcondition,"%s AND ",squery->selcondition);
+			selcondition = malloc(strlen(squery->selcondition) + 10);
+			sprintf(selcondition, "%s AND ", squery->selcondition);
 		}
 		else
 			selcondition = strdup("");
 
 		if (squery->viscondition)
 		{
-			viscondition = malloc(strlen(squery->viscondition)+10);
-			sprintf(viscondition, " AND %s",squery->viscondition);
+			viscondition = malloc(strlen(squery->viscondition) + 10);
+			sprintf(viscondition, " AND %s", squery->viscondition);
 		}
 		else
 			viscondition = strdup("");
 
-		if (strcmp(squery->catname,"pg_catalog.pg_class c") == 0 &&
+		if (strcmp(squery->catname, "pg_catalog.pg_class c") == 0 &&
 			strncmp(text, "pg_", 3) != 0)
 			suppress_str = " AND c.relnamespace <> (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = 'pg_catalog')";
 		else
@@ -308,15 +308,15 @@ static char *_complete_from_query(const char *text, const char *query, const Sch
 			int r;
 			complete_query = realloc(complete_query, bufsize);
 #ifdef WIN32
-            r = _snprintf(complete_query, bufsize, 
+			r = _snprintf(complete_query, bufsize,
 #else
-            r = snprintf(complete_query, bufsize,
+			r = snprintf(complete_query, bufsize,
 #endif
 				"SELECT %s FROM %s WHERE %s substring(%s,1,%d)='%s' %s %s "
 				"\nUNION\n"
-				"SELECT pg_catalog.quote_ident(n.nspname) || '.' FROM pg_catalog.pg_namespace n WHERE substring(pg_catalog.quote_ident(n.nspname) || '.',1,%d)='%s' AND (SELECT pg_catalog.count(*) FROM pg_catalog.pg_namespace WHERE substring(pg_catalog.quote_ident(nspname) || '.',1,%d)= substring('%s',1,pg_catalog.length(pg_catalog.quote_ident(nspname))+1))>1"
+				"SELECT pg_catalog.quote_ident(n.nspname) || '.' FROM pg_catalog.pg_namespace n WHERE pg_catalog.has_schema_privilege(n.oid,'usage') and substring(pg_catalog.quote_ident(n.nspname) || '.',1,%d)='%s' AND (SELECT pg_catalog.count(*) FROM pg_catalog.pg_namespace WHERE substring(pg_catalog.quote_ident(nspname) || '.',1,%d)= substring('%s',1,pg_catalog.length(pg_catalog.quote_ident(nspname))+1))>1"
 				"\nUNION\n"
-				"SELECT pg_catalog.quote_ident(n.nspname) || '.' || %s FROM %s, pg_catalog.pg_namespace n WHERE %s = n.oid AND %s substring(pg_catalog.quote_ident(n.nspname) || '.' || %s,1,%d)='%s' AND substring(pg_catalog.quote_ident(n.nspname) || '.',1,%d) = substring('%s',1,pg_catalog.length(pg_catalog.quote_ident(n.nspname))+1) AND (SELECT pg_catalog.count(*) FROM pg_catalog.pg_namespace WHERE substring(pg_catalog.quote_ident(nspname) || '.',1,%d) = substring('%s',1,pg_catalog.length(pg_catalog.quote_ident(nspname))+1)) = 1"
+				"SELECT pg_catalog.quote_ident(n.nspname) || '.' || %s FROM %s, pg_catalog.pg_namespace n WHERE pg_catalog.has_schema_privilege(n.oid,'usage') and %s = n.oid AND %s substring(pg_catalog.quote_ident(n.nspname) || '.' || %s,1,%d)='%s' AND substring(pg_catalog.quote_ident(n.nspname) || '.',1,%d) = substring('%s',1,pg_catalog.length(pg_catalog.quote_ident(n.nspname))+1) AND (SELECT pg_catalog.count(*) FROM pg_catalog.pg_namespace WHERE substring(pg_catalog.quote_ident(nspname) || '.',1,%d) = substring('%s',1,pg_catalog.length(pg_catalog.quote_ident(nspname))+1)) = 1"
 				"\n%s",
 				squery->result,
 				squery->catname,
@@ -341,15 +341,21 @@ static char *_complete_from_query(const char *text, const char *query, const Sch
 				e_text,
 				string_length,
 				e_text,
-				addon?addon:"");
-			
+				addon ? addon : "");
+
 			if (r < 0 || r >= bufsize)
 				bufsize *= 2;
 			else
-				break;
-			
+			{
+				// namespace=='-'
+				if (squery->namespace[0] == '-') {
+					char* newlinePtr = strchr(complete_query, '\n');
+					if (newlinePtr != NULL) *newlinePtr = '\0';
+
+				}
+			}
+			break;
 		}
-		
 		free(viscondition);
 		free(selcondition);
 

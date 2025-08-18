@@ -277,7 +277,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
                              (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views where viewname = 'pg_wait_sampling_history') as wsh, \
                              (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views v where viewname='pgpro_stats_statements') as pro, \
                              (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views v where viewname='pg_stat_statements') as std, \
-                             has_function_privilege('pg_read_binary_file(text,bigint,bigint,boolean)','execute') isreadlog \
+                             has_function_privilege('pg_read_binary_file(text,bigint,bigint,boolean)','execute') and has_function_privilege('pg_stat_file(text,boolean)','execute') and has_function_privilege('pg_ls_logdir()','execute') isreadlog \
                      ";
 
         pgSet* dataSet1 = connection->ExecuteSet(q);
@@ -1192,7 +1192,7 @@ void frmStatus::AddLogPane()
     // if server release is less than 8.0 or if server has no adminpack
     if (!is_read_log) {
         logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, 700);
-        logList->AppendItemLong(-1, _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."));
+        logList->AppendItemLong(-1, _("Functions pg_read_binary_file(text,bigint,bigint,boolean), pg_stat_file(text,boolean),pg_ls_logdir()  permission denied."));
         logList->Enable(false);
         logTimer = NULL;
         // We're done
@@ -2738,6 +2738,8 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
             if (set->NumCols() == 0) {
                 // error server
                 // continue after
+                wxString errtext=connection->GetLastError();
+                statusBar->SetStatusText("Error db: "+ errtext);
                 return;
             }
             if (set->NumCols()>0 && !set->IsNull(0)) newlen = set->GetLong(wxT("len")); 
@@ -2926,7 +2928,7 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 #define PG_READ_BUFFER 500000
         float pr = 100.0 * read / len;
         statusBar->SetStatusText(wxString::Format("%s %.2f MB (%.1f %%)", msg, len / 1048576.0, pr));
-        wxString readsql = wxString::Format("select %s%s,%s, %d)", funcname, connection->qtDbString(filename), NumToStr(read), PG_READ_BUFFER);
+        wxString readsql = wxString::Format("select %s%s,%s, %d,true)", funcname, connection->qtDbString(filename), NumToStr(read), PG_READ_BUFFER);
         pgSet *set = connection->ExecuteSet(readsql);
         if (!set)
         {

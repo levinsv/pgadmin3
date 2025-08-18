@@ -144,46 +144,49 @@ pgObject *pgSubscriptionFactory::CreateObjects(pgCollection *collection, ctlTree
 {
 	wxString sql;
 	pgSubscription *subscription = 0;
-	bool superu=collection->GetDatabase()->GetConnection()->IsSuperuser();
+	//bool superu=collection->GetDatabase()->GetConnection()->IsSuperuser();
+	bool superu = collection->GetServer()->GetSuperUser();
 	//wxString dbname=collection->GetDatabase()->GetConnection()->GetDbOid;
 	OID db=collection->GetDatabase()->GetConnection()->GetDbOid();
 	sql = wxT("select  oid,subname,pg_get_userbyid(subowner) AS \"owner\",subenabled,subconninfo,subslotname,subsynccommit,subpublications,obj_description(oid,'pg_subscription') as comment from pg_subscription  where subdbid=")
 		  +NumToStr(db)+ wxT("\n")
 	      + restriction + wxT("\n");
-	pgSet *subscriptions = collection->GetDatabase()->ExecuteSet(sql);
+	if (superu) {
+		pgSet* subscriptions = collection->GetDatabase()->ExecuteSet(sql);
 
-	if (subscriptions)
-	{
-		while (!subscriptions->Eof())
+		if (subscriptions)
 		{
-			wxString tmp;
-			tmp = subscriptions->GetVal(wxT("subpublications"));
-			tmp.Replace(wxT("{"), wxT(""));
-			tmp.Replace(wxT("}"), wxT(""));
-
-			subscription = new pgSubscription(subscriptions->GetVal(wxT("subname")));
-			subscription->iSetDatabase(collection->GetDatabase());
-			subscription->iSetOid(subscriptions->GetOid(wxT("oid")));
-			subscription->iSetOwner(subscriptions->GetVal(wxT("owner")));
-			subscription->iSetPubStr(tmp);
-			subscription->iSetConnInfo(subscriptions->GetVal(wxT("subconninfo")));
-		    subscription->iSetSlotName(subscriptions->GetVal(wxT("subslotname")));
-			//subscription->iSetName(subscriptions->GetVal(wxT("subname"));
-			subscription->iSetIsEnabled(subscriptions->GetBool(wxT("subenabled")));
-			subscription->iSetIsSyncCommit(subscriptions->GetVal(wxT("subsynccommit")));
-			subscription->iSetComment(subscriptions->GetVal(wxT("comment")));
-
-			if (browser)
+			while (!subscriptions->Eof())
 			{
-				browser->AppendObject(collection, subscription);
+				wxString tmp;
+				tmp = subscriptions->GetVal(wxT("subpublications"));
+				tmp.Replace(wxT("{"), wxT(""));
+				tmp.Replace(wxT("}"), wxT(""));
 
-				subscriptions->MoveNext();
+				subscription = new pgSubscription(subscriptions->GetVal(wxT("subname")));
+				subscription->iSetDatabase(collection->GetDatabase());
+				subscription->iSetOid(subscriptions->GetOid(wxT("oid")));
+				subscription->iSetOwner(subscriptions->GetVal(wxT("owner")));
+				subscription->iSetPubStr(tmp);
+				subscription->iSetConnInfo(subscriptions->GetVal(wxT("subconninfo")));
+				subscription->iSetSlotName(subscriptions->GetVal(wxT("subslotname")));
+				//subscription->iSetName(subscriptions->GetVal(wxT("subname"));
+				subscription->iSetIsEnabled(subscriptions->GetBool(wxT("subenabled")));
+				subscription->iSetIsSyncCommit(subscriptions->GetVal(wxT("subsynccommit")));
+				subscription->iSetComment(subscriptions->GetVal(wxT("comment")));
+
+				if (browser)
+				{
+					browser->AppendObject(collection, subscription);
+
+					subscriptions->MoveNext();
+				}
+				else
+					break;
 			}
-			else
-				break;
-		}
 
-		delete subscriptions;
+			delete subscriptions;
+		}
 	}
 	return subscription;
 }
