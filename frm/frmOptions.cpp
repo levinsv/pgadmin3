@@ -107,6 +107,7 @@
 #define pickerSlowProcessColour     CTRL_COLOURPICKER("pickerSlowProcessColour")
 #define pickerBlockedProcessColour  CTRL_COLOURPICKER("pickerBlockedProcessColour")
 #define pickerBlockedbyProcessColour  CTRL_COLOURPICKER("pickerBlockedbyProcessColour")
+#define pickerIdle_in_transaction_session_timeoutProcessColour  CTRL_COLOURPICKER("pickerIdle_in_transaction_session_timeoutProcessColour")
 #define pickerFavouritesFile        CTRL_FILEPICKER("pickerFavouritesFile")
 #define pickerMacrosFile            CTRL_FILEPICKER("pickerMacrosFile")
 #define pickerHistoryFile           CTRL_FILEPICKER("pickerHistoryFile")
@@ -359,6 +360,7 @@ frmOptions::frmOptions(frmMain *parent)
 	pickerSlowProcessColour->SetColour(settings->GetSlowProcessColour());
 	pickerBlockedProcessColour->SetColour(settings->GetBlockedProcessColour());
 	pickerBlockedbyProcessColour->SetColour(settings->GetBlockedbyProcessColour());
+	pickerIdle_in_transaction_session_timeoutProcessColour->SetColour(settings->GetIdle_in_transaction_session_timeoutProcessColour());
 
 	pickerFavouritesFile->SetPath(settings->GetFavouritesFile());
 	pickerMacrosFile->SetPath(settings->GetMacrosFile());
@@ -845,7 +847,10 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	settings->SetBlockedbyProcessColour(pickerBlockedProcessColour->GetColourString());
 	if (pickerBlockedbyProcessColour->GetColourString() != settings->GetBlockedbyProcessColour())
 		changed = true;
-	settings->SetBlockedbyProcessColour(pickerBlockedbyProcessColour->GetColourString());
+	settings->SetIdle_in_transaction_session_timeoutProcessColour(pickerIdle_in_transaction_session_timeoutProcessColour->GetColourString());
+	if (pickerIdle_in_transaction_session_timeoutProcessColour->GetColourString() != settings->GetIdle_in_transaction_session_timeoutProcessColour())
+		changed = true;
+	settings->SetIdle_in_transaction_session_timeoutProcessColour(pickerIdle_in_transaction_session_timeoutProcessColour->GetColourString());
 
 	// Change files' location
 	settings->SetFavouritesFile(pickerFavouritesFile->GetPath());

@@ -30,49 +30,7 @@
 #include "utils/WaitSample.h"
 #include "ctl/wxTopActivity.h"
 
-enum
-{
-    CTL_RATECBO = 250,
-    CTL_REFRESHBTN,
-    CTL_CANCELBTN,
-    CTL_TERMINATEBTN,
-    CTL_COMMITBTN,
-    CTL_ROLLBACKBTN,
-    CTL_LOGCBO,
-    CTL_ROTATEBTN,
-    CTL_STATUSLIST,
-    CTL_LOCKLIST,
-    CTL_XACTLIST,
-    CTL_LOGLIST,
-    CTL_QUERYSTATELIST,
-    MNU_STATUSPAGE,
-    MNU_LOCKPAGE,
-    MNU_XACTPAGE,
-    MNU_LOGPAGE,
-    MNU_QUERYSTATEPAGE,
-    MNU_TERMINATE,
-    MNU_COMMIT,
-    MNU_ROLLBACK,
-    MNU_COPY_QUERY,
-    MNU_CLEAR_FILTER_SERVER_STATUS,
-    MNU_COPY_QUERY_PLAN,
-    MNU_HIGHLIGHTSTATUS,
-    MNU_QUERYSTATEVERBOSE,
-    MNU_QUERYSTATETIME,
-    MNU_QUERYSTATEBUFFER,
-    MNU_QUERYSTATETRIGGER,
-    MNU_WAITENABLE,
-    MNU_WAITSAVE,
-    CMD_EVENT_FIND_STR,
-    TIMER_REFRESHUI_ID,
-    TIMER_STATUS_ID,
-    TIMER_LOCKS_ID,
-    TIMER_XACT_ID,
-    TIMER_LOG_ID,
-    TIMER_QUERYSTATE_ID,
-    TIMER_LOGHINT_ID
-};
-
+#include "frm/menuServerStatus.h"
 
 enum
 {
@@ -212,6 +170,7 @@ private:
     bool showCurrent, isCurrent;
 
     long backend_pid;
+    long idle_in_transaction_session_timeout=30;
     int wait_event_type_col;
     bool isrecovery,track_commit_timestamp, is_read_log;
     bool wait_sample, wait_enable, wait_save,std,pro;
@@ -259,6 +218,7 @@ private:
     wxArrayString queries;
     wxArrayInt filterColumn;
     wxArrayString filterValue;
+    bool onlyhightligth = false;
 
     int statusColWidth[12], lockColWidth[10], xactColWidth[5], querystateColWidth[5];
     popuphelp* m_Popup = NULL;
@@ -350,6 +310,7 @@ private:
     void OnCommit(wxCommandEvent &event);
     void OnRollback(wxCommandEvent &event);
     void OnClearFilter(wxCommandEvent& event);
+    void OnSetHighlightFilter(wxCommandEvent& event);
     void OnLogKeyUp(wxKeyEvent& event);
     void OnAddLabelTextThread(wxThreadEvent& event);
     void ActivatePane(wxString name);

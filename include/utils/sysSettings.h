@@ -584,6 +584,16 @@ public:
 	{
 		Write(wxT("SlowProcessColour"), newval);
 	}
+	void SetIdle_in_transaction_session_timeoutProcessColour(const wxString& newval)
+	{
+		Write(wxT("Idle_in_transaction_session_timeoutProcessColour"), newval);
+	}
+	wxString GetIdle_in_transaction_session_timeoutProcessColour() const
+	{
+		wxString s;
+		Read(wxT("Idle_in_transaction_session_timeoutProcessColour"), &s, wxT("#ad5bff"));
+		return s;
+	}
 	wxString GetBlockedProcessColour() const
 	{
 		wxString s;

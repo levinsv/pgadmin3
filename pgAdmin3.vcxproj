@@ -968,6 +968,7 @@
     <ClInclude Include="include\frm\frmLog.h" />
     <ClInclude Include="include\frm\frmPlot.h" />
     <ClInclude Include="include\frm\mathplot.h" />
+    <ClInclude Include="include\frm\menuServerStatus.h" />
     <ClInclude Include="include\log\MyDataViewCtrl.h" />
     <ClInclude Include="include\log\Storage.h" />
     <ClInclude Include="include\log\StorageModel.h" />
@@ -1753,6 +1754,7 @@
     <png2c Include="include\images\viewdata.png" />
     <png2c Include="include\images\viewfiltereddata.png" />
     <png2c Include="include\images\views.png" />
+    <png2c Include="include\images\warning_amber_48dp.png" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pgAdmin3.rc" />

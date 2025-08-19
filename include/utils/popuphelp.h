@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include "wx/display.h"
+#include "frm/menuServerStatus.h"
 
 class popuphelp :
     public wxPopupTransientWindow
@@ -155,7 +156,7 @@ public:
             wxString wname = GetParent()->GetName();
             if (wname == "frmStatus") {
                 //CMD_EVENT_FIND_STR
-                wxCommandEvent event(wxEVT_MENU, 281);
+                wxCommandEvent event(wxEVT_MENU, CMD_EVENT_FIND_STR);
                 event.SetEventObject(this);
                 // Give it some contents
                 event.SetString(ctext);
