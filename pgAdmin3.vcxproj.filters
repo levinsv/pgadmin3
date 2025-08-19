@@ -523,9 +523,6 @@
     <ClCompile Include="dlg\dlgView.cpp">
       <Filter>dlg</Filter>
     </ClCompile>
-    <ClCompile Include="dlg\dlgVariable.cpp">
-      <Filter>dlg</Filter>
-    </ClCompile>
     <ClCompile Include="frm\events.cpp">
       <Filter>frm</Filter>
     </ClCompile>
@@ -842,9 +839,6 @@
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="utils\utffile.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\TableColsMap.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="debugger\dbgController.cpp">
@@ -1680,11 +1674,16 @@
     <ClCompile Include="utils\align\Item.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="ctl\ctlShortCut.cpp" />
+    <ClCompile Include="ctl\ctlShortCut.cpp">
+      <Filter>ctl</Filter>
+    </ClCompile>
     <ClCompile Include="frm\frmAwr.cpp">
       <Filter>frm</Filter>
     </ClCompile>
     <ClCompile Include="utils\WaitSample.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\FormatterSQL.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="ctl\ctlNavigatePanel.cpp">
@@ -1705,7 +1704,15 @@
     <ClCompile Include="ctl\ctlTreeJSON.cpp">
       <Filter>ctl</Filter>
     </ClCompile>
-    <ClCompile Include="utils\FormatterSQL.cpp" />
+    <ClCompile Include="dlg\dlgVariable.cpp">
+      <Filter>dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\TableColsMap.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\PreviewHtml.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">
@@ -2624,9 +2631,6 @@
       <Filter>include\dlg</Filter>
     </ClInclude>
     <ClInclude Include="include\dlg\dlgView.h">
-      <Filter>include\dlg</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dlg\dlgVariable.h">
       <Filter>include\dlg</Filter>
     </ClInclude>
     <ClInclude Include="include\frm\frmAbout.h">
@@ -3565,9 +3569,6 @@
     <ClInclude Include="include\utils\sshTunnel.h">
       <Filter>include\utils</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils\TableColsMap.h">
-      <Filter>include\utils</Filter>
-    </ClInclude>
     <ClInclude Include="include\schema\edbResourceGroup.h">
       <Filter>include\schema</Filter>
     </ClInclude>
@@ -3637,11 +3638,25 @@
     <ClInclude Include="include\utils\align\Item.h">
       <Filter>include\utils</Filter>
     </ClInclude>
-    <ClInclude Include="include\ctl\ctlShortCut.h" />
+    <ClInclude Include="include\ctl\ctlShortCut.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
     <ClInclude Include="include\frm\frmAwr.h">
       <Filter>include\frm</Filter>
     </ClInclude>
     <ClInclude Include="include\utils\WaitSample.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ctl\SourceViewDialog.h">
+      <Filter>include\ctl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\FunctionPGHelper.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\popuphelp.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\FormatterSQL.h">
       <Filter>include\utils</Filter>
     </ClInclude>
     <ClInclude Include="include\ctl\ctlNavigatePanel.h">
@@ -3662,9 +3677,15 @@
     <ClInclude Include="include\ctl\ctlTreeJSON.h">
       <Filter>include\ctl</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils\FormatterSQL.h" />
-    <ClInclude Include="include\utils\popuphelp.h" />
-    <ClInclude Include="include\utils\FunctionPGHelper.h" />
+    <ClInclude Include="include\dlg\dlgVariable.h">
+      <Filter>include\dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\TableColsMap.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\PreviewHtml.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <png2c Include="include\images\aggregate-sm.png">
@@ -3961,9 +3982,6 @@
     <png2c Include="include\images\ex_delete.png">
       <Filter>include\images</Filter>
     </png2c>
-    <png2c Include="include\images\ex_finalize_aggregate.png">
-      <Filter>include\images</Filter>
-    </png2c>
     <png2c Include="include\images\ex_foreign_scan.png">
       <Filter>include\images</Filter>
     </png2c>
@@ -4037,9 +4055,6 @@
       <Filter>include\images</Filter>
     </png2c>
     <png2c Include="include\images\ex_nested_loop_semi_join.png">
-      <Filter>include\images</Filter>
-    </png2c>
-    <png2c Include="include\images\ex_partial_aggregate.png">
       <Filter>include\images</Filter>
     </png2c>
     <png2c Include="include\images\ex_recursive_union.png">
@@ -4627,6 +4642,8 @@
     <png2c Include="include\images\server_status.png">
       <Filter>include\images</Filter>
     </png2c>
+    <png2c Include="include\images\ex_finalize_aggregate.png" />
+    <png2c Include="include\images\ex_partial_aggregate.png" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pgAdmin3.rc" />
