@@ -1344,6 +1344,20 @@
 					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
 					  <border>4</border>
 					</object>
+        				<object class="sizeritem">
+					  <object class="wxStaticText" name="stIdle_in_transaction_session_timeoutProcessColour">
+						<label>Idle_in_transaction_session_timeout Process Colour</label>
+					  </object>
+					  <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <border>4</border>
+					</object>
+					<object class="sizeritem">
+					  <object class="ctlColourPicker" name="pickerIdle_in_transaction_session_timeoutProcessColour">
+						<size>70,12d</size>
+					  </object>
+					  <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+					  <border>4</border>
+					</object>
                 </object>
               </object>
               <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>

@@ -800,56 +800,60 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			}
 			if ((uc >= ' ' && uc < 'A')) hint = "";
 		}
-		if (m_hint_mode) {
-			if (event.GetKeyCode() == WXK_RIGHT && event.GetModifiers() == wxMOD_ALT && !hint.IsEmpty()) {
-				wxString ins = hint.substr(s.length());
-				InsertText(GetCurrentPos(), ins);
-				SetCurrentPos(GetCurrentPos() + ins.Length());
-				SetSelection(GetCurrentPos(), GetCurrentPos());
-				CallTipCancel();
-				m_hint_mode = false;
-				return;
-			}
-			if (hint.IsEmpty() && !(event.GetModifiers() == wxMOD_ALT || event.GetModifiers() == wxMOD_CONTROL)) {
-				m_hint_mode = false;
-				CallTipCancel();
+		if (!AutoCompActive()) {
+			// work only hide autocomplite
+		
+			if (m_hint_mode) {
+				if (event.GetKeyCode() == WXK_RIGHT && event.GetModifiers() == wxMOD_ALT && !hint.IsEmpty()) {
+					wxString ins = hint.substr(s.length());
+					InsertText(GetCurrentPos(), ins);
+					SetCurrentPos(GetCurrentPos() + ins.Length());
+					SetSelection(GetCurrentPos(), GetCurrentPos());
+					CallTipCancel();
+					m_hint_mode = false;
+					return;
+				}
+				if (hint.IsEmpty() && !(event.GetModifiers() == wxMOD_ALT || event.GetModifiers() == wxMOD_CONTROL)) {
+					m_hint_mode = false;
+					CallTipCancel();
+				}
+				else {
+					if (uc != WXK_NONE && !hint.IsEmpty()) {
+						if (uc == 8 && CallTipActive()) {
+							//CallTipSetPosAtStart(0);
+							CallTipSetHighlight(s.length(), hint.length());
+						}
+						else {
+							CallTipShow(showpos, hint);
+							CallTipSetPosAtStart(0);
+							CallTipSetHighlight(s.length(), hint.length());
+							m_hint_mode = true;
+						}
+					}
+				}
 			}
 			else {
-				if (uc != WXK_NONE && !hint.IsEmpty()) {
-					if (uc == 8 && CallTipActive()) {
-						//CallTipSetPosAtStart(0);
-						CallTipSetHighlight(s.length(), hint.length());
-					}
-					else {
-						CallTipShow(showpos, hint);
+				if (!CallTipActive() && !hint.IsEmpty() && !(event.GetModifiers() == wxMOD_ALT || event.GetModifiers() == wxMOD_CONTROL)) {
+					if (uc != WXK_NONE) {
+						if (uc == 8) {
+							//showpos--;
+							showpos = showpos - 1;
+						}
+						else showpos += 1;
+						if (!CallTipActive()) CallTipShow(showpos, hint);
 						CallTipSetPosAtStart(0);
 						CallTipSetHighlight(s.length(), hint.length());
 						m_hint_mode = true;
 					}
-				}
-			}
-		}
-		else {
-			if (!CallTipActive() && !hint.IsEmpty() && !(event.GetModifiers() == wxMOD_ALT || event.GetModifiers() == wxMOD_CONTROL)) {
-				if (uc != WXK_NONE) {
-					if (uc == 8) {
-						//showpos--;
-						showpos = showpos - 1;
-					}
-					else showpos += 1;
-					if (!CallTipActive()) CallTipShow(showpos, hint);
-					CallTipSetPosAtStart(0);
-					CallTipSetHighlight(s.length(), hint.length());
-					m_hint_mode = true;
-				}
-				else {
-					if (CallTipActive()) {
-						CallTipCancel();
-						m_hint_mode = false;
+					else {
+						if (CallTipActive()) {
+							CallTipCancel();
+							m_hint_mode = false;
+						}
 					}
 				}
-			}
 
+			}
 		}
 		//
 	}

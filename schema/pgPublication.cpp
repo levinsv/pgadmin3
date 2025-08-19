@@ -189,7 +189,8 @@ pgObject *pgPublicationFactory::CreateObjects(pgCollection *collection, ctlTree 
 {
 	wxString sql;
 	pgPublication *publication = 0;
-	sql=R"(with rel as (
+	if (collection->GetDatabase()->BackendMinimumVersion(15, 0)) {
+		sql = R"(with rel as (
 SELECT pr.prpubid,quote_ident(n.nspname)|| '.'||quote_ident(c.relname) fulltable, pg_get_expr(pr.prqual, c.oid) rowfilter, (CASE WHEN pr.prattrs IS NOT NULL THEN
      pg_catalog.array_to_string(      ARRAY(SELECT attname
               FROM
@@ -207,6 +208,27 @@ p.pubviaroot,pt.rowfilter,pt.cols,pn.slist from pg_publication p
               LEFT JOIN rel pt ON pt.prpubid = p.oid
               LEFT JOIN shs pn ON p.oid = pn.pnpubid
 )";
+	}
+	else {
+		sql = R"(with rel as (
+SELECT pr.prpubid,quote_ident(n.nspname)|| '.'||quote_ident(c.relname) fulltable, ''::text rowfilter, (CASE WHEN pr.prattrs IS NOT NULL THEN
+     pg_catalog.array_to_string(      ARRAY(SELECT attname
+              FROM
+                pg_catalog.generate_series(0, pg_catalog.array_upper(pr.prattrs::pg_catalog.int2[], 1)) s,
+                pg_catalog.pg_attribute
+        WHERE attrelid = c.oid AND attnum = prattrs[s]), ', ')
+       ELSE NULL END) cols
+FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid 
+     JOIN (select oid, prpubid, prrelid, ''::text prqual, null::int2vector prattrs from  pg_catalog.pg_publication_rel pr ) pr ON c.oid = pr.prrelid 
+), shs as (
+select 0 pnpubid,''::text slist 
+)
+select p.oid,p.pubname,pt.fulltable,pg_get_userbyid(p.pubowner) AS owner, p.puballtables, p.pubinsert, p.pubupdate, p.pubdelete, obj_description(p.oid,'pg_publication') AS comment,
+p.pubviaroot,pt.rowfilter,pt.cols,pn.slist from pg_publication p 
+              LEFT JOIN rel pt ON pt.prpubid = p.oid
+              LEFT JOIN shs pn ON p.oid = pn.pnpubid
+)";
+	}
 	sql = sql + restriction + wxT("\n")
 	      wxT(" ORDER BY p.pubname,pt.fulltable");
 	pgSet *publications = collection->GetDatabase()->ExecuteSet(sql);

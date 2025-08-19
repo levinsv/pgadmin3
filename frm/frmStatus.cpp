@@ -51,6 +51,8 @@
 #include "images/down.pngc"
 #include "images/up.pngc"
 #include "images/server_status.pngc"
+#include "images/warning_amber_48dp.pngc"
+
 #include <algorithm>
 #include "utils/FunctionPGHelper.h"
 #include "utils/PreviewHtml.h"
@@ -96,6 +98,7 @@ BEGIN_EVENT_TABLE(frmStatus, pgFrame)
     EVT_MENU(MNU_COMMIT,                          frmStatus::OnCommit)
     EVT_MENU(MNU_ROLLBACK,                        frmStatus::OnRollback)
     EVT_MENU(MNU_CLEAR_FILTER_SERVER_STATUS,      frmStatus::OnClearFilter)
+    EVT_MENU(MNU_SET_FILTER_HIGHLIGHT_STATUS,     frmStatus::OnSetHighlightFilter)
     EVT_MENU(CMD_EVENT_FIND_STR,                  frmStatus::OnCmdFindStrLog)
     EVT_COMBOBOX(CTL_LOGCBO,                      frmStatus::OnLoadLogfile)
     EVT_BUTTON(CTL_ROTATEBTN,                     frmStatus::OnRotateLogfile)
@@ -274,10 +277,11 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
         wxString q = "select pg_is_in_recovery() recovery, \
                              (select setting from pg_settings s where name = 'pg_wait_sampling.history_size')::integer hsize, \
                              (select setting from pg_settings s where name = 'pg_wait_sampling.history_period')::integer hperiod, \
+                             EXTRACT(epoch FROM coalesce(current_setting('idle_in_transaction_session_timeout',true),'30s')::interval)::integer idle_in_transaction_session_timeout,\
                              (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views where viewname = 'pg_wait_sampling_history') as wsh, \
                              (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views v where viewname='pgpro_stats_statements') as pro, \
                              (select pg_table_is_visible(viewname::regclass) and has_table_privilege(viewname::regclass,'select') from pg_views v where viewname='pg_stat_statements') as std, \
-                             has_function_privilege('pg_read_binary_file(text,bigint,bigint,boolean)','execute') isreadlog \
+                             has_function_privilege('pg_read_binary_file(text,bigint,bigint,boolean)','execute') and has_function_privilege('pg_stat_file(text,boolean)','execute') and has_function_privilege('pg_ls_logdir()','execute') isreadlog \
                      ";
 
         pgSet* dataSet1 = connection->ExecuteSet(q);
@@ -293,6 +297,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
                 pro= dataSet1->GetBool(wxT("pro"));
                 std = dataSet1->GetBool(wxT("std"));
                 is_read_log = dataSet1->GetBool(wxT("isreadlog"));
+                idle_in_transaction_session_timeout= dataSet1->GetLong(wxT("idle_in_transaction_session_timeout"));
                 isrecovery = (v == wxT("t"));
                 track_commit_timestamp = connection->HasFeature(FEATURE_TRACK_COMMIT_TS);
                 long sz = dataSet1->GetLong(wxT("hsize"));
@@ -415,6 +420,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
     toolBar->AddTool(MNU_ROLLBACK, wxEmptyString, GetBundleSVG(delete_png_bmp, "drop.svg", wxSize(16, 16)), _("Rollback transaction"), wxITEM_NORMAL);
     toolBar->AddSeparator();
     toolBar->AddTool(MNU_CLEAR_FILTER_SERVER_STATUS, wxEmptyString, GetBundleSVG(sortfilterclear_png_bmp, "sortfilterclear.svg", wxSize(16, 16)), _("Clear filter"), wxITEM_NORMAL);
+    toolBar->AddTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, wxEmptyString, GetBundleSVG(warning_amber_48dp_png_bmp, "warning_amber_48dp.svg", wxSize(16, 16)), _("Highlight items only"), wxITEM_NORMAL);
     toolBar->AddSeparator();
     cbLogfiles = new wxComboBox(toolBar, CTL_LOGCBO, wxT(""), wxDefaultPosition, wxDefaultSize, 0, NULL,
                                 wxCB_READONLY | wxCB_DROPDOWN);
@@ -1192,7 +1198,7 @@ void frmStatus::AddLogPane()
     // if server release is less than 8.0 or if server has no adminpack
     if (!is_read_log) {
         logList->InsertColumn(logList->GetColumnCount(), _("Message"), wxLIST_FORMAT_LEFT, 700);
-        logList->AppendItemLong(-1, _("Function pg_read_binary_file(text,bigint,bigint,boolean) permission denied."));
+        logList->AppendItemLong(-1, _("Functions pg_read_binary_file(text,bigint,bigint,boolean), pg_stat_file(text,boolean),pg_ls_logdir()  permission denied."));
         logList->Enable(false);
         logTimer = NULL;
         // We're done
@@ -1377,13 +1383,15 @@ void frmStatus::OnCopyQuery(wxCommandEvent &ev)
 
     // Get the database
     row = list->GetFirstSelected();
-    col = connection->BackendMinimumVersion(9, 0) ? 2 : 1;
-    dbname.Append(list->GetText(row, col));
+    if (row != -1) {
+        col = connection->BackendMinimumVersion(9, 0) ? 2 : 1;
+        dbname.Append(list->GetText(row, col));
 
-    // Get the actual query
-    row = list->GetFirstSelected();
-    text.Append(queries.Item(row));
-
+        // Get the actual query
+        row = list->GetFirstSelected();
+        text.Append(queries.Item(row));
+    }
+    else return;
     // Check if we have a query whose length is maximum
     maxlength = 1024;
     if (connection->BackendMinimumVersion(8, 4))
@@ -1923,6 +1931,7 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
             wxString slinfo=wxEmptyString;
             wxString backend_xid;
             wxDateTime start_transaction;
+            wxTimeSpan deltaidle;
             if (iswalsend) {
                 slinfo = dataSet1->GetVal(wxT("slotinfo"));
             }
@@ -2000,6 +2009,9 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
                 if (connection->BackendMinimumVersion(8, 3)) {
                     start_transaction= dataSet1->GetDateTime("xact_start_full");
                     statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xact_start")));
+                    if (start_transaction.IsValid()) {
+                        deltaidle = wxDateTime::Now() - start_transaction;
+                    }
                 }
 
                 if (connection->BackendMinimumVersion(9, 2))
@@ -2074,6 +2086,11 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
                         blocked += blockedby;
                         blocked += wxT(",");
                     }
+                    else if (deltaidle.GetSeconds() > idle_in_transaction_session_timeout) {
+                        statusList->SetItemBackgroundColour(row,
+                            wxColour(settings->GetIdle_in_transaction_session_timeoutProcessColour()));
+
+                    }
                     if (!slinfo.IsEmpty()) {
                         // walsender
                         long xmindelta = dataSet1->GetLong(wxT("xminslotdelta"));
@@ -2141,6 +2158,30 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
                 blocked=str.Clone();
                 numstr=blocked.BeforeFirst(',',&str);
             }
+            if (onlyhightligth) {
+                wxArrayString newquerys;
+                long r = statusList->GetItemCount();
+                //wxColour bg = *WHITE;
+                wxColour bgidle=wxColour(settings->GetIdleProcessColour());
+                long  rr = 0;
+                int nquery = 0;
+                //long selrow = -1;
+                //selrow = statusList->GetFirstSelected();
+                while ((rr) < statusList->GetItemCount() && rr<row) 
+                    {
+                        if (statusList->GetItemBackgroundColour(rr) != bgidle) {
+                            newquerys.Add(queries[nquery]);
+                            rr++;
+                        }
+                        else {
+                            statusList->DeleteItem(rr);
+                            row--;
+                        }
+                        nquery++;
+                    }
+                if (newquerys.Count() < queries.Count())  queries = newquerys;
+            }
+
         }
         if (tt.IsValid() && wait_sample && wait_enable) {
             WS.EndSeriosSample();
@@ -2738,6 +2779,8 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
             if (set->NumCols() == 0) {
                 // error server
                 // continue after
+                wxString errtext=connection->GetLastError();
+                statusBar->SetStatusText("Error db: "+ errtext);
                 return;
             }
             if (set->NumCols()>0 && !set->IsNull(0)) newlen = set->GetLong(wxT("len")); 
@@ -2926,7 +2969,7 @@ void frmStatus::addLogFile(const wxString &filename, const wxDateTime timestamp,
 #define PG_READ_BUFFER 500000
         float pr = 100.0 * read / len;
         statusBar->SetStatusText(wxString::Format("%s %.2f MB (%.1f %%)", msg, len / 1048576.0, pr));
-        wxString readsql = wxString::Format("select %s%s,%s, %d)", funcname, connection->qtDbString(filename), NumToStr(read), PG_READ_BUFFER);
+        wxString readsql = wxString::Format("select %s%s,%s, %d,true)", funcname, connection->qtDbString(filename), NumToStr(read), PG_READ_BUFFER);
         pgSet *set = connection->ExecuteSet(readsql);
         if (!set)
         {
@@ -4464,14 +4507,26 @@ void frmStatus::OnRightClickStatusItem(wxListEvent& event)
     filterValue.Add(val);
     toolBar->SetToolShortHelp(MNU_CLEAR_FILTER_SERVER_STATUS, hint);
     toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, true);
+    toolBar->EnableTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, false);
+    
     wxTimerEvent evt;
     OnRefreshStatusTimer(evt);
 }
+
+void frmStatus::OnSetHighlightFilter(wxCommandEvent& event) {
+    toolBar->SetToolShortHelp(MNU_CLEAR_FILTER_SERVER_STATUS, "");
+    toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, true);
+    toolBar->EnableTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, false);
+    onlyhightligth = true;
+}
 void frmStatus::OnClearFilter(wxCommandEvent& event) {
     toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, false);
+    toolBar->EnableTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, true);
+    
     toolBar->SetToolShortHelp(MNU_CLEAR_FILTER_SERVER_STATUS, "Clear filter");
     filterColumn.Clear();
     filterValue.Clear();
+    onlyhightligth = false;
     wxTimerEvent evt;
     OnRefreshStatusTimer(evt);
 

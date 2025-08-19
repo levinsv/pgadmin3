@@ -3647,9 +3647,6 @@
     <ClInclude Include="include\utils\WaitSample.h">
       <Filter>include\utils</Filter>
     </ClInclude>
-    <ClInclude Include="include\ctl\SourceViewDialog.h">
-      <Filter>include\ctl</Filter>
-    </ClInclude>
     <ClInclude Include="include\utils\FunctionPGHelper.h">
       <Filter>include\utils</Filter>
     </ClInclude>
@@ -3685,6 +3682,9 @@
     </ClInclude>
     <ClInclude Include="include\utils\PreviewHtml.h">
       <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\frm\menuServerStatus.h">
+      <Filter>include\frm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4644,6 +4644,9 @@
     </png2c>
     <png2c Include="include\images\ex_finalize_aggregate.png" />
     <png2c Include="include\images\ex_partial_aggregate.png" />
+    <png2c Include="include\images\warning_amber_48dp.png">
+      <Filter>include\images</Filter>
+    </png2c>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pgAdmin3.rc" />
