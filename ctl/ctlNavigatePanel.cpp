@@ -507,6 +507,7 @@ void ctlNavigatePanel::render(wxDC& dc) {
     int xr = c.GetWidth() - border;
     int xl = c.x + border;
     pp1.x = xl;
+    pp2.x = xr;
     // line mark
     wxColour prevc = *wxWHITE;
     int previndex = -1;
