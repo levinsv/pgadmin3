@@ -423,6 +423,7 @@ void pgFunction::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *pr
 		}
 
 		properties->AppendItem(_("ACL"), GetAcl());
+		if (!GetTimestampCommit().IsEmpty()) properties->AppendItem(_("Last change timestamp"), GetTimestampCommit());
 		properties->AppendYesNoItem(_("System function?"), GetSystemObject());
 		properties->AppendItem(_("Comment"), firstLineOnly(GetComment()));
 
@@ -702,6 +703,10 @@ pgFunction *pgFunctionFactory::AppendFunctions(pgObject *obj, pgSchema *schema, 
 		{
 			sqlprokind= wxT("case when proisagg then 'a' when proiswindow then 'w' else 'f' end  prokind, ");
 		}
+		if (obj->GetConnection()->HasFeature(FEATURE_TRACK_COMMIT_TS)) 
+				sqlprokind+="pg_xact_commit_timestamp(pr.xmin) ts, ";
+			else
+				sqlprokind+="null ts, ";
 		functions = obj->GetDatabase()->ExecuteSet(
 		                       wxT("SELECT pr.oid, pr.xmin, pr.*,lanname, pg_get_function_result(pr.oid) AS typname, typns.nspname AS typnsp, ") +sqlprokind+
 		                       argNamesCol  + argDefsCol + proConfigCol + proType +
@@ -824,7 +829,8 @@ pgFunction *pgFunctionFactory::AppendFunctions(pgObject *obj, pgSchema *schema, 
 			}
 			else
 				function->iSetIsWindow(false);
-
+			wxString timestamp = functions->GetVal("ts");
+			function->iSetTimestampCommit(timestamp);
 			// Now iterate the arguments and build the arrays
 			wxString type, name, mode;
 			size_t nArgsIN = 0;
