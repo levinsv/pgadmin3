@@ -351,7 +351,7 @@ void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
 			int len=0;
 			if (startPos!=endPos) {
 				SetIndicatorCurrent(9);
-				len=GetTextRange(startPos,endPos).Length();
+				len=endPos-startPos;
 				IndicatorFillRange(startPos,len);
 			} else {
 					int ind=IndicatorValueAt(9,curr);
@@ -361,7 +361,7 @@ void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
 						spos=IndicatorStart(9,curr);
 						if (spos>=0) { 
 							epos=IndicatorEnd(9,curr);
-							len=GetTextRange(spos,epos).Length();
+							len=epos-spos;
 							//len=PositionRelative(spos,epos);
 							SetIndicatorCurrent(9);
 							IndicatorClearRange(spos,len);
