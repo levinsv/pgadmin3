@@ -35,7 +35,7 @@
 wxString ctlSQLBox::sqlKeywords;
 static const wxString s_leftBrace(_T("([{"));
 static const wxString s_rightBrace(_T(")]}"));
-static const int s_indicHighlight(20);
+static const int s_indicHighlight(8);
 
 // Additional pl/pgsql keywords we should highlight
 wxString plpgsqlKeywords = wxT(" elsif exception exit loop raise record return text while call");
@@ -52,6 +52,7 @@ BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_MENU(MNU_FIND, ctlSQLBox::OnSearchReplace)
 	EVT_MENU(MNU_FUNC_HELP, ctlSQLBox::OnFuncHelp)
 	EVT_MENU(MNU_TRANSFORM, ctlSQLBox::OnTransformText)
+	EVT_MENU(MNU_TEXT_MARK, ctlSQLBox::OnTextMark)
 	EVT_MENU(MNU_COPY, ctlSQLBox::OnCopy)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
@@ -221,18 +222,22 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN,    wxSTC_MARK_BOXMINUS, *wxWHITE, *wxBLACK);
 
     MarkerDefine(1,wxSTC_MARK_ARROW,*wxBLACK,*wxGREEN);
-	
+
+    IndicatorSetForeground(9, wxColour(255, 255, 0));
+    IndicatorSetStyle(9, wxSTC_INDIC_STRAIGHTBOX);
+	IndicatorSetAlpha(9,70);
 	SetProperty(wxT("fold"), wxT("1"));
 	SetFoldFlags(16);
 
 	// Setup accelerators
-	wxAcceleratorEntry entries[5];
+	wxAcceleratorEntry entries[6];
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, WXK_SPACE, MNU_AUTOCOMPLETE);
 	entries[2].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
 	entries[3].Set(wxACCEL_CTRL, WXK_F1, MNU_FUNC_HELP);
 	entries[4].Set(wxACCEL_CTRL, (int)'M', MNU_TRANSFORM);
-	wxAcceleratorTable accel(5, entries);
+	entries[5].Set(wxACCEL_CTRL, (int)'B', MNU_TEXT_MARK);
+	wxAcceleratorTable accel(6, entries);
 	SetAcceleratorTable(accel);
 
 	// Autocompletion configuration
@@ -338,6 +343,50 @@ void ctlSQLBox::UpdateTitle()
 		title = title.Mid(0, title.Len() - chStr.Len());
 
 	SetTitle(title);
+}
+void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
+			int startPos = GetSelectionStart();
+			int endPos = GetSelectionEnd();
+			int curr=GetCurrentPos();
+			int len=0;
+			if (startPos!=endPos) {
+				SetIndicatorCurrent(9);
+				len=GetTextRange(startPos,endPos).Length();
+				IndicatorFillRange(startPos,len);
+			} else {
+					int ind=IndicatorValueAt(9,curr);
+					int epos=0;
+					int spos=0;
+					if (ind>0) {
+						spos=IndicatorStart(9,curr);
+						if (spos>=0) { 
+							epos=IndicatorEnd(9,curr);
+							len=GetTextRange(spos,epos).Length();
+							//len=PositionRelative(spos,epos);
+							SetIndicatorCurrent(9);
+							IndicatorClearRange(spos,len);
+						}
+					} else {
+							// goto 
+								epos=IndicatorEnd(9,curr);
+								if (epos==0) return;
+								if (epos==GetTextLength()) {
+									int ind=IndicatorValueAt(9,0);
+								 	epos=IndicatorEnd(9,0);
+									if (ind>0) {
+										GotoPos(epos);
+										return;
+									}
+										 
+								}
+								if (epos!=GetTextLength()) {
+									epos=IndicatorEnd(9,epos);
+									GotoPos(epos);
+								}
+									
+					}
+			}
+
 }
 void ctlSQLBox::OnTransformText(wxCommandEvent& ev) {
 	wxString selText = GetSelectedText();
@@ -707,6 +756,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	// BraceHighlight(-1, -1);
 	if ((fix_pos!=-1)) {
 		//GetIndicatorCurrent()==s_indicHighlight
+		SetIndicatorCurrent(s_indicHighlight);
 		IndicatorClearRange(0,GetTextLength());
 		fix_pos=-1;
 	}
@@ -1466,20 +1516,19 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 		return std::make_pair(pstart, pend);
 		
 }
-void ctlSQLBox::HighlightBrace(int lb, int rb) {
-	SetIndicatorCurrent(s_indicHighlight);
+void ctlSQLBox::HighlightBrace(int start, int len, int inicator) {
             {
                 //SetCaretForeground(wxColour(255, 0, 0));
                 //SetCaretWidth(caretWidth + 1);
-
-                IndicatorSetForeground(s_indicHighlight, wxColour(80, 236, 120));
-                IndicatorSetStyle(s_indicHighlight, wxSTC_INDIC_ROUNDBOX);
+				if (inicator==8) { // double click word
+                	IndicatorSetForeground(inicator, wxColour(80, 236, 120));
+                	IndicatorSetStyle(inicator, wxSTC_INDIC_STRAIGHTBOX);
+				}
 #ifndef wxHAVE_RAW_BITMAP
                 IndicatorSetUnder(s_indicHighlight, true);
 #endif
-                SetIndicatorCurrent(s_indicHighlight);
-                IndicatorFillRange(lb, 1);
-				IndicatorFillRange(rb, 1);
+                SetIndicatorCurrent(inicator);
+                IndicatorFillRange(start, len);
                 return;
             }
 
