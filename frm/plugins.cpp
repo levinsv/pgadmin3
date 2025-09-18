@@ -295,7 +295,14 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 	else
 	{
 		// Blank the rest
-		execCmd.Replace(wxT("$$HOSTNAME"), wxEmptyString);
+		if (obj && obj->GetMetaType() == PGM_SERVER) {
+			pgServer* srv = (pgServer*) obj;
+			execCmd.Replace(wxT("$$HOSTNAME"), srv->GetName());
+			execCmd.Replace(wxT("$$USERNAME"), srv->GetUsername());
+			execCmd.Replace(wxT("$$PORT"), NumToStr((long)srv->GetPort()));
+		} else
+			execCmd.Replace(wxT("$$HOSTNAME"), wxEmptyString);
+
 		execCmd.Replace(wxT("$$HOSTADDR"), wxEmptyString);
 		execCmd.Replace(wxT("$$PORT"), wxEmptyString);
 		execCmd.Replace(wxT("$$SSLMODE"), wxEmptyString);

@@ -507,6 +507,7 @@ void ctlNavigatePanel::render(wxDC& dc) {
     int xr = c.GetWidth() - border;
     int xl = c.x + border;
     pp1.x = xl;
+    pp2.x = xr;
     // line mark
     wxColour prevc = *wxWHITE;
     int previndex = -1;
@@ -954,7 +955,14 @@ int ctlNavigatePanel::TryMarkItem(long row, const wxString& str) {
         items_find.push_back(row);
     }
     // starting db
-    if (str.Find("LOG,00000,\"starting PostgreSQL") > -1 && sinterval==-1) {
+    if ((str.Find("\"postmaster\"") > -1)
+        &&
+        (((str.Find("LOG,00000,\"starting ") > -1 )
+        ||
+        (str.Find("LOG,00000,\"all server processes terminated; reinitializing") > -1) // postmaster restart iher process
+
+        ))
+        && sinterval==-1) {
         // start db
         sinterval = row;
         startdbintervals.push_back(sinterval);

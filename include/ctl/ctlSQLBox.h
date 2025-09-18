@@ -51,7 +51,7 @@ public:
 	~ctlSQLBox();
 
 	void Create(wxWindow *parent, wxWindowID id = -1, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize, long style = 0);
-	void HighlightBrace(int lb, int rb);
+	void HighlightBrace(int start, int len,int indicator);
 	void SetDatabase(pgConn *db);
 	wxString TextToHtml(int start, int end, bool isAddNewLine=false);
 	void Copy();
@@ -59,6 +59,7 @@ public:
 	void OnAutoComplete(wxCommandEvent &event);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnTransformText(wxCommandEvent& ev);
+	void OnTextMark(wxCommandEvent& ev);
 	void OnCopy(wxCommandEvent& ev);
 	void OnFuncHelp(wxCommandEvent& ev);
 	void OnKillFocus(wxFocusEvent &event);

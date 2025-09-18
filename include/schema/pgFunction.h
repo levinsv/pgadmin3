@@ -194,6 +194,13 @@ public:
 	{
 		return isWindow;
 	}
+	void iSetTimestampCommit(wxString& ts)
+	{
+		timestampCommit=ts;
+	}
+	wxString GetTimestampCommit() {
+		return timestampCommit;
+	}
 	void iSetIsWindow(bool b)
 	{
 		isWindow = b;
@@ -259,7 +266,7 @@ protected:
 	pgFunction(pgSchema *newSchema, int newType, const wxString &newName = wxT(""));
 
 private:
-	wxString returnType, language, volatility, parallel, source, bin;
+	wxString returnType, language, volatility, parallel, source, bin, timestampCommit;
 	wxArrayString argNamesArray, argTypesArray, argModesArray, argDefsArray;
 	bool returnAsSet, secureDefiner, isStrict, isWindow, isLeakProof;
 	long argCount, cost, rows, argDefValCount, procType;
