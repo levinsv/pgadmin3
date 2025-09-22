@@ -223,7 +223,7 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 
     MarkerDefine(1,wxSTC_MARK_ARROW,*wxBLACK,*wxGREEN);
 
-    IndicatorSetForeground(9, wxColour(255, 255, 0));
+    IndicatorSetForeground(9, wxColour(70, 220, 234));
     IndicatorSetStyle(9, wxSTC_INDIC_STRAIGHTBOX);
 	IndicatorSetAlpha(9,70);
 	SetProperty(wxT("fold"), wxT("1"));
