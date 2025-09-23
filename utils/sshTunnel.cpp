@@ -12,15 +12,14 @@
 // App headers
 #include "pgAdmin3.h"
 #include <wx/dynlib.h>
+#if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 
+#pragma comment (lib, "Ws2_32.lib")
 #undef ssize_t
 #define ssize_t long
 #include "libssh2.h"
 #include "utils/sshTunnel.h"
 #include "frm/frmMain.h"
-
-#pragma comment (lib, "Ws2_32.lib")
-#if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 
 typedef const char *(*inet_ntop_t) (int af, const void *src, char *dst, socklen_t size);
 

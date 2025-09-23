@@ -13,7 +13,7 @@
 #endif
 
 #include "pgAdmin3.h"
-
+#include "utils/json/jsonreader.h"
 
 #include <wx/mstream.h>
 #include <wx/sstream.h>
@@ -1847,13 +1847,13 @@ wxJSONReader::ConvertCharByChar(wxString& s, const wxMemoryBuffer& utf8Buffer)
  @param val the JSON value that will hold the memory buffer value
  @return the last char read or -1 in case of EOF
 */
-
+/*
 union byte
 {
     unsigned char c[2];
     short int b;
 };
-
+*/
 int
 wxJSONReader::ReadMemoryBuff(wxInputStream& is, wxJSONValue& val)
 {

@@ -355,7 +355,7 @@ int dlgTable::Go(bool modal)
 						                                 column->GetName(), column->GetDefinition());
 						previousColumns.Add(column->GetQuotedIdentifier()
 						                    + wxT(" ") + column->GetDefinition());
-						lstColumns->SetItem(pos, COL_PGCOLUMN, NumToStr((long)column));
+						lstColumns->SetItem(pos, COL_PGCOLUMN, NumToStr((long long)column));
 						if (inherited)
 							lstColumns->SetItem(pos, COL_INHERIT, column->GetInheritedTableName());
 					}
@@ -1859,8 +1859,8 @@ void dlgTable::OnChangeOfType(wxCommandEvent &ev)
 void dlgTable::OnChangeCol(wxCommandEvent &ev)
 {
 	long pos = lstColumns->GetSelection();
-	pgColumn *column = (pgColumn *) StrToLong(lstColumns->GetText(pos, COL_PGCOLUMN));
-	pgColumn *column2 = (pgColumn *) StrToLong(lstColumns->GetText(pos, COL_CHANGEDCOL));
+	pgColumn *column = (pgColumn *) StrTolonglong(lstColumns->GetText(pos, COL_PGCOLUMN));
+	pgColumn *column2 = (pgColumn *) StrTolonglong(lstColumns->GetText(pos, COL_CHANGEDCOL));
 
 	dlgColumn col(&columnFactory, mainForm, column, table);
 	col.CenterOnParent();
@@ -1877,7 +1877,7 @@ void dlgTable::OnChangeCol(wxCommandEvent &ev)
 		lstColumns->SetItem(pos, COL_SQLCHANGE, col.GetSql());
 		lstColumns->SetItem(pos, COL_STATISTICS, col.GetStatistics());
 		lstColumns->SetItem(pos, COL_COMMENTS, col.GetComment());
-		lstColumns->SetItem(pos, COL_CHANGEDCOL, NumToStr((long)column2));
+		lstColumns->SetItem(pos, COL_CHANGEDCOL, NumToStr((long long)column2));
 	}
 	CheckChange();
 }

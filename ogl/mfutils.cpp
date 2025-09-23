@@ -537,7 +537,7 @@ bool wxXMetaFile::ReadFile(const wxChar *file)
 				else style = wxPENSTYLE_SOLID;
 
 				wxColour colour(GetRValue(colorref), GetGValue(colorref), GetBValue(colorref));
-				rec->param1 = (long)wxThePenList->FindOrCreatePen(colour, x, style);
+				rec->param1 = (long long)wxThePenList->FindOrCreatePen(colour, x, style);
 				metaRecords.Append(rec);
 				gdiObjects.Append(rec);
 
@@ -618,11 +618,11 @@ bool wxXMetaFile::ReadFile(const wxChar *file)
 				wxFont *theFont =
 				    wxTheFontList->FindOrCreateFont(pointSize, family, style, weight, (lfUnderline != 0));
 
-				rec->param1 = (long) theFont;
+				rec->param1 = (long long) theFont;
 				metaRecords.Append(rec);
 				gdiObjects.Append(rec);
 				AddMetaRecordHandle(rec);
-				rec->param2 = (long)(gdiObjects.GetCount() - 1);
+				rec->param2 = (long long)(gdiObjects.GetCount() - 1);
 				break;
 			}
 			case META_CREATEBRUSHINDIRECT:
@@ -675,7 +675,7 @@ bool wxXMetaFile::ReadFile(const wxChar *file)
 				else style = wxPENSTYLE_SOLID;
 
 				wxColour colour(GetRValue(colorref), GetGValue(colorref), GetBValue(colorref));
-				rec->param1 = (long)wxTheBrushList->FindOrCreateBrush(colour, style);
+				rec->param1 = (long long)wxTheBrushList->FindOrCreateBrush(colour, style);
 				metaRecords.Append(rec);
 				gdiObjects.Append(rec);
 				AddMetaRecordHandle(rec);

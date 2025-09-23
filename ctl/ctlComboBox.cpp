@@ -98,14 +98,14 @@ long ctlComboBoxFix::GetLongKey(int sel)
 {
 	if (sel < 0)
 		sel = GetSelection();
-	return (long)wxItemContainer::GetClientData(sel);
+	return (long)wxPtrToUInt(wxItemContainer::GetClientData(sel));
 }
 
 OID ctlComboBoxFix::GetOIDKey(int sel)
 {
 	if (sel < 0)
 		sel = GetSelection();
-	return (OID)wxItemContainer::GetClientData(sel);
+	return (OID)wxPtrToUInt(wxItemContainer::GetClientData(sel));
 }
 
 wxString ctlComboBoxFix::GetStringKey(int sel)

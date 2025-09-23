@@ -11,7 +11,7 @@
 
 #ifdef WX_PRECOMP
 #ifdef __cplusplus
-
+#include <wx/wxprec.h>
 #include "copyright.h"
 #include "pgAdmin3.h"
 #include "version.h"

@@ -11,8 +11,6 @@
 
 #ifndef PGADMIN3_H
 #define PGADMIN3_H
-#include "../utils/diff_match_patch.h"
-#include "utils/FormatterSQL.h"
 
 // wxWindows headers
 #include <wx/wx.h>
@@ -20,6 +18,8 @@
 #include <wx/colordlg.h>
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
+#include "../utils/diff_match_patch.h"
+#include "utils/FormatterSQL.h"
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -167,8 +167,8 @@ WX_DECLARE_STRING_HASH_MAP(wxString, cacheMap);
 class pgAdmin3 : public wxApp
 {
 public:
-	virtual bool OnInit();
-	virtual int OnExit();
+	virtual bool OnInit() wxOVERRIDE;
+	virtual int OnExit() wxOVERRIDE;
 	virtual void OnFatalException() wxOVERRIDE;
 #ifdef __WXMAC__
 	void MacOpenFile(const wxString &fileName);

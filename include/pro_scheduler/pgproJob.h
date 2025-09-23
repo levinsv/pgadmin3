@@ -13,7 +13,7 @@
 #define PGPROJOB_H
 
 #include "schema/pgServer.h"
-
+#include "schema/pgDatabase.h"
 
 class pgproJobFactory : public pgDatabaseObjFactory
 {

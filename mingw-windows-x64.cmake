@@ -1,0 +1,26 @@
+# 1. Set the target system
+set(CMAKE_SYSTEM_NAME Windows)
+set(CROSS_COMPILE Windows)
+#set(CMAKE_SYSTEM_PROCESSOR x86_64)
+SET(CMAKE_FIND_ROOT_PATH  /home/sergey/mingw/llvm-mingw-20231128-msvcrt-ubuntu-20.04-x86_64 )
+# 2. Specify the cross-compilers
+set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
+set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
+SET(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
+set(CMAKE_RANLIB x86_64-w64-mingw32-ranlib)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-ignored-attributes ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
+# 3. Configure search for external dependencies
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+        set(WXWIN_LIB /home/sergey/wxWidgets-3.2.2.1/msw-build/lib )
+        set(WXWIN /home/sergey/k/wxMSW-3.2.2 )
+	set(PGDIR /home/sergey/k/pg10 )
+	set(PGBUILD /home/sergey/k )
+	set(wxWidgets_LIBRARIES "-L${WXWIN_LIB} -lwx_mswu_xrc-3.2-x86_64-w64-mingw32.dll -lwx_mswu_qa-3.2-x86_64-w64-mingw32.dll -lwx_baseu_net-3.2-x86_64-w64-mingw32.dll -lwx_mswu_html-3.2-x86_64-w64-mingw32.dll -lwx_mswu_core-3.2-x86_64-w64-mingw32.dll -lwx_baseu_xml-3.2-x86_64-w64-mingw32.dll -lwx_baseu-3.2-x86_64-w64-mingw32.dll -lwx_mswu_aui-3.2-x86_64-w64-mingw32.dll -lwx_baseu_xml-3.2-x86_64-w64-mingw32.dll -lwx_mswu_stc-3.2-x86_64-w64-mingw32.dll")
+	set(PGLIB "-L${PGDIR}/lib -lpq -lxml2")
+	set(XSLTLIB "-L${PGBUILD}/libxslt/lib -lxslt")
+        set(OTHERLIB " -lws2_32")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-static-libgcc -static-libstdc++ -Wl,--subsystem,windows -mwindows ${wxWidgets_LIBRARIES} ${PGLIB} ${XSLTLIB} ${OTHERLIB}")

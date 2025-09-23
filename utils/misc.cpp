@@ -128,6 +128,12 @@ wxString NumToStr(long value)
 	result.Printf(wxT("%ld"), value);
 	return result;
 }
+wxString NumToStr(long long value)
+{
+	wxString result;
+	result.Printf(wxT("%lld"), value);
+	return result;
+}
 
 
 wxString NumToStr(OID value)
@@ -141,6 +147,10 @@ wxString NumToStr(OID value)
 long StrToLong(const wxString &value)
 {
 	return atol(value.ToAscii());
+}
+long long StrTolonglong(const wxString &value)
+{
+	return atoll(value.ToAscii());
 }
 
 
@@ -1206,11 +1216,13 @@ int ExecProcess(const wxString &command, wxArrayString &result)
 #ifdef WIN32
 #if (_MSC_VER < 1300)
 /* _ftol2 is more than VC7. */
+/*
 extern "C" long _ftol( double );
 extern "C" long _ftol2( double dblSource )
 {
 	return _ftol( dblSource );
 }
+*/
 #endif
 #endif
 

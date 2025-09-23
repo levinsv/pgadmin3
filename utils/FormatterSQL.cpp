@@ -1150,7 +1150,7 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
         if ((vi->txt.Lower() == "dblink")) {
             //            neededNewLine.y = -1;
         }
-        if ((s == 2511)) {
+        if (s == 2511) {
             p.x = p.x;
         }
         if (fl & newLineComma) {

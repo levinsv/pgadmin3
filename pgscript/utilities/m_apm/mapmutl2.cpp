@@ -289,7 +289,7 @@ char    *M_lowercase(char *s)
 */
 int     M_strposition(char *s1, char *s2)
 {
-	register char  ch1, ch2;
+	char  ch1, ch2;
 	char           *p0, *p1, *p2;
 	int            ct;
 

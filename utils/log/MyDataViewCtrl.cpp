@@ -328,7 +328,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_CONTEXT_MENU(wxCommandEvent& event) {
     wxString label = mi->GetLabelText(id);
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
     #ifdef WIN32
-    int col = (int)mi->GetClientData();
+    int col = (long long)mi->GetClientData();
     #else
     long nc=(long)mi->GetClientData();
     int col= nc & 0xFFFF;

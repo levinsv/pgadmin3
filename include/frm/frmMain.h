@@ -27,7 +27,7 @@
 #include "frm/frmLog.h"
 #include "ctl/ctlGitPanel.h"
 #include "ctl/ctlShortCut.h"
-#include "utils/FunctionPGHelper.h";
+#include "utils/FunctionPGHelper.h"
 //
 // This number MUST be incremented if changing any of the default perspectives
 //

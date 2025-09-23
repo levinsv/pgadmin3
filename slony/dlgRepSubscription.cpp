@@ -136,7 +136,7 @@ void dlgRepSubscription::CheckChange()
 		int sel = cbProvider->GetCurrentSelection();
 
 		EnableOK(sel >= 0 && (chkForward->GetValue() != subscription->GetForward()
-		                      ||   (long)cbProvider->wxItemContainer::GetClientData(sel) != subscription->GetProviderId()));
+		                      ||   (long long)cbProvider->wxItemContainer::GetClientData(sel) != subscription->GetProviderId()));
 	}
 	else
 	{
@@ -159,11 +159,11 @@ wxString dlgRepSubscription::GetSql()
 	{
 		// Actually, provider and receiver are exchanged here.
 		sql += NumToStr(cluster->GetLocalNodeID()) + wxT(", ")
-		       + NumToStr((long)cbProvider->wxItemContainer::GetClientData(cbProvider->GetCurrentSelection()));
+		       + NumToStr((long long)cbProvider->wxItemContainer::GetClientData(cbProvider->GetCurrentSelection()));
 	}
 	else
 	{
-		sql += NumToStr((long)cbProvider->wxItemContainer::GetClientData(cbProvider->GetCurrentSelection())) + wxT(", ")
+		sql += NumToStr((long long)cbProvider->wxItemContainer::GetClientData(cbProvider->GetCurrentSelection())) + wxT(", ")
 		       + NumToStr(cluster->GetLocalNodeID());
 	}
 	sql += wxT(", ")

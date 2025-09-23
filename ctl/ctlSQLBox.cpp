@@ -1573,7 +1573,7 @@ void ctlSQLBox::SetCaretWidthForKeyboardLayout() {
 	int newwidth = currentwidth;
 #ifdef __WXMSW__
 	HKL la = GetKeyboardLayout(0);
-	if (((int)la & 0xFFFF) == 0x409) {
+	if (((long long)la & 0xFFFF) == 0x409) {
 		//en
 		newwidth = 1;
 	}

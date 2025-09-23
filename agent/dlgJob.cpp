@@ -178,8 +178,8 @@ int dlgJob::Go(bool modal)
 				{
 					pgaStep *step = (pgaStep *)data;
 					int pos = lstSteps->AppendItem(stepFactory.GetIconId(), step->GetName(), step->GetComment());
-					lstSteps->SetItem(pos, 3, NumToStr((long)step));
-					previousSteps.Add(NumToStr((long)step));
+					lstSteps->SetItem(pos, 3, NumToStr((long long)step));
+					previousSteps.Add(NumToStr((long long)step));
 				}
 				item = mainForm->GetBrowser()->GetNextChild(stepsItem, cookie);
 			}
@@ -201,8 +201,8 @@ int dlgJob::Go(bool modal)
 				{
 					pgaSchedule *schedule = (pgaSchedule *)data;
 					int pos = lstSchedules->AppendItem(scheduleFactory.GetIconId(), schedule->GetName(), schedule->GetComment());
-					lstSchedules->SetItem(pos, 3, NumToStr((long)schedule));
-					previousSchedules.Add(NumToStr((long)schedule));
+					lstSchedules->SetItem(pos, 3, NumToStr((long long)schedule));
+					previousSchedules.Add(NumToStr((long long)schedule));
 				}
 				item = mainForm->GetBrowser()->GetNextChild(schedulesItem, cookie);
 			}
@@ -278,12 +278,12 @@ void dlgJob::OnChangeStep(wxCommandEvent &ev)
 		if (lstSteps->GetText(pos, 3).IsEmpty())
 		{
 			wxString *stepSql = new wxString(step.GetInsertSql());
-			lstSteps->SetItemData(pos, (long)stepSql);
+			lstSteps->SetItemData(pos, (long long)stepSql);
 		}
 		else
 		{
 			wxString *stepSql = new wxString(step.GetUpdateSql());
-			lstSteps->SetItemData(pos, (long)stepSql);
+			lstSteps->SetItemData(pos, (long long)stepSql);
 		}
 
 		CheckChange();
@@ -307,7 +307,7 @@ void dlgJob::OnAddStep(wxCommandEvent &ev)
 	{
 		int pos = lstSteps->AppendItem(stepFactory.GetIconId(), step.GetName(), step.GetComment());
 		wxString *stepSql = new wxString(step.GetInsertSql());
-		lstSteps->SetItemData(pos, (long)stepSql);
+		lstSteps->SetItemData(pos, (long long)stepSql);
 		CheckChange();
 	}
 }
@@ -349,12 +349,12 @@ void dlgJob::OnChangeSchedule(wxCommandEvent &ev)
 		if (lstSchedules->GetText(pos, 3).IsEmpty())
 		{
 			wxString *scheduleSql = new wxString(schedule.GetInsertSql());
-			lstSchedules->SetItemData(pos, (long)scheduleSql);
+			lstSchedules->SetItemData(pos, (long long)scheduleSql);
 		}
 		else
 		{
 			wxString *scheduleSql = new wxString(schedule.GetUpdateSql());
-			lstSchedules->SetItemData(pos, (long)scheduleSql);
+			lstSchedules->SetItemData(pos, (long long)scheduleSql);
 		}
 
 		CheckChange();
@@ -371,7 +371,7 @@ void dlgJob::OnAddSchedule(wxCommandEvent &ev)
 	{
 		int pos = lstSchedules->AppendItem(scheduleFactory.GetIconId(), schedule.GetName(), schedule.GetComment());
 		wxString *scheduleSql = new wxString(schedule.GetInsertSql());
-		lstSchedules->SetItemData(pos, (long)scheduleSql);
+		lstSchedules->SetItemData(pos, (long long)scheduleSql);
 		CheckChange();
 	}
 }

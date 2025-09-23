@@ -107,6 +107,7 @@ bool StrToBool(const wxString &value);  // english
 long StrToLong(const wxString &value);
 double StrToDouble(const wxString &value);
 wxLongLong StrToLongLong(const wxString &value);
+long long StrTolonglong(const wxString &value);
 wxDateTime StrToDateTime(const wxString &value);
 OID StrToOid(const wxString &value);
 
@@ -115,6 +116,7 @@ wxString generate_spaces(int length);
 // nls aware
 wxString BoolToYesNo(bool value);
 wxString NumToStr(long value);
+wxString NumToStr(long long value);
 wxString NumToStr(double value);
 wxString NumToStrHuman(wxLongLong value);
 wxString NumToStr(OID value);

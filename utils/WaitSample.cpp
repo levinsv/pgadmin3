@@ -3,6 +3,7 @@
 #include "wx/stdpaths.h"
 #include "utils/utffile.h"
 #include "utils/json/jsonval.h"
+#include "frm/frmStatus.h"
 
 void WaitSample::Init() {
 	wxString clr = "h1 { \

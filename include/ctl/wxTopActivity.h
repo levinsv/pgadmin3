@@ -232,7 +232,7 @@ public:
         }
         if (k.size() > 0) {
             key3 kk = k.at(r);
-            if ((col == 0)) {
+            if (col == 0) {
                 long ttmp = kk.pid;
                 if (kk.sum > 0) val = wxString::Format("*%ld", ttmp); // backend
                 else
@@ -283,7 +283,13 @@ public:
     {
         return false;
     }
-    unsigned GetRow(const wxDataViewItem& item) const wxOVERRIDE { return (unsigned long)item.GetID() - 1; } // 0 row = header 
+    unsigned int GetRow(const wxDataViewItem& item) const wxOVERRIDE {
+         unsigned int i;
+//         wxUIntToPtr()
+         i=wxPtrToUInt(item.GetID());
+         i=i-1;
+         return i;
+         } // 0 row = header 
     unsigned int GetColumnCount() const wxOVERRIDE { return 0; }
     wxString GetColumnType(unsigned int) const wxOVERRIDE { return ""; }
 
@@ -449,7 +455,7 @@ public:
         Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent& event) {
             int col = event.GetColumn();
             wxDataViewItem item(event.GetItem());
-            long row = (long)item.GetID();
+            long row = wxPtrToUInt(item.GetID());
             row--;
             if (col == 1) //qid
             {
@@ -544,7 +550,7 @@ public:
 
                     MyIndexListModel* m = static_cast<MyIndexListModel*>(GetModel());
                     wxDataViewItem item(GetCurrentItem());
-                    long row = (long)item.GetID();
+                    long row = wxPtrToUInt(item.GetID());
                     if (!(row < m->GetCount())) row = 0;
 
                     while (row != -1 && row < m->GetCount()) {
@@ -599,7 +605,7 @@ public:
             HitTest(mc, item, column);
             if (item != NULL && column != NULL)
             {
-                int row = (long)item.GetID() - 1;
+                int row = wxPtrToUInt(item.GetID()) - 1;
                 int ncol = column->GetModelColumn();
                 if (row >= 0) {
                     if (column && column->GetModelColumn() == 2) {

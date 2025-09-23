@@ -22,6 +22,7 @@
 // wxAUI
 #include <wx/aui/aui.h>
 
+#include "schema/pgServer.h"
 #include "dlg/dlgClasses.h"
 #include "utils/factory.h"
 #include "ctl/ctlAuiNotebook.h"
@@ -90,7 +91,7 @@ class MywxAuiDefaultTabArt : public wxAuiDefaultTabArt
 {
 public:
     MywxAuiDefaultTabArt() :wxAuiDefaultTabArt(){};
-    MywxAuiDefaultTabArt* Clone() {
+    MywxAuiDefaultTabArt* Clone() wxOVERRIDE {
         return new MywxAuiDefaultTabArt(*this);
     }
     virtual void DrawTab(wxDC& dc,

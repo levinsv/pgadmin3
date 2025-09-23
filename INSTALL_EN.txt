@@ -29,6 +29,12 @@ It can be taken from the Postgresql 15 sources and put in include/parser/
 There may be problems compiling the JSON parser.
 It can be eliminated (as well as the experimental part with Git) by defining NO_WXJSON_GIT as done above through CXXFLAGS.
 
+Compile minGW
+-------
+rm -fR CMakeFiles CMakeCache.txt Makefile cmake_install.cmake
+cmake -DCMAKE_TOOLCHAIN_FILE=../mingw-windows-x64.cmake ..
+cmake --build . --config Release --target all -j 3 --
+
 
 OS for assembly used "Alt Workstation" 10
 https://www.basealt.ru/alt-workstation/download#c1211

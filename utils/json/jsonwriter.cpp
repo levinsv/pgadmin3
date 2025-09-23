@@ -13,6 +13,7 @@
 
 
 #include "pgAdmin3.h"
+#include "utils/json/jsonwriter.h"
 
 #include <wx/sstream.h>
 #include <wx/mstream.h>

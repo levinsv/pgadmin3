@@ -26,7 +26,7 @@
 #include <wx/stdpaths.h>
 #include <wx/clipbrd.h>
 #include <wx/sysopt.h>
-#include "wx/stackwalk.h"
+#include <wx/stackwalk.h>
 
 // wxOGL
 #include <ogl/ogl.h>
@@ -202,7 +202,7 @@ void frmDlgTest::OnSelect(wxCommandEvent &ev)
 		dlg->Show();
 	}
 }
-
+#if wxUSE_STACKWALKER
 class MyStackWalker : public wxStackWalker
 {
 public:
@@ -262,15 +262,19 @@ void MyStackWalker::OnStackFrame(const wxStackFrame& frame)
 	Rez->Append(wxString::Format("----------------\n"));
 	
 }
+#endif
 
 // The Application!
 void pgAdmin3::OnFatalException() {
+#if wxUSE_STACKWALKER
+
 	wxString err = "fatal error";
 	MyStackWalker sw(err);
 	sw.WalkFromException();
 	wxLogError(err);
 	wxMessageBox(err,
 		"wxExcept", wxOK | wxICON_ERROR);
+#endif
 }
 bool pgAdmin3::OnInit()
 {
