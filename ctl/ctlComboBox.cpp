@@ -68,13 +68,19 @@ int ctlComboBoxFix::FillOidKey(pgConn *conn, const wxChar *qry)
 	int cnt = 0;
 	pgSetIterator set(conn->ExecuteSet(qry));
 	Freeze();
+	std::vector<void*> pointer;
+	wxArrayString name;
 	while (set.RowsLeft())
 	{
 		OID oid = set.GetOid(0);
 		wxString txt = set.GetVal(1);
-		Append(txt, oid);
+		name.Add(txt);
+		pointer.push_back((void*) oid);
 		cnt++;
 	}
+	
+	if (cnt>0) wxComboBox::Append(name, pointer.data());
+
 	Thaw();
 	return cnt;
 }

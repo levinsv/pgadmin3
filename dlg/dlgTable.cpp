@@ -266,9 +266,9 @@ int dlgTable::Go(bool modal)
 
 	// new "of type" combobox
 	wxString typeQuery = wxT("SELECT t.oid, t.typname ")
-	                     wxT("FROM pg_type t, pg_namespace n ")
-	                     wxT("WHERE t.typtype='c' AND t.typnamespace=n.oid ")
-	                     wxT("AND NOT (n.nspname like 'pg_%' OR n.nspname='information_schema') ")
+	                     wxT("FROM pg_type t, pg_namespace n,pg_class c ")
+	                     wxT("WHERE t.typtype='c'and c.relkind='c' AND t.typnamespace=n.oid and c.oid=t.typrelid ")
+	                     wxT("AND NOT (n.nspname like 'pg_%' OR n.nspname='information_schema' or c.relkind in ('I','i') or c.relpartbound is not null) ")
 	                     wxT("ORDER BY typname");
 	cbOfType->Insert(wxEmptyString, 0, (void *)0);
 	cbOfType->FillOidKey(connection, typeQuery);
@@ -439,7 +439,7 @@ int dlgTable::Go(bool modal)
 		// new "like relation" combobox
 		wxString likeRelationQuery = wxT("SELECT c.oid, quote_ident(n.nspname)||'.'||quote_ident(c.relname) ")
 		                             wxT("FROM pg_class c, pg_namespace n ")
-		                             wxT("WHERE c.relnamespace=n.oid AND c.relkind IN ");
+		                             wxT("WHERE c.relnamespace=n.oid and c.relpartbound is null AND c.relkind IN ");
 		if (connection->BackendMinimumVersion(9, 2))
 		{
 			likeRelationQuery += wxT("('r', 'v', 'f')");
@@ -490,7 +490,7 @@ int dlgTable::Go(bool modal)
 		                 wxT("SELECT c.oid, c.relname , nspname\n")
 		                 wxT("  FROM pg_class c\n")
 		                 wxT("  JOIN pg_namespace n ON n.oid=c.relnamespace\n")
-		                 wxT(" WHERE relkind='r'\n")
+		                 wxT(" WHERE relkind='r' and c.relpartbound is null\n")
 		                 + systemRestriction +
 		                 wxT(" ORDER BY relnamespace, c.relname"));
 		if (set)
@@ -1886,15 +1886,23 @@ void dlgTable::OnChangeCol(wxCommandEvent &ev)
 void dlgTable::PopulateDatatypeCache()
 {
 	DatatypeReader tr(database, true, true);
+	wxString prevnametype;
 	while (tr.HasMore())
 	{
 		pgDatatype dt = tr.GetDatatype();
-
-		dataType *dType = new dataType();
-		dType->SetOid(tr.GetOid());
-		dType->SetTypename(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
-		dtCache.Add(dType);
-
+		if (!tr.IsPartition()) {
+				wxString tname=tr.GetTypename();
+				bool isnext=true;
+				if (tname.Right(2)=="[]") 
+					if (prevnametype!=tname.substr(0,tname.Length()-2)) isnext=false;
+				if (isnext) {
+					dataType *dType = new dataType();
+					dType->SetOid(tr.GetOid());
+					dType->SetTypename(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
+					dtCache.Add(dType);
+				}
+				prevnametype=tname;
+		}
 		tr.MoveNext();
 	}
 }

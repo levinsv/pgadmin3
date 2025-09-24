@@ -206,19 +206,19 @@ void DatatypeReader::init(pgDatabase *db, const wxString &condition, bool addSer
 {
 	database = db;
 	wxString sql = wxT("SELECT * FROM (SELECT format_type(t.oid,NULL) AS typname, CASE WHEN typelem > 0 THEN typelem ELSE t.oid END as elemoid, typlen, typtype, t.oid, nspname,\n")
-	               wxT("       (SELECT COUNT(1) FROM pg_type t2 WHERE t2.typname = t.typname) > 1 AS isdup\n")
+	               wxT("       (SELECT COUNT(1) FROM pg_type t2 WHERE t2.typname = t.typname) > 1 AS isdup, c.relpartbound is not null or c.relkind in('i','I') AS ispart\n")
 	               wxT("  FROM pg_type t\n")
-	               wxT("  JOIN pg_namespace nsp ON typnamespace=nsp.oid\n")
+	               wxT("  JOIN pg_namespace nsp ON typnamespace=nsp.oid left join pg_class c on c.oid=t.typrelid\n")
 	               wxT(" WHERE (NOT (typname = 'unknown' AND nspname = 'pg_catalog')) AND ") + condition + wxT("\n");
 
 	if (addSerials)
 	{
 		if (db->GetConnection()->BackendMinimumVersion(9, 2))
 		{
-			sql += wxT(" UNION SELECT 'smallserial', 0, 2, 'b', 0, 'pg_catalog', false\n");
+			sql += wxT(" UNION SELECT 'smallserial', 0, 2, 'b', 0, 'pg_catalog', false, false\n");
 		}
-		sql += wxT(" UNION SELECT 'bigserial', 0, 8, 'b', 0, 'pg_catalog', false\n");
-		sql += wxT(" UNION SELECT 'serial', 0, 4, 'b', 0, 'pg_catalog', false\n");
+		sql += wxT(" UNION SELECT 'bigserial', 0, 8, 'b', 0, 'pg_catalog', false, false\n");
+		sql += wxT(" UNION SELECT 'serial', 0, 4, 'b', 0, 'pg_catalog', false, false\n");
 	}
 
 	sql += wxT("  ) AS dummy ORDER BY nspname <> 'pg_catalog', nspname <> 'public', nspname, 1");
@@ -230,6 +230,11 @@ void DatatypeReader::init(pgDatabase *db, const wxString &condition, bool addSer
 bool DatatypeReader::IsDomain() const
 {
 	return set->GetVal(wxT("typtype")) == 'd';
+}
+
+bool DatatypeReader::IsPartition() const
+{
+	return set->GetBool(wxT("ispart"));
 }
 
 

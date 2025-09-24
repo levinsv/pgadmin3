@@ -93,6 +93,7 @@ public:
 	}
 
 	bool IsDomain() const;
+	bool IsPartition() const;
 	bool IsVarlen() const;
 	bool MaySpecifyLength() const;
 	bool MaySpecifyPrecision() const;

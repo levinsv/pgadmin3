@@ -3595,7 +3595,7 @@ void frmStatus::OnLoadLogfile(wxCommandEvent &event)
         {
             if (logThread) logThread->BreakRead();
 
-            logList->DeleteAllItems();
+            logList->DeleteAllItemsWithLong();
             nav->ClearMark();
             //bgColor = wxColour("#afafaf");
             //bgColor = logList->GetBackgroundColour();

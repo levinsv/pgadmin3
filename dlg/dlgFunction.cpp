@@ -420,18 +420,31 @@ int dlgFunction::Go(bool modal)
 		DatatypeReader tr(database, restrict);
 		cbDatatype->Freeze();
 		cbReturntype->Freeze();
+		wxArrayString arr_dt,arr_rt;
+		wxString prevnametype;
 		while (tr.HasMore())
 		{
-			pgDatatype dt = tr.GetDatatype();
-
-			typOids.Add(tr.GetOidStr());
-			types.Add(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
-
-			cbDatatype->Append(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
-			if (factory != &triggerFunctionFactory)
-				cbReturntype->Append(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
+			if (!tr.IsPartition()) {
+				wxString tname=tr.GetTypename();
+				bool isnext=true;
+				if (tname.Right(2)=="[]") 
+					if (prevnametype!=tname.substr(0,tname.Length()-2)) isnext=false;
+				if (isnext) {
+					pgDatatype dt = tr.GetDatatype();
+					typOids.Add(tr.GetOidStr());
+					wxString tmp_str=dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName();
+					types.Add(tmp_str);
+					arr_dt.Add(tmp_str);
+					//cbDatatype->Append(dt.GetQuotedSchemaPrefix(database) + dt.QuotedFullName());
+					if (factory != &triggerFunctionFactory)
+						arr_rt.Add(tmp_str);
+				}
+				prevnametype=tname;
+			}
 			tr.MoveNext();
 		}
+		cbDatatype->Append(arr_dt);
+		cbReturntype->Append(arr_rt);
 		cbDatatype->Thaw();
 		cbReturntype->Thaw();
 		long sel;

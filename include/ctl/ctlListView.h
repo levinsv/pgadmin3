@@ -42,7 +42,7 @@ public:
 	bool ReSort();
 	bool IsNumberColumn(const wxString& columnlabel);
 	void SetModeStoreLongString() { storelongstring = true; }
-	bool DeleteAllItems() {
+	bool DeleteAllItemsWithLong() {
 		longstring.clear();
 		return wxListView::DeleteAllItems();
 	}

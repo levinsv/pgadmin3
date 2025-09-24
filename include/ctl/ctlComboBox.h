@@ -39,6 +39,10 @@ public:
 	{
 		return wxComboBox::Append(item);
 	}
+	int Append(const wxArrayString &item)
+	{
+		return wxComboBox::Append(item);
+	}
 	int Append(const wxString &item, void *data)
 	{
 		return wxComboBox::Append(item, data);
