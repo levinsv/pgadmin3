@@ -7,7 +7,7 @@
                 "${workspaceFolder}",
                 "/usr/include/libxml2",
                 "/usr/include/pgsql/server",
-                "/usr/local/include/wx-3.1"
+                "/usr/local/include/wx-3.2"
             ],
             "defines": ["__cplusplus"],
             "compilerPath": "/usr/bin/g++",

@@ -13,14 +13,37 @@ my %ignorehtml=(
 'pgbench.html',
 
 );
-
+my @keys_name=(
+''
+,'overlaps'
+);
 my @keys=(
    "<td class=\"func_table_entry\">"
    ,"</td>"
+   ,'<p><a id="id-1.5.8.15.7.1"' #overlaps
+   ,'ass="computeroutput">true</code></pre>' #overlaps end
+);
+my %others_func=(
+'FUNCTIONS-DATETIME-DELAY'=>'pg_sleep'
+,'FUNCTIONS-CASE'=>'case'
+,'FUNCTIONS-COMPARISONS-IN-SCALAR'=>'in'
+,'id-1.5.8.30.15'=>'not in'
+,'FUNCTIONS-NULLIF'=>'nullif'
+,'FUNCTIONS-COALESCE-NVL-IFNULL'=>'coalesce'
+,'FUNCTIONS-GREATEST-LEAST'=>'greatest'
+,'greatest'=>'least'
+,'FUNCTIONS-LIKE'=>'like'
+,'FUNCTIONS-SIMILARTO-REGEXP'=>'similar to'
+,'id-1.5.8.30.16' => 'any'
+,'id-1.5.8.30.17' => 'all'
+,'ROW-WISE-COMPARISON' => 'is distinct from'
+
 );
 my %tags=(
 'pclass="func_signature"'   => '<span style="font-size: 11pt;">',
 'pclass="func_signature"/p' => '</span>',
+'codeclass="token"'              => '<span style="fgcolor: #0000ff;">',
+'codeclass="token"/code'         => '</span>',
 'p'                         => '<blockquote>',
 'p/p'                       => '</blockquote>',
 'ul'                         => '<ul>',
@@ -29,6 +52,18 @@ my %tags=(
 'liclass="listitem"/li'                       => '</li>',
 'divclass="itemizedlist"'                         => '',
 'divclass="itemizedlist"/div'                     => '',
+'divclass="titlepage"'                            => '',
+'divclass="titlepage"/div'                        => '',
+'divclass="note"'             => '<pre>',
+'divclass="note"/div'             => '</pre>',
+'divclass="warning"'             => '<pre>',
+'divclass="warning"/div'             => '</pre>',
+'divclass="tip"'=>'',
+'divclass="tip"/div'=>'',
+'div'                         => '',
+'div/div'                       => '',
+'h3class="title"'               =>'<h3>',
+'h3class="title"/h3'               =>'</h3>',
 'a'                         => '<a>',
 'a/a'                       => '</a>',
 'sup'                         => '<sup>',
@@ -71,6 +106,8 @@ my %tags=(
 'spanclass="application"/span'  => '</i>',
 'codeclass="filename"'       => '<b>',
 'codeclass="filename"/code'  => '</b>',
+'codeclass="computeroutput"'       => '<i>',
+'codeclass="computeroutput"/code'  => '</i>',
 
 'emclass="parameter"'       => '',
 'emclass="parameter"/em'    => '',
@@ -138,7 +175,7 @@ my $se="div";
        $n2++;
        $pos=$n2;
        #if (exists $ref{$id_name})
-       if (uc($id_name) eq $id_name)
+       if (uc($id_name) eq $id_name || (exists $others_func{$id_name} && $se ne "a"))
        {
           my @st=();
           my $n3=$pos;
@@ -156,7 +193,7 @@ my $se="div";
                $pos=$n1;
                next;
                }
-               if (substr($fileContent,$n1-1,1) eq "/" && substr($fileContent,$n1-2,1) eq "<") {
+               if (substr($fileContent,$n1-1,1) eq "/" && substr($fileContent,$n1-2,1) eq "<") { ## close tag
                   #print "-".substr($fileContent,$n1,20)."\n";
                   if (scalar @st == 0) {
                   if ($se eq "dt") {
@@ -164,13 +201,25 @@ my $se="div";
                     $n1=$n1+7;
                     #print "".substr($fileContent,$n3+1,$n1-$n3-length($se)-1);
                   }
-                  my $r=substr($fileContent,$n3+1,$n1-$n3-length($se)-1);
-                  $section{$id_name}=$r;
+                  my $r=substr($fileContent,$n3+1,$n1-$n3-length($se));
+                  #if (index($id_name,"FUNCTIONS-",0)==0 && $se ne "a") { my $ee=substr($fileContent,$nn,40); print " ->$id_name\n";}
+                  if (exists $others_func{$id_name}) {
+                    my $id_index=$others_func{$id_name};
+                    print "====> other function $id_name add <=====\n";
+                      while (exists $others_func{$id_index}) {
+                           $id_index=$others_func{$id_index};
+                           parseTag($r,$id_index);
+                      }
+                    $id_index=$others_func{$id_name};
+                    parseTag($r,$id_index);
+                  } else {
+                    $section{$id_name}=$r;
+                  }
                   #print "$r \n$id_name\n";
                   #exit;
                   $n1=-1;
                   next;
-                  }
+                  } #0 level end
                   my $nnn=pop @st;
                   $pos=$n1+length($se);
                   next;
@@ -193,17 +242,34 @@ $pos=0;
     if ($ist > -1) {
        my $ien=index($fileContent,$keys[$lvl+1],$ist);
        if ($ien >-1) {
+           print "Read file $file .. " if $cc==0;
            my $posval=$ist+length($keys[$lvl]);
-           $val=substr($fileContent,$posval,$ien-$posval);
-           print "Read file $file .. " if $cc == 0;
-           parseTag($val);
+           if ($lvl>1) {
+             $val=substr($fileContent,$ist,$ien-$ist+length($keys[$lvl+1]));
+           } else {
+             $val=substr($fileContent,$posval,$ien-$posval);
+           }
+           
+           my $idx_name=$lvl/2;
+           my $name_sec=$keys_name[$idx_name];
+           parseTag($val,$name_sec);
            $pos=$ien+length($keys[$lvl+1]);
+           if ($lvl==2) {
+             #print " kes idx==2 name_sec=$name_sec \n";
+	    }
            $cc++;
        } else {
-          die "Not closed tag TD.  File : $file position : $ist\n";
+          die "Not closed string $keys[$lvl+1] .  File : $file position : $ist\n";
        }
     } else {
+     $lvl=$lvl+2;
+     if (scalar @keys > $lvl) {
+        $pos=0; # new keys
+
+     } else {
      $pos=$ist;
+     }
+     
     }
   }
 
@@ -215,6 +281,7 @@ print " TD count $TDcount\n";
 open(F, '>', "_func.txt") or die $!;
 my $c0=0;
 foreach my $key (sort keys %useref) {
+
  $function_help{$key}=$section{$key};
  #print "section $key\n";
  $c0++;
@@ -231,6 +298,7 @@ exit;
 sub parseTag
 {
 my $s=shift;
+my $defname=shift;
 $TDcount++;
 my $text;
 my $tagname; my $attr; my $vv;
@@ -248,11 +316,17 @@ my @t=();
     if (substr($s,$pos,2) eq "</") {
      # close tag
      $tagname = pop @t;
+     #if (length($defname)>0 ) {print "close $tagname\n";}
      my $tmp=substr($s,$pos);
 #     print "CLOSE TAG=$tagname pos=$pos\n";
      my ($tagnameC) = $tmp =~ m/<(\/\w+)>/g;
      if (substr($tagname,0,3) eq "pre") {$pre=0;}
-     $pos=index($s,'>',$pos)+1;
+     my $startp=$pos;
+     $pos=index($s,'>',$pos);
+	    if ($pos<0) {
+	      die "$s\n NOT CLOSE SIBOL > for tag ${tagname} last=$tmp\n";
+	    }
+	    $pos++;
      if (exists $tags{$tagname.$tagnameC}) {
             $repl=$tags{$tagname.$tagnameC};
             push @stak, $text, $repl;
@@ -262,7 +336,7 @@ my @t=();
                $useref{$href}=1;
                $href="";
            } else {
-           die "$s\n NOT DEFINE REPALCE CLOSE TAG ${tagname}${tagnameC} pos=$pos\n";
+             die "$s\n NOT DEFINE REPALCE CLOSE TAG ${tagname}${tagnameC} pos=$pos\n";
            }
         }
     if ($tagname eq "codeclass=\"function\"" && $fn == 1 ) {
@@ -272,14 +346,19 @@ my @t=();
     if ($tagname eq "codeclass=\"literal\"" && $flit == 1 ) {
       $fliteral=$text;
     }
-
     $text="";
     next;
+    #end close
     }
     my $tmp=substr($s,$pos);
     ($tagname,$attr) = $tmp =~ m/<(\w+)\s*(.*?)>/g;
+#    if (length($defname)>0 ) {print "open $tagname pos=$pos\n";}
     my $pp=$pos;
-    $pos=index($s,'>',$pos)+1;
+    $pos=index($s,'>',$pos);
+    if ($pos<0) {
+      die "$s\n NOT CLOSE TAG ${tagname} pos=$pp\n";
+    }
+    $pos++;
     $href="";
     if ($tagname eq "a" ) {($href) = $attr =~ m/href=".*?#(.*?)"/; $attr=""; }
     if ($tagname eq "sup" ) {$attr="";}
@@ -332,6 +411,9 @@ my @t=();
  $fname =~ s/&amp;/&/g;
  $fname=lc($fname);
 }
+ if (length($defname)>0) {
+    $fname=$defname;
+  }
  if (defined $fname &&  exists $function_help{$fname}) {
          #print "Dublicate function define $text .Append help\n";
          my $v=$function_help{$fname};
