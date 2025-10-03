@@ -568,8 +568,13 @@ void ctlTreeJSON::RefreshImageList() {
 	wxRect r;
 	wxSize sz(15, 15);
 	if (GetBoundingRect(it, r)) {
+	#ifdef __WXGTK__
+		sz.x=r.height;
+		sz.y=r.height;
+	#else
 		sz.x = r.height - 2;
 		sz.y = r.height - 2;
+	#endif // __WXMSW__
 	}
 	//else return;
 	wxVector<wxBitmapBundle> images;
@@ -665,21 +670,23 @@ void ctlTreeJSON::InitMy() {
 
 	wxJSONValue r(wxJSONTYPE_NULL);
 	DeleteAllItems();
-	m_change = false;
 	colors.clear();
 	conf.clear();
 	orig.clear();
 	findsId.clear();
 	m_FindString = "";
 	m_tree =settings->jsoncfg;
-	if (m_tree.IsNull()) return;
-	m_root = addtree(m_root, "root", &r);
-	LoadInTree(m_tree, m_root);
-	RefreshImageList();
+	if (m_tree.IsNull())  {
+	} else {
+		m_root = addtree(m_root, "root", &r);
+		LoadInTree(m_tree, m_root);
+		RefreshImageList();
 #ifdef __WXMSW__
 	// GTK 3 bug visualization
-	ExpandAll();
+        ExpandAll();
 #endif // __WXMSW__
+	}
+	m_change = false;
 }
 void ctlTreeJSON::Save() {
 	if (m_change) {

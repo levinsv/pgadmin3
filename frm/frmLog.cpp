@@ -1044,11 +1044,13 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
     SetAcceleratorTable(accel);
 
     m_notebook = new wxAuiNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize,0 );
+    m_notebook->SetFont(settings->GetSystemFont());
     MywxAuiDefaultTabArt* art = new MywxAuiDefaultTabArt();
     wxPanel* testPanel = new wxPanel(m_notebook, wxID_ANY);
     //BuildDataViewCtrl(testPanel, Page_Test);
     my_view = new MyDataViewCtrl(testPanel, wxID_ANY, wxDefaultPosition,
         wxDefaultSize,  wxDV_VARIABLE_LINE_HEIGHT | wxDV_HORIZ_RULES | wxDV_VERT_RULES);
+    my_view->SetFont(settings->GetSystemFont());
     my_view->GetMainWindow()->Bind(wxEVT_MOTION, &MyDataViewCtrl::OnMouseMove, my_view);
     my_view->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &MyDataViewCtrl::OnKEY_DOWN, my_view);
     my_view->GetMainWindow()->Bind(wxEVT_KEY_UP, &MyDataViewCtrl::OnKEY_UP, my_view);
@@ -1213,8 +1215,7 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
     m_notebook->SetArtProvider(art);
     //m_notebook->SetSelectedFont(settings->GetSystemFont());
     //m_notebook->SetNormalFont(settings->GetSystemFont());
-    m_notebook->SetFont(settings->GetSystemFont());
-    my_view->SetFont(settings->GetSystemFont());
+    
     bool b=true;
     settings->Read(dlgName + "/Mode",&b, false);
     group->SetValue(b);
