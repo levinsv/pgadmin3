@@ -95,6 +95,14 @@ public:
 	{
 		valid = b;
 	}
+	bool GetEnforced() const
+	{
+		return enfoced;
+	}
+	void iSetEnforced(const bool b)
+	{
+		enfoced = b;
+	}
 
 	bool DropObject(wxFrame *frame, ctlTree *browser, bool cascaded);
 	wxString GetConstraint();
@@ -121,7 +129,7 @@ public:
 
 private:
 	wxString definition, objectKind, objectName, objectSchema;
-	bool noinherit, valid;
+	bool noinherit, valid,enfoced;
 };
 
 class pgCheckCollection : public pgSchemaObjCollection

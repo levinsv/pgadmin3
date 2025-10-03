@@ -125,7 +125,7 @@ wxString pgCheck::GetConstraint()
 
 	if (GetDatabase()->BackendMinimumVersion(9, 2) && !GetValid())
 		sql += wxT(" NOT VALID");
-
+	if (!GetEnforced()) sql += wxT(" NOT ENFORCED");
 	return sql;
 }
 
@@ -205,11 +205,12 @@ pgObject *pgCheckFactory::CreateObjects(pgCollection *coll, ctlTree *browser, co
 
 	wxString connoinherit = collection->GetDatabase()->BackendMinimumVersion(9, 2) ? wxT(", connoinherit") : wxEmptyString;
 	wxString convalidated = collection->GetDatabase()->BackendMinimumVersion(9, 2) ? wxT(", convalidated") : wxEmptyString;
+	wxString enforced =collection->GetDatabase()->BackendMinimumVersion(18, 0) ? ",c.conenforced enforced" :" ,true enforced";
 
 	wxString sql =
 	    wxT("SELECT 'TABLE' AS objectkind, c.oid, conname, relname, nspname, description,\n")
 	    wxT("       pg_get_expr(conbin, conrelid") + collection->GetDatabase()->GetPrettyOption() + wxT(") as consrc\n")
-	    + connoinherit + convalidated +
+	    + connoinherit + convalidated + enforced +
 	    wxT("  FROM pg_constraint c\n")
 	    wxT("  JOIN pg_class cl ON cl.oid=conrelid\n")
 	    wxT("  JOIN pg_namespace nl ON nl.oid=relnamespace\n")
@@ -219,7 +220,7 @@ pgObject *pgCheckFactory::CreateObjects(pgCollection *coll, ctlTree *browser, co
 	    wxT("UNION\n")
 	    wxT("SELECT 'DOMAIN' AS objectkind, c.oid, conname, typname as relname, nspname, description,\n")
 	    wxT("       regexp_replace(pg_get_constraintdef(c.oid, true), E'CHECK \\\\((.*)\\\\).*', E'\\\\1') as consrc\n")
-	    + connoinherit + convalidated +
+	    + connoinherit + convalidated + enforced +
 	    wxT("  FROM pg_constraint c\n")
 	    wxT("  JOIN pg_type t ON t.oid=contypid\n")
 	    wxT("  JOIN pg_namespace nl ON nl.oid=typnamespace\n")
@@ -246,6 +247,7 @@ pgObject *pgCheckFactory::CreateObjects(pgCollection *coll, ctlTree *browser, co
 				check->iSetNoInherit(checks->GetBool(wxT("connoinherit")));
 				check->iSetValid(checks->GetBool(wxT("convalidated")));
 			}
+			check->iSetEnforced(checks->GetBool(wxT("enforced")));
 			check->iSetComment(checks->GetVal(wxT("description")));
 
 			if (browser)

@@ -403,10 +403,10 @@ int dlgTable::Go(bool modal)
 					case PGM_FOREIGNKEY:
 					{
 						pgForeignKey *obj = (pgForeignKey *)data;
-						wxString def = obj->GetDefinition();
+						wxString def = obj->GetDefinition(PGM_TABLE);
 
 						lstConstraints->AppendItem(data->GetIconId(), obj->GetName(), def);
-						constraintsDefinition.Add(obj->GetDefinition());
+						constraintsDefinition.Add(obj->GetDefinition(PGM_TABLE));
 						previousConstraints.Add(obj->GetQuotedIdentifier()
 						                        + wxT(" ") + obj->GetTypeName().Upper() + wxT(" ") + def);
 						break;

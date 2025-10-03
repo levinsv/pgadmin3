@@ -39,7 +39,7 @@ public:
 
 	int GetIconId();
 
-	wxString GetDefinition();
+	wxString GetDefinition(int metatype);
 	wxString GetFullName();
 
 	wxString GetTranslatedMessage(int kindOfMessage) const;
@@ -156,6 +156,14 @@ public:
 	{
 		valid = b;
 	}
+	bool GetEnforced() const
+	{
+		return enforced;
+	}
+	void iSetEnforced(const bool b)
+	{
+		enforced = b;
+	}
 	wxString GetRelTableOidStr() const
 	{
 		return NumToStr(relTableOid) + wxT("::oid");
@@ -218,7 +226,7 @@ private:
 	         fkTable, fkSchema, references, refSchema;
 	wxString fkColumns, refColumns, quotedFkColumns, quotedRefColumns, coveringIndex, match;
 	wxString fkDelColumns, quotedFkDelColumns;
-	bool deferrable, deferred, valid;
+	bool deferrable, deferred, valid, enforced;
 	OID relTableOid;
 };
 

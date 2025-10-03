@@ -478,7 +478,7 @@ wxString pgTable::GetSql(ctlTree *browser)
 						if (data->GetMetaType()== PGM_PRIMARYKEY) defpkcluster= ((pgIndexConstraint*)data)->GetDefinitionCluster();
 						break;
 					case PGM_FOREIGNKEY:
-						cols_sql += ((pgForeignKey *)data)->GetDefinition();
+						cols_sql += ((pgForeignKey *)data)->GetDefinition(PGM_TABLE);
 						break;
 					case PGM_CHECK:
 						cols_sql += wxT("(") + ((pgCheck *)data)->GetDefinition() + wxT(")");
