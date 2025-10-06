@@ -114,7 +114,7 @@ bool pgForeignKey::DropObject(wxFrame *frame, ctlTree *browser, bool cascaded)
 }
 
 
-wxString pgForeignKey::GetDefinition()
+wxString pgForeignKey::GetDefinition(int metatype)
 {
 	wxString sql;
 
@@ -139,8 +139,8 @@ wxString pgForeignKey::GetDefinition()
 		else
 			sql += wxT("IMMEDIATE");
 	}
-
-	if (GetDatabase()->BackendMinimumVersion(9, 1) && !GetValid())
+	if (!GetEnforced()) sql += wxT(" NOT ENFORCED");
+	if (GetDatabase()->BackendMinimumVersion(9, 1) && !GetValid() && metatype!=PGM_TABLE )
 		sql += wxT("\n      NOT VALID");
 
 	return sql;
@@ -151,7 +151,7 @@ wxString pgForeignKey::GetConstraint()
 {
 	wxString sql;
 	sql = GetQuotedIdentifier()
-	      +  wxT(" FOREIGN KEY ") + GetDefinition();
+	      +  wxT(" FOREIGN KEY ") + GetDefinition(PGM_FOREIGNKEY);
 
 	return sql;
 }
@@ -307,10 +307,11 @@ pgObject *pgForeignKeyFactory::CreateObjects(pgCollection *coll, ctlTree *browse
 	wxString sql;
 	pgTableObjCollection *collection = (pgTableObjCollection *)coll;
 	pgForeignKey *foreignKey = 0;
+	wxString enforced =collection->GetDatabase()->BackendMinimumVersion(18, 0) ? ",ct.conenforced enforced" :" ,true enforced";
 
 	sql = wxT("SELECT ct.oid, conname, condeferrable, condeferred, confupdtype, confdeltype, confmatchtype, ")
 	      wxT("conkey, confkey, confrelid, nl.nspname as fknsp, cl.relname as fktab, ")
-	      wxT("nr.nspname as refnsp, cr.relname as reftab, description");
+	      wxT("nr.nspname as refnsp, cr.relname as reftab, description") + enforced;
 	if (collection->GetDatabase()->BackendMinimumVersion(15, 0))
 		sql += wxT(", confdelsetcols");
 	if (collection->GetDatabase()->BackendMinimumVersion(9, 1))
@@ -342,6 +343,7 @@ pgObject *pgForeignKeyFactory::CreateObjects(pgCollection *coll, ctlTree *browse
 			foreignKey->iSetReferences(foreignKeys->GetVal(wxT("reftab")));
 			if (collection->GetDatabase()->BackendMinimumVersion(9, 1))
 				foreignKey->iSetValid(foreignKeys->GetBool(wxT("convalidated")));
+			foreignKey->iSetEnforced(foreignKeys->GetBool(wxT("enforced")));
 			wxString onUpd = foreignKeys->GetVal(wxT("confupdtype"));
 			wxString onDel = foreignKeys->GetVal(wxT("confdeltype"));
 			wxString match = foreignKeys->GetVal(wxT("confmatchtype"));

@@ -2382,7 +2382,7 @@ void reportObjectDataDictionaryFactory::GenerateReport(frmReport *report, pgObje
 				break;
 			case PGM_FOREIGNKEY:
 				type = _("Foreign key");
-				definition = ((pgForeignKey *)constraint)->GetDefinition();
+				definition = ((pgForeignKey *)constraint)->GetDefinition(PGM_FOREIGNKEY);
 				break;
 			case PGM_EXCLUDE:
 				type = _("Exclude");
