@@ -141,7 +141,7 @@ wxString pgPublication::GetSql(ctlTree *browser)
 				sql += wxT("\n  WITH (");
 				wxString opts = wxEmptyString;
 				if (!(GetIsIns() && GetIsUpd() && GetIsDel())) opts =opts+ "publish = '" + GetStrOper() + wxT("'");
-				if (GetIsViaRoot()) {
+				if (GetIsViaRoot() && (GetDatabase()->BackendMinimumVersion(13, 0))) {
 					if (!opts.IsEmpty()) opts += ",";
 					opts += "publish_via_partition_root = on";
 				}
@@ -210,6 +210,10 @@ p.pubviaroot,pt.rowfilter,pt.cols,pn.slist from pg_publication p
 )";
 	}
 	else {
+		wxString pg13="false pubviaroot";
+		if (collection->GetDatabase()->BackendMinimumVersion(13, 0)) {
+			pg13="p.pubviaroot";
+		}
 		sql = R"(with rel as (
 SELECT pr.prpubid,quote_ident(n.nspname)|| '.'||quote_ident(c.relname) fulltable, ''::text rowfilter, (CASE WHEN pr.prattrs IS NOT NULL THEN
      pg_catalog.array_to_string(      ARRAY(SELECT attname
@@ -224,7 +228,7 @@ FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.
 select 0 pnpubid,''::text slist 
 )
 select p.oid,p.pubname,pt.fulltable,pg_get_userbyid(p.pubowner) AS owner, p.puballtables, p.pubinsert, p.pubupdate, p.pubdelete, obj_description(p.oid,'pg_publication') AS comment,
-p.pubviaroot,pt.rowfilter,pt.cols,pn.slist from pg_publication p 
+)"+pg13+R"(,pt.rowfilter,pt.cols,pn.slist from pg_publication p 
               LEFT JOIN rel pt ON pt.prpubid = p.oid
               LEFT JOIN shs pn ON p.oid = pn.pnpubid
 )";
