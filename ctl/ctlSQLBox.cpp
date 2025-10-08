@@ -1799,9 +1799,13 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine) {
 		int s = 0;
 		//wxUniChar c = selText[k].GetValue();
 		if (c == '\r') { startp = startp + l; k++; continue; };
+		
 		if (c == '\n') { str += newline; startp = startp + l; k++; continue; };
 		if (c == 9) s = 5;
 		if (c == 32) s = 1;
+		if (c == '<') { str+="&lt;"; startp = startp + l; k++; continue; };
+		if (c == '>') { str+="&gt;"; startp = startp + l; k++; continue; };
+		if (c == '&') { str+="&amp;"; startp = startp + l; k++; continue; };		
 		if (s > 0) for (int tt = 0; tt < s; tt++) str += wxT("&nbsp;");
 		else str += c;
 		startp = startp + l; k++;
