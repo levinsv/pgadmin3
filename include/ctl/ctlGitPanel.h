@@ -87,8 +87,9 @@ private:
     wxButton* m_startButton;
     wxButton* m_cancelButton;
     wxStaticBitmap* m_imageStaticBitmap;
+#if wxUSE_WEBREQUEST
     wxWebRequest m_currentRequest;
-    
+#endif
     wxCheckBox* m_postCheckBox;
     wxTextCtrl* m_postContentTypeTextCtrl;
     wxTextCtrl* m_postRequestTextCtrl;
