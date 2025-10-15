@@ -139,6 +139,12 @@ public:
             //ctext=htmlWindow->SelectionToText();
             //wxString s = wxString::Format("cell = %s",ctext.c_str());
         });
+	htmlWindow->Bind(wxEVT_KEY_DOWN, [&](wxKeyEvent& event) {
+			if (event.GetKeyCode() == WXK_ESCAPE) { 
+                Hide();
+                return;
+			}
+		});
     htmlWindow->Bind(wxEVT_RIGHT_UP, [&](wxMouseEvent& event) {
         wxString name;
         wxLongLong e = wxGetLocalTimeMillis();
