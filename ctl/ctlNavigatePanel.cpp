@@ -184,8 +184,12 @@ void ctlNavigatePanel::Init(bool reorganization) {
                 wxString strcolor = indicator["color"].AsString();
                 wxColour cc(strcolor);
                 statistics_mark el{0,enable,cc};
-                if (!reorganization)
-                    if (cc.IsOk()) mark_color.push_back(el); else mark_color.push_back(statistics_mark { 0, false,*wxBLACK });
+                if (!reorganization) {
+                    if (cc.IsOk())
+                        mark_color.push_back(el);
+                    else
+                        mark_color.push_back(statistics_mark { 0, false,*wxBLACK });
+                }
                 //search_rule
                 wxJSONValue inc = indicator["include"];
                 wxJSONValue exc = indicator["exclude"];

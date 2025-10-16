@@ -587,8 +587,12 @@ void pgRole::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *proper
 			if (roles.GetBool(wxT("admin_option")))
 				opt += "A";
 			if (GetConnection()->BackendMinimumVersion(16, 0)) {
-				if (GetInherits() != roles.GetBool(wxT("inherit_option")))
-					if (roles.GetBool(wxT("inherit_option"))) opt += "I"; else opt += "i";
+				if (GetInherits() != roles.GetBool(wxT("inherit_option"))) {
+					if (roles.GetBool(wxT("inherit_option")))
+						opt += "I";
+					else
+						opt += "i";
+				}
 				if (!roles.GetBool(wxT("set_option")))
 					opt += "s";
 			}

@@ -234,9 +234,9 @@ wxString dlgProJob::StrAttribute(const wxString &name,const wxString &value)
 void dlgProJob::append(wxString& str, const wxString& delimiter, const wxString& what)
 {
 	if (!what.IsNull())
-		if(str.IsNull()) str +=  what;
+		if(str.IsNull()) {str +=  what;}
 			else
-				str += delimiter + what;
+				{str += delimiter + what;}
 }
 wxString dlgProJob::GetSql()
 {
@@ -246,9 +246,9 @@ wxString dlgProJob::GetSql()
 	{
 		// edit mode
 		if (chkEnabled->GetValue() != job->GetEnabled())
-			if (chkEnabled->GetValue()) sql = wxT("select schedule.activate_job(") + NumToStr(job->GetRecId()) + wxT(");\n");
+			if (chkEnabled->GetValue()) {sql = wxT("select schedule.activate_job(") + NumToStr(job->GetRecId()) + wxT(");\n");}
 			else
-				sql = wxT("select schedule.deactivate_job(") + NumToStr(job->GetRecId()) + wxT(");\n");
+				{sql = wxT("select schedule.deactivate_job(") + NumToStr(job->GetRecId()) + wxT(");\n");}
 
 		
 		wxString att;

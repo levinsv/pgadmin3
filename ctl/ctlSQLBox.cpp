@@ -818,8 +818,10 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			bool isAddDict = false;
 			s = GetTextRange(homewordpos, pos);
 			if (uc != WXK_NONE)
-				if (uc == 8) s = s.Left(s.length() - 1);
-				else if (uc >= 'A') s += uc;
+			{
+				if (uc == 8) {s = s.Left(s.length() - 1);}
+				else {if (uc >= 'A') s += uc;}
+			}
 			if (uc >= ' ' && uc < 'A') isAddDict = true;
 			auto it = m_hint_words.lower_bound(s);
 			wxString strlist;
@@ -1459,7 +1461,7 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 	int pend=endPos;
 	int pstart=0;
 
-	if ((ch == ';')) {
+	if (ch == ';') {
 		pend=pos;
 		pos=pos-1;
 	} else

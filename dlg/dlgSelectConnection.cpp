@@ -141,9 +141,9 @@ void dlgSelectConnection::OnChangeServer(wxCommandEvent &ev)
 
 			if (cbDatabase->GetCount())
 				if (item2>=0)
-					cbDatabase->SetSelection(item2);
+					{cbDatabase->SetSelection(item2);}
 				else 
-					cbDatabase->SetSelection(item);
+					{cbDatabase->SetSelection(item);}
 
 			pgSetIterator set2(remoteServer->GetConnection(),
 			                   wxT("SELECT DISTINCT usename\n")

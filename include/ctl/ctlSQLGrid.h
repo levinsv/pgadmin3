@@ -243,7 +243,7 @@ public:
             {
                 wxColor color;
                 color.Set(239, 228, 176);
-                if (sPos = text.Find(wxT('\n')) != wxNOT_FOUND) {
+                if ((sPos = text.Find(wxT('\n'))) != wxNOT_FOUND) {
                     dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(color));
                     multiline = true;
                 }
