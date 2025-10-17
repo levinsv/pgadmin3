@@ -1006,7 +1006,7 @@ void frmOptions::OnCancel(wxCommandEvent &ev)
 
 optionsFactory::optionsFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : actionFactory(list)
 {
-	mnu->Append(id, _("&Options..."), _("Show options dialog."));
+	mnu->Append(id, _("&Options...\tCtrl-O"), _("Show options dialog."));
 }
 
 
