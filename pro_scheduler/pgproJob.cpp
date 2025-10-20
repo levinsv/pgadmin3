@@ -502,7 +502,7 @@ bool prorunNowFactory::CheckEnable(pgObject *obj)
 }
 enabledisableJobFactory::enabledisableJobFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {
-	mnu->Append(id, _("Enabled?"), _("Включить или выключить задание."), wxITEM_CHECK);
+	mnu->Append(id, _("Enabled?"), _("Enabled or disabled job"), wxITEM_CHECK);
 }
 
 wxWindow *enabledisableJobFactory::StartDialog(frmMain *form, pgObject *obj)

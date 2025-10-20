@@ -369,10 +369,10 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
     viewMenu->Append(MNU_LOGPAGE, _("Log&file\tCtrl-Alt-F"), _("Show or hide the logfile tab."), wxITEM_CHECK);
     viewMenu->AppendSeparator();
     viewMenu->Append(MNU_QUERYSTATEPAGE, _("&Query state\tCtrl-Alt-Q"), _("Show or hide the query state tab."), wxITEM_CHECK);
-    viewMenu->Append(MNU_QUERYSTATEVERBOSE, _("Append verbose"), _("Append verbose."), wxITEM_CHECK);
-    viewMenu->Append(MNU_QUERYSTATEBUFFER, _("Append use buffers"), _("Append use buffers."), wxITEM_CHECK);
-    viewMenu->Append(MNU_QUERYSTATETIME, _("Append real timing"), _("Append real timing."), wxITEM_CHECK);
-    viewMenu->Append(MNU_QUERYSTATETRIGGER, _("Append triggers"), _("Append triggers."), wxITEM_CHECK);
+    viewMenu->Append(MNU_QUERYSTATEVERBOSE, _("Append verbose"), _("Append verbose"), wxITEM_CHECK);
+    viewMenu->Append(MNU_QUERYSTATEBUFFER, _("Append use buffers"), _("Append use buffers"), wxITEM_CHECK);
+    viewMenu->Append(MNU_QUERYSTATETIME, _("Append real timing"), _("Append real timing"), wxITEM_CHECK);
+    viewMenu->Append(MNU_QUERYSTATETRIGGER, _("Append triggers"), _("Append triggers"), wxITEM_CHECK);
 
     viewMenu->AppendSeparator();
     viewMenu->Append(MNU_TOOLBAR, _("Tool&bar\tCtrl-Alt-B"), _("Show or hide the toolbar."), wxITEM_CHECK);

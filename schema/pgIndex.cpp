@@ -503,7 +503,7 @@ executePgcheckindexFactory::executePgcheckindexFactory(menuFactoryList* list, wx
 wxWindow* executePgcheckindexFactory::StartDialog(frmMain* form, pgObject* obj)
 {
 	pgIndexBase* i = (pgIndexBase*)obj;
-	form->StartMsg(_("Check Btree index "+i->GetName()+" "));
+	form->StartMsg(_("Check Btree index")+" "+i->GetName()+" ");
 	wxString sql = "SELECT bt_index_parent_check("+i->GetOidStr()+",true);";
 	i->GetConnection()->ExecuteVoid(sql);
 	form->EndMsg(true);

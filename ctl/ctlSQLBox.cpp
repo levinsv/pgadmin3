@@ -1345,13 +1345,13 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 			}
 			wxArrayString choiceCmpOpts;
 			wxArrayInt choiceSelectOpts;
-			choiceCmpOpts.Add("All line (use all EOL)");
-			choiceCmpOpts.Add("First line pattern (ignore all but the first EOL)");
-			choiceCmpOpts.Add("Try looking for patterns above");
-			choiceCmpOpts.Add("Remove multi spaces");
+			choiceCmpOpts.Add(_("All line (use all EOL)"));
+			choiceCmpOpts.Add(_("First line pattern (ignore all but the first EOL)"));
+			choiceCmpOpts.Add(_("Try looking for patterns above"));
+			choiceCmpOpts.Add(_("Remove multi spaces"));
 			wxMultiChoiceDialog dialog(this,
-				wxT("A multi-choice convenience dialog"),
-				wxT("Please select several align options"),
+				_("A multi-choice convenience dialog"),
+				_("Please select several align options"),
 				choiceCmpOpts);
 			dialog.SetSelections(choiceSelectOpts);
 			int cfg = 0;
