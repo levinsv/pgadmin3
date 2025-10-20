@@ -844,10 +844,10 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 
 	if (pickerBlockedProcessColour->GetColourString() != settings->GetBlockedProcessColour())
 		changed = true;
-	settings->SetBlockedbyProcessColour(pickerBlockedProcessColour->GetColourString());
+	settings->SetBlockedProcessColour(pickerBlockedProcessColour->GetColourString());
 	if (pickerBlockedbyProcessColour->GetColourString() != settings->GetBlockedbyProcessColour())
 		changed = true;
-	settings->SetIdle_in_transaction_session_timeoutProcessColour(pickerIdle_in_transaction_session_timeoutProcessColour->GetColourString());
+	settings->SetBlockedbyProcessColour(pickerBlockedbyProcessColour->GetColourString());
 	if (pickerIdle_in_transaction_session_timeoutProcessColour->GetColourString() != settings->GetIdle_in_transaction_session_timeoutProcessColour())
 		changed = true;
 	settings->SetIdle_in_transaction_session_timeoutProcessColour(pickerIdle_in_transaction_session_timeoutProcessColour->GetColourString());
