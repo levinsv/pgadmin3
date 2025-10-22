@@ -43,43 +43,43 @@ void ctlNavigatePanel::Init(bool reorganization) {
         wxJSONValue cm(wxJSONType::wxJSONTYPE_OBJECT);
         cm["name"] = wxString("Find");
         cm["hotkey"] = wxString("Ctrl+F");
-        cm["description"] = wxString("Search for a simple string.");
+        cm["description"] = wxString(_("Search for a simple string."));
         cmds.Append(cm);
         wxJSONValue cm2(wxJSONType::wxJSONTYPE_OBJECT);
         cm2["name"] = wxString("GotoNextMark");
-        cm2["description"] = wxString("Go to the next marker.");
+        cm2["description"] = wxString(_("Go to the next marker."));
         cm2["hotkey"] = wxString("F5");
         cmds.Append(cm2);
         wxJSONValue cm3(wxJSONType::wxJSONTYPE_OBJECT);
         cm3["name"] = wxString("GotoNextMarkEqual");
         cm3["hotkey"] = wxString("Shift+F5");
-        cm3["description"] = wxString("Go to the next marker of the same type.");
+        cm3["description"] = wxString(_("Go to the next marker of the same type."));
         cmds.Append(cm3);
         wxJSONValue cm4(wxJSONType::wxJSONTYPE_OBJECT);
         cm4["name"] = wxString("FindNext");
         cm4["hotkey"] = wxString("F3");
-        cm4["description"] = wxString("The next occurrence of the string.");
+        cm4["description"] = wxString(_("The next occurrence of the string."));
         cmds.Append(cm4);
         wxJSONValue cm5(wxJSONType::wxJSONTYPE_OBJECT);
         cm5["name"] = wxString("FindPrevious");
         cm5["hotkey"] = wxString("Shift+F3");
-        cm5["description"] = wxString("Previous occurrence of the string.");
+        cm5["description"] = wxString(_("Previous occurrence of the string."));
         cmds.Append(cm5);
         wxJSONValue cm7(wxJSONType::wxJSONTYPE_OBJECT);
         cm7["name"] = wxString("FindPid");
         cm7["hotkey"] = wxString("F7");
-        cm7["description"] = wxString("Find all strings content current row Pid.");
+        cm7["description"] = wxString(_("Find all strings content current row Pid."));
         cmds.Append(cm7);
         wxJSONValue cm8(wxJSONType::wxJSONTYPE_OBJECT);
         cm8["name"] = wxString("FindState");
         cm8["hotkey"] = wxString("F8");
-        cm8["description"] = wxString("Find all strings content current row State.");
+        cm8["description"] = wxString(_("Find all strings content current row State."));
         cmds.Append(cm8);
 
 
 
         wxJSONValue cm6(wxJSONType::wxJSONTYPE_OBJECT);
-        cm6["name"] = wxString("Help");
+        cm6["name"] = wxString(_("Help"));
         cm6["hotkey"] = wxString("F1");
         cmds.Append(cm6);
 
@@ -287,11 +287,11 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
             if (desc == "null") desc = cmdName;
             wxAcceleratorEntry* ac = wxAcceleratorEntry::Create(cmdName+'\t'+hotkey);
             if (ac == NULL) {
-                wxMessageBox(wxString::Format("Incorrect hotkey \"%s\" for command \"%s\"", hotkey, cmdName));
+                wxMessageBox(wxString::Format(_("Incorrect hotkey \"%s\" for command \"%s\""), hotkey, cmdName));
                 continue;
             }
-
-            helpstr += wxString::Format("%s \t\t- %s\n",hotkey,desc);
+            wxString translite=wxGetTranslation(desc);
+            helpstr += wxString::Format("%s \t\t- %s\n",hotkey,translite);
             bool isok = *ac == acc;
             if (numCmd != -1) {
                 isok = j == numCmd;
@@ -322,9 +322,9 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
             if (isok && cmdName=="Find") {
                 // 
                 wxTextEntryDialog dialog(this,
-                    wxT("Please enter find string\n")
+                    _("Please enter find string\n")
                     ,
-                    wxT("Find"),
+                    _("Find"),
                     logFindString,
                     wxOK | wxCANCEL);		//setName( dlg.GetValue().wc_str() );
                 if (dialog.ShowModal() == wxID_OK) {
