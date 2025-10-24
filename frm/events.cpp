@@ -358,7 +358,8 @@ void frmMain::OnStatSelChanged(wxListEvent& event)
 						if (id == idstop) break;
 					}
 
-				}
+				} else 
+					break;
 
 			}
 			if (id == idstop || !id.IsOk()) return;
