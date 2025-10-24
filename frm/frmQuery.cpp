@@ -2826,13 +2826,14 @@ void frmQuery::OnExplain(wxCommandEvent &event)
 	}
 
 	wxString query = sqlQuery->GetSelectedText();
-	if (query.IsNull())
+	if (query.IsNull()) {
 		if (queryMenu->IsChecked(MNU_AUTOSELECTQUERY)) {
 			// Auto-select
 			SelectQuery();
 			query = sqlQuery->GetSelectedText();
-		} else query = sqlQuery->GetText();
-
+		} else
+			query = sqlQuery->GetText();
+	}
 	if (query.IsNull())
 		return;
 	wxString sql;
@@ -3032,13 +3033,14 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 	CheckModificationFile();
 	SaveTempFile();
 	wxString query = sqlQuery->GetSelectedText();
-	if (query.IsNull())
+	if (query.IsNull()) {
 		if (queryMenu->IsChecked(MNU_AUTOSELECTQUERY)) {
 			// Auto-select
 			SelectQuery();
 			query = sqlQuery->GetSelectedText();
-		} else query = sqlQuery->GetText();
-
+		} else
+			query = sqlQuery->GetText();
+	}
 	if (query.IsNull())
 		return;
 	// set marker sqlQueryExec->MarkerAdd(line, 0); // wxSTC_MARK_CIRCLE
@@ -3123,7 +3125,7 @@ void frmQuery::OnExecScript(wxCommandEvent &event)
 
 	// Clear markers and indicators
 	sqlQuery->MarkerDeleteAll(0);
-	sqlQuery->StartStyling(0, wxSTC_INDICS_MASK);
+	sqlQuery->StartStyling(0);
 	sqlQuery->SetStyling(sqlQuery->GetText().Length(), 0);
 
 	// Menu stuff to initialize

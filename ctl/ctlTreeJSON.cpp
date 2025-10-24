@@ -130,9 +130,12 @@ void ctlTreeJSON::BuildFind() {
 		item = nextTreeItem(item);
 	}
 	if (findsId.size() > 0)
-		if (last.IsOk())SelectItem(last);
+	{
+		if (last.IsOk())
+			SelectItem(last);
 		else
 			wxBell();
+	}
 }
 wxTreeItemId ctlTreeJSON::nextTreeItem(const wxTreeItemId& item) {
 	wxTreeItemId child;

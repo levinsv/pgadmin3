@@ -933,6 +933,39 @@ bool pgAdmin3::OnInit()
 
 			winMain->Show();
 			SetTopWindow(winMain);
+			// Append all server for shortcut
+			wxTreeItemIdValue foldercookie;
+			ctlTree *browser=winMain->GetBrowser();
+			wxTreeItemId folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
+			while (folderitem)
+			{
+				if (browser->ItemHasChildren(folderitem))
+				{
+					wxTreeItemIdValue servercookie;
+					wxTreeItemId serveritem = browser->GetFirstChild(folderitem, servercookie);
+					while (serveritem)
+					{
+						pgServer *server = (pgServer *)browser->GetItemData(serveritem);
+						if (server != NULL && server->IsCreatedBy(serverFactory)) {
+									wxString path=server->GetFullName();
+									wxTreeItemId node=serveritem;
+
+									wxTreeItemId parent = browser->GetItemParent(node);
+									while (parent.IsOk())
+									{
+										path = browser->GetItemText(parent).BeforeFirst('(').Trim() + wxT("/") + path;
+										parent = browser->GetItemParent(parent);
+									}
+									path=wxString::Format("%4d%s",-1,path);
+
+									winMain->servers_find_list.Add(path);
+
+						}
+						serveritem = browser->GetNextChild(folderitem, servercookie);
+					}
+				}
+				folderitem = browser->GetNextChild(browser->GetRootItem(), foldercookie);
+			}			
 
 			wxString str;
 			if (cmdParser.Found(wxT("s"), &str))

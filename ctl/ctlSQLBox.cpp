@@ -130,9 +130,27 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	// Clear all styles
 	StyleClearAll();
 	m_name=NULL;
-	
+    extern sysSettings* settings;
+    wxJSONValue def(wxJSONType::wxJSONTYPE_OBJECT);
+    wxJSONValue opt(wxJSONType::wxJSONTYPE_OBJECT);
+	wxColour bookmarkcolor(70, 220, 234);
+	int bookmarkalpha=70;
+	def["bookmarkcolor"]= bookmarkcolor.GetAsString(wxC2S_HTML_SYNTAX);
+	def["bookmarkalpha"]=bookmarkalpha;
 	// Font
-	extern sysSettings *settings;
+	settings->ReloadJsonFileIfNeed();
+    settings->ReadJsonObect("ctlSQLBox", opt, def);
+    //    settings->WriteJsonFile();
+    if (!opt.IsNull()) {
+		wxString txtcolor=opt["bookmarkcolor"].AsString();
+		wxColour cc(txtcolor);
+        if (!cc.IsOk()) opt["bookmarkalpha"]=def["bookmarkalpha"];
+		int tmp=opt["bookmarkalpha"].AsInt();
+        if (tmp<0 || tmp>255) opt["bookmarkalpha"]=def["bookmarkalpha"];
+    }
+    else opt = def;
+	bookmarkcolor = wxColour(opt["bookmarkcolor"].AsString());
+	bookmarkalpha = opt["bookmarkalpha"].AsInt();
 
 
 	caretWidth=settings->GetWidthCaretForKeyboardLayout();
@@ -222,10 +240,10 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN,    wxSTC_MARK_BOXMINUS, *wxWHITE, *wxBLACK);
 
     MarkerDefine(1,wxSTC_MARK_ARROW,*wxBLACK,*wxGREEN);
-
-    IndicatorSetForeground(9, wxColour(70, 220, 234));
+	// for bookmark color
+    IndicatorSetForeground(9, bookmarkcolor);
     IndicatorSetStyle(9, wxSTC_INDIC_STRAIGHTBOX);
-	IndicatorSetAlpha(9,70);
+	IndicatorSetAlpha(9,bookmarkalpha);
 	SetProperty(wxT("fold"), wxT("1"));
 	SetFoldFlags(16);
 
@@ -818,8 +836,10 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			bool isAddDict = false;
 			s = GetTextRange(homewordpos, pos);
 			if (uc != WXK_NONE)
-				if (uc == 8) s = s.Left(s.length() - 1);
-				else if (uc >= 'A') s += uc;
+			{
+				if (uc == 8) {s = s.Left(s.length() - 1);}
+				else {if (uc >= 'A') s += uc;}
+			}
 			if (uc >= ' ' && uc < 'A') isAddDict = true;
 			auto it = m_hint_words.lower_bound(s);
 			wxString strlist;
@@ -1325,13 +1345,13 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 			}
 			wxArrayString choiceCmpOpts;
 			wxArrayInt choiceSelectOpts;
-			choiceCmpOpts.Add("All line (use all EOL)");
-			choiceCmpOpts.Add("First line pattern (ignore all but the first EOL)");
-			choiceCmpOpts.Add("Try looking for patterns above");
-			choiceCmpOpts.Add("Remove multi spaces");
+			choiceCmpOpts.Add(_("All line (use all EOL)"));
+			choiceCmpOpts.Add(_("First line pattern (ignore all but the first EOL)"));
+			choiceCmpOpts.Add(_("Try looking for patterns above"));
+			choiceCmpOpts.Add(_("Remove multi spaces"));
 			wxMultiChoiceDialog dialog(this,
-				wxT("A multi-choice convenience dialog"),
-				wxT("Please select several align options"),
+				_("A multi-choice convenience dialog"),
+				_("Please select several align options"),
 				choiceCmpOpts);
 			dialog.SetSelections(choiceSelectOpts);
 			int cfg = 0;
@@ -1459,7 +1479,7 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 	int pend=endPos;
 	int pstart=0;
 
-	if ((ch == ';')) {
+	if (ch == ';') {
 		pend=pos;
 		pos=pos-1;
 	} else

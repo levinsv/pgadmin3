@@ -826,7 +826,7 @@ int pgServer::Connect(frmMain *form, bool askPassword, const wxString &pwd, bool
 		}
 		else
 		{
-			conn = new pgConn(host, service, hostaddr, database, username, password, iPort, rolename,connstr, ssl, 0, appearanceFactory->GetLongAppName() + _(" ")+usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
+			conn = new pgConn(host, service, hostaddr, database, username, password, iPort, rolename,connstr, ssl, 0, appearanceFactory->GetLongAppName() + " "+usr, sslcert, sslkey, sslrootcert, sslcrl, sslcompression);
 			if (!conn)
 			{
 				form->EndMsg(false);

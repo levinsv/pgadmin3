@@ -315,12 +315,16 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
             if (text.Length() != 0) {
                 text.Replace(wxT("'"), wxT("''"));
             }
-            else text = wxT("null");
+            else
+                text = wxT("null");
 
         }
-        if (generatesql == 3) if (text == "null") str.Append(cname).Append(" is "); else
-            str.Append(cname).Append("=");
-
+        if (generatesql == 3) {
+            if (text == "null")
+                str.Append(cname).Append(" is ");
+            else
+                str.Append(cname).Append("=");
+        }
 
         if (needQuote)
             str.Append(qtsimbol);

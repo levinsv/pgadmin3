@@ -473,7 +473,7 @@ pgPartitionFactory::pgPartitionFactory()
 	: pgTableObjFactory(__("Partition"), __("New Partition..."), __("Create a new Partition."), table_png_img, table_sm_png_img)
 {
 	metaType = PGM_TABLE;
-	typeName = wxT("TABLE");
+	typeName = (wxChar *) L"TABLE";
 }
 
 pgCollection *pgPartitionFactory::CreateCollection(pgObject *obj)

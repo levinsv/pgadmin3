@@ -604,9 +604,9 @@ void mpFXY::Plot(wxDC &dc, mpWindow &w) {
     Rewind();
     GetNextXY(x, y);
     maxDrawX = 0;
-    minDrawX = 10000000000;
+    minDrawX = 1000000000;
     maxDrawY = 0;
-    minDrawY = 10000000000;
+    minDrawY = 1000000000;
     // drawnPoints = 0;
     Rewind();
 
@@ -886,7 +886,7 @@ wxString mpScaleX::GetLabelTextValue(double &v) {
         fmt = (wxT("%04.0f-%02.0f-%02.0f %02.0f:%02.0f:%02.0f"));
       } else if (m_labelType == mpX_DATE) {
         fmt = (wxT("%04.0f-%02.0f-%02.0f"));
-      } else if ((m_labelType == mpX_TIME)) {
+      } else if (m_labelType == mpX_TIME) {
         fmt = (wxT("%02.0f:%02.3f"));
       } else {
         fmt = (wxT("%02.0f:%02.0f:%02.0f"));

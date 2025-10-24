@@ -206,7 +206,10 @@ public:
 
 	public:
 		frmLog* Logfrm;
+		// select node full path
 		wxArrayString shortcut;
+		// all servers info for find . Append only start pgadmin3
+		wxArrayString servers_find_list;
 		wxString select_shortcut;
 private:
 	wxAuiManager manager;

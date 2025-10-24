@@ -16,7 +16,7 @@ ctlShortCut::ctlShortCut(frmMain* main,wxWindow* parent, wxWindowID id, const wx
     Create(parent, id, wxEmptyString, pos, sz, style);
     //comboCustom->Create(panel, wxID_ANY, wxEmptyString);
     txt->Create(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
-        txt->SetFont(settings->GetSystemFont());
+    txt->SetFont(settings->GetSystemFont());
     //txt->SetBackgroundColour(*wxWHITE);
     pop = new wxVListBoxComboPopup();
     ///UseAltPopupWindow(false);
@@ -83,6 +83,20 @@ wxArrayString ctlShortCut::BuildList(wxString& find, bool full) {
 
         }
     }
+    // check servers list
+    for (int i = 0; i<frm->servers_find_list.Count(); i++) {
+        wxString t = viewText(frm->servers_find_list[i]);
+        if (t.Find(find) != wxNOT_FOUND) {
+            //wxString t2=frm->servers_find_list[i].BeforeFirst('(').Trim();
+            wxString t2=frm->servers_find_list[i];
+            if (full)
+            {
+                if (find.Length() == t.length()) rez.Add(t2);
+            }
+           else
+                rez.Add(t2);
+        }
+    }
     if (rez.Count() > 0|| full) return rez;
 
     return frm->shortcut;
@@ -118,8 +132,16 @@ void ctlShortCut::OnTEXT(wxCommandEvent& event) {
     if (!IsPopupShown() && ( true) ) {
         wxString s = txt->GetValue();
         SetText(s,false);
-        if (pop->GetCount() > 0) {
+        if (pop->GetCount() > 0 && s.Length()>0) {
             Popup();
+            #ifdef __LINUX__
+            //wxCommandEvent event(wxEVT_COMBOBOX_DROPDOWN,GetId() );
+            //event.SetEventObject( this );
+            //wxPostEvent(GetParent(), event);
+            //this->AddPendingEvent(event);
+            #else
+            //Popup();
+            #endif
         }
         //int e = txt->SetSelection(0, 1);
         //
