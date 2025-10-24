@@ -34,7 +34,7 @@ public:
         
         int idx=0;
         wxString si = ss.substr(0, 4).Trim();
-        if (si.ToInt(&idx)) {
+        if (si.ToInt(&idx) && idx>=0) {
             dc.DrawBitmap(imageList->GetBitmap(idx),wxPoint(rect.x,rect.y));
         }
         ;
@@ -55,7 +55,10 @@ public:
                 dc.GetTextExtent(pref, &lineWidth, &lineHeight);
                 r.width = lineWidth;
                 r.height = lineHeight;
-                dc.DrawRoundedRectangle(r, 3);
+                {
+                    wxDCPenChanger npen(dc, *wxThePenList->FindOrCreatePen(*wxBLACK, 1, wxPENSTYLE_SOLID));
+                    dc.DrawRoundedRectangle(r, 3);
+                }
         }
         dc.GetTextExtent(src, &w1, &h1);
         dc.DrawText(src,

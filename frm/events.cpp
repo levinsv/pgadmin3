@@ -867,12 +867,15 @@ void frmMain::OnShortCut(wxCommandEvent& event)
 			path = select_shortcut.SubString(1, select_shortcut.Length() - 1);
 			add = true;
 		}
-		else path = select_shortcut.substr(4);
+		else path = select_shortcut;
 			
 		if (!SetCurrentNode(GetBrowser()->GetRootItem(), path))
 			{
-				wxMessageBox(_("The specified object couldn't be found in the tree."));
-				return;
+				path = path.substr(4).BeforeFirst('(').Trim();
+				if (!SetCurrentNode(GetBrowser()->GetRootItem(), path)) {
+					wxMessageBox(_("The specified object couldn't be found in the tree."));
+					return;
+				}
 			}
 		if (add) {
 			int p = shortcut.Index(path);
