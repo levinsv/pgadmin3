@@ -253,6 +253,11 @@ public:
 	{
 		return conn;
 	}
+	int Get_client_encoding_id()
+	{
+		return PQclientEncoding(conn);
+	}
+
 	void Notice(const char *msg);
 	pgNotification *GetNotification();
 	int GetTxStatus();
