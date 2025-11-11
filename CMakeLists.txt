@@ -79,6 +79,7 @@ file(GLOB_RECURSE SOURCES
 ##########################################################
 
 add_executable(${PROJECT_NAME} )
+target_compile_definitions(${PROJECT_NAME} PRIVATE  $<$<CONFIG:Debug>:_DEBUG>)
 target_sources(${PROJECT_NAME} PUBLIC pgAdmin3.cpp ${SOURCES})
 if(CROSS_COMPILE STREQUAL "Windows")
   ENABLE_LANGUAGE(RC)
