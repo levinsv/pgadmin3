@@ -100,7 +100,7 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 				else {
 					// 4021196,'fffff',(
 					// (4155,'aaaa'
-					if (iscompact) {
+					if (iscompact && du==0) {
 						list[idxC].setParent(idxU);
 					} else {
 						if (size_u > size_c) { // фиксируем верхний 
