@@ -39,9 +39,13 @@ wxString Item::print() {
 
 	wxString s = wxString::Format("%s", it);
 	wxString r(' ', rs), l(' ', ls);
-
-	s = l + s + r + wxString::Format("%s", comment);
+	if (br) 
+			s = l + r + s + wxString::Format("%s", comment); // для последнего элемента строки пробелы справа не добавляем
+		else
+			s = l + s + r + wxString::Format("%s", comment);
+#ifdef _DEBUG
 	std::cout << s;
+#endif
 	return s;
 }
 const int Item::getMaxSize() {

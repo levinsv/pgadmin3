@@ -56,6 +56,9 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 
 	}
 	else {
+		// 
+		bool iscompact=false;
+		if (CHKCFGPARAM(cfg, COMPACT_VIEW)) iscompact=true;
 
 		for (size_t l = 1; l < nline.size() - 1; l++)
 		{
@@ -97,17 +100,21 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 				else {
 					// 4021196,'fffff',(
 					// (4155,'aaaa'
-					if (size_u > size_c) { // фиксируем верхний 
-						// будем нижний подгонять под верхний
-						size_u = range_size(index_u);
-						idxU = index_u;
-					}
-					else
-						if (size_u < size_c) {
-							size_c = range_size(index_c);
-							idxC = index_c;
+					if (iscompact) {
+						list[idxC].setParent(idxU);
+					} else {
+						if (size_u > size_c) { // фиксируем верхний 
+							// будем нижний подгонять под верхний
+							size_u = range_size(index_u);
+							idxU = index_u;
 						}
-					list[idxC].setParent(idxU);
+						else
+							if (size_u < size_c) {
+								size_c = range_size(index_c);
+								idxC = index_c;
+							}
+						list[idxC].setParent(idxU);
+					}
 				}
 				if (size_u < size_c) {
 					// вырхний короче, его дополняем
@@ -378,6 +385,7 @@ int AlignWrap::chkspace(int &pos, bool& br) {
 		pos--;
 		break;
 	}
-	if (nl < parserows) l++;
+	// Не будем заменять переводы строк на пробел для ALL_LINES
+	if (nl < parserows && !CHKCFGPARAM(cfg,ALL_LINES)) l++;
 	return l;
 }
