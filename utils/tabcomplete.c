@@ -26,7 +26,7 @@
  * Callbacks to the C++ world
  */
 char *pg_query_to_single_ordered_string(char *query, void *dbptr);
-
+int get_id_encoding(void *dbptr);
 
 /*
  * Global vars for readline emulation
@@ -170,6 +170,7 @@ static char *complete_from_schema_query(const char *text, const void* query, con
 static char *complete_create_command(char *text);
 static char *complete_filename();
 
+
 /*
  * Include the main tab completion functionality from psql
  */
@@ -226,16 +227,97 @@ static char *complete_from_const(const char *text, const char *string)
 {
 	return strdup(string);
 }
+static int lower_identifier(const char *ident, char *out,void *dbptr)
+{
+	size_t		buflen = strlen(ident) + 1;
+	
+	char	   *sname;
+	char	   *oname;
+	char	   *optr;
+	char	   *tmp;
+	int		inquotes=0;
+	int isneedlower=0;
+    int schemaquoted,objectquoted;
+	int encoding=6; // pg_enc.PG_UTF8
+	int		enc_is_single_byte = 0;
+	int utf8len=0;
+	/* Initialize, making a certainly-large-enough output buffer */
+	schemaquoted = objectquoted = 0;
+	/* Scan */
+	inquotes = 0;
+	optr=out;
+	while (*ident)
+	{
+		unsigned char ch = (unsigned char) *ident++;
+		utf8len++;
+		if (ch == '"')
+		{
+			if (inquotes && *ident == '"')
+			{
+				/* two quote marks within a quoted identifier = emit quote */
+				*optr++ = '"';
+				ident++;
+				utf8len++;
+			}
+			else
+			{
+				inquotes = !inquotes;
+				objectquoted = 1;
+				*optr++ = '"';
+			}
+		}
+		else if (!enc_is_single_byte && ch>127)
+		{
+			/*
+			 * Transfer multibyte characters without further processing.  They
+			 * wouldn't be affected by our downcasing rule anyway, and this
+			 * avoids possibly doing the wrong thing in unsafe client
+			 * encodings.
+			 */
+			int			chlen = PQmblenBounded(ident - 1, encoding);
+
+			*optr++ = (char) ch;
+			while (--chlen > 0)
+				*optr++ = *ident++;
+		}
+		else
+		{
+			if (!inquotes)
+			{
+				/*
+				 * This downcasing transformation should match the backend's
+				 * downcase_identifier() as best we can.  We do not know the
+				 * backend's locale, though, so it's necessarily approximate.
+				 * We assume that psql is operating in the same locale and
+				 * encoding as the backend.
+				 */
+				if (ch >= 'A' && ch <= 'Z')
+					ch += 'a' - 'A';
+				else if (enc_is_single_byte && ch>127 && isupper(ch))
+					ch = tolower(ch);
+			}
+			*optr++ = (char) ch;
+		}
+	}
+	*optr = '\0';
+	return utf8len;
+}
 
 static char* _complete_from_query(const char* text, const char* query, const SchemaQuery* squery, const char* addon, void* dbptr)
 {
 	int string_length = strlen(text);
 	char* e_text;
+	char* e_text_ident;
 	char* complete_query = NULL;
 	char* t;
 
+	e_text_ident = malloc(string_length * 2 + 1);
+	PQescapeString(e_text_ident,text, strlen(text));
+	string_length=strlen(e_text_ident);
 	e_text = malloc(string_length * 2 + 1);
-	PQescapeString(e_text, text, string_length);
+	int utf8len=lower_identifier(e_text_ident,e_text,dbptr);
+	string_length=utf8len;
+	free(e_text_ident);
 
 	if (query != NULL)
 	{

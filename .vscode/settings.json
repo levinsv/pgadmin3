@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "regex": "cpp",
-        "*.pngc": "cpp"
+        "*.pngc": "cpp",
+        "*.inc": "c",
+        "vector": "cpp",
+        "string.h": "c",
+        "libpq-fe.h": "c"
     },
     "cmake.configureArgs": [
        

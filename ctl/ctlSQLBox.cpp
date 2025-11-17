@@ -89,7 +89,7 @@ ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	m_dlgFindReplace = 0;
 	m_dlgTransformText = 0;
 	m_database = NULL;
-
+	
 	m_autocompDisabled = false;
 	process = 0;
 	processID = 0;
@@ -1344,10 +1344,11 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 				break;
 			}
 			wxArrayString choiceCmpOpts;
-			wxArrayInt choiceSelectOpts;
+			
 			choiceCmpOpts.Add(_("All line (use all EOL)"));
 			choiceCmpOpts.Add(_("First line pattern (ignore all but the first EOL)"));
 			choiceCmpOpts.Add(_("Try looking for patterns above"));
+			choiceCmpOpts.Add(_("Compact view"));
 			choiceCmpOpts.Add(_("Remove multi spaces"));
 			wxMultiChoiceDialog dialog(this,
 				_("A multi-choice convenience dialog"),
@@ -1362,7 +1363,8 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 						if (choiceSelectOpts[n] == 0) cfg |= AlignWrap::ALL_LINES;
 						if (choiceSelectOpts[n] == 1 ) cfg |= AlignWrap::FIRST_LINE ;
 						if (choiceSelectOpts[n] == 2) cfg |= AlignWrap::FIND_UP_LONG_LINE;
-						if (choiceSelectOpts[n] == 3) cfg |= AlignWrap::ONLY_SINGLE_SPACE;
+						if (choiceSelectOpts[n] == 3) cfg |= AlignWrap::COMPACT_VIEW;
+						if (choiceSelectOpts[n] == 4) cfg |= AlignWrap::ONLY_SINGLE_SPACE;
 
 				}
 				if (CHKCFGPARAM(cfg, AlignWrap::ALL_LINES) && CHKCFGPARAM(cfg, AlignWrap::FIRST_LINE)) cfg -= AlignWrap::FIRST_LINE;
@@ -1866,9 +1868,31 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 	if (m_autocompDisabled)
 		return;
 	int pos = GetCurrentPos();
-	wxString what = GetCurLine().Left(pos - PositionFromLine(GetCurrentLine()));;
+	//wxString what = GetCurLine().Left(pos - PositionFromLine(GetCurrentLine()));
+	wxString what = GetTextRange(PositionFromLine(GetCurrentLine()),pos);
 	int spaceidx = what.Find(' ', true);
-
+	int spacecharidx=spaceidx;
+	int poshome=PositionFromLine(GetCurrentLine());
+	int posspc=PositionRelative(poshome,spaceidx);
+	if (spaceidx != -1) {
+		
+		while (poshome< posspc) {
+			int ch = GetCharAt(posspc);
+			int st = GetStyleAt(posspc) & 0x1F;
+			if (st == wxSTC_SQL_STRING || st == wxSTC_SQL_CHARACTER)
+			{
+				posspc--;
+			} else if (ch=='"' || ch=='.') {
+				posspc--;
+			} else if (ch==' ') {
+				break;
+			}
+			
+		}
+		wxString lastexp=GetTextRange(PositionFromLine(GetCurrentLine()),posspc);
+		spacecharidx=lastexp.Length();
+		spaceidx=posspc-poshome;
+	}
 	char *tab_ret;
 	if (spaceidx == -1)
 		tab_ret = tab_complete(what.mb_str(wxConvUTF8), 0, what.Len() + 1, m_database);
@@ -2072,7 +2096,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 				if (found) {
 					wxString flt="";
 					if (!fld.IsEmpty()) flt = " and a.attname ~ " + qtConnString(fld);
-				wxString sql=wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") +qtConnString(table)
+				wxString sql=wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid in (select oid from pg_class p where relname=") +qtConnString(table)
 						+wxT(") and a.attisdropped IS FALSE and a.attnum>=0 ")+flt
 						+wxT(" order by 1");
 				//pgSet *res = m_database->ExecuteSet(sql);
@@ -2134,7 +2158,8 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 	if (spaceidx == -1)
 		AutoCompShow(what.Len(), wxRet);
 	else
-		AutoCompShow(what.Len() - spaceidx - 1, wxRet);
+		//AutoCompShow(what.Len() - spacecharidx - 1, wxRet);
+		AutoCompShow(pos - posspc - 1, wxRet);
 
 	// Now switch back
 #ifdef __WXMAC__
@@ -2201,7 +2226,12 @@ char *pg_query_to_single_ordered_string(char *query, void *dbptr)
 
 	return strdup(ret.mb_str(wxConvUTF8));
 }
-
+extern "C"
+int get_id_encoding(void *dbptr)
+{
+	pgConn *db = (pgConn *)dbptr;
+	return db->Get_client_encoding_id();
+}
 
 // Find some text in the document.
 CharacterRange ctlSQLBox::RegexFindText(int minPos, int maxPos, const wxString &text)

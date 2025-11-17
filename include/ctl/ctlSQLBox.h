@@ -135,6 +135,7 @@ private:
 	dlgFindReplace *m_dlgFindReplace;
 	dlgTransformText *m_dlgTransformText;
 	pgConn *m_database;
+	wxArrayInt choiceSelectOpts;
 	bool m_autoIndent, m_autocompDisabled, m_hint_mode;
 	struct InsensitiveCompare {
 		bool operator() (const wxString& a, const wxString& b) const {
