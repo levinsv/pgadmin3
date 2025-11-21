@@ -36,6 +36,12 @@ my %others_func=(
 ,'FUNCTIONS-SIMILARTO-REGEXP'=>'similar to'
 ,'id-1.5.8.30.16' => 'any'
 ,'id-1.5.8.30.17' => 'all'
+,'FUNCTIONS-SUBQUERY-EXISTS'=>'exists'
+,'FUNCTIONS-SUBQUERY-IN'=>'in'
+,'FUNCTIONS-SUBQUERY-NOTIN'=>'not in'
+,'FUNCTIONS-SUBQUERY-ALL'=>'all'
+,'FUNCTIONS-SUBQUERY-ANY-SOME'=>'some'
+,'some'=>'any'
 ,'ROW-WISE-COMPARISON' => 'is distinct from'
 
 );

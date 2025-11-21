@@ -490,6 +490,7 @@
     <ClCompile Include="utils\sysLogger.cpp" />
     <ClCompile Include="utils\sysProcess.cpp" />
     <ClCompile Include="utils\sysSettings.cpp" />
+    <ClInclude Include="utils\FunctionPGHelper.cpp" />
     <ClCompile Include="utils\tabcomplete.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>

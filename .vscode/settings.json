@@ -5,7 +5,8 @@
         "*.inc": "c",
         "vector": "cpp",
         "string.h": "c",
-        "libpq-fe.h": "c"
+        "libpq-fe.h": "c",
+        "new": "cpp"
     },
     "cmake.configureArgs": [
        

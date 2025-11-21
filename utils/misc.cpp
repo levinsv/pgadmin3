@@ -1465,4 +1465,21 @@ bool getArrayFromCommaSeparatedList(const wxString &str, wxArrayString &res)
 
 	return true;
 }
-
+bool make_identifier(const wxString &strname, wxString &s, wxString &n, bool islower) {
+            s=strname.BeforeFirst('.');
+            if (s==strname) {
+                n=strname;
+				s="";
+            } else {
+                // full name
+                n=strname.AfterFirst('.');
+            }
+            // 
+            if (n.Find('"')>=0) {
+                    n.Replace("\"","");
+            } else {if (islower) n=n.MakeLower();}
+            if (s.Find('"')>=0) {
+                    s.Replace("\"","");
+            } else {if (islower) s=s.MakeLower();}
+	return true;
+}

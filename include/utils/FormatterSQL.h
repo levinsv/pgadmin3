@@ -77,6 +77,7 @@ namespace FSQL {
         { "left",   4,  new_line_align_next },
         { "full",   4,  new_line_align_next },
         { "then",  4,  none},
+        { "loop",  4,  none}, // for plpgsql
         { "into",  4,  none},
         { "last", 4,  none},
         { "next", 4,  none},
@@ -86,6 +87,9 @@ namespace FSQL {
         { "sets", 4,  none},
         { "where",  5,  new_line_align_no_pad | end_from},
         { "outer",  5,  none},
+        { "grant",  5,  none},
+        { "begin",  5,  none}, //plpgsql
+        { "while",  5,  none}, //plpgsql
         { "union",  5,  new_line_align_no_pad | end_from},
         { "order",  5,  new_line_align_no_pad | end_from},
         { "limit",  5,  new_line_align_no_pad | end_from},
@@ -106,9 +110,11 @@ namespace FSQL {
         { "except",  6, new_line_align_no_pad | end_from},
         { "offset", 6,  none | end_from},
         { "cursor", 6,  none},
+        { "create", 6,  none},
         { "nothing", 7,  none},
         { "lateral", 7,  none},
         { "between", 7,  none},
+        { "comment", 7,  none},
 
         { "nothing", 7,  none},
         { "default", 7,  none},
@@ -149,11 +155,13 @@ namespace FSQL {
         FormatterSQL(const wxString& sqlsrc) {
             sql = sqlsrc;
         }
+        std::vector<complite_element> ParsePLpgsql();
         void Formating(wxDC& d, wxRect re, bool isTest = false); // draw 
         wxString Formating(wxRect re);                          // 
         // 
         wxString BuildAutoComplite(int startIndex, int level);
         wxString GetListTable(int cursorPos);
+        wxString GetListTable(const std::vector<complite_element> &list);
         wxString GetColsList(wxString what, wxString& listfieldOut, wxString& nameTableOut);
         /// <summary>
         /// Возращает количество таблиц слева от курсора и заполняет их имена и псевдонимы.
@@ -166,11 +174,13 @@ namespace FSQL {
         void SetSql(const wxString& sqlsrc) { sql = sqlsrc; lastposition = 0; }
         int  GetIndexItemNextSqlPosition(int sqlPosition);
         int GetNextPositionSqlParse();
+        
         bool GetItem(int index, FSQL::view_item& item);
         int next_item_no_space(int& index, int direction = 1);
     private:
         wxString get_list_columns(int startindex, union FSQL::Byte zone);
-
+        void _addfunc(const view_item *vi);
+        void _addfunc_in_braket(int start,int end);
         wxPoint align_level(int start_i, int level, int Xpos, int Ypos, int flag);
         int check_bracket(int index);
         int get_prev_value(int indx, wxString keyword);
@@ -185,8 +195,10 @@ namespace FSQL {
         wxRect rect;
         wxString sql;
         int lastposition = 0;
+        int errorposition=-1;
         std::vector<FSQL::view_item> items;
         std::vector<FSQL::complite_element> listTable; // перечень таблиц синонимов, подзапросов и функций с колонками
+        std::vector<FSQL::complite_element> listFunction; // перечень функций используемых в запросе
         //int recurse(int level);
     };
 }

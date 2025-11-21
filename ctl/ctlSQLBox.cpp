@@ -643,8 +643,11 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	wxPoint p =  ClientToScreen( PointFromPosition(pos));
 	wxString current = GetSelectedText();
 	wxString key = "";
+	fh->setDbConn(m_database);
 	if (!current.IsEmpty())
+	{
 			key = current;
+	}
 		else {
 			wxChar ch;
 			wxString tmp;
@@ -660,12 +663,12 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	}
 	delete 	m_PopupHelp;
 	wxSize rr(450, 370);
-	m_PopupHelp = new popuphelp(this->GetParent(), key.Lower(), fh,p,rr);
+	m_PopupHelp = new popuphelp(this->GetParent(), key, fh,p,rr);
 	if (m_PopupHelp && m_PopupHelp->IsValid() && rr != m_PopupHelp->GetSizePopup()) {
 		// recreate with new size
 		rr = m_PopupHelp->GetSizePopup();
 		delete 	m_PopupHelp;
-		m_PopupHelp = new popuphelp(this->GetParent(), key.Lower(), fh, p, rr);
+		m_PopupHelp = new popuphelp(this->GetParent(), key, fh, p, rr);
 
 	}
 	if (m_PopupHelp && m_PopupHelp->IsValid()) {
@@ -1766,7 +1769,7 @@ void ctlSQLBox::OnMarginClick(wxStyledTextEvent &event)
 
 	event.Skip();
 }
-wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine) {
+wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::vector<FSQL::complite_element> &listobj) {
 	wxColor frColor[40];
 	wxString str;
 	wxColour frc = settings->GetSQLBoxColourForeground();
@@ -1807,6 +1810,12 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine) {
 	//if (isAddNewLine) newline = L"&ldca;<br>";
 	//if (isAddNewLine) newline = L"<br>\x0b78";
 	int lenstr = selText.Length();
+	int IndexObj=0;
+	int pos=999999999;
+	wxString obj;
+	int lenobj;
+	if (listobj.size()>0) {pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table;lenobj=obj.Len();}
+	wxString lstr;
 	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
@@ -1817,20 +1826,36 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine) {
 		//str.append(str[k].GetValue());
 		l = 1;
 		wxUniChar c = selText[k];
+		
 		if (!c.IsAscii()) l++;
 		int s = 0;
 		//wxUniChar c = selText[k].GetValue();
 		if (c == '\r') { startp = startp + l; k++; continue; };
 		
-		if (c == '\n') { str += newline; startp = startp + l; k++; continue; };
+		if (c == '\n') { lstr += newline; startp = startp + l; k++; continue; };
 		if (c == 9) s = 5;
 		if (c == 32) s = 1;
-		if (c == '<') { str+="&lt;"; startp = startp + l; k++; continue; };
-		if (c == '>') { str+="&gt;"; startp = startp + l; k++; continue; };
-		if (c == '&') { str+="&amp;"; startp = startp + l; k++; continue; };		
-		if (s > 0) for (int tt = 0; tt < s; tt++) str += wxT("&nbsp;");
-		else str += c;
+		if (c == '<') { lstr+="&lt;"; startp = startp + l; k++; continue; };
+		if (c == '>') { lstr+="&gt;"; startp = startp + l; k++; continue; };
+		if (c == '&') { lstr+="&amp;"; startp = startp + l; k++; continue; };		
+		if (s > 0) for (int tt = 0; tt < s; tt++) lstr += "&nbsp;";
+		else lstr += c;
 		startp = startp + l; k++;
+		if ((k-1)>=pos) {
+			lenobj--;
+			if (lenobj==0) {
+				wxString s,n;
+				make_identifier(obj,s,n,true);
+				if (!s.IsEmpty()) obj=s+'.'+n; else obj=n;
+				lstr=wxString::Format("<a href=\"%s\">%s</a>", obj, lstr);
+				IndexObj++;
+				if (listobj.size()>IndexObj) { pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table; lenobj=obj.Len();}
+					else pos=999999999;
+			} else
+				continue; // link not ready
+		}
+		str += lstr;
+		lstr="";
 	}
 	str = str + wxT("</font></div>");
 	return str;
