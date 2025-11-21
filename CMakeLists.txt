@@ -98,16 +98,19 @@ endif()
 if(CROSS_COMPILE STREQUAL "Windows")
      #add_compile_definitions(_CRT_SECURE_NO_DEPRECATE=1 NDEBUG WIN32 _WINDOWS __WINDOWS__ __WIN95__ __WIN32__ WINVER=0x0500 STRICT __WXMSW__ WXUSINGDLL wxUSE_UNICODE=1 PG_SSL)
         add_compile_definitions(NDEBUG WIN32 WXPRECOMP WINVER=0x0600 STRICT wxUSE_UNICODE=1 PG_SSL)
-	set(WXWIN /home/sergey/k/wxMSW-3.2.2 )
-	set(PGDIR /home/sergey/k/pg10 )
-	set(PGBUILD /home/sergey/k )
+	##set(WXWIN /home/sergey/k/wxMSW-3.2.2 )
+	##set(PGDIR /home/sergey/k/pg17 )
+	##set(PGBUILD /home/sergey/k )
 	#set(/home/sergey/k/openssl )
 	#set(PROJECTDIR /home/sergey/k/openssl )
 	include_directories(${WXWIN}/include ${PGDIR}/include ${PGDIR}/include/server )
 	include_directories(${PGBUILD}/libxml2/include ${PGBUILD}/libxslt/include ${PGBUILD}/iconv/include  )
 #	include_directories(${PGBUILD}/openssl/include 
 #	include_directories( ./include/libssh2 ./include/libssh2/Win32 )
+else()
+	add_subdirectory(tests)
 endif()
+
 
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

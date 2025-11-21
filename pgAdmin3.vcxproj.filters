@@ -808,6 +808,9 @@
     <ClCompile Include="utils\csvfiles.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClInclude Include="utils\FunctionPGHelper.cpp">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClCompile Include="utils\factory.cpp">
       <Filter>utils</Filter>
     </ClCompile>

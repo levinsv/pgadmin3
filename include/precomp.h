@@ -216,6 +216,7 @@
 #include "schema/gpExtTable.h"
 #include "schema/gpPartition.h"
 #include "schema/gpResQueue.h"
+#include "schema/pgPartition.h"
 
 #include "slony/dlgRepCluster.h"
 #include "slony/dlgRepListen.h"

@@ -60,13 +60,17 @@ public:
 
         htmlWindow->SetRelatedStatusBar(0);
         //htmlWindow->SetPage("<html><body><h1>TEST</h1><span fgcolor=\"#332233\">Set Page Works</span></body></hmtl>");
-        wxString txt = hhelper->getHelpString(keyword);
+        
+        wxString txt;
+        txt=hhelper->getDBinfoKeyword(keyword,true);
         if (txt.IsEmpty()) {
-            
-            txt = hhelper->getSqlCommandHelp(keyword);
+            txt = hhelper->getHelpString(keyword.Lower());
             if (txt.empty()) {
-                isvalid = false;
-                return;
+                txt = hhelper->getSqlCommandHelp(keyword.Lower());
+                if (txt.empty()) {
+                    isvalid = false;
+                    return;
+                }
             }
         }
         SetPage(txt);
@@ -131,9 +135,13 @@ public:
     this->Bind(wxEVT_HTML_LINK_CLICKED, [&](wxHtmlLinkEvent& event) {
         wxHtmlLinkInfo i = event.GetLinkInfo();
         wxString name = i.GetHref();
-        wxString body=this->hhelper->getHelpString(name);
+        wxString body;
+        body=this->hhelper->getDBinfoKeyword(name,false);
         if (body.IsEmpty()) {
-            body = this->hhelper->getHelpFile(name);
+            body=this->hhelper->getHelpString(name);
+            if (body.IsEmpty()) {
+                body = this->hhelper->getHelpFile(name);
+            }
         }
         SetPage(body);
             //ctext=htmlWindow->SelectionToText();
@@ -153,12 +161,15 @@ public:
         //wxString body = this->hhelper->getHelpString(name);
         wxString ctext = htmlWindow->SelectionToText();
         if (!ctext.IsEmpty()) {
-            wxClipboardLocker clip;
-            if (!clip ||
-                !wxTheClipboard->AddData(new wxTextDataObject(ctext)))
+            if (wxTheClipboard->Open())
             {
-               
+                wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                dataobj->Add(new wxTextDataObject(ctext));
+                //dataobj->Add(new wxHTMLDataObject(str));
+                wxTheClipboard->SetData(dataobj);
+                wxTheClipboard->Close();
             }
+
             wxString wname = GetParent()->GetName();
             if (wname == "frmStatus") {
                 //CMD_EVENT_FIND_STR
@@ -203,6 +214,7 @@ private:
     wxSize sizew;
     FunctionPGHelper* hhelper;
     std::vector<wxString> hist;
+    std::vector<wxPoint> hist_viewp;
     void SetPage(wxString innerbody,bool gethistory=false) {
         wxString h;
         int p = innerbody.Find("<body>");
@@ -224,9 +236,22 @@ private:
             h = hist[hist.size()-1];
         }
         else {
+            if (hist.size()>0) {
+                wxPoint ps=htmlWindow->GetViewStart();
+                hist_viewp.push_back(ps);
+            }
             hist.push_back(h);
         }
         htmlWindow->SetPage(h);
+        if (gethistory && hist_viewp.size()>0) {
+            wxPoint ps=hist_viewp[hist_viewp.size()-1];
+            hist_viewp.pop_back();
+            htmlWindow->Scroll(ps);
+        } else {
+            // 
+            wxPoint ps(0,0);
+            htmlWindow->Scroll(ps);
+        }
     }
 private:
     wxTimer *closeTimer=NULL;

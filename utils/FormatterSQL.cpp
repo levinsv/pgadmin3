@@ -67,14 +67,20 @@ wxString FormatterSQL::get_list_columns(int startindex, union Byte zone) {
     }
     return cols;
 }
-wxString FormatterSQL::GetListTable(int cursorPos) {
+wxString FormatterSQL::GetListTable(const std::vector<complite_element> &list) {
     int s = 0;
     wxString r = "";
-    while (s < listTable.size()) {
-        complite_element* el = &listTable[s++];
-        r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
+    complite_element el;
+    while (s < list.size()) {
+        el = list[s++];
+        r += wxString::Format("[ %s,%s] %s\n", el.table, el.alias, el.columnList);
     }
     return r;
+
+}
+wxString FormatterSQL::GetListTable(int cursorPos) {
+    if (cursorPos==0) return GetListTable(listTable);
+    else return GetListTable(listFunction);
 }
 int FormatterSQL::GetTableListBeforePosition(int positem, wxArrayString& listtable, wxArrayString& listalias) {
     int s = 0;
@@ -198,6 +204,15 @@ iteration2:
     }
     return r;
 }
+void FormatterSQL::_addfunc(const view_item *vi) {
+            if (vi->flags & f_key::isFUNCTION ) {
+                complite_element ff;
+                ff.table=vi->txt;
+                ff.startIndex=vi->srcpos;
+                listFunction.push_back(ff);
+            }
+
+}
 wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     int len_items = items.size();
     int n_element = startIndex;
@@ -214,8 +229,12 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     wxString cols_name;
     bool isfunction = false;
     bool isskipnext = false;
+    bool isinsert = false;
     el.columnList = ""; el.alias = ""; el.table = ""; el.level = level;
-    if (level == 0) listTable.clear();
+    if (level == 0) {
+        listTable.clear();
+        listFunction.clear();
+    }
     while (next_item_no_space(found_index) != -1) {
         view_item* vi = &items[found_index];
         if (vi->type == comment) {
@@ -224,7 +243,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
         }
         if (vi->type == keyword) {
             union Byte z = zone;
-            if (vi->txt.Lower() == "from" && vi->flags != 0) {
+            if ((vi->txt.Lower() == "from" && vi->flags != 0) ) {
                 if (zone.b.select_list) {
                     if (!lastname.IsEmpty())cols.Add(lastname);
                 }
@@ -241,11 +260,28 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 cols.Clear();
                 //el.startIndex = found_index + 1;
             }
-            if (vi->txt.Lower().Find("join") > -1) {
+            if ((vi->txt.Lower().Find("join") > -1) || vi->txt.Lower() == "using") {
                 goto close_element_from;
             }
             if (vi->txt.Lower() == "on") {
                 goto close_element_from;
+            }
+            if (vi->txt.Lower() == "insert") {
+                found_index++;
+                if ((next_item_no_space(found_index)!=-1) && items[found_index].txt.Lower()=="into") {
+                    found_index++;
+                    if ((next_item_no_space(found_index)!=-1) && (items[found_index].type==FSQL::type_item::identifier ||items[found_index].type==FSQL::type_item::name)) {
+                        // table name
+                        
+                        complite_element el2;
+                        el2.table=items[found_index].txt;
+                        el2.startIndex=el.endIndex=found_index;
+                        el2.level=level;
+                        found_index++;
+                        listTable.push_back(el2);
+                    }
+                }
+                continue;
             }
 
             if ((vi->flags & end_from) != 0) {
@@ -320,9 +356,19 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
 
         }
         else if (isskipnext) {
-            // пропускаем всё до следующей запятой
+            // пропускаем всё до следующей запятой но проверим наличие функций
+            if (vi->txt=='(') {
+                int jump = vi->endlevel;
+                _addfunc_in_braket(found_index,jump);
+                found_index = jump + 1;
+                continue;
+            }
+
+            if (vi->type == identifier || vi->type == name) _addfunc(vi);
         }
         else if (vi->type == identifier || vi->type == name) {
+            if (zone.b.with==0) 
+                _addfunc(vi);
             int i = found_index - 1;
             if (next_item_no_space(i) != -1) {
                 if (items[i].type == separation && items[i].txt == "::") {
@@ -352,6 +398,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
         else if (vi->txt == '(') {
             int jump = vi->endlevel;
             if (zone.b.select_list) {
+                _addfunc_in_braket(found_index,jump);
                 found_index = jump + 1;
                 continue;
             }
@@ -392,6 +439,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     }
                     // это функция с аргументами
                     if (!isfunction) {
+                        _addfunc_in_braket(found_index,jump);
                         isfunction = true;
                         found_index = jump + 1;
                         continue;
@@ -407,13 +455,15 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     if (isfunction)
                         el.table = "@";
                     else
-                        if (objName.Count() > 0) el.table = objName[0];
+                        if (objName.Count() > 0) {el.table = objName[0]; el.startIndex=indexlastID; }
                         else
                             el.table = "-";
                     el.alias = lastname;
                     el.columnList = cols_name;
                     listTable.push_back(el);
                 }
+                // check run functions
+                _addfunc_in_braket(found_index,jump);
                 isskipnext = true;
                 found_index = jump + 1;
                 continue;
@@ -461,8 +511,117 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     else
         return wxJoin(cols, ',');
 }
+void FormatterSQL::_addfunc_in_braket(int start,int end) {
+                while (++start <= end) {
+                    if (items[start].txt=='(') {
+                        int tmp=start-1;
+                        if (next_item_no_space(tmp,-1) != -1) {
+                            view_item *v2=&items[tmp];
+                            if (v2->type == identifier || v2->type == name ) _addfunc(v2);
+                        }
+                    }
+                }
+
+}
 int FormatterSQL::GetNextPositionSqlParse() {
     return lastposition;
+}
+/// Анализируем исходный текст процедуры или функции
+/// Находим все функции таблицы и представления
+///
+std::vector<complite_element> FormatterSQL::ParsePLpgsql(){
+    int e;
+    int maxlen=sql.Len();
+    std::vector<complite_element> listdbobject;
+    complite_element i;
+    // Глобальный цикл по тексту
+    while (lastposition<maxlen) {
+        int start=lastposition;
+        e=ParseSql(1);
+        if (e<0) {
+            // встретили оператор case
+            //wxTrap();
+            lastposition=errorposition;
+        }
+        wxString currentsql=sql.substr(start,lastposition-start);
+        if (currentsql.Len()>0) {
+            //std::cout << currentsql << std::endl ;
+        }
+        // извлечем информацию о таблицах и функциях
+        BuildAutoComplite(0,0);
+        // 
+        for(int i=0;i<listTable.size();i++) {
+            wxString t=listTable[i].table;
+            // Удалим из функций синонимы таблиц
+            for(int j=0;j<listFunction.size();j++) {
+                if (listTable[i].alias==listFunction[j].table)
+                    listFunction[j].table="";
+            }
+            if (t=="@") continue;
+            if (t.Len()>0) {
+                bool add=true;
+                for(int k=0;k<i;k++) {
+                    if (listTable[k].table=="@" && listTable[k].alias==t) {
+                        add=false;
+                        break;
+                    }
+                }
+                if (add) {
+                        complite_element it;
+                        it.table=t;
+                        wxString lt=t.Lower();
+                        bool ignore=(lt=="alter"||lt=="trigger"||lt=="index");
+                        if (ignore) break;
+                        if (!ignore) {
+                            int itempos=listTable[i].startIndex;
+                            int epos=listTable[i].endIndex;
+                            while (itempos<=epos) {
+                                if (items[itempos].txt==t) break;
+                                itempos++;
+                            }
+                            it.startIndex=items[itempos].srcpos;
+                            listdbobject.push_back(it);
+                        }
+                }
+
+            }
+        }
+        // add functions
+        for(int j=0;j<listFunction.size();j++) {
+                if (listFunction[j].table.Len()>0) {
+                        complite_element it;
+                        wxString fn=listFunction[j].table;
+                        if (
+                            fn.Lower()=="varchar"||
+                            fn.Lower()=="char"||
+                            fn.Lower()=="chr"||
+                            fn.Lower()=="btree"||
+                            fn.Lower()=="numeric"||
+                            fn.Lower()=="bit"||
+                            fn.Lower()=="return"||
+                            fn.Lower()=="varying"||
+                            fn.Lower()=="key"||
+                            fn.Lower()=="range"||
+                            fn.Lower()=="varbit"
+                            ) continue;
+                        it.table=fn;
+                        it.startIndex=listFunction[j].startIndex;
+                        wxString check=sql.substr(it.startIndex,fn.Len());
+                        if (check!=fn) {
+                            std::cout << fn  << std::endl;
+                        }
+                        listdbobject.push_back(it);
+                }
+        }
+
+    }
+    // sort startIndex
+    std::sort(listdbobject.begin(),listdbobject.end(),
+        [](const complite_element& a, const complite_element& b) {
+            return a.startIndex < b.startIndex;
+     });
+
+return listdbobject;
 }
 /// <summary>
 /// <c>ParseSql</c> Выполнение разбора текста как SQL выражения
@@ -471,6 +630,7 @@ int FormatterSQL::GetNextPositionSqlParse() {
 /// <returns>Возвращает код ошибки если SQL выражение было не полное или не корректное</returns>
 int FormatterSQL::ParseSql(int flags) {
     int i = lastposition;
+    errorposition=-1;
     int lhome = 0;
     bool str_literal = false;
     bool ext = false;
@@ -662,6 +822,11 @@ int FormatterSQL::ParseSql(int flags) {
                 int pos = tmp.Find(dollarSep);
                 if (pos != -1) {
                     vi.txt = sql.substr(i - l, l + l + pos);
+                    if (flags == 1 && dollarSep=="$BODY$") {
+                        vi.txt=dollarSep;
+                        pos=0;l=0;
+                    }
+
                     i += pos + l;
                 }
                 else {
@@ -677,6 +842,7 @@ int FormatterSQL::ParseSql(int flags) {
         if (c == '\'' || c == '"') {
             qt = c;
             str_literal = true;
+            vi.srcpos=i-1;
             cons = qt;
             continue;
         }
@@ -815,11 +981,20 @@ int FormatterSQL::ParseSql(int flags) {
                             bracket.pop();
                         }
                         else {
+                            errorposition=i+tmp.Len()-1;
                             return -1; //braket no parent
                         }
                         vi.endlevel = idx;
                         if (idx != -1) items[idx].endlevel = items.size();
 
+                    } else if (keyEntities[n].name == "then"||
+                               keyEntities[n].name == "loop"  ) { // for plpgsql
+                        // if ... then 
+                        // while  ... loop or for .. in query loop
+                        if (bracket.size() == 0) {
+                            i=i+tmp.Len()-1;
+                            break;
+                        }
                     }
                 }
                 i += tmp.Len() - 1;
@@ -837,7 +1012,7 @@ int FormatterSQL::ParseSql(int flags) {
                 int pp2 = items.size() - 1;
                 int pp3 = next_item_no_space(pp2, -1);
                 if (pp3 != -1 && (items[pp3].type == name || items[pp3].type == identifier)) {
-                    vi.flags = isFUNCTION;
+                    items[pp3].flags = isFUNCTION;
                 }
             }
             continue;
@@ -850,6 +1025,7 @@ int FormatterSQL::ParseSql(int flags) {
                 bracket.pop();
             }
             else {
+                errorposition=i;
                 return -1; //braket no parent
             }
             vi.txt = c;
@@ -866,6 +1042,7 @@ int FormatterSQL::ParseSql(int flags) {
             if (matches) {
                 tmp = regident.GetMatch(tmp, 0);
                 vi.txt = tmp;
+                vi.srcpos=i;
                 vi.type = name;
                 i += tmp.Len();
                 continue;
@@ -930,15 +1107,19 @@ int FormatterSQL::ParseSql(int flags) {
         }
     // no sql command
         if (ex) break;
+        errorposition=i;
         return -3;
 
     }
     // end big loop
     if (str_literal) {
+        errorposition=i;
         return -2; // literal no close
     }
-    if (bracket.size() > 0)
+    if (bracket.size() > 0) {
+        errorposition=i;
         return -1; // bracet no close
+    }
     lastposition = i;
     return 0;
 }
