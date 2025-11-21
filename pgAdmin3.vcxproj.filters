@@ -808,9 +808,6 @@
     <ClCompile Include="utils\csvfiles.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClInclude Include="utils\FunctionPGHelper.cpp">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClCompile Include="utils\factory.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -1716,6 +1713,7 @@
     <ClCompile Include="utils\PreviewHtml.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="utils\FunctionPGHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="agent\module.mk">

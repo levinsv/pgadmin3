@@ -474,6 +474,7 @@
     <ClCompile Include="utils\factory.cpp" />
     <ClCompile Include="utils\dlgTransformText.cpp" />
     <ClCompile Include="utils\favourites.cpp" />
+    <ClCompile Include="utils\FunctionPGHelper.cpp" />
     <ClCompile Include="utils\json\jsonreader.cpp" />
     <ClCompile Include="utils\WaitSample.cpp" />
     <ClCompile Include="utils\json\jsonval.cpp" />
@@ -490,7 +491,6 @@
     <ClCompile Include="utils\sysLogger.cpp" />
     <ClCompile Include="utils\sysProcess.cpp" />
     <ClCompile Include="utils\sysSettings.cpp" />
-    <ClInclude Include="utils\FunctionPGHelper.cpp" />
     <ClCompile Include="utils\tabcomplete.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>
