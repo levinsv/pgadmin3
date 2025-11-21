@@ -24,7 +24,7 @@ jobs:
     - name: Install libxslt-dev postgresql-common postgresql-server-dev-all
       run: |
             sudo apt-get update
-            sudo apt-get install libxslt-dev libxml2-dev
+            sudo apt-get install libxslt-dev libxml2-dev catch2
             echo libpq-dev postgresql-server-dev-all
     - name: Install wxWidgets
       run: |
