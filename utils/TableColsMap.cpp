@@ -83,7 +83,7 @@ void TableColsMap::BuildMapTableColumnsToSQLexp(Table *reltab, const wxString &a
             int ncol = tmp[c].relcol;
             if (ncol < 1) continue;
             tab_col_struct fnd = { rel,ncol };
-            wxString sqlname = tmp[c].name;
+            wxString sqlname = qtIdent(tmp[c].name);
             if (!alias.IsEmpty()) sqlname = alias + "." + sqlname;
             map.insert({fnd,sqlname});
         }

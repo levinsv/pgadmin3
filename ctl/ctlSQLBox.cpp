@@ -2017,7 +2017,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 							sch = " and relnamespace =" + qtConnString(sch) + "::regnamespace";
 						}
 						if (tabn[0] == '"') tabn.Replace("\"", ""); else tabn = tabn.Lower();
-						wxString sql2 = wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
+						wxString sql2 = wxT("select string_agg(quote_ident(a.attname),E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
 							+ wxT(") and a.attisdropped IS FALSE and a.attnum>=0 ") + flt
 							+ wxT("");
 						//pgSet *res = m_database->ExecuteSet(sql);
