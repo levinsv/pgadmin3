@@ -1381,14 +1381,19 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 			else
 				SetText(processOutput);
 
-			return _("" + msgword + "ing complete.");
+			if (typecmd == 1) return _("Aligning complete.");
+				else return _("Formatting complete.");
 		}
 		if (typecmd == 0) {
 			FSQL::FormatterSQL f(processInput);
 			int rez = f.ParseSql(0);
 			if (rez >= 0) {
 				wxRect rr(0, 0, 120, 2000);
+				bool issemicol=false;
 				wxString processOutput = f.Formating(rr);
+				int next=f.GetNextPositionSqlParse();
+				if (next>0 && processInput[next-1]==';' && f.GetLastItem().type != FSQL::type_item::comment )  issemicol=true;
+				if (issemicol) processOutput.Append(';');
 				if (isSelected)
 					ReplaceSelection(processOutput);
 				else
@@ -1397,7 +1402,7 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 			} else
 				return wxString::Format("Error parse sql %d",rez);
 		}
-		return _("You need to setup a "+msgword+"ing command");
+		return "";
 	}
 
 	if (process)
@@ -1417,8 +1422,8 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 		delete process;
 		process = NULL;
 		processID = 0;
-		msg = _("Couldn't run " + msgword + "ing command: ") + formatCmd;
-		return msg;
+		if (typecmd == 1) return _("Couldn't run aligning command: ") + formatCmd;
+				else return _("Couldn't run formatting command: ") + formatCmd;
 	}
 	process->WriteOutputStream(processInput);
 	process->CloseOutput();
@@ -1439,7 +1444,8 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 	if (process)
 	{
 		AbortProcess();
-		return wxString::Format(_("" + msgword + "ing command did not respond in %d ms"), timeoutMs);
+		if (typecmd == 1) return wxString::Format(_("Aligning command did not respond in %d ms"), timeoutMs);
+				else return wxString::Format(_("Formatting command did not respond in %d ms"), timeoutMs);
 	}
 
 	if (processExitCode != 0)
@@ -1450,14 +1456,17 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 	}
 	else if (processOutput.Trim().IsEmpty())
 	{
-		return _("" + msgword + "ing command error: Output is empty.");
+		if (typecmd == 1) return _("Aligning command error: Output is empty.");
+				else return _("Formatting command error: Output is empty.");
+
 	}
 	if (isSelected)
 		ReplaceSelection(processOutput);
 	else
 		SetText(processOutput);
 
-	return _("" + msgword + "ing complete.");
+	if (typecmd == 1) return _("Aligning complete.");
+				else return _("Formatting complete.");
 }
 
 void ctlSQLBox::AbortProcess()
@@ -2017,7 +2026,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 							sch = " and relnamespace =" + qtConnString(sch) + "::regnamespace";
 						}
 						if (tabn[0] == '"') tabn.Replace("\"", ""); else tabn = tabn.Lower();
-						wxString sql2 = wxT("select string_agg(a.attname,E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
+						wxString sql2 = wxT("select string_agg(quote_ident(a.attname),E'\t') from pg_attribute a where a.attrelid = (select oid from pg_class p where relname=") + qtConnString(tabn) + sch
 							+ wxT(") and a.attisdropped IS FALSE and a.attnum>=0 ") + flt
 							+ wxT("");
 						//pgSet *res = m_database->ExecuteSet(sql);

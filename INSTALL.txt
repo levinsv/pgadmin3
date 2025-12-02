@@ -20,14 +20,31 @@ cmake --build . --config Release --target all -j 3 --
 Могут быть проблемы с отсутствующем файлом файлом kwlist.h
 Его можно взять в исходниках Postgresql 15 и положить в include/parser/
 
-Могут быть проблемы с компиляцией JSON парсера.
-Его можно исключить (как и эксперементальную часть с Git) добавление к переменной CXXFLAGS="-DNO_WXJSON_GIT"
-Смотрите пример в INSTALL_EN.txt
-
 
 ОС для сборки использовал «Альт Рабочая станция» 10
 https://www.basealt.ru/alt-workstation/download#c1211
 
 Редактировал и собирал на Visual Studio Сode
+
+Сборка mingw (использоалась версия без установки llvm-mingw-20231128-msvcrt-ubuntu-20.04-x86_64)
+------------
+MINGW=/home/sergey/mingw/llvm-mingw-20231128-msvcrt-ubuntu-20.04-x86_64
+1. сборка wxwidgets 3.2
+   mkdir msw-build
+   cd msw-build
+   PATH=$MINGW/bin:$PATH
+   ../configure --host=x86_64-w64-mingw32 --with-msw
+   #Получим каталоги для #include
+   wxWidgets_INCLUDE_DIRS=`./wx-config --cxxflags`
+
+   
+2. сборка pgAdmin3
+   указать в mingw-windows-x64.cmake пути к нужным dll (exp файлам)
+   mkdir build
+   cd build
+   cmake -DCMAKE_TOOLCHAIN_FILE=../mingw-windows-x64.cmake ..
+   cmake --build . --config Release --target all -j 5 --
+
+
 
 

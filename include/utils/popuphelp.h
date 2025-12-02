@@ -136,6 +136,13 @@ public:
         wxHtmlLinkInfo i = event.GetLinkInfo();
         wxString name = i.GetHref();
         wxString body;
+        if (name.Len()>1 && name[0]=='#') {
+            body=this->hhelper->getTextForAnchor(name);
+            if (body.Len()>0) {
+                SetPage(body);
+            }
+            return;
+        } 
         body=this->hhelper->getDBinfoKeyword(name,false);
         if (body.IsEmpty()) {
             body=this->hhelper->getHelpString(name);
@@ -152,6 +159,20 @@ public:
                 Hide();
                 return;
 			}
+            if (event.GetKeyCode() == WXK_NUMPAD_ADD) { 
+                wxSize sz=this->GetSize();
+                wxSize szh=htmlWindow->GetSize();
+                szh.IncBy(50,50);
+                htmlWindow->SetSize(szh);
+                std::cout << sz.GetWidth() << "," << sz.GetHeight() << std::endl;
+                sz.IncBy(50,50);
+                this->SetSizePopup(sz);
+                wxPoint p;
+                p=this->GetScreenPosition();
+                p.x=p.x-50;
+                p.y=p.y-50;
+                //this->Move(p);
+            }
 		});
     htmlWindow->Bind(wxEVT_RIGHT_UP, [&](wxMouseEvent& event) {
         wxString name;

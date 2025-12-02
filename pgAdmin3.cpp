@@ -270,10 +270,12 @@ void pgAdmin3::OnFatalException() {
 
 	wxString err = "fatal error";
 	MyStackWalker sw(err);
+#if wxUSE_ON_FATAL_EXCEPTION
 	sw.WalkFromException();
 	wxLogError(err);
 	wxMessageBox(err,
 		"wxExcept", wxOK | wxICON_ERROR);
+#endif
 #endif
 }
 bool pgAdmin3::OnInit()

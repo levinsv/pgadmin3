@@ -38,6 +38,13 @@ bool FormatterSQL::GetItem(int index, FSQL::view_item& item) {
     }
     return false; // Error
 };
+view_item FormatterSQL::GetLastItem() {
+    view_item item;
+    if (items.size()>0) {
+        item = items[items.size()-1];
+    }
+    return item;
+};
 
 wxString FormatterSQL::get_list_columns(int startindex, union Byte zone) {
     wxString cols;

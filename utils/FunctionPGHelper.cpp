@@ -6,6 +6,7 @@
 #include "db/pgSet.h"
 #include "frm/frmMain.h"
 #include "ctl/ctlSQLBox.h"
+#include <stack>
 
 extern sysSettings* settings;
 extern frmMain *winMain;
@@ -38,6 +39,10 @@ wxString FunctionPGHelper::getHelpString(wxString fnd, bool isPart)
             }
         }
         //if (i == wxNOT_FOUND) return wxEmptyString;
+        if (txt.Len()>1 && txt[0]=='@') {
+                txt=txt.substr(1);
+                txt=getHelpFile(txt);
+        }
         return txt;
 }
 void FunctionPGHelper::setDbConn(pgConn *db) {
@@ -279,8 +284,25 @@ wxString FunctionPGHelper::getSqlCommandHelp(wxString fnd) {
         }
 
 }
+wxString FunctionPGHelper::getTextForAnchor(wxString name) {
+    wxString n;
+    if (name.Len()>0 && name[0]=='#') n = name.substr(1); else n=name;
+    for (auto s:an) {
+        if (s.id==n) {
+            n=filecontext.substr(s.start,s.end-s.start+1);
+            return n;
+        }
+    }
+    return wxEmptyString;
+}
 wxString FunctionPGHelper::getHelpFile(wxString filename) {
+        wxString a;
+        int p=filename.Find('#');
+        if (p>0) {a=filename.substr(p+1); filename=filename.BeforeFirst('#');}
+
         wxString tempDir = path + wxFileName::GetPathSeparator() + filename;
+        an.clear();
+        filecontext=wxEmptyString;
         if (!wxFileExists(tempDir)) return wxEmptyString;
         wxTextFile  tfile;
         tfile.Open(tempDir);
@@ -289,6 +311,8 @@ wxString FunctionPGHelper::getHelpFile(wxString filename) {
         sbody = tfile.GetFirstLine();
         bool flag = true;
         wxRegEx b("(<body .*?>)");
+        wxString ss;
+        std::stack<anchor_src> bg;
         while (!tfile.Eof())
         {
             str = tfile.GetNextLine();
@@ -299,8 +323,60 @@ wxString FunctionPGHelper::getHelpFile(wxString filename) {
                 sbody = "<body>";
                 flag = false;
             }
+            str.Replace(filename,"");
             sbody += str;
         }
+        // find ancor
+            str=sbody;
+            filecontext=sbody;
+            int l=str.Len();
+            int i=0;
+            
+            while (i<l) {
+                wxChar c=str[i++];
+                if (c=='<' && (i+3)<l
+                    && str[i+0]=='d'
+                    && str[i+1]=='i'
+                    && str[i+2]=='v'
+                    ) {
+                    anchor_src s {i-1,-1,wxEmptyString};
+                    i=i+3;
+                    // find id="anchor name"
+                    while (i<l && str[i]!='>') {
+                        if (i>3 && str[i]=='"') {
+                            if (str[i-1]=='='
+                                && str[i-2]=='d'
+                                && str[i-3]=='i'
+                            ) {
+                                wxString n;
+                                i++;
+                                while (i<l && str[i]!='"') n=n+str[i++];
+                                s.id=n;
+                            }
+                        }
+                        i++;
+                    }
+                    i++;
+                    bg.push(s); // end =-1
+
+                } else if (c=='<' && (i+6)<l
+                    && str[i+0]=='/'
+                    && str[i+1]=='d'
+                    && str[i+2]=='i'
+                    && str[i+3]=='v'
+                    && str[i+4]=='>'
+                    ) {
+                    // close
+                    i=i+4;
+                    anchor_src s1=bg.top();
+                    s1.end=i;
+                    if (s1.id.Len()>0) an.push_back(s1);
+                    bg.pop();
+                    if (a.Len()>0 && s1.id==a) sbody=getTextForAnchor(a);
+                    i++;
+                }
+            }
+
         return sbody;
 
 }

@@ -43,8 +43,29 @@ my %others_func=(
 ,'FUNCTIONS-SUBQUERY-ANY-SOME'=>'some'
 ,'some'=>'any'
 ,'ROW-WISE-COMPARISON' => 'is distinct from'
+,'SQL-SYNTAX-TYPE-CASTS' => 'cast'
+,'SQL-SYNTAX-COLLATE-EXPRS' => 'collate'
+,'SQL-SYNTAX-ARRAY-CONSTRUCTORS' => 'array'
+,'SQL-SYNTAX-ROW-CONSTRUCTORS' => 'row'
+,'SYNTAX-WINDOW-FUNCTIONS' => 'filter'
+,'filter' => 'over'
 
 );
+my %keys_to_file=(
+'order' => '@queries-order.html'
+,'limit' => '@queries-limit.html'
+,'offset' => '@queries-limit.html'
+,'values' => '@queries-values.html'
+,'with' => '@queries-with.html'
+,'union' => '@queries-union.html'
+,'from' => '@queries-table-expressions.html#QUERIES-FROM'
+,'where' => '@queries-table-expressions.html#QUERIES-WHERE'
+,'group' => '@queries-table-expressions.html#QUERIES-GROUP'
+,'having' => '@queries-table-expressions.html#QUERIES-GROUP'
+,'cube' => '@queries-table-expressions.html#QUERIES-GROUPING-SETS'
+,'rollup' => '@queries-table-expressions.html#QUERIES-GROUPING-SETS'
+);
+
 my %tags=(
 'pclass="func_signature"'   => '<span style="font-size: 11pt;">',
 'pclass="func_signature"/p' => '</span>',
@@ -292,7 +313,14 @@ foreach my $key (sort keys %useref) {
  #print "section $key\n";
  $c0++;
 }
-print "Add section $c0\n";
+my $c1=0;
+foreach my $key (sort keys %keys_to_file) {
+
+ $function_help{$key}=$keys_to_file{$key};
+ #print "section $key\n";
+ $c1++;
+}
+print "Add section $c0 add file link $c1\n";
 foreach my $key (sort keys %function_help) {
     #print "$key: $function_help{$key}\n";
     print F "#".$key."\n".$function_help{$key}."\n";

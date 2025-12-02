@@ -176,6 +176,7 @@ namespace FSQL {
         int GetNextPositionSqlParse();
         
         bool GetItem(int index, FSQL::view_item& item);
+        view_item GetLastItem();
         int next_item_no_space(int& index, int direction = 1);
     private:
         wxString get_list_columns(int startindex, union FSQL::Byte zone);
