@@ -696,11 +696,11 @@ void wxTopActivity::render(wxDC& dc)
 
         std::map<int, int> pid_btype;
         // quid -> idx
-        // быстрый поиск
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         //std::map<long long,int> map_qid_idx;
         std::vector<long long> qid_;
         //std::vector<int> qid_wait_id;
-            // сумма ожидания для каждого idx
+            // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ idx
         std::vector<std::vector<int>> qid_wait_id_SUM;
         //std::vector<std::vector<int>> qid_wait_id;
         std::vector<int> sum_bg(m_count_wait);
@@ -1044,6 +1044,8 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
         {
             // current vert line
             if (m_area.Contains(p2) && m_area.Contains(p1) && t.IsValid()) {
+                wxDCTextBgColourChanger bb(dc,wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
+                wxDCTextColourChanger ff(dc,wxSystemSettings::GetColour(wxSYS_COLOUR_INFOTEXT));
                 dc.SetBrush(bgCol);
                 dc.SetPen(*wxBLACK);
                 dc.DrawRectangle(r);
@@ -1059,6 +1061,9 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
     // arrow line
     wxPoint points[3];
     if (fix_pos_L.IsValid() && (dx2 < dx1)) {
+        wxDCTextBgColourChanger bb(dc,wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
+        wxDCTextColourChanger ff(dc,wxSystemSettings::GetColour(wxSYS_COLOUR_INFOTEXT));
+
         wxString labelLeft = fix_pos_L.Format("%d %H:%M:%S");
         wxSize szf = dc.GetTextExtent(labelLeft);
         wxPoint p1(cx - dx1, m_area.y + 25);
@@ -1277,12 +1282,12 @@ void wxTopActivity::setViewRange(int m_aggregate_interval, int RightTime) {
     m_RightTime = RightTime;
 }
 /// <summary>
-/// Получение объекта WaitSample и некоторых настроечных параметров.
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ WaitSample пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 /// 
 /// </summary>
-/// <param name="m_aggregate_interval"> Переменная в которую записывается текущий агрегатный период</param>
-/// <param name="RightTime"> Перменная в которую записывается текущая правая граница</param>
-/// <returns> Возвращает адрес WaitSample объекта</returns>
+/// <param name="m_aggregate_interval"> пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ</param>
+/// <param name="RightTime"> пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</param>
+/// <returns> пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ WaitSample пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</returns>
 WaitSample* wxTopActivity::getViewRange(int& m_aggregate_interval, int& RightTime) {
 
     m_aggregate_interval = m_agg_int;
@@ -1679,7 +1684,7 @@ void wxCustomButton::render(wxDC& dc)
                 y = y - h;
             }
             x = x - widthLine;
-            int skip = (prev_t - sa.etime) / interval; // не было ожиданий 
+            int skip = (prev_t - sa.etime) / interval; // пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
             if (skip > 0) {
                 x -= skip * widthLine;
             }

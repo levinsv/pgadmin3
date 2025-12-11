@@ -262,6 +262,11 @@ wxString FunctionPGHelper::getSqlCommandHelp(wxString fnd) {
         wxUniChar sep = wxFileName::GetPathSeparator();
         fnd.Replace(" ", "");
         wxString f = wxFindFirstFile(path + sep + "sql-" + fnd + "*.html");
+        if (f.empty()) {
+            fnd.Replace("_", "-");
+            f = wxFindFirstFile(path + sep + "view-" + fnd + "*.html");
+            if (f.empty()) f = wxFindFirstFile(path + sep + "catalog-" + fnd + "*.html");
+        }
         wxString last, txt;
 
         int c = 0;
@@ -389,7 +394,6 @@ void FunctionPGHelper::loadfile() {
         body.clear();
         path = settings->GetPgHelpPath();
         wxString tempDir = path + "_func.txt";
-        //tempDir="C:\\Users\\lsv\\Source\\Repos\\wxHtmlhint\\1";
         if (!wxFileExists(tempDir)) return;
         wxTextFile  tfile;
         tfile.Open(tempDir);

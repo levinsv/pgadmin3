@@ -173,6 +173,14 @@ public:
                 p.y=p.y-50;
                 //this->Move(p);
             }
+            if (event.GetKeyCode() == WXK_PAGEDOWN) htmlWindow->ScrollPages(1);
+            if (event.GetKeyCode() == WXK_PAGEUP) htmlWindow->ScrollPages(-1);
+            if (event.GetKeyCode() == WXK_DOWN) htmlWindow->ScrollLines(1);
+            if (event.GetKeyCode() == WXK_UP) htmlWindow->ScrollLines(-1);
+            if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
+            if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
+
+
 		});
     htmlWindow->Bind(wxEVT_RIGHT_UP, [&](wxMouseEvent& event) {
         wxString name;

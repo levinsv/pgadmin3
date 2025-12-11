@@ -1922,7 +1922,8 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
         // Clear the queries array content
         queries.Clear();
         wxString blocked=wxT("");
-        
+        int countsenders=0;
+        long pidAV=-1;
         wxArrayLong pids;
         wxDateTime tt;
         while (!dataSet1->Eof())
@@ -2024,15 +2025,21 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
                 {
                     backend_xid= dataSet1->GetVal(wxT("backend_xid"));
                     statusList->SetItem(row, colpos++, backend_xid);
-                    if (!slinfo.IsEmpty())  statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xmin_slot")));
+                    if (!slinfo.IsEmpty()) {
+                         statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("xmin_slot")));
+                         countsenders++;
+                    }
                     else
                     {
                         wxString av_replica;
                         if (iswalsend) av_replica= dataSet1->GetVal(wxT("av_replica"));
                         if (av_replica.IsEmpty())
                             statusList->SetItem(row, colpos++, dataSet1->GetVal(wxT("backend_xmin")));
-                        else
+                        else {
                             statusList->SetItem(row, colpos++, av_replica);
+                            pidAV=pid;
+                        }
+                            
                     }
                 }
                 if (connection->BackendMinimumVersion(9, 6))
@@ -2142,6 +2149,17 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
         delete dataSet1;
         if (viewMenu->IsChecked(MNU_HIGHLIGHTSTATUS))
         {
+            if (countsenders == 0 && pidAV>0) {
+                // all walsender active='f'
+                for(long i = 0; i < pids.size(); i++)
+                {
+                    if (pids[i]==pidAV) 
+                        statusList->SetItemBackgroundColour(i,
+                                                            wxColour(settings->GetBlockedProcessColour()));
+                }
+            }
+
+            // who blocking
             wxString numstr;
             wxString str;
             numstr=blocked.BeforeFirst(',',&str);

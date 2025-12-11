@@ -180,8 +180,9 @@ public:
             wxString position;
             position = wxString::Format("lines %d,hieght 1 row %d full h=%d", lines, txtSize.GetHeight(), txtSize.GetHeight() * lines + 1 * lines);
 #ifdef __WXGTK__
-            wxSize charSize = GetTextExtent("H");
-            txtSize.SetHeight(txtSize.GetHeight() + charSize.GetHeight()/2);
+            txtSize.SetWidth(txtSize.GetWidth()+12); // -1 no work in GTK
+            txtSize.SetHeight(txtSize.GetHeight()+8); // -1 no work in GTK
+            return txtSize;
 #else
             txtSize.SetHeight(txtSize.GetHeight() * lines + 1 * lines);
 #endif
