@@ -3,7 +3,7 @@
 
 #include "wx/popupwin.h"
 #include <wx/html/htmlwin.h>
-#include "wx/clipbrd.h"
+#include <wx/clipbrd.h>
 #include "utils/FunctionPGHelper.h"
 #include <wx/regex.h>
 #include <map>
@@ -190,15 +190,15 @@ public:
         //wxString body = this->hhelper->getHelpString(name);
         wxString ctext = htmlWindow->SelectionToText();
         if (!ctext.IsEmpty()) {
+#ifdef __WXMSW__
             if (wxTheClipboard->Open())
             {
-                wxDataObjectComposite* dataobj = new wxDataObjectComposite();
-                dataobj->Add(new wxTextDataObject(ctext));
-                //dataobj->Add(new wxHTMLDataObject(str));
-                wxTheClipboard->SetData(dataobj);
-                wxTheClipboard->Close();
+			 wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+			dataobj->Add(new wxTextDataObject(ctext));
+			wxTheClipboard->SetData(dataobj);
+            wxTheClipboard->Close();
             }
-
+#endif
             wxString wname = GetParent()->GetName();
             if (wname == "frmStatus") {
                 //CMD_EVENT_FIND_STR
