@@ -71,13 +71,10 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         iscsv = true;
     }
     else if (fmt == fmtpreview::AUTO) {
-        //CSVTokenizer tk(txt);
-        //int nfield = 0;
-        //while (tk.HasMoreTokens()) {
-        //    wxString field = tk.GetNextToken();
-        //    nfield++;
-        //}
-        //if (nfield>1) iscsv = true;
+        if (txt.Len()>MAX_TEXT_LEN_COLORIZE) {
+            // simple format
+            fmt = fmtpreview::SIMPLE_TEXT;
+        }
     }
     // prepare csv 
     std::vector<wxString> strlist;
@@ -124,6 +121,15 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         int startstr = -1;
         while (pos < len) {
             c = tmpstr[pos++];
+            if (fmt == fmtpreview::SIMPLE_TEXT) {
+                if (c=='&') html+="&amp;";
+                else if (c=='<') html+="&lt;";
+                else if (c=='>') html+="&gt;";
+                //else if (c==' ') html+="&nbsp;";
+                else if (c=='\n') html+="<br>";
+                html+=c;
+                continue;
+            }
             bool isquote = c == '"';
             if (quote) {
                 if (prevchar == c && isquote) {
@@ -220,7 +226,7 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
                 while (pp > 0 && pp > p) {
                     pp--;
                     Element t2 = tokens[pp];
-                    if (CHKFLAG(t2.flags, PREVIEW_SEP) && t2.src.StartsWith(":")) {
+                    if (CHKFLAG2(t2.flags, PREVIEW_SEP) && t2.src.StartsWith(":")) {
                         // Right bound title
                         if (pp - p > 0) {
                             tokens[p].html = "<b>" + tokens[p].html;
@@ -239,7 +245,7 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
             wxString tit="field"+wxString::Format("%d",nf+1);
             if (strlist.size() == 26) tit = titles_log[nf];
             tit = "<tr><td valign=\"top\"><b>" + tit + "</b></td>";
-            html=html+tit+"<td>" + generateHtml() + "</td></tr>";
+            html+=tit+"<td>" + generateHtml() + "</td></tr>";
 
         } else 
             html+= generateHtml(); // tokens -> html

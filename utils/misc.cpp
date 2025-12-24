@@ -196,9 +196,9 @@ wxString NumToStrHuman(wxLongLong value) {
 		ddiv = ddiv / 1000;
 		if (ddiv == 0) return wxEmptyString;
 	}
-	if (ddiv == 1000000000) s = "Bi";
-	else if (ddiv == 1000000) s = "Mi";
-	else if (ddiv == 1000) s = "ths";
+	if (ddiv == 1000000000) s = _("Bi");
+	else if (ddiv == 1000000) s = _("Mi");
+	else if (ddiv == 1000) s = _("ths");
 	else return wxEmptyString;
 
 	wxLongLong m = value % ddiv;
@@ -1483,3 +1483,28 @@ bool make_identifier(const wxString &strname, wxString &s, wxString &n, bool isl
             } else {if (islower) s=s.MakeLower();}
 	return true;
 }
+/*
+class DirCopyTraverser: public wxDirTraverser {
+public:
+	DirCopyTraverser(const wxString &destBase): m_destBase(destBase) {}
+	virtual wxDirTraverseResult OnFile(const wxString &file) wxOVERRIDE {
+		wxFileName srcFile(file);
+		//wxString relativePath=srcFile.GetPath(wxPATH_DOS,true);
+		srcFile.MakeRelativeTo(m_destBase);
+		wxString destFile=m_destBase+wxFileName::GetPathSeparator()+srcFile.GetFullName();
+		wxFileName destDir(destFile);
+		destDir.RemoveLastDir();
+		if (!destDir.DirExists()) destDir.Mkdir(wxS_DIR_DEFAULT,wxPATH_MKDIR_FULL);
+		if (!wxCopyFile(file,destFile,true)) {
+			wxLogError("Error copy file %s",file);
+			return wxDIR_STOP;
+		}
+		return wxDIR_CONTINUE;
+	}
+	virtual wxDirTraverseResult OnDir(const wxString &file) wxOVERRIDE {
+		return 0;
+	}
+private:
+	wxString m_destBase;
+}
+*/

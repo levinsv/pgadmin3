@@ -30,6 +30,7 @@
 #include "utils/FormatterSQL.h"
 #include "utils/dlgTransformText.h"
 #include "utils/TableColsMap.h"
+#include "utils/PreviewHtml.h"
 #include "wx/display.h"
 
 wxString ctlSQLBox::sqlKeywords;
@@ -662,18 +663,7 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 			for (int i = tmp.Len()-1; i >=0; i--) key+=tmp[i];
 	}
 	delete 	m_PopupHelp;
-	wxSize rr(450, 370);
-	m_PopupHelp = new popuphelp(this->GetParent(), key, fh,p,rr);
-	if (m_PopupHelp && m_PopupHelp->IsValid() && rr != m_PopupHelp->GetSizePopup()) {
-		// recreate with new size
-		rr = m_PopupHelp->GetSizePopup();
-		delete 	m_PopupHelp;
-		m_PopupHelp = new popuphelp(this->GetParent(), key, fh, p, rr);
-
-	}
-	if (m_PopupHelp && m_PopupHelp->IsValid()) {
-		//m_PopupHelp->UpdateWindowUI(true);
-		wxSize top_sz=m_PopupHelp->GetSizePopup();
+	// screen size
 		wxPoint posScreen;
 		wxSize sizeScreen;
 		const int displayNum = wxDisplay::GetFromPoint(p);
@@ -689,6 +679,23 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 			posScreen = wxPoint(0, 0);
 			sizeScreen = wxGetDisplaySize();
 		}
+
+	wxSize rr(450, 370);
+	bool bigtext=key.Len() > MAX_TEXT_LEN_COLORIZE;
+	if (bigtext) {
+		rr.x=(int) sizeScreen.x*0.8;rr.y=sizeScreen.y*0.7;
+	}
+	m_PopupHelp = new popuphelp(this->GetParent(), key, fh,p,rr);
+	if (m_PopupHelp && m_PopupHelp->IsValid() && rr != m_PopupHelp->GetSizePopup() && !bigtext) {
+		// recreate with new size
+		rr = m_PopupHelp->GetSizePopup();
+		delete 	m_PopupHelp;
+		m_PopupHelp = new popuphelp(this->GetParent(), key, fh, p, rr);
+
+	}
+	if (m_PopupHelp && m_PopupHelp->IsValid()) {
+		//m_PopupHelp->UpdateWindowUI(true);
+		wxSize top_sz=m_PopupHelp->GetSizePopup();
 		wxSize top_new(top_sz);
 		wxPoint oldp(p);
 		if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;
@@ -1809,8 +1816,9 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	wxString fontName = fntSQLBox.GetFaceName();
 	wxString sz;
 	sz.Printf("%d", fntSQLBox.GetPixelSize().GetHeight());
-
+	int lenstr = selText.Length();
 	//str = wxT("<div style=\"font-family: ") + fontName + wxT("; font-size: " + sz + "px\"><font>");
+	str.Alloc(lenstr*2);
 	str = wxString::Format("<div style=\"font-family: %s; font-size: %spx\"><font face=\"%s\" >", fontName, sz, fontName);
 	int k = 0;
 	int l = 1;
@@ -1818,7 +1826,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	if (isAddNewLine) newline = L"\u2936<br>";
 	//if (isAddNewLine) newline = L"&ldca;<br>";
 	//if (isAddNewLine) newline = L"<br>\x0b78";
-	int lenstr = selText.Length();
+	
 	int IndexObj=0;
 	int pos=999999999;
 	wxString obj;
@@ -1829,7 +1837,9 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
 		if (prevColor != tColor) {
-			str = str + wxT("</font><font color=\"") + tColor + wxT("\">");
+			str+= wxT("</font><font color=\"");
+			str+= tColor;
+			str+= wxT("\">");
 			prevColor = tColor;
 		}
 		//str.append(str[k].GetValue());
@@ -1866,7 +1876,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		str += lstr;
 		lstr="";
 	}
-	str = str + wxT("</font></div>");
+	str+= wxT("</font></div>");
 	return str;
 }
 void ctlSQLBox::Copy() {

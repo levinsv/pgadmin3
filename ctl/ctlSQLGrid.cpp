@@ -889,6 +889,13 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         bgColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
     }
     bg = bgColor.GetAsString(wxC2S_HTML_SYNTAX);
+    long long lenstr=s.Len();
+    bool bigtext=lenstr >MAX_TEXT_LEN_COLORIZE;
+    if (lenstr > MAX_TEXT_LEN_WARNING) {
+        wxString h = NumToStrHuman(wxLongLong(lenstr));
+        if (wxMessageBox(wxString::Format(_("The line size is [ %s ] characters, do you want to continue?"),h ), _("Confirm"), wxYES_NO, this)!=wxYES) return;
+
+    }
     // parse context
     wxRegEx r(L"(?im)(select|from|where|set|insert|into|delete)\\b", wxRE_NEWLINE);
     int cnt = 0;
@@ -904,7 +911,7 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         }
         cnt = unic.size();
     }
-    if (cnt >= 2) {
+    if (cnt >= 2 && !bigtext) {
         wxString q = s;
         wxString html;
         ctlSQLBox* box = new ctlSQLBox((wxWindow*) winMain, CTL_SQLQUERY, wxDefaultPosition, wxSize(0, 0), wxTE_MULTILINE | wxTE_RICH2);
@@ -924,11 +931,32 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         s = tt;
     }
     delete 	m_Popup;
+	// screen size
+		wxPoint posScreen;
+		wxSize sizeScreen;
+		const int displayNum = wxDisplay::GetFromPoint(p);
+		if (displayNum != wxNOT_FOUND)
+		{
+			const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
+			posScreen = rectScreen.GetPosition();
+			sizeScreen = rectScreen.GetSize();
+		}
+		else // outside of any display?
+		{
+			// just use the primary one then
+			posScreen = wxPoint(0, 0);
+			sizeScreen = wxGetDisplaySize();
+		}
+
     wxSize rr(350, 70);
+	
+	if (bigtext) {
+		rr.x=(int) sizeScreen.x*0.8;rr.y=sizeScreen.y*0.7;
+	}
     FunctionPGHelper fh(s);
     wxString key = "content";
     m_Popup = new popuphelp(this, key, &fh, p, rr);
-    if (m_Popup && m_Popup->IsValid() && rr != m_Popup->GetSizePopup()) {
+    if (m_Popup && m_Popup->IsValid() && rr != m_Popup->GetSizePopup() && !bigtext) {
         // recreate with new size
         rr = m_Popup->GetSizePopup();
         delete 	m_Popup;
@@ -938,21 +966,6 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
     if (m_Popup && m_Popup->IsValid()) {
         //m_PopupHelp->UpdateWindowUI(true);
         wxSize top_sz = m_Popup->GetSizePopup();
-        wxPoint posScreen;
-        wxSize sizeScreen;
-        const int displayNum = wxDisplay::GetFromPoint(p);
-        if (displayNum != wxNOT_FOUND)
-        {
-            const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
-            posScreen = rectScreen.GetPosition();
-            sizeScreen = rectScreen.GetSize();
-        }
-        else // outside of any display?
-        {
-            // just use the primary one then
-            posScreen = wxPoint(0, 0);
-            sizeScreen = wxGetDisplaySize();
-        }
         wxSize top_new(top_sz);
         wxPoint oldp(p);
         if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;

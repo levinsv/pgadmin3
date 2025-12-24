@@ -224,10 +224,12 @@ public:
         //////////////////////////////////////////////////////////////////////////////
         //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
         dc.SetBackgroundMode(wxSOLID);
+        bool istruncateLine=false;
         wxString text = grid.GetCellValue(row, col);
         // grey out fields if the grid is disabled
         if (grid.IsEnabled())
         {
+            istruncateLine=text.Right(5)=="(...)";
             if (isSelected)
             {
                 wxColour clr;
@@ -326,6 +328,10 @@ public:
         }
         grid.DrawTextRectangle(dc, text,
             rect, hAlign, vAlign);
+        if (istruncateLine) {
+            dc.SetPen(*wxRED_PEN);
+            dc.DrawLine(wxPoint(rect.x,rect.y+rect.GetHeight()-2),wxPoint(rect.x+rect.width,rect.y+rect.GetHeight()-2));
+        } 
     }
 #else
 class CursorCellRenderer : public wxGridCellAutoWrapStringRenderer
