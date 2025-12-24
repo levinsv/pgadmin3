@@ -1,6 +1,8 @@
 #pragma once
 #include <wx/wx.h>
 
+#define MAX_TEXT_LEN_COLORIZE 32000
+#define MAX_TEXT_LEN_WARNING 500000
 #define PREVIEW_SEP 1
 #define PREVIEW_DIGITS 2
 #define PREVIEW_WORD 4
@@ -8,9 +10,9 @@
 #define PREVIEW_ENDFIELD 16
 #define PREVIEW_ENDROW 32
 #define PREVIEW_QUOTE 64
-#define CHKFLAG(val,par) ((val & par)>0)
+#define CHKFLAG2(val,par) ((val & par)>0)
 enum class fmtpreview {
-    AUTO, AUTOVACCUM,CSV
+    AUTO, AUTOVACCUM,CSV,SIMPLE_TEXT
 };
 
 struct Element {
@@ -61,8 +63,8 @@ private:
             wxString tmp = savestr;
             tmp=escapeHtml(tmp,true);
             tmp.Replace(" ", "&nbsp;");
-            if (CHKFLAG(flag, PREVIEW_ENDROW)) tmp = "<br>";
-            if (CHKFLAG(flag, PREVIEW_DIGITS)) {
+            if (CHKFLAG2(flag, PREVIEW_ENDROW)) tmp = "<br>";
+            if (CHKFLAG2(flag, PREVIEW_DIGITS)) {
                 int l = savestr.Length();
                 if (l > 4 && !savestr.Contains('.')) {
                     int dl = 3;
@@ -92,7 +94,7 @@ private:
                 tmp = t;
 
             }
-            if (CHKFLAG(flag, PREVIEW_QUOTE)) {
+            if (CHKFLAG2(flag, PREVIEW_QUOTE)) {
                 wxString t = wxString::Format("<font color=\"%s\">%s</font>",quotecolor,tmp);
                 tmp = t;
             }
@@ -111,7 +113,7 @@ private:
             bool f2 = is_what_find & 2;
             bool r1 = false;
             bool r2 = false;
-            if (f1 && CHKFLAG(t.flags, flag_find)) {
+            if (f1 && CHKFLAG2(t.flags, flag_find)) {
                 r1 = true;
             }
             if (f2 && t.src==value_find ) {
