@@ -1054,6 +1054,33 @@ void pgAdmin3::InitAppPaths()
 	brandingPath = LocatePath(BRANDING_DIR, false);
 	pluginsDir = LocatePath(PLUGINS_DIR, false);
 	settingsIni = LocatePath(SETTINGS_INI, true);
+#ifdef __LINUX__	
+    wxString newdir;
+	wxString olddatadir=wxFileName::GetHomeDir()+sepPath+"postgresql";
+	
+    if ( !wxGetEnv(wxS("XDG_DATA_HOME"), &newdir) || newdir.empty() )
+        	newdir = wxFileName::GetHomeDir() + wxT("/.local/share/pgadmin3");
+	dataDir=newdir ;
+	if (!wxDir::Exists(newdir)) {
+			wxMkDir(newdir,wxS_IRUSR|wxS_IWUSR|wxS_IXUSR);
+
+			if (wxDir::Exists(olddatadir)) {
+				if (!wxShell(wxString::Format("cp -r %s/* %s",olddatadir,newdir))) {
+					wxLogError(wxString::Format("Error copy dirictory 'cp -r %s %s'",olddatadir,newdir));
+					dataDir=wxFileName::GetHomeDir() + sepPath + "postgresql";
+					
+				} else {
+					wxShell(wxString::Format("mv %s %s",olddatadir,olddatadir+"-no_use"));
+					wxShell(wxString::Format("mv ~/.pgadmin3autoreplace %s",newdir+"/pgadmin_autoreplace.xml"));
+				}
+			}
+			
+	}
+#else
+	dataDir= wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql";
+#endif
+	
+
 }
 
 // Setup the paths for the helper apps etc.

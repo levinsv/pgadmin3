@@ -3,7 +3,7 @@
 #include "utils/utffile.h"
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
-
+extern wxString dataDir;
 int Storage::getCountStore() {
     return storage.size();
 }
@@ -83,7 +83,7 @@ void Storage::Reset() {
     m_cacheIndex = -1;
     ClearRowsStat();
     // load filter
-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator();
+    wxString tempDir = dataDir + wxFileName::GetPathSeparator();
 
     wxString f = tempDir + "filter_load.txt";
     if (wxFileExists(f)) {
@@ -199,7 +199,7 @@ int Storage::getFilterNames(wxArrayString& arr) {
 }
 void Storage::saveFilters() {
     if (filterload.size() == 0) return;
-    wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator();
+    wxString tempDir = dataDir + wxFileName::GetPathSeparator();
     wxString f = tempDir + "filter_load.txt";
     wxUtfFile file(f, wxFile::write, wxFONTENCODING_UTF8);
     if (file.IsOpened())
