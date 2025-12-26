@@ -103,7 +103,8 @@ if(CROSS_COMPILE STREQUAL "Windows")
 	##set(PGBUILD /home/sergey/k )
 	#set(/home/sergey/k/openssl )
 	#set(PROJECTDIR /home/sergey/k/openssl )
-	include_directories(${WXWIN}/include ${PGDIR}/include ${PGDIR}/include/server )
+	
+	include_directories(${WXWIN}/msw-build/lib/wx/include/x86_64-w64-mingw32-msw-unicode-3.2 ${WXWIN}/include ${PGDIR}/include ${PGDIR}/include/server )
 	include_directories(${PGBUILD}/libxml2/include ${PGBUILD}/libxslt/include ${PGBUILD}/iconv/include  )
 #	include_directories(${PGBUILD}/openssl/include 
 #	include_directories( ./include/libssh2 ./include/libssh2/Win32 )

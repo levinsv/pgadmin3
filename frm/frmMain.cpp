@@ -306,12 +306,13 @@ wxBitmapBundle GetBundleSVG(wxBitmap* std, wxString name, wxSize sz) {
 	wxBitmapBundle *b=NULL;
 	bb = bundleHash[name];
 	if (bb.IsOk()) return bb;
-
-	if (wxFile::Exists(loadPath + sepPath +"svg" + sepPath + name)) {
-		//b = new wxBitmapBundle(wxBitmapBundle::FromSVGFile(loadPath + sepPath + "svg" + sepPath + name, sz));
-		bb=wxBitmapBundle::FromSVGFile(loadPath + sepPath + "svg" + sepPath + name, sz);
+	extern wxString dataDir;
+	wxString fullpath=dataDir+ sepPath +"svg" + sepPath + name; // 1. local data application
+	if (!wxFile::Exists(fullpath)) fullpath=loadPath + sepPath +"svg" + sepPath + name; // 2. execute path
+	if (wxFile::Exists(fullpath)) { // name only filename.svg
+		bb=wxBitmapBundle::FromSVGFile(fullpath, sz);
 	}
-	else if (wxFile::Exists(name)) {
+	else if (wxFile::Exists(name)) { // name = fullpath 
 		if (name.AfterLast('.') == "png") {
 			wxBitmap bitmap(name, wxBITMAP_TYPE_PNG);
 			if (!bitmap.Ok())
@@ -330,7 +331,7 @@ wxBitmapBundle GetBundleSVG(wxBitmap* std, wxString name, wxSize sz) {
 	}
 
 	if (!bb.IsOk() && std){
-		//b=new wxBitmapBundle(*std);
+		// file not found use standart bitmap
 		bb = wxBitmapBundle::FromBitmap(*std);
 	}
 	

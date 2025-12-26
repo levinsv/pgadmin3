@@ -92,7 +92,7 @@
 #define XML_FROM_WXSTRING(s) ((const xmlChar *)(const char *)s.mb_str(wxConvUTF8))
 #define WXSTRING_FROM_XML(s) wxString((char *)s, wxConvUTF8)
 #define XML_STR(s) ((const xmlChar *)s)
-
+extern wxString dataDir;
 // Initialize execution 'mutex'. As this will always run in the
 // main thread, there aren't any real concurrency issues, so
 // a simple flag will suffice.
@@ -255,7 +255,7 @@ void frmQuery::seticon()
 	wxString str;
 	wxString filename;
 
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"icons"+wxFileName::GetPathSeparator();
+	wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"icons"+wxFileName::GetPathSeparator();
 	wxString db = conn->GetDbname();
 	wxString host = conn->GetHostName();
 
@@ -525,7 +525,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	mapping["MNU_UNCOMMENT_TEXT"] = MNU_UNCOMMENT_TEXT;
 	mapping["MNU_DOROLLBACK"] = MNU_DOROLLBACK;
 	mapping["MNU_DOCOMMIT"] = MNU_DOCOMMIT;
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"keymap.txt";
+	wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"keymap.txt";
 	wxLogInfo(wxT("frmQuery::Create key map ..."));
 	int idx = 0;
 	if (wxFileName::FileExists(tempDir) )
@@ -867,7 +867,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		// load  temp file
 	wxString str;
 	wxString filename;
-	tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql";
+	tempDir = dataDir;
 	if (!wxDirExists(tempDir)) {
 		wxMkdir(tempDir);
 	}
@@ -2496,7 +2496,7 @@ void frmQuery::SaveTempFile()
 	wxString pref=conn->GetDbname();
 	//if (filename.StartsWith(pref))
 	filename+=wxT(".a");
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
+	wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
 	if (autoSave) {
 		wxUtfFile file(tempDir + filename, wxFile::write, modeUnicode ? wxFONTENCODING_UTF8 : wxFONTENCODING_DEFAULT);
 		if (file.IsOpened())
@@ -4436,7 +4436,7 @@ void frmQuery::SetOutputPaneCaption(bool update)
 
 // Methods related to SQL tabs //
 void frmQuery::fileMarkerActive(bool addOrRemove, const wxString &sqlTabName) {
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
+	wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
 
 	wxString tabname = sqlTabName;
 	if (sqlTabName.Find("*")>=0) tabname = sqlTabName.BeforeLast('*');
@@ -4619,7 +4619,7 @@ void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 		pref,
 		wxOK | wxCANCEL);		//setName( dlg.GetValue().wc_str() );
 		if (dialog.ShowModal() == wxID_OK) {
-			wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
+			wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
 			wxString filename=sqlQuery->GetTitle(false);
 			wxString tf=tempDir+filename+".a";
 			if (wxFileName::FileExists(tf)) wxRemoveFile(tf);
@@ -4668,7 +4668,7 @@ void frmQuery::OnSqlBookPageClose(wxAuiNotebookEvent &event)
 
 	SqlBookDisconnectPage();
 	//drop temp file
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
+	wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
 	wxString filename=sqlQuery->GetTitle(false)+wxT(".a");
 	if (wxFileName::FileExists(tempDir+filename)) wxRemoveFile(tempDir+filename);
 	fileMarkerActive(false, sqlQuery->GetTitle(false));
@@ -4764,7 +4764,7 @@ bool frmQuery::SqlBookRemovePage()
 
 		SqlBookDisconnectPage();
 		pageidx = sqlQueryBook->GetSelection();
-		wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() +wxFileName::GetPathSeparator()+"postgresql"+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
+		wxString tempDir = dataDir+wxFileName::GetPathSeparator()+"recovery"+wxFileName::GetPathSeparator();
 		ctlSQLBox *box;
 		box = wxDynamicCast(sqlQueryBook->GetPage(pageidx), ctlSQLBox);
 		wxString filename=box->GetTitle(false);

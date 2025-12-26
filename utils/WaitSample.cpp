@@ -4,7 +4,7 @@
 #include "utils/utffile.h"
 #include "utils/json/jsonval.h"
 #include "frm/frmStatus.h"
-
+extern wxString dataDir;
 void WaitSample::Init() {
 	wxString clr = "h1 { \
 		region: \"IO:DataFileRead\", #2132bd;\n\
@@ -132,7 +132,7 @@ region: \"Timeout:PgSleep\", #6ce4c6;\n\
 	if (cc1.IsOk()) color_gui.push_back(wxColour(cc1)); else
 		color_gui.push_back(wxColour(def["label"].AsString()));
 
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator() + "cache_sql.txt";
+	wxString tempDir = dataDir + wxFileName::GetPathSeparator() + "cache_sql.txt";
 	m_file_cache_sql = tempDir;
 	wxTextFile file(tempDir);
 	if (file.Exists()) file.Open();
@@ -279,8 +279,8 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 	wxString groupRule, wxArrayString& nameGroup,
 	std::vector<wxDateTime>& xAxisValue,
 	std::vector<wxTimeSpan>& yAxisValue,
-	std::vector<vec_int>& Values, // массив столбцов справа на лево
-	std::vector<long>& clr	      // цета слоёв размерностью groupRule.Count()
+	std::vector<vec_int>& Values, // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
+	std::vector<long>& clr	      // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ groupRule.Count()
 )
 {
 	int idx_grp = wait_id.size();
@@ -493,7 +493,7 @@ wxString WaitSample::GetQueryByQid(long long qid) {
 
 }
 void WaitSample::LoadFileSamples() {
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator() + "sample.dat";
+	wxString tempDir = dataDir + wxFileName::GetPathSeparator() + "sample.dat";
 	wxTextFile file(tempDir);
 	file.Open();
 	if (file.IsOpened())
@@ -603,7 +603,7 @@ void WaitSample::LoadFileSamples() {
 	}
 }
 void WaitSample::SaveFileSamples() {
-	wxString tempDir = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql" + wxFileName::GetPathSeparator() + "sample.dat";
+	wxString tempDir = dataDir + wxFileName::GetPathSeparator() + "sample.dat";
 	wxUtfFile file(tempDir, wxFile::write, wxFONTENCODING_UTF8);
 	if (file.IsOpened())
 	{
@@ -668,7 +668,7 @@ bool WaitSample::RemoveFiles() {
 }
 void WaitSample::AddSample(int pid, bool isXidTransation, wxString& btype, const wxString& sample) {
 	//PidWait pw(pid, basetime);;
-	// поиск
+	// пїЅпїЅпїЅпїЅпїЅ
 	int pw;
 	auto iter = pids.find(pid);
 	if (iter != pids.end()) {

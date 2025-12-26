@@ -32,6 +32,7 @@
 #include "utils/json/jsonval.h"
 #include "utils/json/jsonreader.h"
 #include "utils/json/jsonwriter.h"
+extern wxString dataDir;
 sysSettings::sysSettings(const wxString& name) : wxConfig(name)
 {
 	appName = name;
@@ -68,7 +69,7 @@ sysSettings::~sysSettings()
 	#ifdef WIN32
 	wxRegKey key(wxRegKey::HKCU, "Software\\"+appName);
 
-	wxString fn= wxStandardPaths::Get().GetUserConfigDir() + wxT("\\postgresql\\autoSaveConfig.reg");
+	wxString fn= dataDir + wxT("\\autoSaveConfig.reg");
 	if (wxFileName::FileExists(fn)) wxRemoveFile(fn);
 	key.Export(fn);
 	#endif
@@ -467,7 +468,7 @@ bool sysSettings::WriteJsonObect(const  wxString& key, wxJSONValue& value)
 	return true;
 }
 bool sysSettings::ReloadJsonFileIfNeed() {
-	wxString path = wxStandardPaths::Get().GetUserConfigDir() + sepPath + "postgresql" + sepPath + "pgadmin3opt.json";
+	wxString path = dataDir + sepPath + "pgadmin3opt.json";
 	if (wxFileExists(path)) {
 		wxDateTime fmod = wxFileName(path).GetModificationTime();
 		if ((!jsonfilemod.IsValid() || fmod != jsonfilemod) && !jsonchange) {
@@ -496,7 +497,7 @@ bool sysSettings::WriteJsonFile()
 	if (!jsoncfg.IsNull() && jsonchange) {
 		//wxString s = jsoncfg.Dump(true, 0);
 		{
-			wxString p = wxStandardPaths::Get().GetUserConfigDir() + sepPath + "postgresql" + sepPath + "pgadmin3opt.json";
+			wxString p = dataDir + sepPath + "pgadmin3opt.json";
 			{
 				wxFileOutputStream out(p);
 				if (out.IsOk()) {
@@ -865,7 +866,7 @@ wxString sysSettings::GetConfigFile(configFileName cfgname)
 		{
 			fname = stdp.GetUserConfigDir();
 #ifdef WIN32
-			fname += wxT("\\postgresql");
+			fname = dataDir;
 			if (!wxDirExists(fname))
 				wxMkdir(fname);
 			fname += wxT("\\pgpass.conf");
@@ -927,15 +928,8 @@ wxString sysSettings::GetConfigFile(configFileName cfgname)
 wxString sysSettings::GetFavouritesFile()
 {
 	wxString s, tmp;
-
-#if wxCHECK_VERSION(2, 9, 5)
-	wxStandardPaths &stdp = wxStandardPaths::Get();
-#else
-	wxStandardPaths stdp;
-#endif
-	tmp = stdp.GetUserConfigDir();
+	tmp = dataDir;
 #ifdef WIN32
-	tmp += wxT("\\postgresql");
 	if (!wxDirExists(tmp))
 		wxMkdir(tmp);
 	tmp += wxT("\\pgadmin_favourites.xml");
@@ -953,14 +947,8 @@ wxString sysSettings::GetMacrosFile()
 {
 	wxString s, tmp;
 
-#if wxCHECK_VERSION(2, 9, 5)
-	wxStandardPaths &stdp = wxStandardPaths::Get();
-#else
-	wxStandardPaths stdp;
-#endif
-	tmp = stdp.GetUserConfigDir();
+	tmp = dataDir;
 #ifdef WIN32
-	tmp += wxT("\\postgresql");
 	if (!wxDirExists(tmp))
 		wxMkdir(tmp);
 	tmp += wxT("\\pgadmin_macros.xml");
@@ -976,19 +964,13 @@ wxString sysSettings::GetAutoReplaceFile()
 {
 	wxString s, tmp;
 
-#if wxCHECK_VERSION(2, 9, 5)
-	wxStandardPaths &stdp = wxStandardPaths::Get();
-#else
-	wxStandardPaths stdp;
-#endif
-	tmp = stdp.GetUserConfigDir();
+	tmp = dataDir;
 #ifdef WIN32
-	tmp += wxT("\\postgresql");
 	if (!wxDirExists(tmp))
 		wxMkdir(tmp);
 	tmp += wxT("\\pgadmin_autoreplace.xml");
 #else
-	tmp += wxT("/.pgadminautoreplace");
+	tmp += wxT("/pgadmin_autoreplace.xml");
 #endif
 
 	Read(wxT("AutoReplaceFile"), &s, tmp);
@@ -1001,14 +983,8 @@ wxString sysSettings::GetHistoryFile()
 {
 	wxString s, tmp;
 
-#if wxCHECK_VERSION(2, 9, 5)
-	wxStandardPaths &stdp = wxStandardPaths::Get();
-#else
-	wxStandardPaths stdp;
-#endif
-	tmp = stdp.GetUserConfigDir();
+	tmp = dataDir;
 #ifdef WIN32
-	tmp += wxT("\\postgresql");
 	if (!wxDirExists(tmp))
 		wxMkdir(tmp);
 	tmp += wxT("\\pgadmin_histoqueries.xml");

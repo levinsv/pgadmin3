@@ -318,7 +318,8 @@ ctlGitPanel::~ctlGitPanel()
 wxJSONValue ctlGitPanel::GetConfig() {
     wxString c;
     wxJSONValue cfg;
-    wxString p = wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql"+ wxFileName::GetPathSeparator() +"gitlab.json";
+    extern wxString dataDir;
+    wxString p = dataDir+ wxFileName::GetPathSeparator() +"gitlab.json";
     if (!wxFileExists(p)) return cfg;
     wxFileInputStream input(p);
     if (input.IsOk()) {
