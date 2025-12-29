@@ -610,8 +610,9 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 		}
 		else
 			setDisplay(currentObject, 0, 0);
+		browser->DrawDbName(currentObject->GetId());
 	}
-	browser->DrawDbName(item);
+	
 }
 
 
