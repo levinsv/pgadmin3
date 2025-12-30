@@ -8,7 +8,8 @@
         "libpq-fe.h": "c",
         "new": "cpp",
         "ostream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "ranges": "cpp"
     },
     "cmake.configureArgs": [
        

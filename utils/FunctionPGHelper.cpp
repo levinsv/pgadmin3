@@ -54,10 +54,12 @@ void FunctionPGHelper::setDbConn(pgConn *db) {
 #include "schema/pgView.h"
 #include "schema/pgFunction.h"
 #include "schema/pgTrigger.h"
+#include "schema/pgForeignTable.h"
 
 extern pgDatabaseFactory databaseFactory;
 extern pgSchemaFactory schemaFactory;
 extern pgTableFactory tableFactory;
+//extern pgforeignTableFactory foreignTableFactory;
 extern pgViewFactory viewFactory;
 extern pgFunctionFactory functionFactory;
 extern pgProcedureFactory procedureFactory;
@@ -85,13 +87,13 @@ else
 ''
 end
  define , '' args, obj_description(oid,'pg_class') comment from pg_class p 
-where p.relkind in ('r','p','m','v') and p.relnamespace::regnamespace::text not in ('pg_catalog','information_schema')
+where p.relkind in ('r','p','m','v','f') and p.relnamespace::regnamespace::text not in ('pg_catalog','information_schema')
 and p.relnamespace::regnamespace::text like '%s' and p.relname like '%s'
 and (select count(*) from pg_partition_ancestors(oid) ) <=1
 union all
 select p.oid,p.pronamespace::regnamespace nsp,p.proname objname,
-case when pg_get_function_result(p.oid) is null then 'P' 
-     when pg_get_function_result(p.oid) = 'trigger' then 't' else 'f' end,
+case when pg_get_function_result(p.oid) is null then 'pp' 
+     when pg_get_function_result(p.oid) = 'trigger' then 'tt' else 'ff' end,
 '' prosrc ,pg_get_function_arguments(oid), obj_description(oid,'pg_proc') from pg_proc p
 where p.pronamespace::regnamespace::text like '%s' and p.proname like '%s' and pg_get_function_arguments(oid) like '%s'
 and p.pronamespace::regnamespace::text not in ('pg_catalog','information_schema')
@@ -116,7 +118,7 @@ order by objname;
                 args = res->GetVal("args");
                 def = res->GetVal("define");
                 wxString link=ns+"."+on;
-                if (kind=="f" || kind=="p") {
+                if (kind=="ff" || kind=="pp") {
                     link+="("+args+")";
                     isfunc=true;
                 } else isfunc=false;
@@ -188,10 +190,12 @@ order by objname;
                                                                         pgCollection *coll=NULL;
                                                                         if (kind=='r'||kind=='p' )  coll = browser->FindCollection(tableFactory,item);
                                                                         if (kind=='v'||kind=='m')  coll = browser->FindCollection(viewFactory,item);
-                                                                        if (kind=='f')  coll = browser->FindCollection(functionFactory,item);
-                                                                        if (kind=='P')  coll = browser->FindCollection(procedureFactory,item);
+                                                                        if (kind=='f')  coll = browser->FindCollection(foreignTableFactory,item);
+                                                                        
+                                                                        if (kind=="ff")  coll = browser->FindCollection(functionFactory,item);
+                                                                        if (kind=="pp")  coll = browser->FindCollection(procedureFactory,item);
                                                                         //if (kind=='p')  coll = browser->FindCollection(pg_partitionFactory,item);
-                                                                        if (kind=='t')  coll = browser->FindCollection(triggerFunctionFactory,item);
+                                                                        if (kind=="tt")  coll = browser->FindCollection(triggerFunctionFactory,item);
                                                                         if (coll) {
                                                                             objcollId=coll->GetId();
                                                                             pgObject *obj4 = browser->GetObject(objcollId);
@@ -207,7 +211,7 @@ order by objname;
                                                                                 pgObject *obj5 = browser->GetObject(item);
                                                                                      obj5->ShowTreeDetail(browser);
                                                                                      def=obj5->GetSql(browser);
-                                                                                if (kind=='r'|| kind=='m' || kind=='v' || kind=='f') {
+                                                                                if (kind=='r'|| kind=='m' || kind=='v' || kind=="ff") {
                                                                                      //pgTable *o=(pgTable *)(obj5);
                                                                                      //brower->FindObject(tableFactory,)
                                                                                      //o->AppendStuff(def,browser,tableFactory);
@@ -394,7 +398,11 @@ void FunctionPGHelper::loadfile() {
         body.clear();
         path = settings->GetPgHelpPath();
         wxString tempDir = path + "_func.txt";
-        if (!wxFileExists(tempDir)) return;
+        if (!wxFileExists(tempDir) ) {
+            wxMessageBox(_("To use the contextual help for PostgreSQL functions:\n1. You need to place a file '_extract_func_help.pl' to the directory containing the html help files.\n2. Run it and get the file '_func.txt'.\n3. Specify the path in the pgadmin3 settings to the html help."), _("Warning"));
+            isload = true;
+            return;
+        }
         wxTextFile  tfile;
         tfile.Open(tempDir);
 
