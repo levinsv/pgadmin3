@@ -463,12 +463,17 @@ void MyThread::readLogFile(info_files &inf,
         //statusBar->SetStatusText(_("Reading log from server..."));
         if (m_exit) return;
         pgSet* set = conn->ExecuteSet(wxT("SELECT ") + funcname +
-            conn->qtDbString(logfileName) + wxT(", ") + NumToStr(logfileLength) + wxT(", 50000)"));
+            conn->qtDbString(logfileName) + wxT(", ") + NumToStr(logfileLength) + wxT(", 50000,true)"));
         if (!set)
         {
             conn->IsAlive();
             return;
         }
+        if (set->NumRows() == 0 || set->NumCols() ==0 || set->GetVal(0).IsNull()) {
+            delete set;
+            return;
+        }
+
         char* raw1 = set->GetCharPtr(0);
 
         if (!raw1 || !*raw1)
