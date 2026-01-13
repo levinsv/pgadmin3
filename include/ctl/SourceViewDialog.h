@@ -39,9 +39,9 @@ public:
             text->Update();
         }
     }
-    ctlSQLBox* createSTC()
+    ctlSQLBox* createSTC(wxPanel *parent)
     {
-        ctlSQLBox* text = new ctlSQLBox(this, wxID_ANY);
+        ctlSQLBox* text = new ctlSQLBox(parent, wxID_ANY);
 
         //        text->SetMarginWidth(MARGIN_LINE_NUMBERS, 20);
         //        text->StyleSetForeground(wxSTC_STYLE_LINENUMBER, wxColour(75, 75, 75));
@@ -64,10 +64,11 @@ public:
     }
     void addIndicText(ctlSQLBox* ctl, std::wstring tex, int indic) {
         wxString t(tex);
-
+        int start=ctl->GetLength();
         ctl->AddText(t);
         if (indic > 0) {
-            ctl->IndicatorFillRange(ctl->GetLength() - t.Len(), t.Len());
+
+            ctl->IndicatorFillRange(start, ctl->GetLength()-start);
         }
     };
     void difftext(ctlSQLBox* ctlL, ctlSQLBox* ctlR, wxString sL, wxString sR) {
@@ -203,13 +204,6 @@ public:
         wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxSize(1200, 700))
     {
         m_changing_values = false;
-        m_text1 = createSTC();
-        //m_text1->SetText(sqlL);
-
-        m_text2 = createSTC();
-        //m_text2->SetText(sqlR);
-
-        difftext(m_text1, m_text2, sqlL, sqlR);
 
 
 
@@ -219,6 +213,13 @@ public:
         wxPanel* m_panelSql = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         wxBoxSizer* bSizer2;
         bSizer2 = new wxBoxSizer(wxHORIZONTAL);
+        m_text1 = createSTC(m_panelSql);
+        //m_text1->SetText(sqlL);
+
+        m_text2 = createSTC(m_panelSql);
+        //m_text2->SetText(sqlR);
+
+        difftext(m_text1, m_text2, sqlL, sqlR);
 
         bSizer2->Add(m_text1, 1, wxEXPAND, 5);
 
@@ -320,6 +321,8 @@ public:
                 }
                 t->SetSelection(start,pos-1);
                 t->SetFirstVisibleLine(l);
+                int cl=t->GetColumn(start);
+                t->ScrollToColumn(cl);
                 break;
             }
             else {
