@@ -182,6 +182,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_AUTOEDITOBJECT,    frmQuery::OnAutoEditObject)
 	EVT_MENU_RANGE(MNU_FAVOURITES_MANAGE + 1, MNU_FAVOURITES_MANAGE + 999, frmQuery::OnSelectFavourite)
 	EVT_MENU_RANGE(MNU_MACROS_MANAGE + 1, MNU_MACROS_MANAGE + 99, frmQuery::OnMacroInvoke)
+	EVT_MENU_RANGE(MNU_GENERATESQL + 1, MNU_GENERATESQL + 199, frmQuery::OnGenerateInvoke)
 	EVT_ACTIVATE(                   frmQuery::OnActivate)
 	EVT_STC_MODIFIED(CTL_SQLQUERY,  frmQuery::OnChangeStc)
 	EVT_STC_UPDATEUI(CTL_SQLQUERY,  frmQuery::OnPositionStc)
@@ -2228,6 +2229,21 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_COPY_INLIST, _("IN list format copy"), _("Copy In list format."));
 	xmenu->Append(MNU_COPY_WHERELIST, _("WHERE list format copy"), _("Copy where list format."));
 	xmenu->Append(MNU_COPY_TABLEHTML, _("Copy table html format"), _("Copy table html format."));
+	if (body_template.Count()>0) {
+//MNU_GENERATE_TEMPLATE		
+	wxMenu *submenu = new wxMenu();
+		//wxString t="begin @obj_id@ end";
+		int cnt=0;
+		for(int i=0;i<body_template.Count();i++) {
+		wxString s=sqlResult->GenerateTemplate(body_template[i],1);
+		if (s=="OK")
+			{
+			cnt++;
+			submenu->Append(MNU_GENERATESQL+cnt,title_template[i],body_template[i]);
+			}
+		}
+		if (cnt>0) xmenu->Append(MNU_GENERATESQL,"Generate",submenu);
+	}
 	xmenu->AppendSeparator();
 	xmenu->Append(MNU_AUTOCOLSPLOT, _("Draw plot LY(bar) or LXY or XYYY..."), _("Draw plot LY(bar) LXY or XYYY..."));
 	xmenu->Append(MNU_SUMMARY_COL, _("Summary"), _("Summary selected cells."));
@@ -2285,6 +2301,19 @@ void frmQuery::OnCopy_WhereList(wxCommandEvent& ev)
 	{
 		wxString s = wxT("Where list format copy buffer.");
 		sqlResult->Copy(3);
+		SetStatusText(s, STATUSPOS_MSGS);
+	}
+}
+
+void frmQuery::OnGenerateInvoke(wxCommandEvent& ev)
+{
+	//	if (currentControl() == sqlResult)
+	int id=ev.GetId();
+    wxMenu* mi = static_cast<wxMenu*>(ev.GetEventObject());
+    wxString templ = mi->GetHelpString(id);
+	{
+		wxString s = wxT("Where list format copy buffer.");
+		s=sqlResult->GenerateTemplate(templ,0);
 		SetStatusText(s, STATUSPOS_MSGS);
 	}
 }
@@ -3063,6 +3092,8 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 		FSQL::view_item v;
 		bool isddm = false;
 		std::vector<var_query> v_list;
+		body_template.Clear();
+		title_template.Clear();
 		while (f.GetNextPositionSqlParse() < query.length() && f.ParseSql(0) >= 0) { // many querys
 
 			int i = 0;
@@ -3074,6 +3105,14 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 						isddm = true;
 					}
 					n_check++;
+				}
+				if (v.type == FSQL::type_item::comment) {
+					wxString kw = v.txt;
+					if (kw.Find("@gen:")>0) {
+						wxString t=kw.AfterFirst(':');
+						body_template.Add(t.AfterFirst(':'));
+						title_template.Add(t.BeforeFirst(':'));
+					}
 				}
 				// check bindarg
 				if (n_check == 1 && v.type == FSQL::type_item::bindarg) {

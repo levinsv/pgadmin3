@@ -9,7 +9,8 @@
         "new": "cpp",
         "ostream": "cpp",
         "sstream": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "optional": "cpp"
     },
     "cmake.configureArgs": [
        

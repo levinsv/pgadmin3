@@ -284,6 +284,7 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 
     if (GetNumberCols() == 0 || GetRowSize(row) == 0)
         return str;
+    sqlResultTable *t=(sqlResultTable *)GetTable();
     wxString colsep = settings->GetCopyColSeparator();
     if (generatesql == 2 || generatesql == 1) colsep = wxT(",");
     if (generatesql == 3) colsep = wxT(" and ");
@@ -297,7 +298,14 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
             str.Append(colsep);
         if (col > 0) head.Append(colsep);
         head = head + GetColumnName(cols[col]);
-        wxString text = GetCellValue(row, cols[col]);
+        wxString text;
+        bool isnull=false;
+        if ( t && generatesql > 0)
+        {
+            // only insert , in_list and where list
+            text = t->GetValueWithNull( row, cols[col] , &isnull );
+        } else text = GetCellValue(row, cols[col]);
+
         wxString cname = GetColumnName(cols[col]);
         bool needQuote = false;
         if (settings->GetCopyQuoting() == 1)
@@ -307,12 +315,12 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
         else if (settings->GetCopyQuoting() == 2)
             /* Quote everything */
             needQuote = true;
-        if (text.Length() == 0 && generatesql > 0) { needQuote = false; }
+        if (isnull && generatesql > 0) { needQuote = false; }
         else
             if (generatesql > 0) needQuote = IsColText(cols[col]);
 
         if (generatesql > 0) {
-            if (text.Length() != 0) {
+            if (!isnull) {
                 text.Replace(wxT("'"), wxT("''"));
             }
             else
@@ -320,7 +328,7 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
 
         }
         if (generatesql == 3) {
-            if (text == "null")
+            if (isnull)
                 str.Append(cname).Append(" is ");
             else
                 str.Append(cname).Append("=");

@@ -127,6 +127,7 @@ private:
 	ctlAuiNotebook *outputPane;
 	wxString outputPaneInfo;
 	ctlSQLResult *sqlResult;
+	wxArrayString body_template,title_template; // @gen:title menu:body generator @column_name@ end
 #define MAX_RESULT_COUNT 10
 	ctlSQLResult *ctlSQL[MAX_RESULT_COUNT];
 	ctlSQLBox    *ctlSBox[MAX_RESULT_COUNT];
@@ -220,6 +221,7 @@ private:
 	void OnCopy_InList(wxCommandEvent& event);
 	void OnCopy_WhereList(wxCommandEvent& event);
 	void OnCopy_TableToHtml(wxCommandEvent& ev);
+    void OnGenerateTemplate(wxCommandEvent& ev);	
 	void OnClear_Filter(wxCommandEvent &event);
 	void OnCopy_NameTypeCols(wxCommandEvent& ev);
 	void OnCheck_Column_Date(wxCommandEvent& ev);
@@ -288,6 +290,7 @@ private:
 	void OnAutoEditObject(wxCommandEvent &event);
 	void SetEOLModeDisplay(int mode);
 	void OnMacroInvoke(wxCommandEvent &event);
+	void OnGenerateInvoke(wxCommandEvent &event);
 	void OnMacroManage(wxCommandEvent &event);
 	void OnAutoReplaceManage(wxCommandEvent &event);
 	void LoadQueries();
