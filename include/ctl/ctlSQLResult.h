@@ -52,6 +52,8 @@ public:
 	wxString AutoColsPlot(int flags,frmQuery *parent);
 	wxString CheckSelColumnDate();
 	wxString CopySelColumnNameType(bool onlyname);
+    wxString GenerateTemplate(wxString &templ,int action);
+
 	void ClearFilter();
 	bool IsColText(int col);
 	bool hasRowNumber()
@@ -95,6 +97,7 @@ public:
 	sqlResultTable();
 	wxString GetValue(int row, int col);
     wxString GetValueFast(int row, int col);
+	wxString GetValueWithNull(int row, int col, bool *isnull);
 	wxString GetRowLabelValue( int row ) ;
 	int GetNumberRows();
 	int GetNumberCols();

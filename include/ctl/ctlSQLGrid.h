@@ -34,7 +34,6 @@ public:
     }
     int CopyTableToHtml(wxString htmlquery);
     int Copy(int gensql);
-
     virtual bool CheckRowPresent(int row)
     {
         return true;
@@ -62,7 +61,7 @@ public:
     wxString GetRowLabelValue(int row);
     void SetRowGroup(int row);
     GroupRows* grp;
-    int generatesql; // 0 -���, 1 - insert , 2 - in_list
+    int generatesql; // 0 -copy, 1 - insert , 2 - in_list, 3 - where list
     wxString sqlquerytext;
     // Fast searh
     wxString searchStr;

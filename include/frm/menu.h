@@ -166,8 +166,8 @@ enum
 	// This is a dummy menu item
 	MNU_DUMMY = QUERY_COMPLETE + 1000,
 
-	//Menu Test
-	MNU_GENERATESQL
+	//Menu Generate
+	MNU_GENERATESQL = MNU_DUMMY + 200
 };
 
 #endif

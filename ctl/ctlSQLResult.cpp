@@ -23,7 +23,7 @@
 #include "frm/mathplot.h"
 #include "frm/frmPlot.h"
 #include "ctl/SourceViewDialog.h"
-
+#include "utils/align/AlignWrap.h"
 
 ctlSQLResult::ctlSQLResult(wxWindow *parent, pgConn *_conn, wxWindowID id, const wxPoint &pos, const wxSize &size)
 	: ctlSQLGrid(parent, id, pos, size)
@@ -339,6 +339,160 @@ wxString ctlSQLResult::OnGetItemText(long item, long col) const
 	}
 	return wxEmptyString;
 }
+struct type_temp_flag {
+uint8_t colvalue:1;
+uint8_t colname:1;
+uint8_t indexrow:1;
+};
+struct ElementTempl {
+    wxString txt;
+    type_temp_flag flags = {0};
+    int column=-1;
+    int row=-1;
+};
+
+wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
+{
+    std::vector<ElementTempl> tmplvector;
+	wxString rez;
+	int qt=settings->GetCopyQuoting();
+	wxString qtsimbol = settings->GetCopyQuoteChar();
+	wxString qtsimbol2=qtsimbol+qtsimbol;
+// Parse and prepare template string
+    wxChar c;
+	int isalign=false;
+    int len=templ.Len();
+    int pos=0;
+    ElementTempl e;
+    bool isvar=false;
+    wxString col;
+    while (pos<len) 
+	{
+        c=templ[pos++];
+		if (c=='\\' && pos<len) {
+			c=templ[pos++];
+			if (c=='n') c='\n';
+		}
+        if (isvar) {
+            if (c==',') {
+                while (pos<len && ((c=templ[pos++])!='@'))
+                {
+                    //if (c=='n') e.flags.colname=true;
+					if (c=='a') isalign=true;
+                }
+            }
+			if (c=='[') {
+				wxString strrow;
+                while (pos<len && ((c=templ[pos++])!=']'))
+                {
+                    strrow.Append(c);
+                }
+				if (strrow.Len()>0) {
+					long rr=StrToLong(strrow);
+					e.row=rr;
+					e.flags.indexrow=true;
+				}
+				continue;
+			}
+            if (c=='@') {
+                isvar=false;
+				int idx=colNames.Index(col);
+				if (idx==wxNOT_FOUND) {
+					if (action == 0) wxMessageBox(wxString::Format("Not found col name %s in result query.",col));
+					return wxEmptyString;
+				}
+				e.column=idx;
+                tmplvector.push_back(e);
+                e.flags={0};
+            } else 
+                col.Append(c);
+            continue;
+        }
+        if (c!='@') {
+            e.txt.Append(c);
+        } else {
+            isvar=true;
+            tmplvector.push_back(e);
+            e.txt.Clear();
+            col.Clear();
+            e.flags.colvalue=true;
+        }
+    }
+	if (isvar )  
+		{
+			if (action == 0) wxMessageBox(wxString::Format("No close col name %s",col));
+			return wxEmptyString;
+		}
+		else
+		{
+			 if (e.txt.Len()>0) tmplvector.push_back(e);
+		}
+//
+		if (action==1) return "OK"; // only correct parse
+
+		wxArrayInt rows = GetSelectedRows();
+		size_t numRows = GetNumberRows();
+		size_t numRows2 = GetNumberRows();
+		if (rows.Count()>0) numRows=rows.Count();
+		size_t row=0;
+		sqlResultTable *t=(sqlResultTable *)GetTable();
+		while (row < numRows)
+		{
+			int r=0;
+			if (rows.Count()>0) r=rows[row++]; else r=row++;
+			wxString strrow;
+			for (auto e:tmplvector)
+			 {
+				if (e.flags.colvalue==false) {
+					strrow.Append(e.txt);
+					continue;
+				}
+				if (e.flags.indexrow) {
+					int dr=e.row;
+					if (dr<0) dr=row+dr-1;
+					if (dr>=0 && dr<numRows) r=dr;
+					if (rows.Count()>0) r=rows[r]; else r=r;
+				}
+				bool isnull=false;
+				wxString text = t->GetValueWithNull( r, e.column , &isnull );
+				bool needQuote = false;
+				if (qt == 1)
+				{
+					needQuote = IsColText(e.column);
+				}
+				else if (qt == 2)
+					/* Quote everything */
+					needQuote = true;
+				if (needQuote) text.Replace(qtsimbol, qtsimbol2);
+				if (isnull) strrow.Append("null"); 
+					else
+						{
+							 if (needQuote)
+            					strrow.Append(qtsimbol);
+        					strrow.Append(text);
+        					if (needQuote)
+            					strrow.Append(qtsimbol);
+						}
+
+			 }
+			rez.Append(strrow);
+		}
+		if (isalign) {
+			int cfg = AlignWrap::ALL_LINES| AlignWrap::FIRST_LINE;
+			AlignWrap a;
+			wxString lineEnd = wxT("\n");
+			rez=a.build(rez,cfg,lineEnd);
+
+		}
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxTextDataObject(rez));
+			wxTheClipboard->Close();
+		}
+
+return rez;
+}
+
 wxString ctlSQLResult::CopySelColumnNameType(bool onlyname)
 {
 	wxString ss = wxEmptyString;
@@ -1151,6 +1305,24 @@ wxString sqlResultTable::GetValueFast(int row, int col)
 	}
 	return "";
 }
+wxString sqlResultTable::GetValueWithNull(int row, int col, bool *isnull) {
+	wxString s;
+	if (thread && thread->DataValid())
+	{
+		if (col >= 0)
+		{
+			if (use_map) row=maplines[row];
+			thread->DataSet()->Locate(row + 1);
+			wxString s = thread->DataSet()->GetVal(col);
+			*isnull = thread->DataSet()->IsNull(col);
+			return s;
+		}
+
+	}
+	return "";
+
+}
+
 wxString sqlResultTable::GetValue(int row, int col)
 {
 	if (thread && thread->DataValid())
