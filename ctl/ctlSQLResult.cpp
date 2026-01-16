@@ -343,6 +343,7 @@ struct type_temp_flag {
 uint8_t colvalue:1;
 uint8_t colname:1;
 uint8_t indexrow:1;
+uint8_t no_quote:1;
 };
 struct ElementTempl {
     wxString txt;
@@ -384,6 +385,7 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
                 {
                     //if (c=='n') e.flags.colname=true;
 					if (c=='a') isalign=true;
+					else if (c=='e') e.flags.no_quote=true;
 					else {
 						wxString msg=wxString::Format(_("Incorrect flag at the %s column."),col);
 						if (action == 0) wxMessageBox(msg);
@@ -481,6 +483,7 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
 				else if (qt == 2)
 					/* Quote everything */
 					needQuote = true;
+				if (e.flags.no_quote) needQuote = false; 
 				if (needQuote) text.Replace(qtsimbol, qtsimbol2);
 				if (isnull) strrow.Append("null"); 
 					else
