@@ -2231,17 +2231,20 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_COPY_TABLEHTML, _("Copy table html format"), _("Copy table html format."));
 	if (body_template.Count()>0) {
 //MNU_GENERATE_TEMPLATE		
-	wxMenu *submenu = new wxMenu();
+	wxMenu *submenu = NULL;
 		//wxString t="begin @obj_id@ end";
 		int cnt=0;
 		for(int i=0;i<body_template.Count();i++) {
-		wxString s=sqlResult->GenerateTemplate(body_template[i],1);
-		if (s=="OK")
+			wxString s=sqlResult->GenerateTemplate(body_template[i],1);
+			if (s=="OK")
 			{
-			cnt++;
-			submenu->Append(MNU_GENERATESQL+cnt,title_template[i],body_template[i]);
-			}
+				if (submenu==NULL) submenu = new wxMenu();
+				cnt++;
+				submenu->Append(MNU_GENERATESQL+cnt,title_template[i],body_template[i]);
+			}  else 
+				SetStatusText(s, STATUSPOS_MSGS);
 		}
+
 		if (cnt>0) xmenu->Append(MNU_GENERATESQL,"Generate",submenu);
 	}
 	xmenu->AppendSeparator();

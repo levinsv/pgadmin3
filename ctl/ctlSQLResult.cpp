@@ -366,12 +366,17 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
     ElementTempl e;
     bool isvar=false;
     wxString col;
+	int startvarpos=0;
     while (pos<len) 
 	{
         c=templ[pos++];
 		if (c=='\\' && pos<len) {
 			c=templ[pos++];
 			if (c=='n') c='\n';
+			if (c=='t') c='\t';
+			if (c=='r') c='\r';
+			e.txt.Append(c);
+			continue;
 		}
         if (isvar) {
             if (c==',') {
@@ -379,6 +384,11 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
                 {
                     //if (c=='n') e.flags.colname=true;
 					if (c=='a') isalign=true;
+					else {
+						wxString msg=wxString::Format(_("Incorrect flag at the %s column."),col);
+						if (action == 0) wxMessageBox(msg);
+						return msg;
+					}
                 }
             }
 			if (c=='[') {
@@ -396,10 +406,16 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
 			}
             if (c=='@') {
                 isvar=false;
+				if (col.Len()==0) {
+					wxString msg=wxString::Format(_("The column name empty. %s ."),templ.substr(startvarpos,pos-startvarpos));
+					if (action == 0) wxMessageBox(msg);
+					return msg;
+				}
 				int idx=colNames.Index(col);
 				if (idx==wxNOT_FOUND) {
-					if (action == 0) wxMessageBox(wxString::Format("Not found col name %s in result query.",col));
-					return wxEmptyString;
+					wxString msg=wxString::Format(_("The column name %s was not found in the query results."),col);
+					if (action == 0) wxMessageBox(msg);
+					return msg;
 				}
 				e.column=idx;
                 tmplvector.push_back(e);
@@ -412,6 +428,7 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
             e.txt.Append(c);
         } else {
             isvar=true;
+			startvarpos=pos-1;
             tmplvector.push_back(e);
             e.txt.Clear();
             col.Clear();
@@ -420,8 +437,9 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
     }
 	if (isvar )  
 		{
-			if (action == 0) wxMessageBox(wxString::Format("No close col name %s",col));
-			return wxEmptyString;
+			wxString msg=wxString::Format(_("The column name  %s is not closed."),col);
+			if (action == 0) wxMessageBox(msg);
+			return msg;
 		}
 		else
 		{
