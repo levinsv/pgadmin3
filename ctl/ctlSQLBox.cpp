@@ -1843,23 +1843,21 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 			prevColor = tColor;
 		}
 		//str.append(str[k].GetValue());
-		l = 1;
 		wxUniChar c = selText[k];
-		
-		if (!c.IsAscii()) l++;
+		startp=PositionRelative(startp,1);
 		int s = 0;
 		//wxUniChar c = selText[k].GetValue();
-		if (c == '\r') { startp = startp + l; k++; continue; };
+		if (c == '\r') {  k++; continue; };
 		
-		if (c == '\n') { lstr += newline; startp = startp + l; k++; continue; };
+		if (c == '\n') { lstr += newline;  k++; continue; };
 		if (c == 9) s = 5;
 		if (c == 32) s = 1;
-		if (c == '<') { lstr+="&lt;"; startp = startp + l; k++; continue; };
-		if (c == '>') { lstr+="&gt;"; startp = startp + l; k++; continue; };
-		if (c == '&') { lstr+="&amp;"; startp = startp + l; k++; continue; };		
+		if (c == '<') { lstr+="&lt;";  k++; continue; };
+		if (c == '>') { lstr+="&gt;";  k++; continue; };
+		if (c == '&') { lstr+="&amp;";  k++; continue; };		
 		if (s > 0) for (int tt = 0; tt < s; tt++) lstr += "&nbsp;";
 		else lstr += c;
-		startp = startp + l; k++;
+		k++;
 		if ((k-1)>=pos) {
 			lenobj--;
 			if (lenobj==0) {
