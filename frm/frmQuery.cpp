@@ -575,19 +575,21 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	entries[idx++].Set(wxACCEL_CTRL, (int)'E', MNU_EXECUTE);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'O', MNU_OPEN);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'S', MNU_SAVE);
-	entries[idx++].Set(wxACCEL_CMD, (int)'S', MNU_SAVE);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'R', MNU_REPLACE);
 	entries[idx++].Set(wxACCEL_NORMAL, WXK_F8, MNU_EXECUTE);
 	entries[idx++].Set(wxACCEL_NORMAL, WXK_F7, MNU_EXPLAIN);
 	entries[idx++].Set(wxACCEL_ALT, WXK_PAUSE, MNU_CANCEL);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'A', MNU_SELECTALL);
-	entries[idx++].Set(wxACCEL_CMD, (int)'A', MNU_SELECTALL);
 	entries[idx++].Set(wxACCEL_NORMAL, WXK_F1, MNU_HELP);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'N', MNU_NEW);
 	entries[idx++].Set(wxACCEL_NORMAL, WXK_F6, MNU_EXECPGS);
 	entries[idx++].Set(wxACCEL_NORMAL, WXK_F5, MNU_EXECFILE);
 	entries[idx++].Set(wxACCEL_CTRL, (int)'T', MNU_NEWSQLTAB);
+
+	entries[idx++].Set(wxACCEL_CTRL, (int)'1', MNU_GENERATESQL+1);
+	entries[idx++].Set(wxACCEL_CTRL, (int)'2', MNU_GENERATESQL+2);
+
 
 	wxAcceleratorTable accel(idx, entries);
 	SetAcceleratorTable(accel);
@@ -2311,14 +2313,17 @@ void frmQuery::OnCopy_WhereList(wxCommandEvent& ev)
 void frmQuery::OnGenerateInvoke(wxCommandEvent& ev)
 {
 	//	if (currentControl() == sqlResult)
-	int id=ev.GetId();
-    wxMenu* mi = static_cast<wxMenu*>(ev.GetEventObject());
-    wxString templ = mi->GetHelpString(id);
+	int id=ev.GetId()-MNU_GENERATESQL-1;
+	wxString s = _("No template generate.");
+    //wxMenu* mi = static_cast<wxMenu*>(ev.GetEventObject());
+	if (id>=0 && id<body_template.Count() ) {
 	{
-		wxString s = wxT("Where list format copy buffer.");
+		wxString templ = body_template[id];
 		s=sqlResult->GenerateTemplate(templ,0);
 		SetStatusText(s, STATUSPOS_MSGS);
 	}
+	} else
+		SetStatusText(s, STATUSPOS_MSGS);
 }
 void frmQuery::OnCopy_TableToHtml(wxCommandEvent& ev)
 {
@@ -4577,13 +4582,15 @@ void frmQuery::OnSqlBookPageChanging(wxAuiNotebookEvent& event)
 	}
 	if (sqlQueryBook->GetPageCount() > 1)
 	{
-		size_t curpage = sqlQueryBook->GetSelection();
-		sqlQuery = wxDynamicCast(sqlQueryBook->GetPage(curpage), ctlSQLBox);
-		if (sqlQuery != NULL)
-		{
-			//wxString activePage = sqlNotebook->GetPageText(curpage);
-			wxString activePage = sqlQuery->GetTitle(false);
-			fileMarkerActive(false, activePage);
+		int curpage = sqlQueryBook->GetSelection();
+		if (curpage!=wxNOT_FOUND) {
+			sqlQuery = wxDynamicCast(sqlQueryBook->GetPage(curpage), ctlSQLBox);
+			if (sqlQuery != NULL)
+			{
+				//wxString activePage = sqlNotebook->GetPageText(curpage);
+				wxString activePage = sqlQuery->GetTitle(false);
+				fileMarkerActive(false, activePage);
+			}
 		}
 	}
 }
