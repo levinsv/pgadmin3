@@ -4803,9 +4803,18 @@ void frmStatus::OnMoveMouseLog(wxMouseEvent& event)
 void frmStatus::OnRightClickLogGrid(wxListEvent& event)
 {
     delayHitLog->Stop();
-    wxMenu* logListPopupMenu;
-    logListPopupMenu = nav->GetPopupMenu();
-    logList->PopupMenu(logListPopupMenu, event.GetPoint());
+    lastmouse = wxGetMousePosition();
+    wxTimerEvent tm;
+    //logList->GetItem();
+    //int flags = wxLIST_HITTEST_ONITEMLABEL;
+    //long item=logList->HitTest(mp,flags);
+    long item=event.GetIndex();
+    lastlogitem=item;
+    lastlogitemShow=-1;
+    OnTimerHintLog(tm);
+//    wxMenu* logListPopupMenu;
+//    logListPopupMenu = nav->GetPopupMenu();
+//    logList->PopupMenu(logListPopupMenu, event.GetPoint());
 }
 
 

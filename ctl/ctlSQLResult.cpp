@@ -387,7 +387,7 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
 					if (c=='a') isalign=true;
 					else if (c=='e') e.flags.no_quote=true;
 					else {
-						wxString msg=wxString::Format(_("Incorrect flag at the %s column."),col);
+						wxString msg=wxString::Format(_("Incorrect flag at the '%s' column."),col);
 						if (action == 0) wxMessageBox(msg);
 						return msg;
 					}
@@ -409,13 +409,13 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
             if (c=='@') {
                 isvar=false;
 				if (col.Len()==0) {
-					wxString msg=wxString::Format(_("The column name empty. %s ."),templ.substr(startvarpos,pos-startvarpos));
+					wxString msg=wxString::Format(_("The column name empty. '%s' ."),templ.substr(startvarpos,pos-startvarpos));
 					if (action == 0) wxMessageBox(msg);
 					return msg;
 				}
 				int idx=colNames.Index(col);
 				if (idx==wxNOT_FOUND) {
-					wxString msg=wxString::Format(_("The column name %s was not found in the query results."),col);
+					wxString msg=wxString::Format(_("The column name '%s' was not found in the query results."),col);
 					if (action == 0) wxMessageBox(msg);
 					return msg;
 				}
@@ -439,7 +439,7 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
     }
 	if (isvar )  
 		{
-			wxString msg=wxString::Format(_("The column name  %s is not closed."),col);
+			wxString msg=wxString::Format(_("The column name  '%s' is not closed."),col);
 			if (action == 0) wxMessageBox(msg);
 			return msg;
 		}
