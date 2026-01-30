@@ -259,6 +259,9 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 
 	// Remember this as the last plugin used
 	form->SetLastPluginUtility(this);
+	if (!(form->GetLastPluginUtility() && form->GetLastPluginUtility()->CheckEnable(obj))) {
+		return 0;
+	}
 
 	// Replace all the place holders with appropriate values
 	if (HaveDatabase(obj))
@@ -297,6 +300,7 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 		// Blank the rest
 		if (obj && obj->GetMetaType() == PGM_SERVER) {
 			pgServer* srv = (pgServer*) obj;
+			execCmd.Replace(wxT("$$TITLE"), title);
 			execCmd.Replace(wxT("$$HOSTNAME"), srv->GetName());
 			execCmd.Replace(wxT("$$USERNAME"), srv->GetUsername());
 			execCmd.Replace(wxT("$$PORT"), NumToStr((long)srv->GetPort()));
@@ -405,7 +409,60 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 	if (obj && applies_to.Count() > 0)
 	{
 		if (applies_to.Index(wxString(obj->GetFactory()->GetTypeName()).Lower()) == wxNOT_FOUND)
-			return false;
+			if (applies_to.Index("puttyforward") == wxNOT_FOUND)
+				return false;
+			else {
+				//"puttyforward"
+				int id=GetId();
+				if (winMain==NULL) return false;
+				wxMenu *m=winMain->GetPluginsMenu();
+				m->SetLabel(id,"[Putty tunnel forward]");
+				if (obj->GetMetaType()==PGM_SERVER) {
+					pgServer* srv = (pgServer*) obj;
+					wxString host=obj->GetName();
+					wxString sport=NumToStr((long)srv->GetPort());
+					wxString f ;
+					bool isfound=false;
+					title="[puttyforward]";
+					if (host.CmpNoCase("localhost")==0 ||host=="127.0.0.1") {
+						wxString path=wxFileName::GetHomeDir()+sepPath+".putty"+sepPath+"sessions";
+						if (wxDirExists(path)) {
+							f = wxFindFirstFile(path+sepPath+"*");
+							while ( !f.empty() )
+							{
+								wxString filename=f.AfterLast(sepPath);
+								{
+									wxString fcont=FileRead(f);
+									wxStringTokenizer tkz(fcont, wxT("\n"));
+
+									// Loop round the lines in the file. Everytime we find a new 'Title' value
+									// we create the current plugin and start a new one
+									while(tkz.HasMoreTokens())
+									{
+										wxString token = tkz.GetNextToken();
+										if (token.Lower().StartsWith(wxT("portforwardings=")))
+											{
+												wxString forward = token.AfterFirst('=').Trim();
+												wxString port=forward.BeforeFirst('=').Trim();
+												if (port.Len()>0 && port[0]=='L' && sport==port.substr(1)) {
+													// found putty config
+													title=filename;
+													m->SetLabel(id,title);
+													isfound=true;
+													return true;
+												}
+											}
+
+									}
+									
+								}
+							f = wxFindNextFile();
+							}
+						}
+					}
+				}
+				return false;
+			}
 	}
 
 	// If we don't need a database, we're always OK.
