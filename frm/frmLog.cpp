@@ -406,6 +406,10 @@ void MyThread::getFilename() {
             while (!set->Eof()) {
                 
                 wxString fn = set->GetVal(wxT("filename"));
+                if (fn.AfterLast(sepPath).CmpNoCase("db.csv")==0) {
+                    set->MoveNext();   
+                    continue; 
+                }
                 wxString key = wxString::Format("%lu_server_%s",i,fn);
                 info_files inf;
                 long len= set->GetLong(wxT("len"));
