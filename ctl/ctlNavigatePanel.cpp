@@ -437,6 +437,7 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
         }
         if (help) {
             wxMessageBox(helpstr, _("Help"));
+            return true;
         }
     }
     return false;

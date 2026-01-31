@@ -317,7 +317,7 @@ delete from t2 using t4,t5 where t4.id=t5 and t2.id=t4.id returning t2.id;
 			end
 		 )");
 		 std::vector<complite_element> list = f2.ParsePLpgsql(); o=f2.GetListTable(list);
- 		 exp = "[ f1,] \n[ f2,] \n[ tab1,] \n[ f3,] \n[ f4,] \n[ t2,] \n[ t5,] \n";
+ 		 exp = "[ f1,] \n[ f2,] \n[ tab1,] \n[ f3,] \n[ f4,] \n[ t2,] \n[ t4,] \n[ t5,] \n";
  	 	CHECK(o==exp);
 }
 
