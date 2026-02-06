@@ -30,6 +30,7 @@ private:
 	/// <param name="resort"></param>
 	void SortGrid(int colsort, bool isevent);
 	bool nosort; // если кто то пользуется SetItemData то не будем сортировать такие ctlListView
+	bool autohint=false;
 	int order, prev_col;
 	// будем сохранять длинные строки 0 колонки в этом массиве
 	bool storelongstring = false;
@@ -42,6 +43,8 @@ public:
 	bool ReSort();
 	bool IsNumberColumn(const wxString& columnlabel);
 	void SetModeStoreLongString() { storelongstring = true; }
+	bool ToggleAutoHint() { autohint=!autohint; return autohint;};
+	bool GetAutoHint() {return autohint;};
 	bool DeleteAllItemsWithLong() {
 		longstring.clear();
 		return wxListView::DeleteAllItems();

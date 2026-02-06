@@ -4791,7 +4791,7 @@ void frmStatus::OnMoveMouseLog(wxMouseEvent& event)
     if (lastlogitem != -1 || lastlogitem != item) {
 #define DELAYHITLOGPERIOD 1000
         delayHitLog->Stop();
-        delayHitLog->StartOnce(DELAYHITLOGPERIOD);
+        if (logList->GetAutoHint()) delayHitLog->StartOnce(DELAYHITLOGPERIOD);
     }
     else 
         delayHitLog->Stop();

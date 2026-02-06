@@ -75,6 +75,11 @@ void ctlNavigatePanel::Init(bool reorganization) {
         cm8["hotkey"] = wxString("F8");
         cm8["description"] = wxString(_("Find all strings content current row State."));
         cmds.Append(cm8);
+        wxJSONValue cm9(wxJSONType::wxJSONTYPE_OBJECT);
+        cm9["name"] = wxString("AutoHint");
+        cm9["hotkey"] = wxString("F9");
+        cm9["description"] = wxString(_("Enable/disable auto hint."));
+        cmds.Append(cm9);
 
 
 
@@ -163,6 +168,20 @@ void ctlNavigatePanel::Init(bool reorganization) {
             int pr = opt["findmarkwidthprocent"].AsInt32();
             if (pr >= 0 && pr <= 100) {
                 findwidth = pr;
+            }
+            // check 
+            wxJSONValue r=opt["commands"];
+            bool isok=false;
+            for (int j = 0; j < r.Size(); j++) {
+                wxJSONValue ccm = r[j];
+                if (ccm["name"].AsString()=="AutoHint") {
+                    isok=true;
+                    break;
+                };
+            }
+            if (!isok) {
+                opt["commands"].Append(cm9);
+                settings->WriteJsonObect("LogNavigatePanel", opt);
             }
         }
         else opt = def;
@@ -300,6 +319,11 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
             bool shift = false;
             bool directionUp = false;
             if (isok && cmdName == "Help") help = true;
+            if (isok && cmdName == "AutoHint") {
+                bool curr=ctrl->ToggleAutoHint();
+                return true;
+            }
+            
             if (isok && cmdName == "FindNext") {
                 // F3
                 if (logFindString.IsEmpty()) cmdName = "Find";
