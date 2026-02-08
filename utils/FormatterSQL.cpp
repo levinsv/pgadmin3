@@ -1114,6 +1114,11 @@ int FormatterSQL::ParseSql(int flags) {
         }
     // no sql command
         if (ex) break;
+                    #ifdef _DEBUG
+                    int st=items[items.size()-1].srcpos+items[items.size()-1].txt.Length();
+                    wxString b=sql.substr(st,100);
+                    wxMessageBox(wxString::Format("Bad sql syntax : %s",b));
+                    #endif
         errorposition=i;
         return -3;
 

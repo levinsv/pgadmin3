@@ -35,6 +35,7 @@ ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr
 	: wxListView(p, id, pos, siz, attr | wxLC_REPORT)
 {
 	nosort = false;
+	autohint=false;
 	order = 1;
 	prev_col = -1;
 	storelongstring = false;

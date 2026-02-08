@@ -265,8 +265,11 @@ frmMain::frmMain(const wxString &title)
 	browser->Expand(root);
 	browser->SortChildren(root);
 	browser->SetFocus();
-
-
+	wxString selServerName=settings->Read(wxT("Servers/SelectItem"), "");
+	if (selServerName.Len()>0) {
+		wxTreeItemId sel=browser->FindItem(root,selServerName,true);
+		if (sel.IsOk()) browser->SelectItem(sel);
+	}
 
 
 }
@@ -1287,6 +1290,15 @@ void frmMain::StoreServers()
 
 	wxTreeItemIdValue foldercookie;
 	wxTreeItemId folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
+	wxTreeItemId cursoritem = browser->GetSelection();
+	while (cursoritem.IsOk()) {
+				server = (pgServer *)browser->GetItemData(cursoritem);
+				if (server != NULL && server->IsCreatedBy(serverFactory)) {
+					break;
+				}
+				cursoritem=browser->GetItemParent(cursoritem);
+	}
+	wxString selServerName;
 	while (folderitem)
 	{
 		if (browser->ItemHasChildren(folderitem))
@@ -1300,7 +1312,7 @@ void frmMain::StoreServers()
 				{
 					wxString key;
 					++numServers;
-
+					if (cursoritem==serveritem) selServerName=server->GetName();
 					key.Printf(wxT("Servers/%d/"), numServers);
 					settings->Write(key + wxT("Server"), server->GetName());
 					settings->Write(key + wxT("HostAddr"), server->GetHostAddr());
@@ -1353,6 +1365,7 @@ void frmMain::StoreServers()
 
 	// Write the server count
 	settings->WriteInt(wxT("Servers/Count"), numServers);
+	settings->Write(wxT("Servers/SelectItem"), selServerName);
 	settings->FlushChanges();
 	wxLogInfo(wxT("Stored %d servers."), numServers);
 }
