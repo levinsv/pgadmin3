@@ -80,6 +80,8 @@ EVT_BUTTON(wxID_OK, frmReport::OnOK)
 EVT_BUTTON(wxID_CANCEL, frmReport::OnCancel)
 END_EVENT_TABLE()
 
+extern wxString dataDir;
+
 typedef std::vector<double> vectord;
 template<typename A, typename B>
 std::pair<B, A> flip_pair(const std::pair<A, B>& p)
@@ -1872,9 +1874,12 @@ MyListSql::iterator iter2;
 #else
 	wxString fDir=wxStandardPaths::Get().GetExecutablePath().BeforeLast('\\')+wxT("\\");
 #endif
+	
 	wxString f=fDir+"textcompare_report.template";
 	wxString buffer;
-	
+	if (!wxFileExists(f)) {
+		f=dataDir+wxFileName::GetPathSeparator()+"textcompare_report.template";
+	}
 	wxUtfFile file3(f, wxFile::read, wxFONTENCODING_UTF8);
 	if (file3.IsOpened())
 	{
@@ -1941,7 +1946,7 @@ MyListSql::iterator iter2;
 }
 
 	//head+="</div></body></html>";
-    fDir=wxStandardPaths::Get().GetTempDir()+wxT("\\cmp.html");
+    fDir=wxStandardPaths::Get().GetTempDir()+wxFileName::GetPathSeparator()+wxT("cmp.html");
 	//fn="D:\\PostgreSQL\\cmp.html";
 	fn=fDir;
 	fn.MakeAbsolute();
