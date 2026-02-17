@@ -1129,6 +1129,7 @@ void ctlSQLResult::ClearFilter()
 {
 	size_t numRows = GetNumberRows();
 	int sizerow=GetDefaultRowSize();
+	Freeze();
 		for (size_t i = 0 ; i <  numRows; i++)
 		{
 				if (GetRowSize(i)>0) continue;
@@ -1137,6 +1138,7 @@ void ctlSQLResult::ClearFilter()
 		
 		}
 	SetGridLineColour(cg);
+	Thaw();
 }
 wxString ctlSQLResult::SetFilter(int row,int col,bool reverse)
 {
@@ -1150,6 +1152,7 @@ wxString ctlSQLResult::SetFilter(int row,int col,bool reverse)
 	bool eq;
 	size_t numRows = GetNumberRows();
 	int all=0,show=0,hide=0;
+	if (!IsFrozen()) Freeze();
 		for (size_t i = 0 ; i <  numRows; i++)
 		{
 			//str.Append(GetExportLine(i, cols));
@@ -1165,6 +1168,7 @@ wxString ctlSQLResult::SetFilter(int row,int col,bool reverse)
 				all++;
 		
 		}
+	Thaw();
 	SetGridLineColour(wxColor(0,0,255));
 	result.Printf(wxT("Show rows:%d hide:%d all:%d"), show,hide,all);
 	return result;
