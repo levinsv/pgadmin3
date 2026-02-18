@@ -32,14 +32,31 @@ MyCompareFunction(wxIntPtr item1, wxIntPtr item2, wxIntPtr WXUNUSED(sortData))
 }
 
 ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr)
-	: wxListView(p, id, pos, siz, attr | wxLC_REPORT)
+//	: wxListView(p, id, pos, siz, attr | wxLC_REPORT)
 {
 	nosort = false;
 	autohint=false;
 	order = 1;
 	prev_col = -1;
 	storelongstring = false;
-	Connect(wxID_ANY, wxEVT_LIST_COL_CLICK, wxListEventHandler(ctlListView::OnSortGrid));
+#ifdef __WXGTK__	
+	if (id==CTL_STATUSLIST) {
+		SetBackgroundStyle(wxBG_STYLE_TRANSPARENT);
+		//SetBackgroundColour(wxTRANSPARENT);
+		//SetBackgroundStyle(wxBG_STYLE_PAINT);
+		
+		
+	}
+#endif
+	Create(p, id, pos, siz, attr | wxLC_REPORT);
+
+	if (id!=CTL_STATUSLIST)
+		Connect(wxID_ANY, wxEVT_LIST_COL_CLICK, wxListEventHandler(ctlListView::OnSortGrid));
+		else  {
+//			SetDoubleBuffered(true);
+//			SetBackgroundStyle(wxBG_STYLE_PAINT);
+//			Bind(wxEVT_ERASE_BACKGROUND, [] (wxEraseEvent&) {} );
+		}
 }
 #include <map>
 bool ctlListView::IsNumberColumn(const wxString& columnlabel) {
