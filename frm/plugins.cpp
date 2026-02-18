@@ -391,7 +391,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 	{
 		// If we need a specific server type, we can't enable unless
 		// we have a connection.
-		if (!obj || !(obj->GetConnection()->GetStatus() == PGCONN_OK))
+		if (!obj || !(obj->GetConnection()) || (!(obj->GetConnection()->GetStatus() == PGCONN_OK)))
 			return false;
 
 		// Get the server type.
