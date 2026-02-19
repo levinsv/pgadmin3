@@ -56,11 +56,37 @@ enum
 
 
 static wxCriticalSection gs_critsect;
+static wxCriticalSection thread_execute;
 
+typedef struct SQL_exec {
+    pgConn *conn=NULL;
+    wxString query;
+    pgSet *result=NULL;
+    bool isError=false;
+    bool isExecute=false;
+    long long start=0;
+    long long end=0;
+} SQL_exec, *SQL_exec_ptr;
 
 // Class declarations
 //static wxSemaphore s_CloseLog(0, 1);
-
+class ExecuteThread : public wxThread
+{
+public:
+    //~ReadLogThread();
+    ExecuteThread(wxWindow* p, wxMessageQueue<int> *queue, SQL_exec *arr_ptr)
+    {
+        theParent=p;
+        q=queue;
+        arr_point=arr_ptr;
+    }
+   virtual void* Entry();
+private:   
+wxWindow *theParent;
+wxMessageQueue<int> *q;
+//SQL_exec array_exec[4];
+SQL_exec *arr_point;
+};
 class ReadLogThread : public wxThread
 {
 public:
@@ -121,7 +147,8 @@ private:
     void sendText(wxString s) {
         wxThreadEvent e(wxEVT_THREAD);
         e.SetString(s);
-        theParent->GetEventHandler()->AddPendingEvent(e);
+        //theParent->GetEventHandler()->AddPendingEvent(e);
+        wxQueueEvent( theParent, e.Clone() );
     }
     wxMutex s_mutexDBLogReading;
     wxSemaphore s_goReadLog;
@@ -142,6 +169,7 @@ private:
 
 };
 
+
 class frmStatus : public pgFrame
 {
 public:
@@ -150,18 +178,25 @@ public:
     void Go();
     bool getTextSqlbyQid(long long qid);
     ReadLogThread* logThread = NULL;
+void OnRefreshStatusTimer_After();
 private:
     wxAuiManager manager;
 
     frmMain *mainForm;
     pgConn *connection, *locks_connection, *logconn;
-
+    int major; int minor; 
     wxString logFormat,logFindString;
     bool logHasTimestamp, logFormatKnown;
     int logFmtPos;
     long logFinditem=-1;
-    
+
     wxMessageQueue<wxString> log_queue;
+ // execute SQL thread   
+    wxMessageQueue<int> queue_sql;
+    SQL_exec array_exec[4]={};
+    bool SendQueryExecute(int index,wxString &sql,pgConn *c);
+    ExecuteThread* q_thread = NULL;
+
     wxDateTime logfileTimestamp, latestTimestamp;
     wxString logDirectory, logfileName;
 
@@ -264,6 +299,8 @@ private:
     void OnRefreshXactTimer(wxTimerEvent &event);
     void OnRefreshLogTimer(wxTimerEvent &event);
     void OnRefreshQuerystateTimer(wxTimerEvent &event);
+    void OnRefreshQuerystateTimer_After();
+
 
     void SetColumnImage(ctlListView *list, int col, int image);
     void OnSortStatusGrid(wxListEvent &event);
@@ -325,7 +362,7 @@ private:
     void addLogFile(const wxString &filename, const wxDateTime timestamp, long len, long &read, bool skipFirst);
     void addLogLine(const wxString &str, bool formatted = true, bool csv_log_format = false);
     void checkConnection();
-
+    bool BackendMinimumVersion(int major, int minor);
     DECLARE_EVENT_TABLE()
 };
 

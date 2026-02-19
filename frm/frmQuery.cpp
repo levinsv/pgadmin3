@@ -2320,7 +2320,8 @@ void frmQuery::OnGenerateInvoke(wxCommandEvent& ev)
 	{
 		wxString templ = body_template[id];
 		s=sqlResult->GenerateTemplate(templ,0);
-		SetStatusText(s, STATUSPOS_MSGS);
+		
+		SetStatusText(s.substr(0,200), STATUSPOS_MSGS);
 	}
 	} else
 		SetStatusText(s, STATUSPOS_MSGS);
