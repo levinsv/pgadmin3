@@ -443,7 +443,7 @@ ExecutionDialog::ExecutionDialog(frmMain *frame, pgObject *_object) : DialogWith
 	bIsExecutionCompleted = false;
 
 	pgDatabase *db = object->GetDatabase();
-	wxString applicationname = appearanceFactory->GetLongAppName() + _(" - Execution Tool");
+	wxString applicationname = appearanceFactory->GetLongAppName() + (" - Execution Tool");
 	conn = db->CreateConn(applicationname);
 }
 
