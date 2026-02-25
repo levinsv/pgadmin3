@@ -363,7 +363,7 @@ importFactory::importFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar 
 wxWindow *importFactory::StartDialog(frmMain *form, pgObject *obj)
 {
 	pgDatabase *db = obj->GetDatabase();
-	wxString applicationname = appearanceFactory->GetLongAppName() + _(" - Import Tool");
+	wxString applicationname = appearanceFactory->GetLongAppName() + (" - Import Tool");
 	pgConn *conn = db->CreateConn(applicationname);
 	if (conn)
 	{

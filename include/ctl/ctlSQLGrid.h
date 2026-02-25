@@ -209,159 +209,21 @@ private:
     wxArrayDouble run;
 };
 //#define TEST_wxGridCellAutoWrapStringRenderer
-#ifndef TEST_wxGridCellAutoWrapStringRenderer
+
 class CursorCellRenderer : public wxGridCellStringRenderer
 {
+    protected:
+wxSize GetBestSize(wxGrid& grid,
+                                             wxGridCellAttr& attr,
+                                             wxDC& dc,
+                                             int row, int col) wxOVERRIDE;
+
 public:
-    virtual void Draw(wxGrid& grid, wxGridCellAttr& attr, wxDC& dc,
-        const wxRect& rect, int row, int col, bool isSelected)
-    {
-        int hAlign, vAlign;
-        int sPos = -1;
-        bool multiline = false;
-        attr.GetAlignment(&hAlign, &vAlign);
-        //////////////////////////////////////////////////////////////////////////////
-        //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
-        dc.SetBackgroundMode(wxSOLID);
-        bool istruncateLine=false;
-        wxString text = grid.GetCellValue(row, col);
-        // grey out fields if the grid is disabled
-        if (grid.IsEnabled())
-        {
-            istruncateLine=text.Right(5)=="(...)";
-            if (isSelected)
-            {
-                wxColour clr;
-                if (wxWindow::FindFocus() == grid.GetGridWindow())
-                    clr = grid.GetSelectionBackground();
-                else
-                    clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
-
-
-                dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(clr));
-            }
-            else
-            {
-                wxColor color;
-                color.Set(239, 228, 176);
-                if ((sPos = text.Find(wxT('\n'))) != wxNOT_FOUND) {
-                    dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(color));
-                    multiline = true;
-                }
-                else
-                    dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(attr.GetBackgroundColour()));
-            }
-            // replace \t to u+2192
-            wxUniChar cc = 8594;
-            text.Replace("\t", cc);
-        }
-        else
-        {
-            dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
-        }
-
-        dc.SetPen(*wxTRANSPARENT_PEN);
-        dc.DrawRectangle(rect);
-        //////////////////////////////////////////////////////////////////////////////
-        SetTextColoursAndFont(grid, attr, dc, isSelected);
-        ctlSQLGrid* ctrl = static_cast<ctlSQLGrid*>(&grid);
-        if (!ctrl->searchStr.IsEmpty()) {
-            if (sPos == -1) sPos = text.Len();
-            int pp;
-
-            pp = text.Find(ctrl->searchStr);
-            if (pp >= 0) {
-                wxArrayString lines;
-                grid.StringToLines(text, lines);
-                wxRect r;
-                r.y = rect.y;
-                dc.SetBrush(*wxYELLOW_BRUSH);
-                size_t nLines = lines.GetCount();
-                for (size_t l = 0; l < nLines; l++)
-                {
-                    const wxString& line = lines[l];
-                    pp = line.Find(ctrl->searchStr);
-                    if (line.empty() || (pp == -1))
-                    {
-                        r.y += dc.GetCharHeight();
-                        continue;
-                    }
-
-                    int lineWidth, lineWidthP, lineHeight, start = 0;
-                    wxString pref;
-                    if (hAlign == wxALIGN_RIGHT) {
-                        start = pp + ctrl->searchStr.Len();
-                        pref = line.substr(start);
-                    }
-                    else
-                        pref = line.substr(start, pp);
-
-                    dc.GetTextExtent(pref, &lineWidthP, &lineHeight);
-                    r.x = rect.x + lineWidthP;
-                    pref = line.substr(pp, ctrl->searchStr.Len());
-                    dc.GetTextExtent(pref, &lineWidth, &lineHeight);
-                    r.width = lineWidth;
-                    r.height = lineHeight;
-                    if (hAlign == wxALIGN_RIGHT) r.x = rect.x + (rect.width - lineWidth - lineWidthP);
-                    if (!(r.y < (rect.y + rect.height))) { r.y = rect.y + rect.height - 5; r.height = 5; }
-                    if (!((r.x < (rect.x + rect.width)))) { r.x = rect.x + rect.width - 5; r.width = 5; }
-                    dc.DrawRoundedRectangle(r, 3);
-                    break;
-                }
-            }
-        }
-
-        if (!multiline) {
-            //int textWidth = dc.GetTextExtent(text).GetWidth();
-            wxEllipsizeMode mode(wxELLIPSIZE_END);
-            if (hAlign == wxALIGN_RIGHT) mode = wxELLIPSIZE_START;
-            const wxString& ellipsizedText = wxControl::Ellipsize
-            (
-                text,
-                dc,
-                mode,
-                rect.GetWidth() - 2,
-                wxELLIPSIZE_FLAGS_NONE
-            );
-            if (ellipsizedText != text) text = ellipsizedText;
-        }
-        grid.DrawTextRectangle(dc, text,
-            rect, hAlign, vAlign);
-        if (istruncateLine) {
-            dc.SetPen(*wxRED_PEN);
-            dc.DrawLine(wxPoint(rect.x,rect.y+rect.GetHeight()-2),wxPoint(rect.x+rect.width,rect.y+rect.GetHeight()-2));
-        } 
-    }
-#else
-class CursorCellRenderer : public wxGridCellAutoWrapStringRenderer
-{
-public:
-    virtual void Draw(wxGrid& grid,
-        wxGridCellAttr& attr,
-        wxDC& dc,
-        const wxRect& rectCell,
-        int row, int col,
-        bool isSelected) {
-        bool f = false;
-        wxString text = grid.GetCellValue(row, col);
-        wxColor prev;
-        if (!isSelected) {
-            wxColor color;
-            color.Set(239, 228, 176);
-            if (text.Find(wxT('\n')) != wxNOT_FOUND)
-            {
-                //dc.SetBrush(wxBrush(color, wxSOLID));
-                prev = attr.GetBackgroundColour();
-                attr.SetBackgroundColour(color);
-                f = true;
-            }
-
-        }
-
-        wxGridCellAutoWrapStringRenderer::Draw(grid, attr, dc, rectCell, row, col, isSelected);
-        if (f) attr.SetBackgroundColour(prev);
-    }
-#endif
+    void Draw(wxGrid& grid, wxGridCellAttr& attr, wxDC& dc,
+        const wxRect& rect, int row, int col, bool isSelected);
+        CursorCellRenderer(int thous_pixel_sep);
+private:
+int thousands_pixel_sep;
 };
 
 #endif

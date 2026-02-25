@@ -2135,24 +2135,39 @@ bool connectServerFactory::CheckEnable(pgObject *obj)
 
 disconnectServerFactory::disconnectServerFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
 {
-	mnu->Append(id, _("Disconnec&t server"), _("Disconnect from the selected server."));
+	wxString msg=_("Disconnec&t server")+"\tCtrl-W";
+	mnu->Append(id, msg, _("Disconnect from the selected server."));
 }
 
 
 wxWindow *disconnectServerFactory::StartDialog(frmMain *form, pgObject *obj)
 {
-	if (obj->CheckOpenDialogs(form->GetBrowser(), form->GetBrowser()->GetSelection()))
 	{
-		wxString msg = _("There are properties dialogues open for one or more objects belonging to a database which will be disconnected. Please close the properties dialogues and try again.");
-		wxMessageBox(msg, _("Cannot disconnect database"), wxICON_WARNING | wxOK);
-	}
-	else
-	{
-		pgServer *server = (pgServer *)obj;
-		server->Disconnect(form);
-		server->UpdateIcon(form->GetBrowser());
-		form->GetBrowser()->DeleteChildren(obj->GetId());
-		form->execSelChange(obj->GetId(), true);
+		pgServer *server=NULL;
+		wxTreeItemId idserver;
+		if (obj) {
+			if (!obj->IsCreatedBy(serverFactory)) {
+				server=obj->GetServer();
+				if (server) {
+					idserver=server->GetId();
+					form->execSelChange(idserver, false);
+				} else return 0;
+			} else {
+					idserver=obj->GetId();
+					server = (pgServer *)obj;
+			}
+			if (server->CheckOpenDialogs(form->GetBrowser(), idserver))
+			{
+				wxString msg = _("There are properties dialogues open for one or more objects belonging to a database which will be disconnected. Please close the properties dialogues and try again.");
+				wxMessageBox(msg, _("Cannot disconnect database"), wxICON_WARNING | wxOK);
+			} else 
+				{
+				server->Disconnect(form);
+				server->UpdateIcon(form->GetBrowser());
+				form->GetBrowser()->DeleteChildren(idserver);
+				form->execSelChange(idserver, true);
+				}
+		}
 	}
 
 	return 0;
@@ -2161,8 +2176,12 @@ wxWindow *disconnectServerFactory::StartDialog(frmMain *form, pgObject *obj)
 
 bool disconnectServerFactory::CheckEnable(pgObject *obj)
 {
-	if (obj && obj->IsCreatedBy(serverFactory))
-		return ((pgServer *)obj)->GetConnected();
+	if (obj) {
+		pgServer *pgs=obj->GetServer();
+		if (pgs) return pgs->GetConnected();
+	}
+//	if (obj && obj->IsCreatedBy(serverFactory))
+//		return ((pgServer *)obj)->GetConnected();
 
 	return false;
 }
