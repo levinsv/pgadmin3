@@ -97,7 +97,7 @@ public:
 	sqlResultTable();
 	wxString GetValue(int row, int col);
     wxString GetValueFast(int row, int col);
-	wxString GetValueWithNull(int row, int col, bool *isnull);
+	wxString GetValueWithNull(int row, int col, bool *isnull,int *pgtype);
 	wxString GetRowLabelValue( int row ) ;
 	int GetNumberRows();
 	int GetNumberCols();

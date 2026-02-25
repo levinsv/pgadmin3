@@ -74,13 +74,28 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     Bind(wxEVT_THREAD, &ctlSQLGrid::OnShowPopup, this);
     setresizedpi();
     SetDefaultCellOverflow(false);
-    //SetDefaultRenderer(new  wxGridCellAutoWrapStringRenderer);
-    SetDefaultRenderer(new  CursorCellRenderer);
+    // load pgadmin3opt.json 
+    wxJSONValue def(wxJSONType::wxJSONTYPE_OBJECT);
+    wxJSONValue opt(wxJSONType::wxJSONTYPE_OBJECT);
+	int t_width=0;
+	def["thousandsWidthSeparator"]=t_width;
+	settings->ReloadJsonFileIfNeed();
+    settings->ReadJsonObect("ctlSQLGrid", opt, def);
+    if (!opt.IsNull()) { // check
+		int tmp=opt["thousandsWidthSeparator"].AsInt();
+        if (tmp<-15 || tmp>15) opt["thousandsWidthSeparator"]=def["thousandsWidthSeparator"];
+    }
+    else 
+        opt = def;
+	int thousandsWidthSeparator = opt["thousandsWidthSeparator"].AsInt();
+
+    SetDefaultRenderer(new  CursorCellRenderer(thousandsWidthSeparator));
     //SetUseNativeColLabels(true);
     //UseNativeColHeader(true);
     SetCellHighlightColour(wxColor(0, 0, 0));
 #ifdef __WXGTK__
     wxColour selbg = GetSelectionBackground();
+    wxColour cbg = GetBackgroundColour();
     wxColour labbg = GetLabelBackgroundColour();
     wxString t1 = selbg.GetAsString();
     wxString t2 = labbg.GetAsString();
@@ -92,6 +107,13 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
         if (min > 200) min = min - 30; else min = min + 30;
         wxColour labbgn(min, min, min);
         SetLabelBackgroundColour(labbgn);
+    }
+    if (cline.GetRGB() ==  cbg.GetRGB()) {
+        int min = wxMin(cline.GetBlue(), cline.GetGreen());
+        min = wxMin(min, cline.GetRed());
+        if (min > 200) min = min - 30; else min = min + 30;
+        wxColour newgridclr(min, min, min);
+        SetGridLineColour(newgridclr);
     }
 #endif
     grp = NULL;
@@ -300,10 +322,11 @@ wxString ctlSQLGrid::GetExportLine(int row, wxArrayInt cols)
         head = head + GetColumnName(cols[col]);
         wxString text;
         bool isnull=false;
+        int pgtype=0;
         if ( t && generatesql > 0)
         {
             // only insert , in_list and where list
-            text = t->GetValueWithNull( row, cols[col] , &isnull );
+            text = t->GetValueWithNull( row, cols[col] , &isnull, &pgtype );
         } else text = GetCellValue(row, cols[col]);
 
         wxString cname = GetColumnName(cols[col]);
@@ -1293,6 +1316,196 @@ bool ctlSQLGrid::FullArrayCollapseRowsPlan(bool clear)
     //}
 
     return true;
+}
+
+//// CursorCellRenderer
+
+void CursorCellRenderer::Draw(wxGrid& grid, wxGridCellAttr& attr, wxDC& dc,
+        const wxRect& rect, int row, int col, bool isSelected)
+{
+        int hAlign, vAlign;
+        int sPos = -1;
+        bool multiline = false;
+        attr.GetAlignment(&hAlign, &vAlign);
+        //////////////////////////////////////////////////////////////////////////////
+        //CursorCellRenderer::Draw(grid, attr, dc, rect, row, col, isSelected); //
+        dc.SetBackgroundMode(wxSOLID);
+        bool istruncateLine=false;
+        wxString text = grid.GetCellValue(row, col);
+        int len= text.length();
+        bool isfirst=true;
+        bool isnumber=(hAlign == wxALIGN_RIGHT && len<20 && text.IsNumber());
+        // grey out fields if the grid is disabled
+retry:        
+        if (grid.IsEnabled())
+        {
+            istruncateLine=text.Right(5)=="(...)";
+            if (isSelected)
+            {
+                wxColour clr;
+                if (wxWindow::FindFocus() == grid.GetGridWindow())
+                    clr = grid.GetSelectionBackground();
+                else
+                    clr = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
+
+
+                dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(clr));
+            }
+            else
+            {
+                wxColor color;
+                color.Set(239, 228, 176);
+                if ((sPos = text.Find(wxT('\n'))) != wxNOT_FOUND) {
+                    dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(color));
+                    multiline = true;
+                }
+                else
+                    dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(attr.GetBackgroundColour()));
+            }
+            // replace \t to u+2192
+            wxUniChar cc = 8594;
+            text.Replace("\t", cc);
+        }
+        else
+        {
+            dc.SetBrush(*wxTheBrushList->FindOrCreateBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
+        }
+
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.DrawRectangle(rect);
+        //////////////////////////////////////////////////////////////////////////////
+        SetTextColoursAndFont(grid, attr, dc, isSelected);
+        ctlSQLGrid* ctrl = static_cast<ctlSQLGrid*>(&grid);
+        if (!ctrl->searchStr.IsEmpty()) {
+            int pp;
+            pp = text.Find(ctrl->searchStr);
+            if (pp >= 0) {
+                wxArrayString lines;
+                grid.StringToLines(text, lines);
+                wxRect r;
+                r.y = rect.y;
+                dc.SetBrush(*wxYELLOW_BRUSH);
+                size_t nLines = lines.GetCount();
+                for (size_t l = 0; l < nLines; l++)
+                {
+                    const wxString& line = lines[l];
+                    pp = line.Find(ctrl->searchStr);
+                    if (line.empty() || (pp == -1))
+                    {
+                        r.y += dc.GetCharHeight();
+                        continue;
+                    }
+
+                    int lineWidth, lineWidthP, lineHeight, start = 0;
+                    int dopx=0;
+                    wxString pref;
+                    if (hAlign == wxALIGN_RIGHT) {
+                        start = pp + ctrl->searchStr.Len();
+                        pref = line.substr(start);
+                        if (isnumber) {
+                            int ll=pref.length();
+                            int num_sep=ll/3;
+                            //if (ll % 3 == 0 && num_sep>0 ) num_sep--;
+                            dopx=num_sep*thousands_pixel_sep;
+                        }
+                    }
+                    else
+                        pref = line.substr(start, pp);
+
+                    dc.GetTextExtent(pref, &lineWidthP, &lineHeight);
+                    lineWidthP+=dopx;
+                    r.x = rect.x + lineWidthP;
+                    pref = line.substr(pp, ctrl->searchStr.Len());
+                    dc.GetTextExtent(pref, &lineWidth, &lineHeight);
+                    r.width = lineWidth;
+                    r.height = lineHeight;
+                    if (hAlign == wxALIGN_RIGHT) r.x = rect.x + (rect.width - lineWidth - lineWidthP);
+                    if (!(r.y < (rect.y + rect.height))) { r.y = rect.y + rect.height - 5; r.height = 5; }
+                    if (!((r.x < (rect.x + rect.width)))) { r.x = rect.x + rect.width - 5; r.width = 5; }
+                    dc.DrawRoundedRectangle(r, 3);
+                    break;
+                }
+            }
+        }
+
+        if (!multiline) {
+            //int textWidth = dc.GetTextExtent(text).GetWidth();
+                        wxEllipsizeMode mode(wxELLIPSIZE_END);
+                        if (hAlign == wxALIGN_RIGHT) mode = wxELLIPSIZE_START;
+                        const wxString& ellipsizedText = wxControl::Ellipsize
+                        (
+                            text,
+                            dc,
+                            mode,
+                            rect.GetWidth() - 2,
+                            wxELLIPSIZE_FLAGS_NONE
+                        );
+                        if (ellipsizedText != text) 
+                            text = ellipsizedText; // small width
+                        else
+                            {
+                                bool isDraw=false;
+                                if (isnumber && isfirst) 
+                                    /* Add thousands separator */
+                                {
+                                        int pos = text.find('.');
+                                        if (pos == wxString::npos)
+                                            pos = len;
+                                        int x=rect.GetRight()-1;
+                                        int yb=rect.GetTop();
+                                        int c=0;
+                                        while (pos > 0)
+                                        {
+                                            pos -= 3;
+                                            wxString tri;
+                                            if (pos >= 0)
+                                            {
+                                                tri=text.substr(pos,3);
+                                            } else tri=text.substr(0,pos+3);
+
+                                                wxSize tripl=dc.GetTextExtent(tri);
+                                                x=x-tripl.GetX();
+                                                if (c>0) x-=thousands_pixel_sep;
+                                                dc.DrawText(tri,x,yb);
+                                            c++;
+                                        }
+                                        int new_width=rect.GetRight()-x;
+                                        isfirst=!isfirst;
+                                        if (new_width>=rect.GetWidth()) goto retry; // small width 
+                                        isDraw=true;
+                                }
+                                if (isDraw) return;
+                            }
+        
+        } // this draw one line
+
+        grid.DrawTextRectangle(dc, text,
+            rect, hAlign, vAlign);
+        if (istruncateLine) {
+            dc.SetPen(*wxRED_PEN);
+            dc.DrawLine(wxPoint(rect.x,rect.y+rect.GetHeight()-2),wxPoint(rect.x+rect.width,rect.y+rect.GetHeight()-2));
+        } 
+}
+
+CursorCellRenderer::CursorCellRenderer(int thous_pixel_sep):wxGridCellStringRenderer() {
+    thousands_pixel_sep=thous_pixel_sep;
+}
+wxSize CursorCellRenderer::GetBestSize(wxGrid& grid,
+                                             wxGridCellAttr& attr,
+                                             wxDC& dc,
+                                             int row, int col){
+    dc.SetFont(attr.GetFont());
+    const wxString text=grid.GetCellValue(row, col);
+    wxSize sz=dc.GetMultiLineTextExtent(text);
+    int len=text.length();
+    if (thousands_pixel_sep !=0 && len<20 && text.IsNumber()) {
+        if (text[0]=='-') len--;
+        int num_sep=len/3;
+        if (len % 3 == 0 && num_sep>0 ) num_sep--;
+        sz.x=sz.x+num_sep*thousands_pixel_sep +1;
+
+    }
+    return sz;
 }
 
 

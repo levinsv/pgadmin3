@@ -474,7 +474,8 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
 					if (rows.Count()>0) r=rows[r]; else r=r;
 				}
 				bool isnull=false;
-				wxString text = t->GetValueWithNull( r, e.column , &isnull );
+				int pgtype=0;
+				wxString text = t->GetValueWithNull( r, e.column , &isnull, &pgtype );
 				bool needQuote = false;
 				if (qt == 1)
 				{
@@ -1330,7 +1331,7 @@ wxString sqlResultTable::GetValueFast(int row, int col)
 	}
 	return "";
 }
-wxString sqlResultTable::GetValueWithNull(int row, int col, bool *isnull) {
+wxString sqlResultTable::GetValueWithNull(int row, int col, bool *isnull, int *pgtype) {
 	wxString s;
 	if (thread && thread->DataValid())
 	{
@@ -1340,6 +1341,7 @@ wxString sqlResultTable::GetValueWithNull(int row, int col, bool *isnull) {
 			thread->DataSet()->Locate(row + 1);
 			wxString s = thread->DataSet()->GetVal(col);
 			*isnull = thread->DataSet()->IsNull(col);
+			*pgtype = thread->DataSet()->ColTypClass(col);
 			return s;
 		}
 
