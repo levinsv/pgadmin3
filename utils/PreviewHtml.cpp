@@ -214,7 +214,19 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         saveTokenIfNotEmpty(currWord, PREVIEW_WORD);
         saveTokenIfNotEmpty(currDigits, PREVIEW_DIGITS);
         saveTokenIfNotEmpty(currSep, PREVIEW_SEP);
+        if (fmt == fmtpreview::AUTO && txt.Len()<256) {
+            if (txt.IsNumber()) {
+                wxLongLong l = StrToLongLong(txt);
+                wxString newtxt;
+                if ((l>999 || l<-999)) {
+                    newtxt="<hr>";
+                    saveTokenIfNotEmpty(newtxt, PREVIEW_RAWHTML);
+                    newtxt=NumToStrHuman(l);
+                    saveTokenIfNotEmpty(newtxt, PREVIEW_WORD);
+                }
 
+            }
+        }
 
         // Additonal styled
         wxString findstr = "";

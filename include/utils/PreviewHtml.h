@@ -10,6 +10,8 @@
 #define PREVIEW_ENDFIELD 16
 #define PREVIEW_ENDROW 32
 #define PREVIEW_QUOTE 64
+#define PREVIEW_RAWHTML 128
+
 #define CHKFLAG2(val,par) ((val & par)>0)
 enum class fmtpreview {
     AUTO, AUTOVACCUM,CSV,SIMPLE_TEXT
@@ -61,8 +63,12 @@ private:
     bool saveTokenIfNotEmpty(wxString& savestr, int flag) {
         if (savestr.Length() > 0) {
             wxString tmp = savestr;
-            tmp=escapeHtml(tmp,true);
-            tmp.Replace(" ", "&nbsp;");
+            if (CHKFLAG2(flag, PREVIEW_RAWHTML)) {
+                // nothing
+            } else {
+                tmp=escapeHtml(tmp,true);
+                tmp.Replace(" ", "&nbsp;");
+            }
             if (CHKFLAG2(flag, PREVIEW_ENDROW)) tmp = "<br>";
             if (CHKFLAG2(flag, PREVIEW_DIGITS)) {
                 int l = savestr.Length();
