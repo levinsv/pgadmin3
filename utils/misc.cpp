@@ -1483,28 +1483,52 @@ bool make_identifier(const wxString &strname, wxString &s, wxString &n, bool isl
             } else {if (islower) s=s.MakeLower();}
 	return true;
 }
-/*
-class DirCopyTraverser: public wxDirTraverser {
-public:
-	DirCopyTraverser(const wxString &destBase): m_destBase(destBase) {}
-	virtual wxDirTraverseResult OnFile(const wxString &file) wxOVERRIDE {
-		wxFileName srcFile(file);
-		//wxString relativePath=srcFile.GetPath(wxPATH_DOS,true);
-		srcFile.MakeRelativeTo(m_destBase);
-		wxString destFile=m_destBase+wxFileName::GetPathSeparator()+srcFile.GetFullName();
-		wxFileName destDir(destFile);
-		destDir.RemoveLastDir();
-		if (!destDir.DirExists()) destDir.Mkdir(wxS_DIR_DEFAULT,wxPATH_MKDIR_FULL);
-		if (!wxCopyFile(file,destFile,true)) {
-			wxLogError("Error copy file %s",file);
-			return wxDIR_STOP;
+
+//show help window
+void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size) {
+    FunctionPGHelper fh(htmlHelp);
+    wxString key = "content";
+	// screen size
+		wxPoint posScreen;
+		wxSize sizeScreen;
+		const int displayNum = wxDisplay::GetFromPoint(screenPos);
+		if (displayNum != wxNOT_FOUND)
+		{
+			const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
+			posScreen = rectScreen.GetPosition();
+			sizeScreen = rectScreen.GetSize();
 		}
-		return wxDIR_CONTINUE;
-	}
-	virtual wxDirTraverseResult OnDir(const wxString &file) wxOVERRIDE {
-		return 0;
-	}
-private:
-	wxString m_destBase;
+		else // outside of any display?
+		{
+			// just use the primary one then
+			posScreen = wxPoint(0, 0);
+			sizeScreen = wxGetDisplaySize();
+		}
+
+    wxSize rr(350, 70);
+	if (size.x!=-1) rr=size;
+    popuphelp *m_Popup = new popuphelp(parent, key, &fh, screenPos, rr);
+    if (m_Popup && m_Popup->IsValid() && rr != m_Popup->GetSizePopup()) {
+        // recreate with new size
+        rr = m_Popup->GetSizePopup();
+        delete 	m_Popup;
+        m_Popup = new popuphelp((wxWindow*)winMain, key, &fh, screenPos, rr);
+    }
+    if (m_Popup && m_Popup->IsValid()) {
+        wxSize top_sz = m_Popup->GetSizePopup();
+        wxSize top_new(top_sz);
+		wxPoint p(screenPos);
+        wxPoint oldp(p);
+        if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;
+        if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
+        if (oldp == p) p.x = p.x + 20;
+        m_Popup->Move(p);
+        wxRect r = m_Popup->GetScreenRect();
+        m_Popup->Popup();
+    }
+
+
 }
-*/
+
+
+

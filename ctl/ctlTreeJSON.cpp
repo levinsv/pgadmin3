@@ -53,11 +53,32 @@ void ctlTreeJSON::OnChar(wxKeyEvent& event) {
 		}
 
 	}
+	if (event.GetKeyCode() == WXK_F1) {
+		int x=50;
+		int y=50;
+		this->ClientToScreen(&x,&y);
+		wxPoint screenPos(x,y);
+		wxString helpstr=R"(<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+  <p><b>Ctrl-F</b> - find and colorize nodes</p>
+  <p><b>F3</b> - next find node</p>
+  <p><b>Shift-F3</b> - previos find node</p>
+  <p><b>Insert</b> - copy select node</p>
+  <p><b>Delete</b> - delete select node</p>
+  <p><b>Ctrl-Z</b> - Return source context node.</p>
+</body>
+</html>)";
+		showHelpHtml(this,helpstr,screenPos, wxSize(450,300));
+		return;
+	}
 	if (event.GetKeyCode() == WXK_CONTROL_F) {
 		wxTextEntryDialog dialog(this,
-			wxT("Please enter find string\n")
+			_("Please enter find string\n")
 			,
-			wxT("Find"),
+			_("Find"),
 			m_FindString,
 			wxOK | wxCANCEL);		//setName( dlg.GetValue().wc_str() );
 		if (dialog.ShowModal() == wxID_OK) {

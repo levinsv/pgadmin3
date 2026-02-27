@@ -280,6 +280,7 @@ wxString qtIdent(const wxString &value);    // add " if necessary
 wxString qtTypeIdent(const wxString &value);    // add " if necessary
 
 bool make_identifier(const wxString &strname, wxString &s, wxString &n, bool islower);
+void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size);
 
 #endif
 
