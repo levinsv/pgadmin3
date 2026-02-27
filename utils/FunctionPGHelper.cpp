@@ -231,6 +231,10 @@ order by objname;
                                                     item = browser->GetNextChild(dbssId, cookie2);
                                                 } // next 
 
+                                            } else {
+                                                // brower->db close
+                                                //return wxEmptyString;
+                                                def=_("'The database is closed in the object browser.'");
                                             }
 
                                             goto exitloop; 
