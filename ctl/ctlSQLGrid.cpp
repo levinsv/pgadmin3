@@ -1452,7 +1452,7 @@ retry:
                                         if (pos == wxString::npos)
                                             pos = len;
                                         int x=rect.GetRight()-1;
-                                        int yb=rect.GetTop();
+                                        int yb=rect.GetTop()+1; //GRID_TEXT_MARGIN
                                         int c=0;
                                         while (pos > 0)
                                         {
