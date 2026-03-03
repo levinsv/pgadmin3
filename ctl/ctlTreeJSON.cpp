@@ -71,7 +71,7 @@ void ctlTreeJSON::OnChar(wxKeyEvent& event) {
   <p><b>Ctrl-Z</b> - Return source context node.</p>
 </body>
 </html>)";
-		showHelpHtml(this,helpstr,screenPos, wxSize(450,300));
+		showHelpHtml((wxWindow *)winMain,helpstr,screenPos, wxSize(450,300));
 		return;
 	}
 	if (event.GetKeyCode() == WXK_CONTROL_F) {

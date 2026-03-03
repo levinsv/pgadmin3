@@ -1484,10 +1484,8 @@ bool make_identifier(const wxString &strname, wxString &s, wxString &n, bool isl
 	return true;
 }
 
-//show help window
-void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size) {
-    FunctionPGHelper fh(htmlHelp);
-    wxString key = "content";
+// Get display for ScreenPoint
+wxSize getScreenSizeForPoint(const wxPoint screenPos) {
 	// screen size
 		wxPoint posScreen;
 		wxSize sizeScreen;
@@ -1504,7 +1502,14 @@ void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, 
 			posScreen = wxPoint(0, 0);
 			sizeScreen = wxGetDisplaySize();
 		}
+		return sizeScreen;
+}
+//show help window
+void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size) {
+    FunctionPGHelper fh(htmlHelp);
+    wxString key = "content";
 
+	wxSize sizeScreen=getScreenSizeForPoint(screenPos);
     wxSize rr(350, 70);
 	if (size.x!=-1) rr=size;
     popuphelp *m_Popup = new popuphelp(parent, key, &fh, screenPos, rr);
@@ -1526,7 +1531,7 @@ void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, 
         wxRect r = m_Popup->GetScreenRect();
         m_Popup->Popup();
     }
-
+	//m_Popup->SetFocus();
 
 }
 
