@@ -1498,7 +1498,7 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 	int st = GetStyleAt(pos - 1);
 	int endPos = GetLength();
 	int pend=endPos;
-	int pstart=0;
+	int pstart=pos;
 
 	if (ch == ';') {
 		pend=pos;
@@ -1521,7 +1521,9 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 		int i=IsDBCSLeadByte(ch)? 2 : 1;
 		#else
 		int i=1;
-		if (ch>255) i=2;
+		if (ch>255*255) i=3;
+		else if (ch>255) i=2;
+
 		#endif
 		pos=pos+i;
 		}
@@ -1547,7 +1549,8 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 		int i=IsDBCSLeadByte(ch)? 2 : 1;
 		#else
 		int i=1;
-		if (ch>255) i=2;
+		if (ch>255*255) i=3;
+		else if (ch>255) i=2;
 		#endif
 		pos=pos-i;
 
