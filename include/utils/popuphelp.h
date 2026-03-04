@@ -193,6 +193,23 @@ public:
             if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
             if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
             //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
+            if (event.GetKeyCode() == 'C') {
+
+                if (hist.size()>0 && wxTheClipboard->Open())
+                {
+                    wxString h=hist[hist.size()-1];
+                    // Добавляем данные (можно добавить несколько форматов, если нужно)
+                    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                    dataobj->Add(new wxHTMLDataObject(h));
+                    wxTheClipboard->SetData(dataobj);
+                    wxTheClipboard->Close();
+                }
+                else
+                {
+                    wxLogError("No open clipboard.");
+                }
+
+            }
             if (event.GetKeyCode() == 'S') {
                 wxSize clientSize = this->GetClientSize();
                 // Создаём битмап того же размера
