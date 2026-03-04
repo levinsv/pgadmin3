@@ -193,9 +193,9 @@ public:
             if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
             if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
             //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
-            if (event.GetKeyCode() == 'C') {
+            if (event.GetKeyCode() == 'C' && hist.size()>0) {
 
-                if (hist.size()>0 && wxTheClipboard->Open())
+                if (wxTheClipboard->Open())
                 {
                     wxString h=hist[hist.size()-1];
                     // Добавляем данные (можно добавить несколько форматов, если нужно)
