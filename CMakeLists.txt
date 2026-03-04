@@ -79,6 +79,15 @@ file(GLOB_RECURSE SOURCES
 ##########################################################
 
 add_executable(${PROJECT_NAME} )
+# После сборки — разделить символы и приложение
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Extracting debug symbols..."
+    COMMAND objcopy --only-keep-debug ${PROJECT_NAME} ${PROJECT_NAME}.debug
+    COMMAND objcopy --strip-debug ${PROJECT_NAME}
+    COMMAND objcopy --add-gnu-debuglink=${PROJECT_NAME}.debug ${PROJECT_NAME}
+    COMMENT "Split debug symbols into separate .debug file"
+    VERBATIM
+)
 target_compile_definitions(${PROJECT_NAME} PRIVATE  $<$<CONFIG:Debug>:_DEBUG>)
 target_sources(${PROJECT_NAME} PUBLIC pgAdmin3.cpp ${SOURCES})
 if(CROSS_COMPILE STREQUAL "Windows")

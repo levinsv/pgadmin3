@@ -522,7 +522,7 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
         if (isRowsArray) rowPos = rows.Item(i);
         if (GetRowSize(rowPos) == 0) continue;
         htm += "<tr>\n";
-        htm += wxString::Format("<td id=\"cn\"><pre>%d</pre></td>", rowPos + 1);
+        htm += wxString::Format("<td id=\"cn\"><pre>%ld</pre></td>", rowPos + 1);
         for (int c = 0; c < cols.Count(); c++) {
             wxString text = GetCellValue(rowPos, cols[c]);
             htm += wxString::Format("<td id=\"c%d\"><pre>%s</pre></td>", c, escapeHtml(text, true));

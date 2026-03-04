@@ -429,7 +429,7 @@ bool pgAdmin3::OnInit()
 		dialogTestMode = true;
 
 	// Setup the image handlers and appearance factory before we do any GUI or config stuff
-	::wxInitAllImageHandlers();
+	//::wxInitAllImageHandlers();
 
 	appearanceFactory = new pgAppearanceFactory();
 

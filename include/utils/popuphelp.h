@@ -192,6 +192,42 @@ public:
             if (event.GetKeyCode() == WXK_UP) htmlWindow->ScrollLines(-1);
             if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
             if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
+            //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
+            if (event.GetKeyCode() == 'S') {
+                wxSize clientSize = this->GetClientSize();
+                // Создаём битмап того же размера
+                wxBitmap bitmap(clientSize.x, clientSize.y, -1); // -1 — лучший формат для экрана
+
+                // Создаём DC для рисования в битмап
+                wxMemoryDC memDC;
+                memDC.SelectObject(bitmap);
+
+                // Очищаем фон (опционально, если окно не полностью перерисовано)
+                memDC.SetBackground(*wxWHITE_BRUSH);
+                memDC.Clear();
+
+                // Используем wxClientDC для чтения содержимого окна
+                wxClientDC clientDC(this);
+                // Переносим данные с clientDC в memDC (копируем прямоугольник)
+                // Важно: координаты — относительно окна!
+                memDC.Blit(0, 0, clientSize.x, clientSize.y, &clientDC, 0, 0);
+
+                // Освобождаем DC
+                memDC.SelectObject(wxNullBitmap);
+                // Открываем буфер обмена
+                if (wxTheClipboard->Open())
+                {
+                    // Добавляем данные (можно добавить несколько форматов, если нужно)
+                    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                    dataobj->Add(new wxBitmapDataObject(bitmap));
+                    wxTheClipboard->SetData(dataobj);
+                    wxTheClipboard->Close();
+                }
+                else
+                {
+                    wxLogError("No open clipboard.");
+                }
+            }
 
 
 		});
