@@ -27,6 +27,10 @@ public:
         return isvalid;
     }
     void SetSizePopup(const wxSize& sz) {
+        //wxPoint p=this->GetScreenPosition();
+        //p.x=p.x-50;
+        //p.y=p.y-50;
+        //SetSize(p.x,p.y, sz.x,sz.y,wxSIZE_FORCE);
         SetSize(sz);
         Layout();
         Fit();
@@ -84,7 +88,7 @@ public:
         //htmlWindow->SetInitialSize(wxSize(htmlWindow->GetInternalRepresentation()->GetWidth(),			htmlWindow->GetInternalRepresentation()->GetHeight()));
 
         //SetSize(wxSize(300,150));
-        topsizer->Add(htmlWindow, 1, wxALL, 1);
+        topsizer->Add(htmlWindow, 1, wxEXPAND|wxALL, 1);
 
         //wxButton* bu1 = new wxButton(this, wxID_OK, _("OK"));
         //bu1->SetDefault();
@@ -157,21 +161,30 @@ public:
 	htmlWindow->Bind(wxEVT_KEY_DOWN, [&](wxKeyEvent& event) {
 			if (event.GetKeyCode() == WXK_ESCAPE) { 
                 Hide();
+                event.Skip();
                 return;
 			}
             if (event.GetKeyCode() == WXK_NUMPAD_ADD) { 
                 wxSize sz=this->GetSize();
                 wxSize szh=htmlWindow->GetSize();
-                szh.IncBy(50,50);
-                htmlWindow->SetSize(szh);
-                std::cout << sz.GetWidth() << "," << sz.GetHeight() << std::endl;
-                sz.IncBy(50,50);
-                this->SetSizePopup(sz);
-                wxPoint p;
-                p=this->GetScreenPosition();
-                p.x=p.x-50;
-                p.y=p.y-50;
-                //this->Move(p);
+                int xx, yy;
+                htmlWindow->GetVirtualSize(&xx, &yy);
+                wxPoint p=GetScreenPosition();
+                wxSize sizeScreen=getScreenSizeForPoint(p);
+                if (yy>szh.y) {
+                    if (p.y+sz.y +50 <sizeScreen.y) 
+                            sz.y+=50;
+                             else 
+                        if (p.y>50) {p.y=p.y-50; sz.y+=50;}
+                }
+                if (p.x+sz.x +50 <sizeScreen.x)
+                         sz.x+=50;
+                    else
+                            if (p.x>50) {p.x=p.x-50; sz.x+=50;}
+                SetSize(p.x,p.y,sz.x,sz.y,wxSIZE_USE_EXISTING);
+                Layout();
+                wxSize newsz=GetSize();
+                //std::cout << sz.GetWidth() << "," << sz.GetHeight() << " new: " << newsz.GetWidth() << "," << newsz.GetHeight() << std::endl;
             }
             if (event.GetKeyCode() == WXK_PAGEDOWN) htmlWindow->ScrollPages(1);
             if (event.GetKeyCode() == WXK_PAGEUP) htmlWindow->ScrollPages(-1);
@@ -179,6 +192,59 @@ public:
             if (event.GetKeyCode() == WXK_UP) htmlWindow->ScrollLines(-1);
             if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
             if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
+            //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
+            if (event.GetKeyCode() == 'C' && hist.size()>0) {
+
+                if (wxTheClipboard->Open())
+                {
+                    wxString h=hist[hist.size()-1];
+                    // Добавляем данные (можно добавить несколько форматов, если нужно)
+                    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                    dataobj->Add(new wxHTMLDataObject(h));
+                    wxTheClipboard->SetData(dataobj);
+                    wxTheClipboard->Close();
+                }
+                else
+                {
+                    wxLogError("No open clipboard.");
+                }
+
+            }
+            if (event.GetKeyCode() == 'S') {
+                wxSize clientSize = this->GetClientSize();
+                // Создаём битмап того же размера
+                wxBitmap bitmap(clientSize.x, clientSize.y, -1); // -1 — лучший формат для экрана
+
+                // Создаём DC для рисования в битмап
+                wxMemoryDC memDC;
+                memDC.SelectObject(bitmap);
+
+                // Очищаем фон (опционально, если окно не полностью перерисовано)
+                memDC.SetBackground(*wxWHITE_BRUSH);
+                memDC.Clear();
+
+                // Используем wxClientDC для чтения содержимого окна
+                wxClientDC clientDC(this);
+                // Переносим данные с clientDC в memDC (копируем прямоугольник)
+                // Важно: координаты — относительно окна!
+                memDC.Blit(0, 0, clientSize.x, clientSize.y, &clientDC, 0, 0);
+
+                // Освобождаем DC
+                memDC.SelectObject(wxNullBitmap);
+                // Открываем буфер обмена
+                if (wxTheClipboard->Open())
+                {
+                    // Добавляем данные (можно добавить несколько форматов, если нужно)
+                    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                    dataobj->Add(new wxBitmapDataObject(bitmap));
+                    wxTheClipboard->SetData(dataobj);
+                    wxTheClipboard->Close();
+                }
+                else
+                {
+                    wxLogError("No open clipboard.");
+                }
+            }
 
 
 		});

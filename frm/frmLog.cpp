@@ -393,7 +393,7 @@ void MyThread::getFilename() {
         wxString sql = wxString::Format(
         "select * from ( \
             select current_setting('log_directory') || '/' || name filename, modification filetime, size len \
-            FROM pg_ls_logdir()  where name ~ %s ORDER BY modification DESC limit %d) l order by  filetime ASC", po->conn->qtDbString(mask), limitfiles
+            FROM pg_ls_logdir()  where name ~ %s and name !~'db.csv$' ORDER BY modification DESC limit %d) l order by  filetime ASC", po->conn->qtDbString(mask), limitfiles
         );
 
 

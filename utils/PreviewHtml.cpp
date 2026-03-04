@@ -117,7 +117,7 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         int flag = 0;
         tokens.clear();
         bool quote = false;
-        wxUniChar prevchar;
+        wxUniChar prevchar,quotechar;
         int startstr = -1;
         while (pos < len) {
             c = tmpstr[pos++];
@@ -130,18 +130,20 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
                 html+=c;
                 continue;
             }
-            bool isquote = c == '"';
+            if (!quote && (c=='"' || c=='\'')) quotechar = c;
+            bool isquote = c == quotechar;
             if (quote) {
                 if (prevchar == c && isquote) {
                     // repeat quote
                     prevchar = '\0';
                     continue;
                 }
-                if (prevchar == '"' && !isquote) {
+                if (prevchar == quotechar && !isquote) {
                     // end quote string
                     wxString tmp = tmpstr.Mid(startstr, pos - startstr - 1);
                     saveTokenIfNotEmpty(tmp, PREVIEW_QUOTE);
                     quote = false;
+                    quotechar='\0';
                 }
                 else {
                     prevchar = c;
@@ -214,7 +216,19 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         saveTokenIfNotEmpty(currWord, PREVIEW_WORD);
         saveTokenIfNotEmpty(currDigits, PREVIEW_DIGITS);
         saveTokenIfNotEmpty(currSep, PREVIEW_SEP);
+        if (fmt == fmtpreview::AUTO && txt.Len()<256) {
+            if (txt.IsNumber()) {
+                wxLongLong l = StrToLongLong(txt);
+                wxString newtxt;
+                if ((l>999 || l<-999)) {
+                    newtxt="<hr>";
+                    saveTokenIfNotEmpty(newtxt, PREVIEW_RAWHTML);
+                    newtxt=NumToStrHuman(l);
+                    saveTokenIfNotEmpty(newtxt, PREVIEW_WORD);
+                }
 
+            }
+        }
 
         // Additonal styled
         wxString findstr = "";
