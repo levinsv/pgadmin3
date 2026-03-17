@@ -282,6 +282,7 @@ wxString qtTypeIdent(const wxString &value);    // add " if necessary
 bool make_identifier(const wxString &strname, wxString &s, wxString &n, bool islower);
 wxSize getScreenSizeForPoint(const wxPoint screenPos);
 void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size);
+bool isPortOpen(const wxString& host, int port , int timeout_ms);
 
 #endif
 

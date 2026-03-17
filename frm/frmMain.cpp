@@ -267,8 +267,12 @@ frmMain::frmMain(const wxString &title)
 	browser->SetFocus();
 	wxString selServerName=settings->Read(wxT("Servers/SelectItem"), "");
 	if (selServerName.Len()>0) {
-		wxTreeItemId sel=browser->FindItem(root,selServerName,true);
-		if (sel.IsOk()) browser->SelectItem(sel);
+		wxTreeItemId sel=browser->FindItem(root,selServerName,false);
+		if (sel.IsOk())  {
+			browser->SelectItem(sel);
+			currentObject=browser->GetObject(sel);
+			//execSelChange(sel, true);
+		}
 	}
 
 
@@ -1148,6 +1152,25 @@ wxTreeItemId frmMain::RestoreEnvironment(pgServer *server)
 
 int frmMain::ReconnectServer(pgServer *server, bool restore)
 {
+	if (server->GetPuttyTunnel()) {
+		// check open port
+		int port=server->GetPort();
+		wxString localhost=server->GetName(); // localhost
+		if (!isPortOpen(localhost,port,500)) {
+			server->GetPuttyTunnel()->StartDialog(winMain, server); // execute plugin
+			int count=0;
+			do {
+	        	wxMilliSleep(200);
+				count++;
+			} while (!isPortOpen(localhost,port,500) && count<20); // wait create putty tunnel
+			if (count>=20) {
+				StartMsg(_("Create putty tunnel error."));
+				EndMsg(true);
+				return -1;
+			}
+		}
+	}
+
 	// Create a server object and connect it.
 	wxBusyInfo waiting(wxString::Format(_("Connecting to server %s (%s:%d)"),
 	                                    server->GetDescription().c_str(), server->GetName().c_str(), server->GetPort()), this);
@@ -1312,7 +1335,7 @@ void frmMain::StoreServers()
 				{
 					wxString key;
 					++numServers;
-					if (cursoritem==serveritem) selServerName=server->GetName();
+					if (cursoritem==serveritem) selServerName=browser->GetItemText((serveritem));
 					key.Printf(wxT("Servers/%d/"), numServers);
 					settings->Write(key + wxT("Server"), server->GetName());
 					settings->Write(key + wxT("HostAddr"), server->GetHostAddr());

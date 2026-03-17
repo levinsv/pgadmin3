@@ -17,6 +17,7 @@
 
 class frmMain;
 class pgServer;
+class pluginUtilityFactory;
 
 class pgServerFactory : public pgaFactory
 {
@@ -366,6 +367,10 @@ public:
 	void ShowTreeDetail(ctlTree *browser, frmMain *form = 0, ctlListView *properties = 0, ctlSQLBox *sqlPane = 0);
 	void ShowHint(frmMain *form, bool force);
 	void ShowStatistics(frmMain *form, ctlListView *statistics);
+	void SetPuttyTunnel(pluginUtilityFactory *puttytunnel) {
+		puttyTunnel=puttytunnel;
+	}
+	pluginUtilityFactory* GetPuttyTunnel() {return puttyTunnel;}
 	wxString GetHelpPage(bool forCreate) const
 	{
 		return wxT("pg/managing-databases");
@@ -448,6 +453,7 @@ public:
 	{
 		sslcompression = b;
 	}
+	
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 	//SSH Tunnel
@@ -560,6 +566,7 @@ private:
 	bool inRecovery, replayPaused;
 	wxString receiveLoc, replayLoc, replayTimestamp;
 	wxDateTime confLoadedSince;
+	pluginUtilityFactory *puttyTunnel=NULL; // if exists putty tunnel for pgServer
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 	bool createSSHTunnel();
