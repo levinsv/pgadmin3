@@ -1047,9 +1047,6 @@ bool pgConn::IsAlive()
 
 int pgConn::GetStatus() const
 {
-	if (!this)
-		return PGCONN_BAD;
-
 	if (conn)
 		((pgConn *)this)->connStatus = PQstatus(conn);
 
@@ -1246,7 +1243,7 @@ bool pgConn::TableHasColumn(wxString schemaname, wxString tblname, const wxStrin
 	if (schemaname.IsEmpty())
 		schemaname = wxT("public");
 
-	if (this && GetStatus() == PGCONN_OK)
+	if (GetStatus() == PGCONN_OK)
 	{
 		tblname.Replace(wxT("\\"), wxT("\\\\"));
 		tblname.Replace(wxT("'"), wxT("''"));

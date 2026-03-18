@@ -220,7 +220,7 @@ wxSize GetBestSize(wxGrid& grid,
 
 public:
     void Draw(wxGrid& grid, wxGridCellAttr& attr, wxDC& dc,
-        const wxRect& rect, int row, int col, bool isSelected);
+        const wxRect& rect, int row, int col, bool isSelected) wxOVERRIDE;
         CursorCellRenderer(int thous_pixel_sep);
 private:
 int thousands_pixel_sep;
