@@ -27,8 +27,10 @@
 #define CTRLID_CBDATABASE 4243
 #define CTRLID_CBUSERNAME 4244
 #define CTRLID_CBROLENAME 4245
+#define CTRLID_CBGROUP 4246
 
 BEGIN_EVENT_TABLE(dlgSelectConnection, DialogWithHelp)
+    EVT_COMBOBOX(CTRLID_CBGROUP,       dlgSelectConnection::OnChangeGroup)
 	EVT_COMBOBOX(CTRLID_CBSERVER,      dlgSelectConnection::OnChangeServer)
 	EVT_COMBOBOX(CTRLID_CBDATABASE,    dlgSelectConnection::OnChangeDatabase)
 	EVT_TEXT(CTRLID_CBSERVER,          dlgSelectConnection::OnTextChange)
@@ -56,17 +58,31 @@ dlgSelectConnection::dlgSelectConnection(wxWindow *parent, frmMain *form) :
 	if (form != NULL)
 		style |= wxCB_READONLY;
 
-	cbServer = new ctlComboBoxFix(this, CTRLID_CBSERVER, ConvertDialogToPixels(wxPoint(65, 5)), ConvertDialogToPixels(wxSize(135, 12)), style);
-	cbDatabase = new wxComboBox(this, CTRLID_CBDATABASE, wxEmptyString, ConvertDialogToPixels(wxPoint(65, 20)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
-	cbUsername = new wxComboBox(this, CTRLID_CBUSERNAME, wxEmptyString, ConvertDialogToPixels(wxPoint(65, 35)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
-	cbRolename = new wxComboBox(this, CTRLID_CBROLENAME, wxEmptyString, ConvertDialogToPixels(wxPoint(65, 50)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
+	cbGroup = new wxComboBox(this, CTRLID_CBGROUP, wxEmptyString, ConvertDialogToPixels(wxPoint(70, 5)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
+	cbServer = new ctlComboBoxFix(this, CTRLID_CBSERVER, ConvertDialogToPixels(wxPoint(70, 20)), ConvertDialogToPixels(wxSize(135, 12)), style);
+	cbDatabase = new wxComboBox(this, CTRLID_CBDATABASE, wxEmptyString, ConvertDialogToPixels(wxPoint(70, 35)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
+	cbUsername = new wxComboBox(this, CTRLID_CBUSERNAME, wxEmptyString, ConvertDialogToPixels(wxPoint(70, 50)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
+	cbRolename = new wxComboBox(this, CTRLID_CBROLENAME, wxEmptyString, ConvertDialogToPixels(wxPoint(70, 75)), ConvertDialogToPixels(wxSize(135, 12)), wxArrayString(), style);
 
 	if (form == NULL)
 	{
 		cbServer->SetValue(settings->Read(wxT("QuickConnect/server"), wxEmptyString));
+		cbGroup->SetValue(settings->Read(wxT("QuickConnect/group"), wxEmptyString));
 		cbDatabase->SetValue(settings->Read(wxT("QuickConnect/database"), wxEmptyString));
 		cbUsername->SetValue(settings->Read(wxT("QuickConnect/username"), wxEmptyString));
 		cbRolename->SetValue(settings->Read(wxT("QuickConnect/rolename"), wxEmptyString));
+	} else {
+		wxTreeItemIdValue foldercookie, servercookie;
+		wxTreeItemId folderitem, serveritem;
+		ctlTree *browser = mainForm->GetBrowser();
+		folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
+		cbGroup->Append("");
+		while (folderitem)
+		{
+			wxString grp=browser->GetItemText(folderitem);
+			cbGroup->Append(grp);
+			folderitem = browser->GetNextChild(browser->GetRootItem(), foldercookie);
+		}
 	}
 
 	btnOK->Enable(cbServer->GetValue().Length() > 0 && cbDatabase->GetValue().Length() > 0 && cbUsername->GetValue().Length() > 0);
@@ -84,7 +100,16 @@ wxString dlgSelectConnection::GetHelpPage() const
 	return wxT("connect");
 }
 
-
+void dlgSelectConnection::OnChangeGroup(wxCommandEvent &ev)
+{
+	int sel = cbGroup->GetCurrentSelection();
+	if (sel >= 0)
+	{
+		bool found=BuildServerCombo(currconn);
+		if (!found) cbServer->SetSelection(0);
+		OnChangeServer(ev);
+	}
+}
 void dlgSelectConnection::OnChangeServer(wxCommandEvent &ev)
 {
 	int item;
@@ -307,6 +332,7 @@ pgConn *dlgSelectConnection::CreateConn(wxString &server, wxString &dbname, wxSt
 		if (writeMRU)
 		{
 			settings->Write(wxT("QuickConnect/server"), cbServer->GetValue());
+			settings->Write(wxT("QuickConnect/group"), cbGroup->GetValue());
 			settings->Write(wxT("QuickConnect/database"), cbDatabase->GetValue());
 			settings->Write(wxT("QuickConnect/username"), cbUsername->GetValue());
 			settings->Write(wxT("QuickConnect/rolename"), cbRolename->GetValue());
@@ -314,11 +340,8 @@ pgConn *dlgSelectConnection::CreateConn(wxString &server, wxString &dbname, wxSt
 	}
 	return newconn;
 }
-
-int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
-{
+bool dlgSelectConnection::BuildServerCombo(pgConn *conn) {
 	bool foundServer = false;
-	cbConnection = cb;
 	if (mainForm != NULL)
 	{
 		ctlTree *browser = mainForm->GetBrowser();
@@ -326,11 +349,18 @@ int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
 		wxTreeItemId folderitem, serveritem;
 		pgObject *object;
 		pgServer *server;
-
+		wxString grp;
+		cbServer->Clear();
+	    if (cbGroup->GetCurrentSelection() != wxNOT_FOUND) {
+			grp=cbGroup->GetValue();
+		}
 		folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
 		while (folderitem)
 		{
-			if (browser->ItemHasChildren(folderitem))
+			bool isGroup=true;
+				if (grp.Length()>0) 
+					if (browser->GetItemText(folderitem)!=grp ) isGroup=false;
+			if (browser->ItemHasChildren(folderitem) && isGroup)
 			{
 				serveritem = browser->GetFirstChild(folderitem, servercookie);
 				while (serveritem)
@@ -355,7 +385,6 @@ int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
 			folderitem = browser->GetNextChild(browser->GetRootItem(), foldercookie);
 		}
 	}
-
 	cbServer->SetFocus();
 
 	wxCommandEvent ev;
@@ -390,6 +419,15 @@ int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
 			}
 		}
 	}
+	
+	return foundServer;
+}
+int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
+{
+	bool foundServer = false;
+	cbConnection = cb;
+	currconn=conn;
+	foundServer = BuildServerCombo(conn);
 
 	return ShowModal();
 }

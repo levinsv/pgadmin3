@@ -1535,5 +1535,49 @@ void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, 
 
 }
 
+#include <wx/socket.h>
 
+
+bool isPortOpen(const wxString& host, int port , int timeout_ms) {
+ wxSocketClient client;
+       //client.SetTimeout(1); // 1 секунда таймаут (можно уменьшить до 0.5 или 0.2)
+
+        wxIPV4address addr;
+		addr.Hostname(host);
+		addr.Service(port);
+		// Issue the connection request
+		client.Connect(addr, false);
+ 
+		// Wait until the request completes or until we decide to give up
+		while ( !client.WaitOnConnect(0, timeout_ms) )
+		{
+			break;
+		}
+		bool success = client.IsConnected();
+return success;	
+
+/*     int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        return false;
+    }
+
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    inet_pton(AF_INET, host.c_str(), &addr.sin_addr);
+
+    // Установка таймаута (опционально, для ускорения)
+    timeval tv{};
+    tv.tv_sec = timeout_ms / 1000;
+    tv.tv_usec = (timeout_ms % 1000) * 1000;
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+    int result = connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+
+    close(sock);
+
+    return result == 0;  // true, если порт открыт (сервер принимает соединения)
+ */
+}
 

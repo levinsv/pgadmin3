@@ -382,7 +382,7 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 
 	return 0;
 }
-
+extern pluginUtilityFactory *puttyTunnel;
 bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 {
 	// First check that this is one of the supported server types
@@ -403,7 +403,6 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 		if (server_types.Index(serverType) == wxNOT_FOUND)
 			return false;
 	}
-
 	// Now check that this is one of the supported object types
 	// for this plugin. If none are specified, then anything goes
 	if (obj && applies_to.Count() > 0)
@@ -414,11 +413,14 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 			else {
 				//"puttyforward"
 				int id=GetId();
-				if (winMain==NULL) return false;
-				wxMenu *m=winMain->GetPluginsMenu();
-				m->SetLabel(id,"[Putty tunnel forward]");
+				wxMenu *m=NULL;
+				if (winMain) {
+					m=winMain->GetPluginsMenu();
+					m->SetLabel(id,"[Putty tunnel forward]");
+				}
 				if (obj->GetMetaType()==PGM_SERVER) {
 					pgServer* srv = (pgServer*) obj;
+					srv->SetPuttyTunnel(NULL);
 					wxString host=obj->GetName();
 					wxString sport=NumToStr((long)srv->GetPort());
 					wxString f ;
@@ -447,8 +449,10 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 												if (port.Len()>0 && port[0]=='L' && sport==port.substr(1)) {
 													// found putty config
 													title=filename;
-													m->SetLabel(id,title);
+													if (winMain) m->SetLabel(id,title);
 													isfound=true;
+													srv->SetPuttyTunnel(this);
+													if (!winMain) return false;
 													return true;
 												}
 											}

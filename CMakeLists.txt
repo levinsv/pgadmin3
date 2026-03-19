@@ -77,7 +77,8 @@ file(GLOB_RECURSE SOURCES
 )
 
 ##########################################################
-
+set(RPATH ".")
+list(APPEND CMAKE_BUILD_RPATH ${RPATH})
 add_executable(${PROJECT_NAME} )
 # После сборки — разделить символы и приложение
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

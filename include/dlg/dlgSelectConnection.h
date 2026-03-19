@@ -36,15 +36,17 @@ public:
 
 private:
 	void OnChangeServer(wxCommandEvent &ev);
+	void OnChangeGroup(wxCommandEvent &ev);
 	void OnChangeDatabase(wxCommandEvent &ev);
 	void OnTextChange(wxCommandEvent &ev);
 	void OnOK(wxCommandEvent &ev);
 	void OnCancel(wxCommandEvent &ev);
-
+    bool BuildServerCombo(pgConn *conn);
 	pgServer *remoteServer;
 	wxBitmapComboBox *cbConnection;
 	ctlComboBoxFix *cbServer;
-	wxComboBox     *cbDatabase, *cbUsername, *cbRolename;
+	pgConn *currconn;
+	wxComboBox     *cbDatabase, *cbUsername, *cbRolename, *cbGroup;
 
 	DECLARE_EVENT_TABLE()
 };

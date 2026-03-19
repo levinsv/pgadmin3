@@ -972,16 +972,16 @@ int FormatterSQL::ParseSql(int flags) {
                     vi.txt = tmp;
                     vi.type = keyword;
                     vi.flags = flg;
-                    if (tmp == "from" && i2 >= 2) {
+                    if (tmp == "from" && i2 >= 2) { // special case "distinct from" this no "from"
                         wxString s = items[items.size() - 2].txt;
                         if (s.Len() >= 8 && s.substr(s.Len() - 8).CmpNoCase("distinct") == 0) {
                             vi.flags = 0;
                         }
                     }
-                    if (keyEntities[n].name == "case") {
+                    if (strcmp(keyEntities[n].name,"case") == 0) {
                         bracket.push(items.size());
                     }
-                    else if (keyEntities[n].name == "end") {
+                    else if (strcmp(keyEntities[n].name,"end") == 0) {
                         int idx = -1;
                         if (bracket.size() > 0) {
                             idx = bracket.top();
@@ -994,14 +994,17 @@ int FormatterSQL::ParseSql(int flags) {
                         vi.endlevel = idx;
                         if (idx != -1) items[idx].endlevel = items.size();
 
-                    } else if (keyEntities[n].name == "then"||
-                               keyEntities[n].name == "loop"  ) { // for plpgsql
+                    } else if (strcmp(keyEntities[n].name, "then")== 0 ||
+                               strcmp(keyEntities[n].name,"loop") == 0  ) { // for plpgsql query without ";"
                         // if ... then 
                         // while  ... loop or for .. in query loop
+
+                        // special break parse query ONLY recurse level == 0
                         if (bracket.size() == 0) {
-                            i=i+tmp.Len()-1;
+                            i=i+tmp.Len()-1; // skip stop keyword
                             break;
                         }
+                        // 
                     }
                 }
                 i += tmp.Len() - 1;

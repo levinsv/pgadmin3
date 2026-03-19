@@ -202,7 +202,10 @@ public:
                     wxDataObjectComposite* dataobj = new wxDataObjectComposite();
                     dataobj->Add(new wxHTMLDataObject(h));
                     wxTheClipboard->SetData(dataobj);
-                    wxTheClipboard->Close();
+                    // fix for linux app crush 
+                    wxSafeYield(); 
+                    wxTheClipboard->Close(); // crush app without wxSafeYield(); 
+                    
                 }
                 else
                 {
