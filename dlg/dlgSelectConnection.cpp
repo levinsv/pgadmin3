@@ -255,6 +255,13 @@ pgConn *dlgSelectConnection::CreateConn(wxString &applicationname, bool &created
 {
 	/* gcc requires that we store this in temporary variables for some reason... */
 	wxString serv = cbServer->GetValue();
+	int sel=cbServer->GetSelection();
+	if (sel>=0) {
+		remoteServer = (pgServer *)cbServer->wxItemContainer::GetClientData(sel);
+		if (remoteServer) {
+			serv=remoteServer->GetIdentifier();
+		}
+	}
 	wxString db = cbDatabase->GetValue();
 
 	createdNew = true;
@@ -351,6 +358,7 @@ bool dlgSelectConnection::BuildServerCombo(pgConn *conn) {
 		pgServer *server;
 		wxString grp;
 		cbServer->Clear();
+		cbServer->Refresh();		
 	    if (cbGroup->GetCurrentSelection() != wxNOT_FOUND) {
 			grp=cbGroup->GetValue();
 		}
@@ -369,7 +377,8 @@ bool dlgSelectConnection::BuildServerCombo(pgConn *conn) {
 					if (object && object->IsCreatedBy(serverFactory))
 					{
 						server = (pgServer *)object;
-						cbServer->Append(server->GetIdentifier(), (void *)server);
+						wxString txt=browser->GetItemText(serveritem);
+						cbServer->Append(txt, (void *)server);
 						if (server->GetConnected() &&
 						        server->GetConnection()->GetHost() == conn->GetHost() &&
 						        server->GetConnection()->GetPort() == conn->GetPort())
@@ -378,6 +387,7 @@ bool dlgSelectConnection::BuildServerCombo(pgConn *conn) {
 							remoteServer = server;
 							foundServer = true;
 						}
+						cbServer->SetClientData(cbServer->GetCount() - 1, server);
 					}
 					serveritem = browser->GetNextChild(folderitem, servercookie);
 				}
@@ -385,6 +395,7 @@ bool dlgSelectConnection::BuildServerCombo(pgConn *conn) {
 			folderitem = browser->GetNextChild(browser->GetRootItem(), foldercookie);
 		}
 	}
+	
 	cbServer->SetFocus();
 
 	wxCommandEvent ev;
