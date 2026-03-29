@@ -32,7 +32,7 @@ bool reportAwrFactory::CheckEnable(pgObject* obj)
 {
 	if (obj)
 	{
-		if ((obj->GetMetaType() == PGM_DATABASE ) && !obj->IsCollection() && obj->GetConnection()->HasFeature(FEATURE_PGPRO_PWR))
+		if ((obj->GetMetaType() == PGM_DATABASE ) && !obj->IsCollection() && obj->GetConnection() && obj->GetConnection()->HasFeature(FEATURE_PGPRO_PWR))
 			return true;
 		else
 			return false;
