@@ -26,6 +26,7 @@
 #include "schema/pgSchema.h"
 #include "schema/pgTable.h"
 #include "utils/sysSettings.h"
+#include "utils/registry.h"
 
 void frmMain::LoadPluginUtilities()
 {
@@ -418,7 +419,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 					m=winMain->GetPluginsMenu();
 					m->SetLabel(id,"[Putty tunnel forward]");
 				}
-				if (obj->GetMetaType()==PGM_SERVER) {
+				if (obj->GetMetaType()==PGM_SERVER && !obj->IsCollection()) {
 					pgServer* srv = (pgServer*) obj;
 					srv->SetPuttyTunnel(NULL);
 					wxString host=obj->GetName();
@@ -426,43 +427,83 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 					wxString f ;
 					bool isfound=false;
 					title="[puttyforward]";
-					if (host.CmpNoCase("localhost")==0 ||host=="127.0.0.1") {
-						wxString path=wxFileName::GetHomeDir()+sepPath+".putty"+sepPath+"sessions";
-						if (wxDirExists(path)) {
-							f = wxFindFirstFile(path+sepPath+"*");
-							while ( !f.empty() )
-							{
-								wxString filename=f.AfterLast(sepPath);
-								{
-									wxString fcont=FileRead(f);
-									wxStringTokenizer tkz(fcont, wxT("\n"));
+					if (host.CmpNoCase("localhost") == 0 || host == "127.0.0.1") {
+#ifdef __WXMSW__
+						wxString path = "SOFTWARE\\SimonTatham\\PuTTY\\Sessions";
+						pgRegKey* pgKey = pgRegKey::OpenRegKey(HKEY_CURRENT_USER, path);
+						if (pgKey != NULL) {
+							pgRegKey* dirKey = NULL;
+							wxString dirName;
+							wxString token;
+							long cookie = 0;
+							bool flag = false;
 
-									// Loop round the lines in the file. Everytime we find a new 'Title' value
-									// we create the current plugin and start a new one
-									while(tkz.HasMoreTokens())
+							flag = pgKey->GetFirstKey(dirKey, cookie);
+
+							while (flag != false)
+							{
+								dirName = dirKey->GetKeyName();
+								token = wxEmptyString;
+								dirKey->QueryValue("PortForwardings", token);
+								wxString forward = token;
+								wxString port = forward.BeforeFirst('=').Trim();
+								if (port.Len() > 0 && port[0] == 'L' && sport == port.substr(1)) {
+									// found putty config
+									title = dirName;
+									if (winMain) m->SetLabel(id, title);
+									isfound = true;
+									srv->SetPuttyTunnel(this);
+									delete dirKey;
+									delete pgKey;
+									if (!winMain) return false;
+									return true;
+								}
+
+								delete dirKey;
+								// Get the next one...
+								flag = pgKey->GetNextKey(dirKey, cookie);
+							}
+							delete pgKey;
+						}
+#else
+							wxString path = wxFileName::GetHomeDir() + sepPath + ".putty" + sepPath + "sessions";
+							if (wxDirExists(path)) {
+								f = wxFindFirstFile(path + sepPath + "*");
+								while (!f.empty())
+								{
+
+									wxString filename = f.AfterLast(sepPath);
 									{
-										wxString token = tkz.GetNextToken();
-										if (token.Lower().StartsWith(wxT("portforwardings=")))
+										wxString fcont = FileRead(f);
+										wxStringTokenizer tkz(fcont, wxT("\n"));
+
+										// Loop round the lines in the file. Everytime we find a new 'Title' value
+										// we create the current plugin and start a new one
+										while (tkz.HasMoreTokens())
+										{
+											wxString token = tkz.GetNextToken();
+											if (token.Lower().StartsWith(wxT("portforwardings=")))
 											{
 												wxString forward = token.AfterFirst('=').Trim();
-												wxString port=forward.BeforeFirst('=').Trim();
-												if (port.Len()>0 && port[0]=='L' && sport==port.substr(1)) {
+												wxString port = forward.BeforeFirst('=').Trim();
+												if (port.Len() > 0 && port[0] == 'L' && sport == port.substr(1)) {
 													// found putty config
-													title=filename;
-													if (winMain) m->SetLabel(id,title);
-													isfound=true;
+													title = filename;
+													if (winMain) m->SetLabel(id, title);
+													isfound = true;
 													srv->SetPuttyTunnel(this);
 													if (!winMain) return false;
 													return true;
 												}
 											}
 
+										}
+
 									}
-									
+									f = wxFindNextFile();
 								}
-							f = wxFindNextFile();
 							}
-						}
+#endif
 					}
 				}
 				return false;

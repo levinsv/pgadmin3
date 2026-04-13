@@ -2151,6 +2151,7 @@ wxWindow *disconnectServerFactory::StartDialog(frmMain *form, pgObject *obj)
 				if (server) {
 					idserver=server->GetId();
 					form->execSelChange(idserver, false);
+					form->GetBrowser()->SelectItem(idserver);
 				} else return 0;
 			} else {
 					idserver=obj->GetId();
@@ -2160,7 +2161,7 @@ wxWindow *disconnectServerFactory::StartDialog(frmMain *form, pgObject *obj)
 			{
 				wxString msg = _("There are properties dialogues open for one or more objects belonging to a database which will be disconnected. Please close the properties dialogues and try again.");
 				wxMessageBox(msg, _("Cannot disconnect database"), wxICON_WARNING | wxOK);
-			} else 
+			} else
 				{
 				server->Disconnect(form);
 				server->UpdateIcon(form->GetBrowser());
