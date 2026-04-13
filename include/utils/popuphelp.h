@@ -251,6 +251,7 @@ public:
             //wxString s = wxString::Format("cell = %s",ctext.c_str());
         });
 	Bind(wxEVT_CHAR_HOOK, &popuphelp::keyProcessing,this);
+    htmlWindow->Bind(wxEVT_RIGHT_DOWN, [&](wxMouseEvent& event) {});
     htmlWindow->Bind(wxEVT_RIGHT_UP, [&](wxMouseEvent& event) {
         wxString name;
         wxLongLong e = wxGetLocalTimeMillis();
