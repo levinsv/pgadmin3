@@ -991,7 +991,7 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         // recreate with new size
         rr = m_Popup->GetSizePopup();
         delete 	m_Popup;
-        m_Popup = new popuphelp((wxWindow*)winMain, key, &fh, p, rr);
+        m_Popup = new popuphelp(this, key, &fh, p, rr);
 
     }
     if (m_Popup && m_Popup->IsValid()) {

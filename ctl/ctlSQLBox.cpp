@@ -90,7 +90,7 @@ ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	m_dlgFindReplace = 0;
 	m_dlgTransformText = 0;
 	m_database = NULL;
-	
+
 	m_autocompDisabled = false;
 	process = 0;
 	processID = 0;
@@ -378,7 +378,7 @@ void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
 					int spos=0;
 					if (ind>0) {
 						spos=IndicatorStart(9,curr);
-						if (spos>=0) { 
+						if (spos>=0) {
 							epos=IndicatorEnd(9,curr);
 							len=epos-spos;
 							//len=PositionRelative(spos,epos);
@@ -386,7 +386,7 @@ void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
 							IndicatorClearRange(spos,len);
 						}
 					} else {
-							// goto 
+							// goto
 								epos=IndicatorEnd(9,curr);
 								if (epos==0) return;
 								if (epos==GetTextLength()) {
@@ -396,13 +396,13 @@ void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
 										GotoPos(epos);
 										return;
 									}
-										 
+
 								}
 								if (epos!=GetTextLength()) {
 									epos=IndicatorEnd(9,epos);
 									GotoPos(epos);
 								}
-									
+
 					}
 			}
 
@@ -637,7 +637,7 @@ void ctlSQLBox::OnCopy(wxCommandEvent& ev) {
 	Copy();
 }
 void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
-	
+
 	FunctionPGHelper *fh=winMain->GetFunctionPGHelper();
 	int pos = GetCurrentPos();
 	if (!fh->isValid()) return;
@@ -685,12 +685,12 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	if (bigtext) {
 		rr.x=(int) sizeScreen.x*0.8;rr.y=sizeScreen.y*0.7;
 	}
-	m_PopupHelp = new popuphelp(this->GetParent(), key, fh,p,rr);
+	m_PopupHelp = new popuphelp(this, key, fh,p,rr);
 	if (m_PopupHelp && m_PopupHelp->IsValid() && rr != m_PopupHelp->GetSizePopup() && !bigtext) {
 		// recreate with new size
 		rr = m_PopupHelp->GetSizePopup();
 		delete 	m_PopupHelp;
-		m_PopupHelp = new popuphelp(this->GetParent(), key, fh, p, rr);
+		m_PopupHelp = new popuphelp(this, key, fh, p, rr);
 
 	}
 	if (m_PopupHelp && m_PopupHelp->IsValid()) {
@@ -756,7 +756,7 @@ void ctlSQLBox::Colourise(int start, int end)
 				}
 			}
 			hword = -1;
-			
+
 nextchar:
 #ifdef WIN32
 			int i = IsDBCSLeadByte(ch) ? 2 : 1;
@@ -882,7 +882,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		}
 		if (!AutoCompActive()) {
 			// work only hide autocomplite
-		
+
 			if (m_hint_mode) {
 				if (event.GetKeyCode() == WXK_RIGHT && event.GetModifiers() == wxMOD_ALT && !hint.IsEmpty()) {
 					wxString ins = hint.substr(s.length());
@@ -954,7 +954,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			return;
 
 		}
-		
+
 		if ((event.GetKeyCode() == '9')&&(event.GetModifiers() == (wxMOD_SHIFT)))
 		{
 			int pos = GetCurrentPos() ;
@@ -1027,7 +1027,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 							if (pos==wxNOT_FOUND||(pos==calltip.length())) pos=ct_hl;
 							}
 							CallTipSetHighlight(prev,pos);
-							
+
 							ct_hl=pos;
 						}
 	}
@@ -1079,7 +1079,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			{
 				f=true;
 			}
-			
+
 
 		if (t.EndsWith(rpl)&&f)
 		{
@@ -1354,7 +1354,7 @@ wxString ctlSQLBox::ExternalFormat(int typecmd)
 				break;
 			}
 			wxArrayString choiceCmpOpts;
-			
+
 			choiceCmpOpts.Add(_("All line (use all EOL)"));
 			choiceCmpOpts.Add(_("First line pattern (ignore all but the first EOL)"));
 			choiceCmpOpts.Add(_("Try looking for patterns above"));
@@ -1527,7 +1527,7 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 		#endif
 		pos=pos+i;
 		}
-		
+
 	}
 		pos--;
 		while ((pos) >= 0)
@@ -1558,7 +1558,7 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 		if (startposition<0) SetSelection(pstart,pend);
 		//return result {pstart,pend};
 		return std::make_pair(pstart, pend);
-		
+
 }
 void ctlSQLBox::HighlightBrace(int start, int len, int inicator) {
             {
@@ -1688,7 +1688,7 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 			}
 			ident.Clear();
 			}
-			
+
 		}
 		if (st != 1 &&st != 2 && st != 6 && st != 7 &&(ch==';')&&startsql==0) startsql=pos+1;
 		if (( ch == '}' ||
@@ -1708,11 +1708,11 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 		}
 	}
 
-	
+
 	int endtext= GetLength();
 	bool isfrom=false;
 	pos=startsql;
-	
+
 	ident.Clear();
 	while (pos<endtext) {
 		ch = GetCharAt(pos);
@@ -1829,7 +1829,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	if (isAddNewLine) newline = L"\u2936<br>";
 	//if (isAddNewLine) newline = L"&ldca;<br>";
 	//if (isAddNewLine) newline = L"<br>\x0b78";
-	
+
 	int IndexObj=0;
 	int pos=999999999;
 	wxString obj;
@@ -1851,13 +1851,13 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		int s = 0;
 		//wxUniChar c = selText[k].GetValue();
 		if (c == '\r') {  k++; continue; };
-		
+
 		if (c == '\n') { lstr += newline;  k++; continue; };
 		if (c == 9) s = 5;
 		if (c == 32) s = 1;
 		if (c == '<') { lstr+="&lt;";  k++; continue; };
 		if (c == '>') { lstr+="&gt;";  k++; continue; };
-		if (c == '&') { lstr+="&amp;";  k++; continue; };		
+		if (c == '&') { lstr+="&amp;";  k++; continue; };
 		if (s > 0) for (int tt = 0; tt < s; tt++) lstr += "&nbsp;";
 		else lstr += c;
 		k++;
@@ -1895,7 +1895,7 @@ void ctlSQLBox::Copy() {
 			wxTheClipboard->SetData(dataobj);
 			wxTheClipboard->Close();
 		}
-		
+
 	} else wxStyledTextCtrl::Copy();
 
 
@@ -1920,7 +1920,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 	int poshome=PositionFromLine(GetCurrentLine());
 	int posspc=PositionRelative(poshome,spaceidx);
 	if (spaceidx != -1) {
-		
+
 		while (poshome< posspc) {
 			int ch = GetCharAt(posspc);
 			int st = GetStyleAt(posspc) & 0x1F;
@@ -1932,7 +1932,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 			} else if (ch==' ') {
 				break;
 			}
-			
+
 		}
 		wxString lastexp=GetTextRange(PositionFromLine(GetCurrentLine()),posspc);
 		spacecharidx=lastexp.Length();
@@ -2019,7 +2019,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 				if (!field.IsEmpty()) {
 					wxString lf;
 					wxString tabn;
-					
+
 					wxString r=f.GetColsList(field, lf, tabn);
 					if (r == "\t") r.clear();
 					int l2 = 0;
@@ -2111,7 +2111,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 			}
 			wxString f_name;
 			if (!fl && !alias.IsEmpty()) {
-				
+
 				wxString lst=list_table;
 				wxString table;
 				//alias.Replace(wxT("."), wxT(""));
@@ -2151,7 +2151,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 				AutoCompShow(l2, prev);
 				return;
 				}
-				//list_table.Find(alias	
+				//list_table.Find(alias
 			}
 			l=0;
 			for (int kk=what.Len()-1;kk>=0;kk--) {

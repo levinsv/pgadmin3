@@ -37,7 +37,99 @@ public:
         sizew = sz;
     }
     wxSize GetSizePopup() { return sizew; }
-    popuphelp(wxWindow* parent,wxString keyword, FunctionPGHelper *hhelper,wxPoint &posit,wxSize &newSz) : wxPopupTransientWindow(parent) {
+    void keyProcessing(wxKeyEvent& event) {
+        if (event.GetKeyCode() == WXK_ESCAPE) {
+            Hide();
+            event.Skip();
+            return;
+        }
+        if (event.GetKeyCode() == WXK_NUMPAD_ADD) {
+            wxSize sz = this->GetSize();
+            wxSize szh = htmlWindow->GetSize();
+            int xx, yy;
+            htmlWindow->GetVirtualSize(&xx, &yy);
+            wxPoint p = GetScreenPosition();
+            wxSize sizeScreen = getScreenSizeForPoint(p);
+            if (yy > szh.y) {
+                if (p.y + sz.y + 50 < sizeScreen.y)
+                    sz.y += 50;
+                else
+                    if (p.y > 50) { p.y = p.y - 50; sz.y += 50; }
+            }
+            if (p.x + sz.x + 50 < sizeScreen.x)
+                sz.x += 50;
+            else
+                if (p.x > 50) { p.x = p.x - 50; sz.x += 50; }
+            SetSize(p.x, p.y, sz.x, sz.y, wxSIZE_USE_EXISTING);
+            Layout();
+            wxSize newsz = GetSize();
+            //std::cout << sz.GetWidth() << "," << sz.GetHeight() << " new: " << newsz.GetWidth() << "," << newsz.GetHeight() << std::endl;
+        }
+        if (event.GetKeyCode() == WXK_PAGEDOWN) htmlWindow->ScrollPages(1);
+        if (event.GetKeyCode() == WXK_PAGEUP) htmlWindow->ScrollPages(-1);
+        if (event.GetKeyCode() == WXK_DOWN) htmlWindow->ScrollLines(1);
+        if (event.GetKeyCode() == WXK_UP) htmlWindow->ScrollLines(-1);
+        if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
+        if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
+        //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
+        if (event.GetKeyCode() == 'C' && hist.size() > 0) {
+
+            if (wxTheClipboard->Open())
+            {
+                wxString h = hist[hist.size() - 1];
+                // Добавляем данные (можно добавить несколько форматов, если нужно)
+                wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+                dataobj->Add(new wxHTMLDataObject(h));
+                wxTheClipboard->SetData(dataobj);
+                // fix for linux app crush
+                wxSafeYield();
+                wxTheClipboard->Close(); // crush app without wxSafeYield();
+
+            }
+            else
+            {
+                wxLogError("No open clipboard.");
+            }
+
+        }
+        if (event.GetKeyCode() == 'S') {
+            wxSize clientSize = this->GetClientSize();
+            // Создаём битмап того же размера
+            wxBitmap bitmap(clientSize.x, clientSize.y, -1); // -1 — лучший формат для экрана
+
+            // Создаём DC для рисования в битмап
+            wxMemoryDC memDC;
+            memDC.SelectObject(bitmap);
+
+            // Очищаем фон (опционально, если окно не полностью перерисовано)
+            memDC.SetBackground(*wxWHITE_BRUSH);
+            memDC.Clear();
+
+            // Используем wxClientDC для чтения содержимого окна
+            wxClientDC clientDC(this);
+            // Переносим данные с clientDC в memDC (копируем прямоугольник)
+            // Важно: координаты — относительно окна!
+            memDC.Blit(0, 0, clientSize.x, clientSize.y, &clientDC, 0, 0);
+
+            // Освобождаем DC
+            memDC.SelectObject(wxNullBitmap);
+            // Открываем буфер обмена
+            if (wxTheClipboard->Open())
+            {
+                // Добавляем данные (можно добавить несколько форматов, если нужно)
+                wxTheClipboard->SetData(new wxBitmapDataObject(bitmap));
+                wxTheClipboard->Close();
+            }
+            else
+            {
+                wxLogError("No open clipboard.");
+            }
+        }
+
+
+    };
+
+    popuphelp(wxWindow* parent,wxString keyword, FunctionPGHelper *hhelper,wxPoint &posit,wxSize &newSz) : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS| wxBORDER_NONE) {
         wxSize top_sz(newSz);
         sizew = top_sz;
         //SetSize(top_sz);
@@ -48,7 +140,7 @@ public:
         int size = fnt.GetPointSize();
         SetFont(fnt);
         htmlWindow = new wxHtmlWindow(this, -1, wxDefaultPosition, sizew);
-        
+
         wxFont font(size, wxFontFamily::wxFONTFAMILY_MODERN, wxFontStyle::wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
         wxString fixf = font.GetFaceName();
         wxString scalf = fnt.GetFaceName();
@@ -64,7 +156,7 @@ public:
 
         htmlWindow->SetRelatedStatusBar(0);
         //htmlWindow->SetPage("<html><body><h1>TEST</h1><span fgcolor=\"#332233\">Set Page Works</span></body></hmtl>");
-        
+
         wxString txt;
         txt=hhelper->getDBinfoKeyword(keyword,true);
         if (txt.IsEmpty()) {
@@ -82,7 +174,7 @@ public:
         //wxSize sz= htmlWindow->GetSize();
         //sz = htmlWindow->GetBestSize();
         //htmlWindow->SetHTMLBackgroundImage(wxBitmapBundle::FromSVGFile("data/bg.svg", wxSize(65, 45)));
-        wxBoxSizer* topsizer; 
+        wxBoxSizer* topsizer;
         topsizer = new wxBoxSizer(wxVERTICAL);
 
         //htmlWindow->SetInitialSize(wxSize(htmlWindow->GetInternalRepresentation()->GetWidth(),			htmlWindow->GetInternalRepresentation()->GetHeight()));
@@ -129,7 +221,7 @@ public:
 
     //this->Bind(wxEVT_HTML_CELL_CLICKED, [&](wxHtmlCellEvent& event) {
     //	wxHtmlCell* c = event.GetCell();
-    //	
+    //
     //	wxString ctext=c->ConvertToText(NULL);
     //	ctext=htmlWindow->SelectionToText();
     //	wxString s = wxString::Format("cell = %s",ctext.c_str());
@@ -146,7 +238,7 @@ public:
                 SetPage(body);
             }
             return;
-        } 
+        }
         body=this->hhelper->getDBinfoKeyword(name,false);
         if (body.IsEmpty()) {
             body=this->hhelper->getHelpString(name);
@@ -158,99 +250,7 @@ public:
             //ctext=htmlWindow->SelectionToText();
             //wxString s = wxString::Format("cell = %s",ctext.c_str());
         });
-	htmlWindow->Bind(wxEVT_KEY_DOWN, [&](wxKeyEvent& event) {
-			if (event.GetKeyCode() == WXK_ESCAPE) { 
-                Hide();
-                event.Skip();
-                return;
-			}
-            if (event.GetKeyCode() == WXK_NUMPAD_ADD) { 
-                wxSize sz=this->GetSize();
-                wxSize szh=htmlWindow->GetSize();
-                int xx, yy;
-                htmlWindow->GetVirtualSize(&xx, &yy);
-                wxPoint p=GetScreenPosition();
-                wxSize sizeScreen=getScreenSizeForPoint(p);
-                if (yy>szh.y) {
-                    if (p.y+sz.y +50 <sizeScreen.y) 
-                            sz.y+=50;
-                             else 
-                        if (p.y>50) {p.y=p.y-50; sz.y+=50;}
-                }
-                if (p.x+sz.x +50 <sizeScreen.x)
-                         sz.x+=50;
-                    else
-                            if (p.x>50) {p.x=p.x-50; sz.x+=50;}
-                SetSize(p.x,p.y,sz.x,sz.y,wxSIZE_USE_EXISTING);
-                Layout();
-                wxSize newsz=GetSize();
-                //std::cout << sz.GetWidth() << "," << sz.GetHeight() << " new: " << newsz.GetWidth() << "," << newsz.GetHeight() << std::endl;
-            }
-            if (event.GetKeyCode() == WXK_PAGEDOWN) htmlWindow->ScrollPages(1);
-            if (event.GetKeyCode() == WXK_PAGEUP) htmlWindow->ScrollPages(-1);
-            if (event.GetKeyCode() == WXK_DOWN) htmlWindow->ScrollLines(1);
-            if (event.GetKeyCode() == WXK_UP) htmlWindow->ScrollLines(-1);
-            if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
-            if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
-            //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
-            if (event.GetKeyCode() == 'C' && hist.size()>0) {
-
-                if (wxTheClipboard->Open())
-                {
-                    wxString h=hist[hist.size()-1];
-                    // Добавляем данные (можно добавить несколько форматов, если нужно)
-                    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
-                    dataobj->Add(new wxHTMLDataObject(h));
-                    wxTheClipboard->SetData(dataobj);
-                    // fix for linux app crush 
-                    wxSafeYield(); 
-                    wxTheClipboard->Close(); // crush app without wxSafeYield(); 
-                    
-                }
-                else
-                {
-                    wxLogError("No open clipboard.");
-                }
-
-            }
-            if (event.GetKeyCode() == 'S') {
-                wxSize clientSize = this->GetClientSize();
-                // Создаём битмап того же размера
-                wxBitmap bitmap(clientSize.x, clientSize.y, -1); // -1 — лучший формат для экрана
-
-                // Создаём DC для рисования в битмап
-                wxMemoryDC memDC;
-                memDC.SelectObject(bitmap);
-
-                // Очищаем фон (опционально, если окно не полностью перерисовано)
-                memDC.SetBackground(*wxWHITE_BRUSH);
-                memDC.Clear();
-
-                // Используем wxClientDC для чтения содержимого окна
-                wxClientDC clientDC(this);
-                // Переносим данные с clientDC в memDC (копируем прямоугольник)
-                // Важно: координаты — относительно окна!
-                memDC.Blit(0, 0, clientSize.x, clientSize.y, &clientDC, 0, 0);
-
-                // Освобождаем DC
-                memDC.SelectObject(wxNullBitmap);
-                // Открываем буфер обмена
-                if (wxTheClipboard->Open())
-                {
-                    // Добавляем данные (можно добавить несколько форматов, если нужно)
-                    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
-                    dataobj->Add(new wxBitmapDataObject(bitmap));
-                    wxTheClipboard->SetData(dataobj);
-                    wxTheClipboard->Close();
-                }
-                else
-                {
-                    wxLogError("No open clipboard.");
-                }
-            }
-
-
-		});
+	Bind(wxEVT_CHAR_HOOK, &popuphelp::keyProcessing,this);
     htmlWindow->Bind(wxEVT_RIGHT_UP, [&](wxMouseEvent& event) {
         wxString name;
         wxLongLong e = wxGetLocalTimeMillis();
@@ -322,7 +322,7 @@ private:
                 innerbody.Replace("<body>", "<html><body TEXT=\"#000000\" BGCOLOR=\"#FFFFE0\" LINK=\"#0000FF\" VLINK=\"#FF0000\" ALINK=\"#000088\">", false);
                 h = "" + innerbody + "";
             }
-            else 
+            else
                 h = "<html><body  TEXT=\"#000000\" BGCOLOR=\"#FFFFE0\" LINK=\"#0000FF\" VLINK=\"#FF0000\" ALINK=\"#000088\">" + innerbody + "</body></hmtl>";
 
         if (gethistory) {
@@ -346,7 +346,7 @@ private:
             hist_viewp.pop_back();
             htmlWindow->Scroll(ps);
         } else {
-            // 
+            //
             wxPoint ps(0,0);
             htmlWindow->Scroll(ps);
         }
