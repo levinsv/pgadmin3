@@ -88,8 +88,13 @@ void ctlMenuButton::DoProcessLeftClick(wxMouseEvent &event)
 
 		// ** Assume that pulldown is to the right of a standard toolbar button,
 		//    so, move the x position back one standard toolbar button's width
-		menu_pos.x = - tool_size.GetWidth();
+		menu_pos.x = - tool_size.GetWidth() - button_size.GetHeight() / 2;
 		menu_pos.y =  button_size.GetHeight() / 2 + tool_size.GetHeight() / 2;
+		if (iswayland) {
+			wxPoint ps=GetPosition();
+			menu_pos.x += ps.x;
+			menu_pos.y =tool_size.GetHeight()+button_size.GetHeight() / 2;
+		}
 
 #ifdef __WXMAC__
 		wxSize tbar_size = m_toolBar->GetSize();

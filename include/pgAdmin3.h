@@ -101,7 +101,7 @@ extern wxString settingsIni;            // The default settings file
 extern sysSettings *settings;           // The settings manager
 
 extern frmMain *winMain;                // The main app window
-
+extern bool iswayland;
 extern wxLocale *locale;                // Application locale
 extern wxArrayInt existingLangs;        // Language IDs
 extern wxArrayString existingLangNames; // Language Names

@@ -86,6 +86,7 @@
 // Globals
 frmMain *winMain = 0;
 wxThread *updateThread = 0;
+bool iswayland=true;
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 #include "utils/sshTunnel.h"
@@ -307,6 +308,11 @@ bool pgAdmin3::OnInit()
 		{
 			wxLogNull noLog;
 			locale->AddCatalog(wxT("fileutils"));
+		}
+		wxString value;
+		iswayland=false;
+		if (wxGetEnv("XDG_SESSION_TYPE",&value)) {
+			iswayland=value.Contains("wayland");
 		}
 #endif
 		locale->AddCatalog(wxT("pgadmin3"));
