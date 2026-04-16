@@ -81,6 +81,8 @@
 #include "images/query_cancel.pngc"
 #include "images/query_commit.pngc"
 #include "images/query_rollback.pngc"
+#include "images/mode_transaction.pngc"
+#include "images/mode_autocommit.pngc"
 #include "images/help.pngc"
 #include "images/gqbJoin.pngc"
 #include <map>
@@ -144,6 +146,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_AUTOSELECTQUERY,   frmQuery::OnAutoSelectQuery)
 	EVT_MENU(MNU_AUTOROLLBACK,      frmQuery::OnAutoRollback)
 	EVT_MENU(MNU_AUTOCOMMIT,        frmQuery::OnAutoCommit)
+	EVT_MENU(MNU_MODE_TRANSACTION,  frmQuery::OnModeTransaction)
 	EVT_MENU(MNU_CONTENTS,          frmQuery::OnContents)
 	EVT_MENU(MNU_HELP,              frmQuery::OnHelp)
 	EVT_MENU(MNU_CLEARHISTORY,      frmQuery::OnClearHistory)
@@ -286,7 +289,7 @@ void frmQuery::seticon()
 		wxBitmap bitmap = bb.GetBitmap(wxSize(32, 32));
 
 		//wxBitmap bitmap(f, wxBITMAP_TYPE_PNG);
-		
+
 		if (!bitmap.Ok())
 		{
 			wxMessageBox(wxT("Sorry, could not load png file.\n")+f);
@@ -298,7 +301,7 @@ void frmQuery::seticon()
 		return;
 		//f = wxFindNextFile();
 	}
-	
+
 	wxColor cl=GetServerColour(conn);
 	int rgb = cl.GetRGB();
 	int b = (rgb >> 16) & 255;
@@ -307,7 +310,7 @@ void frmQuery::seticon()
 	if (r == 255 && g == 255 && b == 255) {
 		//SetBitmapBundle()
 		SetIcon(*sql_32_png_ico);
-		
+
 	}
 	else {
 
@@ -421,7 +424,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	editMenu->Append(MNU_AUTOREPLACE_MANAGE, _("Manage autoreplace..."), _("Edit and delete autoreplace strings"));
 	editMenu->Append(MNU_AUTOEDITOBJECT, _("Open object\tF4"), _("Open object in brouser tree"));
 	editMenu->Append(MNU_TRANSFORM, _("Text transform...\tCtrl+M"), _("Open dialog transform"));
-	
+
 	autoreplace = queryMacroFileProvider::LoadAutoReplace(true);
 
 	menuBar->Append(editMenu, _("&Edit"));
@@ -603,8 +606,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	SetStatusText(_("ready"), STATUSPOS_MSGS);
 
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER);
-	wxSize tbsz(32,32);
-	//toolBar->SetToolBitmapSize(wxSize(22, 22));
+	wxSize tbsz((32), (32));
+	toolBar->SetToolBitmapSize(FromDIP(wxSize(32, 32)));
 	wxLogInfo(wxT("frmQuery::Create tool bar .."));
 	toolBar->AddTool(MNU_NEWSQLTAB, wxEmptyString, GetBundleSVG(file_new_png_bmp, "file_new.svg", tbsz), _("New SQL tab"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_OPEN, wxEmptyString, GetBundleSVG(file_open_png_bmp, "file_open.svg", tbsz) , _("Open file"), wxITEM_NORMAL);
@@ -630,9 +633,18 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	toolBar->AddTool(MNU_DOCOMMIT, wxEmptyString, GetBundleSVG(query_commit_png_bmp, "query_commit.svg", tbsz), _("Commit"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_DOROLLBACK, wxEmptyString, GetBundleSVG(query_rollback_png_bmp, "query_rollback.svg", tbsz), _("Rollback"), wxITEM_NORMAL);
+	bool chk = settings->GetAutoCommit();
+	mode_a = GetBundleSVG(mode_autocommit_png_bmp, "mode_autocommit.svg", tbsz);
+	mode_t = GetBundleSVG(mode_transaction_png_bmp, "mode_transaction.svg", tbsz);
+	if (chk)
+		toolBar->AddTool(MNU_MODE_TRANSACTION, wxEmptyString, mode_a, _("Mode transaction"), wxITEM_NORMAL);
+	else
+		toolBar->AddTool(MNU_MODE_TRANSACTION, wxEmptyString, mode_t, _("Mode transaction"), wxITEM_NORMAL);
+
 	toolBar->AddSeparator();
 
 	toolBar->AddTool(MNU_HELP, wxEmptyString, GetBundleSVG(help_png_bmp, "help.svg", tbsz), _("Display help on SQL commands."), wxITEM_NORMAL);
+
 	toolBar->Realize();
 	wxLogInfo(wxT("frmQuery::Create tool bar Ok"));
 	wxSize toolw = toolBar->GetBestSize();
@@ -640,24 +652,6 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	cbConnection = new wxBitmapComboBox(this, CTRLID_CONNECTION, wxEmptyString, wxDefaultPosition, wxSize(-1, -1), wxArrayString(), wxCB_READONLY | wxCB_DROPDOWN);
 	cbConnection->Append(conn->GetName(), CreateBitmap(GetServerColour(conn)), (void *)conn);
 	cbConnection->Append(_("<new connection>"), wxNullBitmap, (void *) NULL);
-	//CTL_BUTTONTRANSACTION
-	btnModeTransaction = new wxButton(this, CTL_BUTTONTRANSACTION, "A",wxDefaultPosition,wxSize(-1, -1),wxMINIMIZE_BOX);
-	//btnModeTransaction->SetMaxSize(wxSize(24,24));
-//	btnModeTransaction->Enable(true);
-	wxFont stdFont = settings->GetSystemFont();
-	wxFont boldFont = stdFont;
-	boldFont.SetWeight(wxFONTWEIGHT_BOLD);
-	btnModeTransaction->SetFont(boldFont);
-	if (settings->GetAutoCommit())
-		btnModeTransaction->SetLabel("A");
-	else 
-		btnModeTransaction->SetLabel("T");
-	
-
-//	btnModeTransaction->Fit();
-	
-	
-	
 
 	//Create SQL editor notebook
 	sqlNotebook = new ctlAuiNotebook(this, CTL_NTBKCENTER, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_WINDOWLIST_BUTTON);
@@ -715,7 +709,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	// Results pane
 	outputPane = new ctlAuiNotebook(this, CTL_NTBKGQB, wxDefaultPosition, wxSize(500, 300), wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS | wxAUI_NB_WINDOWLIST_BUTTON);
 	sqlResult = new ctlSQLResult(outputPane, conn, CTL_SQLRESULT, wxDefaultPosition, wxDefaultSize);
-	
+
 	int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
 	for (int i=0;i<len;i++) ctlSQL[i]=NULL;
 	for (int i=0;i<len;i++) ctlSBox[i]=NULL;
@@ -753,9 +747,8 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	wxSize w1 = cbConnection->GetBestSize();
 	// Kickstart wxAUI
 	manager.AddPane(toolBar, wxAuiPaneInfo().Name(wxT("toolBar")).Caption(_("Tool bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
-	manager.AddPane(btnModeTransaction, wxAuiPaneInfo().Name(wxT("ModeTransaction")).Caption(_("Mode transaction")).ToolbarPane().Top().LeftDockable(false).RightDockable(false).Left().LeftDockable(false));
 	manager.AddPane(cbConnection, wxAuiPaneInfo().Name(wxT("databaseBar")).Caption(_("Connection bar")).ToolbarPane().Top().LeftDockable(false).RightDockable(false));
-	
+
 	manager.AddPane(outputPane, wxAuiPaneInfo().Name(wxT("outputPane")).Caption(_("Output pane")).Bottom().MinSize(wxSize(200, 100)).BestSize(wxSize(550, 300)));
 	manager.AddPane(scratchPad, wxAuiPaneInfo().Name(wxT("scratchPad")).Caption(_("Scratch pad")).Right().MinSize(wxSize(100, 100)).BestSize(wxSize(250, 200)));
 	manager.AddPane(sqlNotebook, wxAuiPaneInfo().Name(wxT("sqlQuery")).Caption(_("SQL query")).Center().CaptionVisible(false).CloseButton(false).MinSize(wxSize(200, 100)).BestSize(wxSize(350, 200)));
@@ -770,17 +763,6 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	manager.GetPane(wxT("databaseBar")).BestSize(w1);
 	manager.GetPane(wxT("toolBar")).BestSize(toolw);
 	manager.GetPane(wxT("databaseBar")).Caption(_("Connection bar"));
-	//manager.GetPane(wxT("ModeTransaction")).Caption(_("Mode transaction"));
-	if (!manager.GetPane(wxT("ModeTransaction")).IsShown()) {
-		//manager.GetPane(wxT("ModeTransaction")).MaxSize(wxSize(22, 22));
-		//manager.GetPane(wxT("ModeTransaction")).BestSize(wxSize(22, 22));
-		wxSize sz=btnModeTransaction->GetSize();
-		int m= std::max(sz.GetWidth(), sz.GetHeight());
-		manager.GetPane(wxT("ModeTransaction")).BestSize(wxSize(m, m));
-		manager.GetPane(wxT("ModeTransaction")).MaxSize(wxSize(m, m));
-		manager.GetPane(wxT("ModeTransaction")).Show(true);
-		
-	}
 	manager.GetPane(wxT("sqlQuery")).Caption(_("SQL query"));
 	manager.GetPane(wxT("outputPane")).Caption(_("Output pane"));
 	manager.GetPane(wxT("scratchPad")).Caption(_("Scratch pad"));
@@ -800,7 +782,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 
 	bool bVal;
 
-	
+
 	// Auto-Select
 	bVal = settings->GetAutoSelectQuery();
 	queryMenu->Check(MNU_AUTOSELECTQUERY, bVal);
@@ -924,12 +906,12 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 				sqlQuery->SetText(str);
 				sqlQuery->Colourise(0, sqlQuery->GetLength());
 				sqlQuery->EmptyUndoBuffer();
-				
+
 				sqlQuery->GotoPos(nl);
 				//wxSafeYield();                            // needed to process sqlQuery modify event
 				sqlQuery->SetOrigin(ORIGIN_INITIAL);
 				sqlQuery->SetChanged(false);
-				
+
 				setExtendedTitle();
 				SqlBookUpdatePageTitle();
 				SaveTempFile();
@@ -944,7 +926,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	 if (!activePage.IsEmpty()) {
 		 //activePage
 		 //outputPane->GetPageText(curpage) == _("History");
-		 
+
 		 int ii = -1;
 		 for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
 			 wxString textpage = sqlQueryBook->GetPageText(i);
@@ -962,7 +944,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		 if (ii!=-1) sqlQueryBook->SetSelection(ii);
 		 //wxLogInfo(wxT("frmQuery::select tab: name=[%s] index=[%d]"), sqlQueryBook->GetPageText(ii), ii);
 	 }
-	//for (int i=1;i<15;i++) 
+	//for (int i=1;i<15;i++)
 	//{
 	//filename=wxString::Format(_("Query %i"), i);
 
@@ -1228,9 +1210,10 @@ void frmQuery::OnAutoCommit(wxCommandEvent &event)
 	bool chk=queryMenu->IsChecked(MNU_AUTOCOMMIT);
 	queryMenu->Check(MNU_AUTOCOMMIT, chk);
 	if (chk)
-		btnModeTransaction->SetLabel("A");
-	else 
-		btnModeTransaction->SetLabel("T");
+		toolBar->SetToolNormalBitmap(MNU_MODE_TRANSACTION, mode_a.GetBitmap(wxDefaultSize));
+	else
+		toolBar->SetToolNormalBitmap(MNU_MODE_TRANSACTION, mode_t.GetBitmap(wxDefaultSize));
+	toolBar->Realize();
 
 	if(chk && conn->GetTxStatus() != PQTRANS_IDLE)
 		wxMessageBox(
@@ -1576,7 +1559,7 @@ void frmQuery::OnChangeNotebookOutpane(wxAuiNotebookEvent &event)
 		size_t curpage = outputPane->GetSelection();
 		if (wxDynamicCast(outputPane->GetPage(curpage), wxTextCtrl))
 		{
-			
+
 			wxTextCtrl *hist = wxDynamicCast(outputPane->GetPage(curpage), wxTextCtrl);
 			//hist->SetInsertionPointEnd();
 			//outputPane->Get
@@ -1590,8 +1573,8 @@ void frmQuery::OnChangeNotebookOutpane(wxAuiNotebookEvent &event)
 		{
 			ctlSQLResult *c=wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult);
 			int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
-			for (int i=0;i<len;i++) 
-				if (ctlSQL[i]!=NULL && c==ctlSQL[i]) 
+			for (int i=0;i<len;i++)
+				if (ctlSQL[i]!=NULL && c==ctlSQL[i])
 				{
 					sqlResult=ctlSQL[i];
 					indexResult=i;
@@ -2232,7 +2215,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Append(MNU_COPY_WHERELIST, _("WHERE list format copy"), _("Copy where list format."));
 	xmenu->Append(MNU_COPY_TABLEHTML, _("Copy table html format"), _("Copy table html format."));
 	if (body_template.Count()>0) {
-//MNU_GENERATE_TEMPLATE		
+//MNU_GENERATE_TEMPLATE
 	wxMenu *submenu = NULL;
 		//wxString t="begin @obj_id@ end";
 		int cnt=0;
@@ -2243,7 +2226,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 				if (submenu==NULL) submenu = new wxMenu();
 				cnt++;
 				submenu->Append(MNU_GENERATESQL+cnt,title_template[i],body_template[i]);
-			}  else 
+			}  else
 				SetStatusText(s, STATUSPOS_MSGS);
 		}
 
@@ -2265,13 +2248,13 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	xmenu->Enable(MNU_COPY_INLIST, sqlResult->IsSelection());
 
 	xmenu->Enable(MNU_COPY_WHERELIST, sqlResult->IsSelection());
-	
+
 	if ((rows.GetCount()))
 	{
 		xmenu->Enable(MNU_COPY, true);
 		xmenu->Enable(MNU_DELETE, true);
 		xmenu->Enable(MNU_PASTE, true);
-		
+
 	}
 	else
 	{
@@ -2320,7 +2303,7 @@ void frmQuery::OnGenerateInvoke(wxCommandEvent& ev)
 	{
 		wxString templ = body_template[id];
 		s=sqlResult->GenerateTemplate(templ,0);
-		
+
 		SetStatusText(s.substr(0,200), STATUSPOS_MSGS);
 	}
 	} else
@@ -2554,7 +2537,7 @@ void frmQuery::SaveTempFile()
 			wxLogError(__("Could not write the file %s: Errcode=%d."), filename.c_str(), wxSysErrorCode());
 		}
 	}
-	
+
 }
 
 void frmQuery::OnSave(wxCommandEvent &event)
@@ -2668,7 +2651,7 @@ void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 				}
 		//int n=mainForm->GetBrowser()->GetChildrenCount(mainForm->GetBrowser()->GetSelection(),false);
 		wxTreeItemId matchItem = mainForm->GetBrowser()->FindItem(obj->GetId(),selText,true);
-		
+
 		if (matchItem.IsOk()) {
 			wxString findtext= mainForm->GetBrowser()->GetItemText(matchItem);
 			pgObject *o=mainForm->GetBrowser()->GetObject(matchItem);
@@ -2676,7 +2659,7 @@ void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 			//showMessage(o->GetName().Lower());
 			if (!o) return;
 			if (o->GetName().Lower()==selText.Lower()) {
-				
+
 				//obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
 				mainForm->execSelChange(matchItem,false);
 				//obj=o;
@@ -3041,7 +3024,7 @@ void frmQuery::SelectQuery() {
 		// группы серверов/Серверы/serverN/Datebases/dbname
 		sqlQuery->SetSelection(s,e);
 	}
-	
+
 }
 void frmQuery::OnExecuteShift(wxCommandEvent &event)
 {
@@ -3085,7 +3068,7 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 	int en=sqlQuery->GetSelectionEnd();
 	int st=-1;
 	if (sqlQueryExecLast==sqlQuery) sqlQuery->MarkerDeleteAll(1);
-	
+
 	if (en>=0) {
 		st=sqlQuery->GetSelectionStart();
 		int hline=sqlQuery->LineFromPosition(st);
@@ -3344,7 +3327,7 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	sqlQuery->MarkerDeleteAll(0);
 	//sqlQuery->StartStyling(0);
 	//sqlQuery->SetStyling(sqlQuery->GetText().Length(), 0);
-	
+
 	int i=sqlQueryBook->GetSelection();
 	sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxColour(255,0,0)));
 
@@ -3357,7 +3340,7 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	sqlResult=ctlSQL[indexResult];
 	sqlResult->ClearFilter();
 	ctlSBox[indexResult]=sqlQuery;
-	// 
+	//
 	int idx=outputPane->GetPageIndex(sqlResult);
 	outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
 
@@ -3627,7 +3610,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 	//	msgHistory->AppendText(str + wxT("\n"));
 	//	wxRegEx multilf(wxT("(CONTEXT:.*$)"));
 	//	multilf.ReplaceAll(&str, wxT(""));
-	//	
+	//
 	//}
 
 	msgResult->AppendText(str);
@@ -3777,7 +3760,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 				outputPane->SetSelection(i);
 			}
 		}
-		
+
 		long rowsTotal = sqlResult->NumRows();
 
 		if (qi->toFileExportForm)
@@ -4064,17 +4047,17 @@ void frmQuery::completeQuery(bool done, bool explain, bool verbose)
 	// Change the output pane caption so the user knows which tab the result came from
 	sqlQueryExecLast = sqlQueryExec;
 	SetOutputPaneCaption(true);
-	for (int i=0;i<sqlQueryBook->GetPageCount();i++) 
+	for (int i=0;i<sqlQueryBook->GetPageCount();i++)
 		if ((sqlQueryBook->GetPageBitmap(i)).IsOk()) sqlQueryBook->SetPageBitmap(i,wxNullBitmap);
  	//int i=sqlQueryBook->GetPageCount()-1;
 	//sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxNullColour));
 
 	//int i=sqlQueryBook->GetSelection() if ();
-	
+
 
 	sqlQueryExec = NULL;
 	sqlQuery->SetFocus();
-	
+
 }
 
 
@@ -4091,7 +4074,7 @@ void frmQuery::OnTimer(wxTimerEvent &event)
 	//	wxRegEx multilf(wxT("(CONTEXT:.*$)"));
 	//	multilf.ReplaceAll(&str, wxT(""));
 	//	msgResult->AppendText(str + wxT("\n"));
-	//	
+	//
 		msgHistory->AppendText(str + wxT("\n"));
 		msgResult->AppendText(str + wxT("\n"));
 	}
@@ -4488,7 +4471,7 @@ void frmQuery::fileMarkerActive(bool addOrRemove, const wxString &sqlTabName) {
 
 	wxString tabname = sqlTabName;
 	if (sqlTabName.Find("*")>=0) tabname = sqlTabName.BeforeLast('*');
-	
+
 	wxString fn = tempDir + wxT("_active.") + tabname + ".a";
 	//if (sqlTabName.Right(1)=='*' ) tabname=
 	if (addOrRemove && autoSave)
@@ -4541,11 +4524,11 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			int pos=-1;
 			//if (r!=NULL) for (int i=0;i<MAX_RESULT_COUNT;i++) if (ctlSQL[i]==r && ctlSBox[i]==sqlQuery) pos=i;
 			if (pos==-1) {
-				for (int i=0;i<MAX_RESULT_COUNT;i++) 
+				for (int i=0;i<MAX_RESULT_COUNT;i++)
 				{
 					if (ctlSQL[i]==NULL) continue;
 					int idx=outputPane->GetPageIndex(ctlSQL[i]);
-	
+
 					if (ctlSBox[i]==sqlQuery) {
 						outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
 						pos=i;
@@ -4559,7 +4542,7 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			sqlQuery->SetFocus();
 			if (sqlQueryBook->GetPageCount() > 1) fileMarkerActive(true, sqlQueryBook->GetPageText(sqlQueryBook->GetSelection()));
 			//wxMessageBox(wxT("OnSqlBookPageChanged "));
-			
+
 			CheckModificationFile();
 
 			updateMenu(false);
@@ -4621,7 +4604,7 @@ void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
 		if (sqlQuery!=NULL) {
 			wxString sql=sqlResult->sqlquerytext;
 			if (sql.StartsWith("EXPLAIN")) sql=sql.AfterFirst(')');
-			if (sql.StartsWith("\nBEGIN;\nEXPLAIN")) { 
+			if (sql.StartsWith("\nBEGIN;\nEXPLAIN")) {
 				sql=sql.AfterFirst(')');
 				//"\n;\nROLLBACK;"
 				sql=sql.Mid(0,sql.Length()-12);
@@ -4650,7 +4633,7 @@ void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
 					if (querypage >= 0) {
 						sqlQueryBook->SetSelection(querypage);
 					}
-					
+
 					break;
 				}
 		}
@@ -4661,7 +4644,7 @@ void frmQuery::OnSqlBookTabRDown (wxAuiNotebookEvent &event) {
 		size_t curpage = sqlQueryBook->GetSelection();
 		ctlSQLBox *sqlQuery = wxDynamicCast(sqlQueryBook->GetPage(curpage), ctlSQLBox);
 		wxString pref=conn->GetDbname()+wxT(".nametab");
-		
+
 		wxTextEntryDialog dialog(this,
 		wxT("Please enter name string with prefix dbname\n")
 		,
@@ -4761,7 +4744,7 @@ void frmQuery::SqlBookAddPage(wxString& title)
 
 	box->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	box->Connect(wxID_ANY, wxEVT_KILL_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
-	
+
 	if (title.BeforeFirst(' ')=="Query") {
 		wxString np = title.AfterFirst(' ');
 		long nl = 0;
@@ -4773,7 +4756,7 @@ void frmQuery::SqlBookAddPage(wxString& title)
 	if (title.IsEmpty()) sqlQueryCounter ++;
 	int ll = sqlQueryCounter;
 	caption = wxString::Format(_("Query %d"), ll);
-	
+
 	bool select = title.IsEmpty();
 	if (!select) caption = title;
 	select = true;
@@ -4818,7 +4801,7 @@ bool frmQuery::SqlBookRemovePage()
 		ctlSQLBox *box;
 		box = wxDynamicCast(sqlQueryBook->GetPage(pageidx), ctlSQLBox);
 		wxString filename=box->GetTitle(false);
-		
+
 		wxRemoveFile(tempDir+filename+wxT(".a"));
 		return sqlQueryBook->DeletePage(pageidx);
 	}
@@ -5152,7 +5135,7 @@ queryToolCreateCascadeFactory::queryToolCreateCascadeFactory(menuFactoryList *li
 //				}
 //
 //	return 0;
-//}	
+//}
 wxWindow *queryToolCreateCascadeFactory::StartDialog(frmMain *form, pgObject *obj)
 {
 

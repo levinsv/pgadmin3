@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg2"
+   width="4096"
+   height="4096"
+   viewBox="0 0 4096 4096"
+   sodipodi:docname="mode_transaction.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6">
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect9256"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Используйте чётно-нечётное правило заливки в диалоговом окне &lt;b&gt;заливки и обводки&lt;/b&gt;, если результат выравнивания после преобразования вырезки в контуры отсутствует." />
+    <linearGradient
+       id="linearGradient7497"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop7495" />
+    </linearGradient>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath9252">
+      <path
+         style="display:block;opacity:1;fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:10;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:0.707207"
+         d="m 1813.6135,2216.2044 234.5189,-574.5715 234.519,582.3888 z"
+         id="path9254" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.1809082"
+     inkscape:cx="257.03644"
+     inkscape:cy="2106.0405"
+     inkscape:window-width="1920"
+     inkscape:window-height="921"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g8" />
+  <g
+     inkscape:groupmode="layer"
+     inkscape:label="Image"
+     id="g8">
+    <path
+       style="display:inline;fill:#000000;stroke-width:4.70489"
+       d="m 1809.6834,3135.1244 c -8.2062,-3.3004 -18.6421,-11.2478 -23.1912,-17.6596 -7.6783,-10.821 -8.3644,-71.9521 -9.5589,-851.7449 -1.0478,-683.8493 -2.4838,-842.0238 -7.7198,-850.502 -3.5377,-5.7282 -13.4521,-14.3679 -22.0321,-19.199 -15.0108,-8.4525 -27.2762,-8.7837 -325.4218,-8.8007 -337.1133,0 -332.4943,0.3151 -351.3468,-25.3975 -9.0726,-12.3743 -9.5686,-21.8352 -9.5686,-182.6006 0,-184.87553 -0.2742,-182.98364 28.4636,-199.16431 15.3025,-8.61641 33.4256,-8.78367 953.1641,-8.78367 919.7393,0 937.8616,0.16967 953.1641,8.78367 28.7343,16.18067 28.4645,14.28878 28.4645,199.16431 0,160.7654 -0.4951,170.2263 -9.5686,182.6006 -18.8605,25.7232 -14.1,25.3805 -352.8146,25.3805 -341.5403,0 -331.9134,-0.7435 -347.4397,26.9806 -6.5597,11.714 -7.427,110.4553 -7.427,845.5586 0,916.0797 2.1458,854.311 -30.3046,872.5813 -15.6261,8.7983 -24.0082,9.1191 -234.0741,8.9648 -170.0116,-0.1217 -221.1448,-1.4781 -232.7885,-6.1621 z"
+       id="pathT"
+       sodipodi:insensitive="true" />
+    <rect
+       style="display:inline;opacity:1;fill:none;fill-opacity:0;stroke:#000000;stroke-width:85.1079;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="rect9312"
+       width="3437.5723"
+       height="3514.9597"
+       x="329.21384"
+       y="290.52017" />
+  </g>
+</svg>

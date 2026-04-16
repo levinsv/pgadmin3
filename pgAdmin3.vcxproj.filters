@@ -4648,6 +4648,12 @@
     <png2c Include="include\images\warning_amber_48dp.png">
       <Filter>include\images</Filter>
     </png2c>
+    <png2c Include="include\images\mode_autocommit.png">
+      <Filter>include\images</Filter>
+    </png2c>
+    <png2c Include="include\images\mode_transaction.png">
+      <Filter>include\images</Filter>
+    </png2c>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="pgAdmin3.rc" />

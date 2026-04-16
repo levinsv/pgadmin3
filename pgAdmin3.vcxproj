@@ -1636,6 +1636,8 @@
     <png2c Include="include\images\language.png" />
     <png2c Include="include\images\languages.png" />
     <png2c Include="include\images\loginroles.png" />
+    <png2c Include="include\images\mode_autocommit.png" />
+    <png2c Include="include\images\mode_transaction.png" />
     <png2c Include="include\images\mview.png" />
     <png2c Include="include\images\mview-sm.png" />
     <png2c Include="include\images\namespace-sm.png" />
