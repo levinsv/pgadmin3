@@ -86,7 +86,7 @@
 // Globals
 frmMain *winMain = 0;
 wxThread *updateThread = 0;
-bool iswayland=true;
+bool iswayland=false;
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 #include "utils/sshTunnel.h"
@@ -220,7 +220,7 @@ protected:
 };
 void MyStackWalker::OnStackFrame(const wxStackFrame& frame)
 {
-	
+
 	Rez->Append(wxString::Format("level: %lu\n", (unsigned long) frame.GetLevel()));
 	wxString func = frame.GetName();
 	if (!func.empty())
@@ -261,7 +261,7 @@ void MyStackWalker::OnStackFrame(const wxStackFrame& frame)
 
 	}
 	Rez->Append(wxString::Format("----------------\n"));
-	
+
 }
 #endif
 
@@ -664,11 +664,11 @@ bool pgAdmin3::OnInit()
 			}
 			if (!conn)
 				return false;
-			
+
 				wxString txt = conn->GetName();
 				frmStatus* fq = new frmStatus(NULL, txt, conn);
 				fq->Go();
-			
+
 		}
 
 #ifdef DATABASEDESIGNER
@@ -973,7 +973,7 @@ bool pgAdmin3::OnInit()
 					}
 				}
 				folderitem = browser->GetNextChild(browser->GetRootItem(), foldercookie);
-			}			
+			}
 
 			wxString str;
 			if (cmdParser.Found(wxT("s"), &str))
@@ -1060,10 +1060,10 @@ void pgAdmin3::InitAppPaths()
 	brandingPath = LocatePath(BRANDING_DIR, false);
 	pluginsDir = LocatePath(PLUGINS_DIR, false);
 	settingsIni = LocatePath(SETTINGS_INI, true);
-#ifdef __LINUX__	
+#ifdef __LINUX__
     wxString newdir;
 	wxString olddatadir=wxFileName::GetHomeDir()+sepPath+"postgresql";
-	
+
     if ( !wxGetEnv(wxS("XDG_DATA_HOME"), &newdir) || newdir.empty() )
         	newdir = wxFileName::GetHomeDir() + wxT("/.local/share/pgadmin3");
 	dataDir=newdir ;
@@ -1074,18 +1074,18 @@ void pgAdmin3::InitAppPaths()
 				if (!wxShell(wxString::Format("cp -r %s/* %s",olddatadir,newdir))) {
 					wxLogError(wxString::Format("Error copy dirictory 'cp -r %s %s'",olddatadir,newdir));
 					dataDir=wxFileName::GetHomeDir() + sepPath + "postgresql";
-					
+
 				} else {
 					wxShell(wxString::Format("mv %s %s",olddatadir,olddatadir+"-no_use"));
 					wxShell(wxString::Format("mv ~/.pgadmin3autoreplace %s",newdir+"/pgadmin_autoreplace.xml"));
 				}
 			}
-			
+
 	}
 #else
 	dataDir= wxStandardPaths::Get().GetUserConfigDir() + wxFileName::GetPathSeparator() + "postgresql";
 #endif
-	
+
 
 }
 
