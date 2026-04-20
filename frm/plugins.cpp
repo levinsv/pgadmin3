@@ -203,11 +203,11 @@ void frmMain::AddPluginUtility(PluginUtility *util)
 			if (util->keyfile.IsEmpty() || wxFileExists(util->keyfile))
 			{
 				CreatePluginUtility(util);
-				ClearPluginUtility(util);
 				pluginUtilityCount++;
 			}
 		}
 	}
+	ClearPluginUtility(util);
 }
 
 // Create a new Plugin utility factory
