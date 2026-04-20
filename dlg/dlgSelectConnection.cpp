@@ -438,6 +438,9 @@ int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
 	bool foundServer = false;
 	cbConnection = cb;
 	currconn=conn;
+	wxString grpname=settings->Read(wxT("QuickConnect/group"), wxEmptyString);
+	int pos=cbGroup->FindString(grpname);
+	cbGroup->SetSelection(pos);
 	foundServer = BuildServerCombo(conn);
 
 	return ShowModal();
