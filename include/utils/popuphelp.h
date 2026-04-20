@@ -77,13 +77,8 @@ public:
             if (wxTheClipboard->Open())
             {
                 wxString h = hist[hist.size() - 1];
-                // Добавляем данные (можно добавить несколько форматов, если нужно)
-                wxDataObjectComposite* dataobj = new wxDataObjectComposite();
-                dataobj->Add(new wxHTMLDataObject(h));
-                wxTheClipboard->SetData(dataobj);
-                // fix for linux app crush
-                wxSafeYield();
-                wxTheClipboard->Close(); // crush app without wxSafeYield();
+                wxTheClipboard->SetData(new wxHTMLDataObject(h));
+                wxTheClipboard->Close();
 
             }
             else
