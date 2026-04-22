@@ -965,7 +965,9 @@ bool pgAdmin3::OnInit()
 										parent = browser->GetItemParent(parent);
 									}
 									path=wxString::Format("%4d%s",-1,path);
-
+									wxString kw=server->GetKeywords();
+									if (!kw.IsEmpty())
+										path=path+'['+kw+']';
 									winMain->servers_find_list.Add(path);
 
 						}

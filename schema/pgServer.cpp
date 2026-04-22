@@ -1553,6 +1553,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 	wxString key, servername, hostaddr, description, service, database, username, lastDatabase, lastSchema;
 	wxString storePwd, rolename, connstr, restore, serviceID, discoveryID, dbRestriction, colour;
 	wxString group, sslcert, sslkey, sslrootcert, sslcrl, sslcompression;
+	wxString keywords;
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 	wxString sshTunnel, authModePwd, tunnelHost, tunnelUserName, tunnelPassword, publicKeyFile, identityFile;
@@ -1574,6 +1575,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 	{
 		key.Printf(wxT("Servers/%d/"), (int)loop);
 
+		settings->Read(key + wxT("Keywords"), &keywords, wxEmptyString);
 		settings->Read(key + wxT("Server"), &servername, wxEmptyString);
 		settings->Read(key + wxT("HostAddr"), &hostaddr, wxEmptyString);
 		settings->Read(key + wxT("Service"), &service, wxEmptyString);
@@ -1658,6 +1660,7 @@ pgObject *pgServerFactory::CreateObjects(pgCollection *obj, ctlTree *browser, co
 		server->SetSSLRootCert(sslrootcert);
 		server->SetSSLCrl(sslcrl);
 		server->iSetSSLCompression(StrToBool(sslcompression));
+		server->iSetKeywords(keywords);
 
 		found = false;
 		if (browser->ItemHasChildren(obj->GetId()))

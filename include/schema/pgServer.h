@@ -444,6 +444,14 @@ public:
 	{
 		sslcrl = s;
 	}
+	wxString GetKeywords() const
+	{
+		return keywords;
+	}
+	void iSetKeywords(const wxString &s)
+	{
+		keywords = s;
+	}
 
 	bool GetSSLCompression() const
 	{
@@ -558,7 +566,7 @@ private:
 	wxString versionNum;
 	wxString dbRestriction;
 	wxString colour;
-	wxString group;
+	wxString group,keywords;
 	wxString sslcert, sslkey, sslrootcert, sslcrl;
 	bool sslcompression;
 	bool sshTunnel;
