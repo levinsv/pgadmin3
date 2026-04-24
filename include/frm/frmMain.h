@@ -181,6 +181,10 @@ public:
 	{
 		return pluginsMenu;
 	}
+	wxMenu *GetServerMenu()
+	{
+		return serverMenu;
+	}
 	FunctionPGHelper * GetFunctionPGHelper()
 	{
 		return &hhelp;
@@ -226,7 +230,8 @@ private:
 	ctlAuiNotebook *listViews;
 	ctlSQLBox *sqlPane;
 	wxMenu *newMenu, *debuggingMenu, *reportMenu, *toolsMenu, *pluginsMenu, *viewMenu,
-	       *treeContextMenu, *newContextMenu, *slonyMenu, *scriptingMenu, *viewDataMenu;
+	       *treeContextMenu, *newContextMenu, *slonyMenu, *scriptingMenu, *viewDataMenu,
+		   *serverMenu;
 	pgServerCollection *serversObj;
 	dlgShortCut *dlgshrcut;
 	pluginUtilityFactory *lastPluginUtility;
@@ -238,6 +243,7 @@ private:
 	actionFactory *reportMenuFactory;
 	actionFactory *scriptingMenuFactory;
 	actionFactory *viewdataMenuFactory;
+	actionFactory *serverMenuFactory;
 
 	wxStopWatch stopwatch;
 	wxString timermsg;

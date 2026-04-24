@@ -366,6 +366,7 @@ void frmMain::CreateMenus()
 	scriptingMenu = new wxMenu();
 	viewDataMenu = new wxMenu();
 	debuggingMenu = new wxMenu();
+	serverMenu = new wxMenu();
 	reportMenu = new wxMenu();
 	wxMenu *cfgMenu = new wxMenu();
 	helpMenu = new wxMenu();
@@ -452,18 +453,22 @@ void frmMain::CreateMenus()
 
 
 	//--------------------------
+	serverMenuFactory = new submenuFactory(menuFactories);
+	toolsMenu->Append(serverMenuFactory->GetId(), _("&Server"), serverMenu,    _("Server menu commands."));
 
-	new connectServerFactory(menuFactories, toolsMenu, 0);
-	new disconnectServerFactory(menuFactories, toolsMenu, 0);
-	new disconnectServerFactoryAll(menuFactories, toolsMenu, 0);
-	new disconnectDatabaseFactory(menuFactories, toolsMenu, 0);
+	new connectServerFactory(menuFactories, serverMenu, 0);
+	new disconnectServerFactory(menuFactories, serverMenu, 0);
+	new disconnectServerFactoryAll(menuFactories, serverMenu, 0);
+	new disconnectDatabaseFactory(menuFactories, serverMenu, 0);
 
-	new startServiceFactory(menuFactories, toolsMenu, 0);
-	new stopServiceFactory(menuFactories, toolsMenu, 0);
-	new reloadconfServiceFactory(menuFactories, toolsMenu, 0);
-	new pausereplayServiceFactory(menuFactories, toolsMenu, 0);
-	new resumereplayServiceFactory(menuFactories, toolsMenu, 0);
-	new addnamedrestorepointServiceFactory(menuFactories, toolsMenu, 0);
+	new startServiceFactory(menuFactories, serverMenu, 0);
+	new stopServiceFactory(menuFactories, serverMenu, 0);
+	new reloadconfServiceFactory(menuFactories, serverMenu, 0);
+	new pausereplayServiceFactory(menuFactories, serverMenu, 0);
+	new resumereplayServiceFactory(menuFactories, serverMenu, 0);
+	new addnamedrestorepointServiceFactory(menuFactories, serverMenu, 0);
+
+	new keywordsServerFactory(menuFactories, serverMenu, 0);
 
 	new createFactory(menuFactories, editMenu, toolBar);
 	new dropFactory(menuFactories, editMenu, toolBar);

@@ -339,6 +339,8 @@ void menuFactoryList::AppendEnabledMenus(wxMenuBar *menuBar, wxMenu *treeContext
 					{
 						/* Copy of submenu */
 						wxMenu *oldSubMenu = menuItem->GetSubMenu();
+						//skip append submenu Server
+						if (winMain && (oldSubMenu == winMain->GetServerMenu())) continue;
 						wxMenu *newSubMenu = new wxMenu();
 
 						size_t i;
