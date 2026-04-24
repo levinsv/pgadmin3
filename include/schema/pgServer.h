@@ -687,6 +687,13 @@ public:
 	wxWindow *StartDialog(frmMain *form, pgObject *obj);
 	bool CheckEnable(pgObject *obj);
 };
+class keywordsServerFactory : public contextActionFactory
+{
+public:
+	keywordsServerFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar);
+	wxWindow *StartDialog(frmMain *form, pgObject *obj);
+	bool CheckEnable(pgObject *obj);
+};
 
 
 class disconnectServerFactoryAll : public contextActionFactory

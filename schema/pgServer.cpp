@@ -2111,6 +2111,37 @@ bool stopServiceFactory::CheckEnable(pgObject *obj)
 	}
 	return false;
 }
+keywordsServerFactory::keywordsServerFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
+{
+	mnu->Append(id, _("&Set keywords"), _("Set keywords list the selected server."));
+}
+
+
+wxWindow *keywordsServerFactory::StartDialog(frmMain *form, pgObject *obj)
+{
+	pgServer *server = (pgServer *)obj;
+	wxString kw=server->GetKeywords();
+	wxTextEntryDialog dialog(form,
+		_("Please enter keywords\n")
+		,
+		_("Keywords server"),
+		kw,
+		wxOK | wxCANCEL);		//setName( dlg.GetValue().wc_str() );
+	if (dialog.ShowModal() == wxID_OK) {
+		kw = dialog.GetValue();
+		server->iSetKeywords(kw);
+	}
+	return 0;
+}
+
+
+bool keywordsServerFactory::CheckEnable(pgObject *obj)
+{
+	if (obj && obj->IsCreatedBy(serverFactory))
+		return true;
+
+	return false;
+}
 
 
 connectServerFactory::connectServerFactory(menuFactoryList *list, wxMenu *mnu, ctlMenuToolbar *toolbar) : contextActionFactory(list)
