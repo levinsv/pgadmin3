@@ -1669,6 +1669,8 @@ wxWindow *reportCompareFactory::StartDialog(frmMain *form, pgObject *obj)
 	wxTreeItemIdValue foldercookie;
 	wxTreeItemId folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
 	wxString path(form->GetNodePath(obj->GetId()));
+	wxString src_serverGroupname=path.AfterFirst('/').BeforeFirst('/');
+	wxString trg_serverGroupname;
 	// ������ ��������/�������/serverN/Datebases/dbname
 	//                p1      p2      p3
 	wxString p_db;
@@ -1704,7 +1706,7 @@ wxWindow *reportCompareFactory::StartDialog(frmMain *form, pgObject *obj)
 		p_server_obj=path.substr(p2,p3-p2); // � /������N/
 	}
 	wxString p_db_replace=_("Databases")+"/"+p_db+"/";
-	wxString p_server_replace=_("Servers")+p_server_obj;
+	wxString p_server_replace=src_serverGroupname+p_server_obj;
 	pgServer *server;
 	pgDatabase *db=NULL,*lastdb=NULL;
 wxString trg_db_replace;
@@ -1732,6 +1734,8 @@ wxString trg_server_replace;
 							treeObjectIterator dbs(browser, coll);
 							while ((db = (pgDatabase *)dbs.GetNextObject()) != 0)
 							{
+								wxString path(form->GetNodePath(server->GetId()));
+								trg_serverGroupname=path.AfterFirst('/').BeforeFirst('/');
 								// есть открытая БД
 								lastdb=db;
 								if (db->GetConnected()) {
@@ -1755,7 +1759,7 @@ wxString newpath;
 if (lastdb!=NULL) {
 			p_db=browser->GetItemText(lastdb->GetId()).BeforeFirst('(').Trim();
 			trg_db_replace=_("Databases")+"/"+p_db+"/";
-			trg_server_replace=_("Servers")+"/"+trg_server_replace;
+			trg_server_replace=trg_serverGroupname+'/'+trg_server_replace;
 
 			newpath=path;
 			
