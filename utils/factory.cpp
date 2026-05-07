@@ -15,6 +15,7 @@
 #include "ctl/ctlMenuToolbar.h"
 #include "schema/pgCollection.h"
 #include "frm/menu.h"
+#include "frm/frmMain.h"
 
 // wxWindows headers
 #include <wx/imaglist.h>
