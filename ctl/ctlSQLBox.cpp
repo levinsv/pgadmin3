@@ -1822,7 +1822,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int lenstr = selText.Length();
 	//str = wxT("<div style=\"font-family: ") + fontName + wxT("; font-size: " + sz + "px\"><font>");
 	str.Alloc(lenstr*2);
-	str = wxString::Format("<div style=\"font-family: %s; font-size: %spx\"><font face=\"%s\" >", fontName, sz, fontName);
+	str = wxString::Format("<div style=\"font-family: %s; font-size: %spx\"><span>", fontName, sz);
 	int k = 0;
 	int l = 1;
 	wxString newline = "<br>";
@@ -1836,14 +1836,48 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int lenobj;
 	if (listobj.size()>0) {pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table;lenobj=obj.Len();}
 	wxString lstr;
+	wxString bgclr="";
+	// find Indicator bookmark
+	int spos=-1;
+	int epos=-1;
+	int tmppos=0;
+	int textlen=GetTextLength();
+	while (tmppos<textlen) {
+		tmppos=IndicatorEnd(9,tmppos);
+		if (tmppos==0 || tmppos==textlen) break;
+		if (tmppos>0 && tmppos!=textlen) {
+			spos=tmppos;
+			epos=IndicatorEnd(9,tmppos);
+			if (epos>=start) break;
+			tmppos=epos;
+			spos=epos=-1;
+		} else break;
+	}
+	bool refreshgbcolor=false;
 	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
-		if (prevColor != tColor) {
-			str+= wxT("</font><font color=\"");
+		if (startp>=spos && spos!=-1) {
+			refreshgbcolor=true;
+			bgclr="#ffff00";
+			tmppos=IndicatorEnd(9,epos);
+			if (tmppos==textlen) spos=-1;
+				else spos=tmppos;
+		} else if (startp>=epos && epos!=-1) {
+			bgclr="";
+			refreshgbcolor=true;
+			tmppos=IndicatorEnd(9,spos);
+			if (tmppos==textlen) epos=-1;
+				else epos=tmppos;
+		}
+		if (prevColor != tColor || refreshgbcolor) {
+			str+= wxT("</span><span style=\"color:");
 			str+= tColor;
+			if (!bgclr.IsEmpty())
+					str+= wxString::Format(";background-color: %s",bgclr);
 			str+= wxT("\">");
-			prevColor = tColor;
+			if (prevColor != tColor) prevColor = tColor;
+			refreshgbcolor=false;
 		}
 		//str.append(str[k].GetValue());
 		wxUniChar c = selText[k];
