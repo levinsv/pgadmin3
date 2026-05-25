@@ -1430,6 +1430,10 @@ retry:
 
         if (!multiline) {
             //int textWidth = dc.GetTextExtent(text).GetWidth();
+            #ifdef __WXGTK__
+                // Ellipsize working slow in GTK
+                const wxString& ellipsizedText = text;
+            #else
                         wxEllipsizeMode mode(wxELLIPSIZE_END);
                         if (hAlign == wxALIGN_RIGHT) mode = wxELLIPSIZE_START;
                         const wxString& ellipsizedText = wxControl::Ellipsize
@@ -1440,6 +1444,7 @@ retry:
                             rect.GetWidth() - 2,
                             wxELLIPSIZE_FLAGS_NONE
                         );
+            #endif
                         if (ellipsizedText != text) 
                             text = ellipsizedText; // small width
                         else
