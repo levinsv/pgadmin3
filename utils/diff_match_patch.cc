@@ -596,6 +596,62 @@ std::list<Diff> diff_match_patch::diff_bisectSplit(const std::wstring &text1,
   return diffs;
 }
 
+std::wstring diff_match_patch::diff_wordsToCharsMunge(
+    const std::wstring &text, std::vector<std::wstring> &line_array,
+    std::unordered_map<std::wstring, std::size_t> &lineHash) const {
+  std::size_t lineStart = 0;
+  bool has_line_end = false;
+  std::size_t lineEnd = std::wstring::npos;
+  std::wstring line;
+  std::wstring chars;
+
+  if (text.size() == 0) return chars;
+
+  // Walk the text, pulling out a substring for each line.
+  // text.split('\n') would would temporarily double our memory footprint.
+  // Modifying text would create many large strings to garbage collect.
+  std::wstring sep=L" \n\t.,()[]{}<>'\"-+=~!@$%^&*/;";
+  while (!has_line_end || lineEnd < text.size() - 1) {
+    //lineEnd = text.find(' ', lineStart);
+    lineEnd = text.find_first_of(sep, lineStart);
+    has_line_end = true;
+    if (lineEnd == std::wstring::npos) {
+      lineEnd = text.size() - 1;
+    }
+    line = safeSubStr(text, lineStart, lineEnd + 1 - lineStart);
+    lineStart = lineEnd + 1;
+
+    if (lineHash.find(line) != lineHash.end()) {
+      chars += wchar_t(static_cast<ushort>(lineHash[line]));
+    } else {
+      line_array.push_back(line);
+      lineHash.emplace(line, line_array.size() - 1);
+      chars += wchar_t(static_cast<ushort>(line_array.size() - 1));
+    }
+  }
+  return chars;
+}
+std::tuple<std::wstring, std::wstring, std::vector<std::wstring> >
+  diff_match_patch::diff_wordsToChars(const std::wstring &text1,
+                                    const std::wstring &text2) const {
+  std::vector<std::wstring> line_array;
+  std::unordered_map<std::wstring, std::size_t> lineHash;
+  // e.g. line_array[4] == "Hello\n"
+  // e.g. linehash.get("Hello\n") == 4
+
+  // "\x00" is a valid character, but various debuggers don't like it.
+  // So we'll insert a junk entry to avoid generating a null character.
+  line_array.push_back(L"");
+
+  const std::wstring chars1 =
+      diff_wordsToCharsMunge(text1, line_array, lineHash);
+  const std::wstring chars2 =
+      diff_wordsToCharsMunge(text2, line_array, lineHash);
+
+  return std::make_tuple(chars1, chars2, line_array);
+}
+
+
 std::tuple<std::wstring, std::wstring, std::vector<std::wstring> >
 diff_match_patch::diff_linesToChars(const std::wstring &text1,
                                     const std::wstring &text2) const {

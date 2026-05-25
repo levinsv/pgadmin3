@@ -9,9 +9,12 @@ class SourceViewDialog : public wxFrame
     bool m_changing_values;
     wxCheckBox* m_visibleSpace;
     wxCheckBox* m_showNumber;
+    wxCheckBox* m_linescompare;
     int s_indicHighlight;
     int pos = 0;
     int prev_line = -1;
+    wxString sqlr;
+    wxString sqll;
 public:
     ~SourceViewDialog() {
         //delete m_text1;
@@ -80,7 +83,16 @@ public:
         if (sL == sR) {
             return;
         }
-        diffs = dmp.diff_main(sL.wc_str(), sR.wc_str(), true);
+        if (m_linescompare && m_linescompare->IsChecked()) {
+            //auto a = dmp.diff_linesToChars(sL.wc_str(), sR.wc_str());
+            auto a = dmp.diff_wordsToChars(sL.wc_str(), sR.wc_str());
+            auto lineText1 = std::get<0>(a);
+            auto lineText2 = std::get<1>(a);
+            std::vector<std::wstring> lineArray = std::get<2>(a);
+            diffs = dmp.diff_main(lineText1, lineText2, false);
+            dmp.diff_charsToLines(diffs, lineArray);
+        } else
+            diffs = dmp.diff_main(sL.wc_str(), sR.wc_str(), true);
         int nstart = 0;
         int pos = 0;
         std::wstring cur_l;
@@ -218,8 +230,10 @@ public:
 
         m_text2 = createSTC(m_panelSql);
         //m_text2->SetText(sqlR);
-
-        difftext(m_text1, m_text2, sqlL, sqlR);
+        sqll=sqlL;
+        sqlr=sqlR;
+        m_linescompare=NULL;
+        difftext(m_text1, m_text2, sqll, sqlr);
 
         bSizer2->Add(m_text1, 1, wxEXPAND, 5);
 
@@ -240,6 +254,8 @@ public:
 
         m_showNumber = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Show number line"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer4->Add(m_showNumber, 0, wxALL, 5);
+        m_linescompare = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Words compare"), wxDefaultPosition, wxDefaultSize, 0);
+        bSizer4->Add(m_linescompare, 0, wxALL, 5);
         wxButton* m_btn_next = new wxButton(m_panelOpt, wxID_ANY, wxT("Next"), wxDefaultPosition, wxDefaultSize, 0);
 
         bSizer4->Add(m_btn_next, 0, wxALL, 5);
@@ -265,6 +281,8 @@ public:
         this->Centre(wxBOTH);
 
         m_visibleSpace->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnShowCheckBoxSpace, this);
+        m_linescompare->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnLinesCompare, this);
+
         m_showNumber->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnShowCheckShowNumber, this);
         m_btn_close->Bind(wxEVT_BUTTON, &SourceViewDialog::onClose2, this);
         m_btn_next->Bind(wxEVT_BUTTON, &SourceViewDialog::onNext, this);
@@ -337,6 +355,13 @@ public:
             prev_line = -1;
         }
     }
+    void OnLinesCompare(wxCommandEvent& evt) {
+        bool bVal = m_linescompare->IsChecked();
+        m_text1->ClearAll();
+        m_text2->ClearAll();
+        difftext(m_text1, m_text2, sqll, sqlr);
+    }
+    
     void OnShowCheckBoxSpace(wxCommandEvent& evt) {
         bool bVal = m_visibleSpace->IsChecked();
         m_text1->SetViewWhiteSpace(bVal ? wxSTC_WS_VISIBLEALWAYS : wxSTC_WS_INVISIBLE);

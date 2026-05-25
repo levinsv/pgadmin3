@@ -284,14 +284,13 @@ class diff_match_patch {
    *     encoded text2 and the List of unique strings.  The zeroth element
    *     of the List of unique strings is intentionally blank.
    */
- protected:
+ public:
   std::tuple<std::wstring, std::wstring, std::vector<std::wstring> >
       diff_linesToChars(const std::wstring &text1,
                         const std::wstring &text2) const;  // return elems 0
                                                            // and 1 are
   // std::wstring, elem 2
   // is std::vector<std::wstring>
-
   /**
    * Split a text into a list of strings.  Reduce the texts to a string of
    * hashes where each Unicode character represents one line.
@@ -304,6 +303,14 @@ class diff_match_patch {
   std::wstring diff_linesToCharsMunge(
       const std::wstring &text, std::vector<std::wstring> &lineArray,
       std::unordered_map<std::wstring, std::size_t> &lineHash) const;
+public:      
+std::tuple<std::wstring, std::wstring, std::vector<std::wstring> >
+ diff_wordsToChars(const std::wstring &text1,
+                                    const std::wstring &text2) const;
+                                    
+  std::wstring diff_wordsToCharsMunge(
+      const std::wstring &text, std::vector<std::wstring> &lineArray,
+      std::unordered_map<std::wstring, std::size_t> &lineHash) const;
 
   /**
    * Rehydrate the text in a diff from a string of line hashes to real lines of
@@ -311,7 +318,7 @@ class diff_match_patch {
    * @param diffs LinkedList of Diff objects.
    * @param lineArray List of unique strings.
    */
- private:
+ public:
   void diff_charsToLines(std::list<Diff> &diffs,
                          const std::vector<std::wstring> &lineArray);
 
