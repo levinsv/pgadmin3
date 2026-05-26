@@ -71,6 +71,7 @@ public:
         if (event.GetKeyCode() == WXK_UP) htmlWindow->ScrollLines(-1);
         if (event.GetKeyCode() == WXK_HOME) htmlWindow->ScrollPages(-1000);
         if (event.GetKeyCode() == WXK_END) htmlWindow->ScrollPages(1000);
+        if (event.GetKeyCode() == 'A') htmlWindow->SelectAll();
         //std::cout << "key code " << event.GetKeyCode() << " "  << std::endl;
         if (event.GetKeyCode() == 'C' && hist.size() > 0) {
 
