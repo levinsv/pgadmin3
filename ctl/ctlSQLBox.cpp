@@ -95,6 +95,7 @@ ctlSQLBox::ctlSQLBox(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	process = 0;
 	processID = 0;
 	m_hint_mode = false;
+	issimple=false;
 	Create(parent, id, pos, size, style);
 }
 //void ctlSQLBox::OnBackGround(wxEraseEvent &event) {
@@ -317,7 +318,9 @@ wxString ctlSQLBox::GetFilename()
 {
 	return m_filename;
 }
-
+void ctlSQLBox::SetSimpleMode(bool issimplemode) {
+	issimple=issimplemode;
+}
 void ctlSQLBox::SetTitle(wxString &title)
 {
 	m_title = title;
@@ -1281,7 +1284,7 @@ void ctlSQLBox::OnKillFocus(wxFocusEvent &event)
 void ctlSQLBox::UpdateLineNumber()
 {
 	bool showlinenumber;
-
+	if (GetSimpleMode()) return;
 	settings->Read(wxT("frmQuery/ShowLineNumber"), &showlinenumber, false);
 	if (showlinenumber)
 	{
@@ -1825,6 +1828,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	str = wxString::Format("<div style=\"font-family: %s; font-size: %spx\"><span>", fontName, sz);
 	int k = 0;
 	int l = 1;
+	int indic=9;
 	wxString newline = "<br>";
 	if (isAddNewLine) newline = L"\u2936<br>";
 	//if (isAddNewLine) newline = L"&ldca;<br>";
@@ -1834,7 +1838,10 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int pos=999999999;
 	wxString obj;
 	int lenobj;
-	if (listobj.size()>0) {pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table;lenobj=obj.Len();}
+	if (listobj.size()>0) {
+		pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table;lenobj=obj.Len();
+		if (GetSimpleMode()) indic=listobj[IndexObj].level;
+	}
 	wxString lstr;
 	wxString bgclr="";
 	// find Indicator bookmark
@@ -1843,30 +1850,31 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int tmppos=0;
 	int textlen=GetTextLength();
 	while (tmppos<textlen) {
-		tmppos=IndicatorEnd(9,tmppos);
+		tmppos=IndicatorEnd(indic,tmppos);
 		if (tmppos==0 || tmppos==textlen) break;
 		if (tmppos>0 && tmppos!=textlen) {
 			spos=tmppos;
-			epos=IndicatorEnd(9,tmppos);
+			epos=IndicatorEnd(indic,tmppos);
 			if (epos>=start) break;
 			tmppos=epos;
 			spos=epos=-1;
 		} else break;
 	}
 	bool refreshgbcolor=false;
+	bool newlineadd=false;
 	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
 		if (startp>=spos && spos!=-1) {
 			refreshgbcolor=true;
 			bgclr="#ffff00";
-			tmppos=IndicatorEnd(9,epos);
+			tmppos=IndicatorEnd(indic,epos);
 			if (tmppos==textlen) spos=-1;
 				else spos=tmppos;
 		} else if (startp>=epos && epos!=-1) {
 			bgclr="";
 			refreshgbcolor=true;
-			tmppos=IndicatorEnd(9,spos);
+			tmppos=IndicatorEnd(indic,spos);
 			if (tmppos==textlen) epos=-1;
 				else epos=tmppos;
 		}
@@ -1886,28 +1894,55 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		//wxUniChar c = selText[k].GetValue();
 		if (c == '\r') {  k++; continue; };
 
-		if (c == '\n') { lstr += newline;  k++; continue; };
+		if (c == '\n') {
+			lstr += newline; newlineadd=true; k++;
+			continue;
+		};
 		if (c == 9) s = 5;
 		if (c == 32) s = 1;
 		if (c == '<') { lstr+="&lt;";  k++; continue; };
 		if (c == '>') { lstr+="&gt;";  k++; continue; };
 		if (c == '&') { lstr+="&amp;";  k++; continue; };
-		if (s > 0) for (int tt = 0; tt < s; tt++) lstr += "&nbsp;";
+		if (s > 0) 
+			for (int tt = 0; tt < s; tt++) lstr += "&nbsp;";
 		else lstr += c;
 		k++;
 		if ((k-1)>=pos) {
-			lenobj--;
-			if (lenobj==0) {
-				wxString s,n;
-				make_identifier(obj,s,n,true);
-				if (!s.IsEmpty()) obj=s+'.'+n; else obj=n;
-				lstr=wxString::Format("<a href=\"%s\">%s</a>", obj, lstr);
-				IndexObj++;
-				if (listobj.size()>IndexObj) { pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table; lenobj=obj.Len();}
-					else pos=999999999;
-			} else
-				continue; // link not ready
+			if (GetSimpleMode()) {
+				// this compare dialog Append Delete text
+				wxString bgclrDel="#ebb1c4";
+				if (newlineadd) {
+					size_t p44=0,p45=0;
+					wxString searchStr = "<br>";
+						p44=lstr.Find('<',true);
+						if (p44!=-1) {
+							p45=p44;
+							p44++;
+						}
+					wxString lleft=lstr.Left(p45+4);
+					wxString rright=lstr.Mid(p45+4);
+					lstr=wxString::Format("%s<span style=\"background-color: %s\">%s</span>%s",lleft,bgclrDel, obj,rright);
+				}
+				else
+				//lstr=wxString::Format("%s<span style=\"background-color: %s\">%s</span>",lstr,bgclrDel, obj);
+					lstr=wxString::Format("<span style=\"background-color: %s\">%s</span>%s",bgclrDel, obj,lstr);
+			} else {
+				// links
+				lenobj--;
+				if (lenobj==0) {
+					wxString s,n;
+					make_identifier(obj,s,n,true);
+					if (!s.IsEmpty()) obj=s+'.'+n; else obj=n;
+					lstr=wxString::Format("<a href=\"%s\">%s</a>", obj, lstr);
+				} else
+					continue; // link not ready
+			}
+			IndexObj++;
+			if (listobj.size()>IndexObj) { pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table; lenobj=obj.Len();}
+			else pos=999999999;
+
 		}
+		newlineadd=false;
 		str += lstr;
 		lstr="";
 	}

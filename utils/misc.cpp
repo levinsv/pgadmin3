@@ -89,7 +89,7 @@ wxString escapeHtml(wxString text, bool pre) {
 	text.Replace("&", "&amp;");
 	text.Replace("<", "&lt;");
 	text.Replace(">", "&gt;");
-	if (!pre) text.Replace("\n", "&para;<br>");
+	if (!pre) text.Replace("\n", "<br>");
 	return text;
 }
 

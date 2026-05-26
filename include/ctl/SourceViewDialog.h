@@ -10,11 +10,18 @@ class SourceViewDialog : public wxFrame
     wxCheckBox* m_visibleSpace;
     wxCheckBox* m_showNumber;
     wxCheckBox* m_linescompare;
+    wxCheckBox* m_symantecclean;
+    wxButton* m_btn_next;
+    wxButton* m_btn_html;
+    wxButton* m_btn_htmlcopy;
+    wxWindow* lastfocus=NULL;
     int s_indicHighlight;
+    bool isdiff=false;
     int pos = 0;
     int prev_line = -1;
     wxString sqlr;
     wxString sqll;
+    std::vector<FSQL::complite_element> listdelete;
 public:
     ~SourceViewDialog() {
         //delete m_text1;
@@ -36,6 +43,7 @@ public:
                 text->SetMarginWidth(0, width);
                 text->Update();
             }
+            
         }
         else {
             text->SetMarginWidth(0, 0);
@@ -50,10 +58,8 @@ public:
         //        text->StyleSetForeground(wxSTC_STYLE_LINENUMBER, wxColour(75, 75, 75));
         //        text->StyleSetBackground(wxSTC_STYLE_LINENUMBER, wxColour(220, 220, 220));
         //        text->SetMarginType(MARGIN_LINE_NUMBERS, wxSTC_MARGIN_NUMBER);
+        text->SetSimpleMode(true);
         text->SetEOLMode(2);
-
-        showNumber(text, true);
-
         //text->StyleSetForeground(wxSTC_H_DOUBLESTRING, wxColour(255, 0, 0));
         //text->StyleSetForeground(wxSTC_H_SINGLESTRING, wxColour(255, 0, 0));
         //text->StyleSetForeground(wxSTC_H_ENTITY, wxColour(255, 0, 0));
@@ -70,7 +76,7 @@ public:
         int start=ctl->GetLength();
         ctl->AddText(t);
         if (indic > 0) {
-
+            isdiff=true;
             ctl->IndicatorFillRange(start, ctl->GetLength()-start);
         }
     };
@@ -79,6 +85,13 @@ public:
         //Match_Threshold = 0.5;
         //Match_Distance = 1000;
         diff_match_patch dmp(4, 0.5, 1000);
+        listdelete.clear();
+        ctlL->ClearAll();
+        ctlR->ClearAll();
+        isdiff=false;
+        m_btn_next->Disable();
+        m_btn_html->Disable();
+        m_btn_htmlcopy->Disable();
         std::list<Diff> diffs;
         if (sL == sR) {
             return;
@@ -93,6 +106,7 @@ public:
             dmp.diff_charsToLines(diffs, lineArray);
         } else
             diffs = dmp.diff_main(sL.wc_str(), sR.wc_str(), true);
+        if (m_symantecclean && m_symantecclean->IsChecked()) dmp.diff_cleanupSemantic(diffs);
         int nstart = 0;
         int pos = 0;
         std::wstring cur_l;
@@ -136,6 +150,21 @@ public:
                         cur_r += L"<span class=\"differencei\">" + t + L"</span>"; addIndicText(ctlR, t, s_indicHighlight);
                     }
                     if (aDiff.operation == 0) {
+                        FSQL::complite_element cl={};
+                        cl.table=escapeHtml(t,false);
+                        cl.table.Replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+                        cl.level=s_indicHighlight;
+                        cl.startIndex=ctlR->GetTextLength();
+                        FSQL::complite_element prev;
+                        if (listdelete.size()>0) {
+                            prev=listdelete[listdelete.size()-1];
+                            if (prev.startIndex==cl.startIndex) {
+                                prev.table+=cl.table;
+                                listdelete[listdelete.size()-1]=prev;
+                            } else 
+                                listdelete.push_back(cl);
+                        } else 
+                            listdelete.push_back(cl);
                         cur_l += L"<span class=\"differenced\">" + t + L"</span>"; addIndicText(ctlL, t, s_indicHighlight);
                     }
                     if (aDiff.operation == Operation::EQUAL) {
@@ -160,6 +189,20 @@ public:
                     std::wstring t_cur_r = cur_r;
                     if (aDiff.operation == 0) {
                         t_cur_r = L"";
+                        FSQL::complite_element cl={};
+                        cl.table=escapeHtml("\n",false);
+                        cl.level=s_indicHighlight;
+                        cl.startIndex=ctlR->GetTextLength();
+                        FSQL::complite_element prev;
+                        if (listdelete.size()>0) {
+                            prev=listdelete[listdelete.size()-1];
+                            if (prev.startIndex==cl.startIndex) {
+                                prev.table+=cl.table;
+                                listdelete[listdelete.size()-1]=prev;
+                            } else 
+                                listdelete.push_back(cl);
+                        } else 
+                            listdelete.push_back(cl);
                         addIndicText(ctlL, L"\n", s_indicHighlight);
                         ncur_l = std::to_wstring(lline);
                         modify = true;
@@ -210,6 +253,9 @@ public:
             } // ���� �� ������� ������ ������ Diff
             ++it;
         }
+        m_btn_next->Enable(isdiff);
+        m_btn_html->Enable(isdiff);
+        m_btn_htmlcopy->Enable(isdiff);
 
     }
     SourceViewDialog(wxWindow* parent, wxString sqlL, wxString sqlR, wxString title) :
@@ -229,11 +275,14 @@ public:
         //m_text1->SetText(sqlL);
 
         m_text2 = createSTC(m_panelSql);
+        //m_text2->Bind(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(OnFocus));
+        m_text2->Bind(wxEVT_SET_FOCUS, &SourceViewDialog::OnFocus, this);
+        m_text1->Bind(wxEVT_SET_FOCUS, &SourceViewDialog::OnFocus, this);
         //m_text2->SetText(sqlR);
         sqll=sqlL;
         sqlr=sqlR;
         m_linescompare=NULL;
-        difftext(m_text1, m_text2, sqll, sqlr);
+        m_symantecclean=NULL;
 
         bSizer2->Add(m_text1, 1, wxEXPAND, 5);
 
@@ -255,10 +304,17 @@ public:
         m_showNumber = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Show number line"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer4->Add(m_showNumber, 0, wxALL, 5);
         m_linescompare = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Words compare"), wxDefaultPosition, wxDefaultSize, 0);
+        
+        m_symantecclean= new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Cleanup semantic"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer4->Add(m_linescompare, 0, wxALL, 5);
-        wxButton* m_btn_next = new wxButton(m_panelOpt, wxID_ANY, wxT("Next"), wxDefaultPosition, wxDefaultSize, 0);
+        bSizer4->Add(m_symantecclean, 0, wxALL, 5);
+        m_btn_next = new wxButton(m_panelOpt, wxID_ANY, wxT("Next"), wxDefaultPosition, wxDefaultSize, 0);
+        m_btn_html = new wxButton(m_panelOpt, wxID_ANY, wxT("Copy diff to HTML"), wxDefaultPosition, wxDefaultSize, 0);
+        m_btn_htmlcopy = new wxButton(m_panelOpt, wxID_ANY, wxT("Copy to HTML"), wxDefaultPosition, wxDefaultSize, 0);
 
         bSizer4->Add(m_btn_next, 0, wxALL, 5);
+        bSizer4->Add(m_btn_html, 0, wxALL, 5);
+        bSizer4->Add(m_btn_htmlcopy, 0, wxALL, 5);
 
         bSizer4->Add(0, 0, 1, wxEXPAND, 5);
 
@@ -268,7 +324,7 @@ public:
         //        wxButton *m_btn_cancel = new wxButton(m_panelOpt, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0);
         //        bSizer4->Add(m_btn_cancel, 0, wxALL, 5);
 
-
+        difftext(m_text1, m_text2, sqll, sqlr);
         m_panelOpt->SetSizer(bSizer4);
         m_panelOpt->Layout();
         bSizer4->Fit(m_panelOpt);
@@ -282,10 +338,13 @@ public:
 
         m_visibleSpace->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnShowCheckBoxSpace, this);
         m_linescompare->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnLinesCompare, this);
+        m_symantecclean->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnLinesCompare, this);
 
         m_showNumber->Bind(wxEVT_CHECKBOX, &SourceViewDialog::OnShowCheckShowNumber, this);
         m_btn_close->Bind(wxEVT_BUTTON, &SourceViewDialog::onClose2, this);
         m_btn_next->Bind(wxEVT_BUTTON, &SourceViewDialog::onNext, this);
+        m_btn_html->Bind(wxEVT_BUTTON, &SourceViewDialog::onHtmlDiff, this);
+        m_btn_htmlcopy->Bind(wxEVT_BUTTON, &SourceViewDialog::onHtmlCopy, this);
         //Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(SourceViewDialog::onClose), NULL, this);
         //m_text1->Connect(wxEVT_STC_PAINTED, wxStyledTextEventHandler(SourceViewDialog::onScrollLeft), NULL, this);
         //m_text2->Connect(wxEVT_STC_PAINTED, wxStyledTextEventHandler(SourceViewDialog::onScrollRight), NULL, this);
@@ -355,11 +414,15 @@ public:
             prev_line = -1;
         }
     }
-    void OnLinesCompare(wxCommandEvent& evt) {
-        bool bVal = m_linescompare->IsChecked();
+    void Recompare()
+    {
         m_text1->ClearAll();
         m_text2->ClearAll();
         difftext(m_text1, m_text2, sqll, sqlr);
+    }
+    void OnLinesCompare(wxCommandEvent& evt) {
+        Recompare();
+        OnShowCheckShowNumber(evt);
     }
     
     void OnShowCheckBoxSpace(wxCommandEvent& evt) {
@@ -404,5 +467,36 @@ public:
         }
 
         m_changing_values = false;
+    }
+    void onHtmlDiff(wxCommandEvent& evt) {
+        if (m_text2->GetLength()>0) {
+            wxString html=m_text2->TextToHtml(0,m_text2->GetLength(),false,listdelete);
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxHTMLDataObject(html));
+			wxTheClipboard->Close();
+		}
+
+        }
+
+    }
+    void onHtmlCopy(wxCommandEvent& evt) {
+        wxWindow *wnd = lastfocus;
+        wxString html;
+        if (wnd) {
+            if (m_text2==wnd) html=m_text2->TextToHtml(0,m_text2->GetLength(),false);
+            if (m_text1==wnd) html=m_text1->TextToHtml(0,m_text1->GetLength(),false);
+		if (html.Length()>0 && wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxHTMLDataObject(html));
+			wxTheClipboard->Close();
+		}
+
+        }
+    }
+    void OnFocus(wxFocusEvent &ev) {
+        lastfocus = FindFocus();
+        if (m_text2==lastfocus) m_btn_htmlcopy->SetLabelText("Copy Right to HTML");
+        if (m_text1==lastfocus) m_btn_htmlcopy->SetLabelText("Copy Left to HTML");
     }
 };

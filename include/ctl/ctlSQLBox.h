@@ -100,6 +100,8 @@ public:
 	int GetOrigin();
 	void SetFilename(wxString &filename);
 	bool IsFileModification();
+	void SetSimpleMode(bool issimplemode);
+	bool GetSimpleMode() {return issimple;};
 	wxString GetFilename();
 	void SetTitle(wxString &title);
 	wxString GetTitle(bool withChangeInd = true);
@@ -152,7 +154,7 @@ private:
 	bool m_changed;
 	int m_origin;
 	int fix_pos;
-
+	bool issimple=false;
 	friend class QueryPrintout;
 };
 
