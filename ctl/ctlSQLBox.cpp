@@ -31,6 +31,7 @@
 #include "utils/dlgTransformText.h"
 #include "utils/TableColsMap.h"
 #include "utils/PreviewHtml.h"
+#include "ctl/SourceViewDialog.h"
 #include "wx/display.h"
 
 wxString ctlSQLBox::sqlKeywords;
@@ -54,6 +55,7 @@ BEGIN_EVENT_TABLE(ctlSQLBox, wxStyledTextCtrl)
 	EVT_MENU(MNU_FUNC_HELP, ctlSQLBox::OnFuncHelp)
 	EVT_MENU(MNU_TRANSFORM, ctlSQLBox::OnTransformText)
 	EVT_MENU(MNU_TEXT_MARK, ctlSQLBox::OnTextMark)
+	EVT_MENU(MNU_DIFF, ctlSQLBox::OnDiff)
 	EVT_MENU(MNU_COPY, ctlSQLBox::OnCopy)
 	EVT_MENU(MNU_AUTOCOMPLETE, ctlSQLBox::OnAutoComplete)
 	EVT_KILL_FOCUS(ctlSQLBox::OnKillFocus)
@@ -250,14 +252,15 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	SetFoldFlags(16);
 
 	// Setup accelerators
-	wxAcceleratorEntry entries[6];
+	wxAcceleratorEntry entries[7];
 	entries[0].Set(wxACCEL_CTRL, (int)'F', MNU_FIND);
 	entries[1].Set(wxACCEL_CTRL, WXK_SPACE, MNU_AUTOCOMPLETE);
 	entries[2].Set(wxACCEL_CTRL, (int)'C', MNU_COPY);
 	entries[3].Set(wxACCEL_CTRL, WXK_F1, MNU_FUNC_HELP);
 	entries[4].Set(wxACCEL_CTRL, (int)'M', MNU_TRANSFORM);
 	entries[5].Set(wxACCEL_CTRL, (int)'B', MNU_TEXT_MARK);
-	wxAcceleratorTable accel(6, entries);
+	entries[6].Set(wxACCEL_NORMAL, WXK_F11, MNU_DIFF);
+	wxAcceleratorTable accel(7, entries);
 	SetAcceleratorTable(accel);
 
 	// Autocompletion configuration
@@ -365,6 +368,44 @@ void ctlSQLBox::UpdateTitle()
 		title = title.Mid(0, title.Len() - chStr.Len());
 
 	SetTitle(title);
+}
+void ctlSQLBox::OnDiff(wxCommandEvent& ev) {
+	wxString sql_1,sql_2;
+	wxTextDataObject textData;
+	wxString name;
+	if (originaltext.IsEmpty() || GetSelectedText().Length()>0) {
+		if (wxTheClipboard->Open()) {
+				
+				// 3. Пытаемся получить данные. 
+				// GetData() возвращает true, если в буфере был текст.
+				if (wxTheClipboard->GetData(textData)) {
+					sql_1 = textData.GetText();
+				} else {
+					return;
+				}
+
+				wxTheClipboard->Close();
+			} else {
+				return;
+		}
+		sql_2 = GetSelectedText();
+		int s,e;
+		if (sql_2.IsEmpty())
+		{
+			int curPos = GetCurrentPos();
+			auto [s,e] = SelectQuery(curPos);
+			// группы серверов/Серверы/serverN/Datebases/dbname
+			SetSelection(s,e);
+			sql_2 = GetSelectedText();
+		}
+		name="Diff clipboard and selection";
+	} else {
+		sql_1=originaltext;
+		sql_2=GetText();
+		name="Diff original source and current";
+	}
+	SourceViewDialog* dlg = new SourceViewDialog(this, sql_1, sql_2, name);
+	dlg->Show();
 }
 void ctlSQLBox::OnTextMark(wxCommandEvent& ev) {
 			int startPos = GetSelectionStart();
@@ -1849,22 +1890,23 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int epos=-1;
 	int tmppos=0;
 	int textlen=GetTextLength();
-	while (tmppos<textlen) {
-		tmppos=IndicatorEnd(indic,tmppos);
-		if (tmppos==0 || tmppos==textlen) break;
-		if (tmppos>0 && tmppos!=textlen) {
-			spos=tmppos;
-			epos=IndicatorEnd(indic,tmppos);
-			if (epos>=start) break;
-			tmppos=epos;
-			spos=epos=-1;
-		} else break;
-	}
 	bool refreshgbcolor=false;
 	bool newlineadd=false;
 	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
+		int v=IndicatorAllOnFor(startp);
+		if (spos==-1 && epos==-1 && v>0) {
+			spos=startp;
+			for (int i = 8; i < 30; ++i) {
+				if (v & (1 << i)) {
+					indic=i;
+					break;
+				}
+			}
+			epos=IndicatorEnd(indic,startp);
+		}
+
 		if (startp>=spos && spos!=-1) {
 			refreshgbcolor=true;
 			bgclr="#ffff00";

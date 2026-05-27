@@ -366,7 +366,10 @@ int dlgFunction::Go(bool modal)
 			txtLinkSymbol->SetValue(function->GetSource());
 		}
 		else
+		{
 			txtSqlBox->SetText(function->GetSource());
+			txtSqlBox->SetOrginalText(function->GetSource());
+		}
 
 		if (!connection->BackendMinimumVersion(7, 4))
 			txtName->Disable();

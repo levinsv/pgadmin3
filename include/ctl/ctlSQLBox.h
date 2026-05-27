@@ -60,6 +60,7 @@ public:
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnTransformText(wxCommandEvent& ev);
 	void OnTextMark(wxCommandEvent& ev);
+	void OnDiff(wxCommandEvent& ev);
 	void OnCopy(wxCommandEvent& ev);
 	void OnFuncHelp(wxCommandEvent& ev);
 	void OnKillFocus(wxFocusEvent &event);
@@ -76,6 +77,10 @@ public:
 	bool ReplaceAll(const wxString &find, const wxString &replace, bool wholeWord, bool matchCase, bool useRegexps);
 	bool DoFind(const wxString &find, const wxString &replace, bool doReplace, bool wholeWord, bool matchCase, bool useRegexps, bool startAtTop, bool reverse);
 	void SetAutoReplaceList(queryMacroList *autorep);
+	void SetOrginalText(const wxString &src)
+	{
+		originaltext=src;
+	}
 	void SetAutoIndent(bool on)
 	{
 		m_autoIndent = on;
@@ -146,6 +151,7 @@ private:
 		}
 	};
 	std::set<wxString, InsensitiveCompare> m_hint_words;
+	wxString originaltext;
 	// Variables to track info per SQL box
 	wxString m_filename;
 	time_t time_file_mod;
