@@ -611,15 +611,17 @@ std::wstring diff_match_patch::diff_wordsToCharsMunge(
   // text.split('\n') would would temporarily double our memory footprint.
   // Modifying text would create many large strings to garbage collect.
   std::wstring sep=L" \n\t.,()[]{}<>'\"-+=~!@$%^&*/;";
-  while (!has_line_end || lineEnd < text.size() - 1) {
+  while (!has_line_end || lineEnd < text.size()) {
     //lineEnd = text.find(' ', lineStart);
     lineEnd = text.find_first_of(sep, lineStart);
     has_line_end = true;
+    
     if (lineEnd == std::wstring::npos) {
       lineEnd = text.size() - 1;
     }
-    line = safeSubStr(text, lineStart, lineEnd + 1 - lineStart);
-    lineStart = lineEnd + 1;
+    if (lineEnd==lineStart) lineEnd++;
+    line = safeSubStr(text, lineStart, lineEnd + 0 - lineStart);
+    lineStart = lineEnd + 0;
 
     if (lineHash.find(line) != lineHash.end()) {
       chars += wchar_t(static_cast<ushort>(lineHash[line]));
