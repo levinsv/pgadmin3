@@ -11,6 +11,7 @@
 #ifndef PGSAPP_H_
 #define PGSAPP_H_
 
+#ifndef NO_PGSCRIPT
 #include "pgscript/pgScript.h"
 #include "pgscript/utilities/pgsThread.h"
 
@@ -124,5 +125,68 @@ private:
 	pgsApplication &operator=(const pgsApplication &that);
 
 };
+#else
+ //NO_PGSCRIPT
+ #define pgsOutputStream wxTextOutputStream
+class pgsApplication
+{
+public:
 
+	static const int default_port = 5432;
+	pgsApplication(pgConn *connection) {};
+
+	/** Deletes custom connection if one was created (first constructor). */
+
+	/** Parses a file by creating a new thread. */
+	bool ParseFile(const wxString &file, pgsOutputStream &out,
+	               wxMBConv *conv = &wxConvLocal) {return false;};
+
+	/** Parses a string by creating a new thread. */
+	bool ParseString(const wxString &string, pgsOutputStream &out) {return false;};
+
+	/** Is m_thread running? */
+	bool IsRunning() {return false;};
+
+	/** If m_thread is running then wait for it to terminate. */
+	void Wait();
+
+	/** If m_thread is running then delete it. */
+	void Terminate() {};
+
+	/** Called by m_thread when the thread is finished: IsRunning() becomes
+	 * false and m_event_id is pushed into the event queue if m_caller exists. */
+	void Complete() {};
+
+	/** Uses a new database connection instead of the previous one. If the
+	 * previous one was user-defined then it is deleted otherwise it is just
+	 * replaced with the new one. */
+	void SetConnection(pgConn *conn) {};
+
+	/** Deletes everything in the symbol table. */
+	void ClearSymbols() {};
+
+#if !defined(PGSCLI)
+	/** Used in pgAdmin integration for sending an event to the caller when the
+	 * thread is finishing its task. */
+	void SetCaller(wxWindow *caller, long event_id) {};
+#endif // PGSCLI
+
+	/** Tells whether the database connection is valid. */
+	bool IsConnectionValid() const { return true;};
+
+	/** Gets a lock on the output stream. */
+	void LockOutput() {};
+
+	/** Releases the lock on the output stream. */
+	void UnlockOutput() {};
+
+	/** Was there an error? */
+	bool errorOccurred() const {return false;};
+
+	/** Get the position (line) of the last error. */
+	int errorLine() const {return 0;};
+
+private:
+};
+#endif
 #endif /*PGSAPP_H_*/
