@@ -134,7 +134,6 @@ public:
         ctlR->IndicatorSetAlpha(s_indicHighlight, 50);
         ctlR->IndicatorSetStyle(s_indicHighlight, wxSTC_INDIC_ROUNDBOX);
         ctlR->SetIndicatorCurrent(s_indicHighlight);
-
         while (it != diffs.end()) // ���� �������� �� ��������� �����
         {
             aDiff = *it;
@@ -154,7 +153,8 @@ public:
                         cl.table=escapeHtml(t,false);
                         cl.table.Replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
                         cl.level=s_indicHighlight;
-                        cl.startIndex=ctlR->GetTextLength();
+                        // Scintillia not support length text in chars
+                        cl.startIndex=ctlR->GetText().Length();
                         FSQL::complite_element prev;
                         if (listdelete.size()>0) {
                             prev=listdelete[listdelete.size()-1];
@@ -192,7 +192,7 @@ public:
                         FSQL::complite_element cl={};
                         cl.table=escapeHtml("\n",false);
                         cl.level=s_indicHighlight;
-                        cl.startIndex=ctlR->GetTextLength();
+                        cl.startIndex=ctlR->GetText().Length();
                         FSQL::complite_element prev;
                         if (listdelete.size()>0) {
                             prev=listdelete[listdelete.size()-1];
@@ -400,6 +400,9 @@ public:
                 t->SetFirstVisibleLine(l);
                 int cl=t->GetColumn(start);
                 t->ScrollToColumn(cl);
+                // sync line visible position other window
+                if (t!=m_text2) m_text2->SetFirstVisibleLine(l);
+                if (t!=m_text1) m_text1->SetFirstVisibleLine(l);
                 break;
             }
             else {
@@ -470,10 +473,14 @@ public:
     }
     void onHtmlDiff(wxCommandEvent& evt) {
         if (m_text2->GetLength()>0) {
+            m_text2->Colourise(0,m_text2->GetLastPosition());
             wxString html=m_text2->TextToHtml(0,m_text2->GetLength(),false,listdelete);
 		if (wxTheClipboard->Open())
 		{
-			wxTheClipboard->SetData(new wxHTMLDataObject(html));
+            wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+			dataobj->Add(new wxTextDataObject(html));
+			dataobj->Add(new wxHTMLDataObject(html));
+			wxTheClipboard->SetData(dataobj);
 			wxTheClipboard->Close();
 		}
 
@@ -484,6 +491,8 @@ public:
         wxWindow *wnd = lastfocus;
         wxString html;
         if (wnd) {
+            m_text2->Colourise(0,m_text2->GetLastPosition());
+            m_text1->Colourise(0,m_text1->GetLastPosition());
             if (m_text2==wnd) html=m_text2->TextToHtml(0,m_text2->GetLength(),false);
             if (m_text1==wnd) html=m_text1->TextToHtml(0,m_text1->GetLength(),false);
 		if (html.Length()>0 && wxTheClipboard->Open())

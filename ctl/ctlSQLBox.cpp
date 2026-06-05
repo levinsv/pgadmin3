@@ -381,6 +381,7 @@ void ctlSQLBox::OnDiff(wxCommandEvent& ev) {
 				if (wxTheClipboard->GetData(textData)) {
 					sql_1 = textData.GetText();
 				} else {
+					wxTheClipboard->Close();
 					return;
 				}
 
@@ -1911,7 +1912,8 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 			refreshgbcolor=true;
 			bgclr="#ffff00";
 			tmppos=IndicatorEnd(indic,epos);
-			if (tmppos==textlen) spos=-1;
+			if (tmppos==textlen)
+				 spos=-1;
 				else spos=tmppos;
 		} else if (startp>=epos && epos!=-1) {
 			bgclr="";
@@ -1919,6 +1921,12 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 			tmppos=IndicatorEnd(indic,spos);
 			if (tmppos==textlen) epos=-1;
 				else epos=tmppos;
+			if (spos==-1) epos=-1;
+			if (newlineadd) 
+				{
+					// if add only \n
+					str+=lstr; lstr=""; newlineadd=false;
+				}
 		}
 		if (prevColor != tColor || refreshgbcolor) {
 			str+= wxT("</span><span style=\"color:");
