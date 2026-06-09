@@ -8,9 +8,9 @@
 // frmDatabaseDesigner.cpp - The database designer form
 //
 //////////////////////////////////////////////////////////////////////////
+#ifdef DATABASEDESIGNER
 
 #include "pgAdmin3.h"
-
 // wxWindows headers
 #include <wx/wx.h>
 #include <wx/dcbuffer.h>
@@ -927,3 +927,4 @@ wxWindow *databaseDesignerFactory::StartDialog(frmMain *form, pgObject *obj)
 		qry = obj->GetSql(form->GetBrowser());
 	return StartDialogDesigner(form, obj, qry);
 }
+#endif

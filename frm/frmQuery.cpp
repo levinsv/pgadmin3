@@ -3138,6 +3138,10 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 
 void frmQuery::OnExecScript(wxCommandEvent &event)
 {
+	#ifdef NO_PGSCRIPT
+		wxMessageBox(("pgScript disable."), ("Disable compile support pgScript."), wxICON_WARNING | wxOK);
+		return;
+	#endif
 	// Get the script
 	wxString query = sqlQuery->GetSelectedText();
 	if (query.IsNull())
