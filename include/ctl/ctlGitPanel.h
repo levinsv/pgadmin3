@@ -39,11 +39,13 @@ public:
     void ShowPage(pgObject* data);
     void getFileRepository(pgObject* data);
     wxJSONValue execRequest(wxString url, wxJSONValue args, wxString cmd);
+    wxMemoryBuffer execRequestBinary(wxString url);
     //wxJSONValue setComonnArgs();
     void GetBranchList(bool refresh);
     void GetRepositoryTree(wxString branchName,wxString path,wxString typeElement,wxString value);
     wxString GetRepositoryFile(wxString branchName, wxString path);
     wxString getCurBranch(wxString dbname);
+    void GetRepositoryArchive(wxString branchName);
     bool CheckValidObject(pgObject *o);
     void CommandBranch(wxString branchName, wxString cmd);
     bool ApplyCommit(wxString branchName, wxJSONValue params);
@@ -66,7 +68,6 @@ public:
     void OnNotebookPageChanged(wxBookCtrlEvent& event);
     void OnClose(wxCloseEvent& event);
 
-
 private:
     frmMain* formMain;
     wxJSONValue cfg;
@@ -81,7 +82,7 @@ private:
 
     wxComboBox* m_Branch_List_Ctrl;
     wxButton *m_branchDeleteButton, *m_branchListButton, *m_commitButton;
-    wxHyperlinkCtrl* m_link;
+    wxStaticText* m_link;
     wxNotebook* m_notebook;
     wxTextCtrl* m_urlTextCtrl;
     wxButton* m_startButton;
