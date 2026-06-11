@@ -23,6 +23,10 @@
 #include "images/gqbRemove.pngc"
 #include "images/conversion.pngc"
 #include "ctl/SourceViewDialog.h"
+#include <wx/zstream.h>
+#include <wx/mstream.h>
+#include <wx/sstream.h>
+#include <wx/tarstrm.h>
 enum
 {
     MARGIN_LINE_NUMBERS
@@ -219,7 +223,7 @@ ctlGitPanel::ctlGitPanel(wxWindow* parent, frmMain* form, wxJSONValue cf) :
     m_startButton = new wxButton(this, wxID_OK, "&Load Git");
     m_startButton->Bind(wxEVT_BUTTON, &ctlGitPanel::OnLoadGitButton, this);
     btn2Sizer->AddButton(m_startButton);
-    m_link= new wxHyperlinkCtrl(this, wxID_ANY, "","",wxDefaultPosition,wxSize(-1,-1));
+    m_link= new wxStaticText(this, wxID_ANY, "",wxDefaultPosition,wxSize(-1,-1));
    // btn2Sizer->AddStretchSpacer();
     btn2Sizer->Add(m_link, wxSizerFlags(1).Expand().Border(wxLEFT ).Top());
     
@@ -335,6 +339,82 @@ wxJSONValue ctlGitPanel::GetConfig() {
     }
     return cfg;
 }
+wxMemoryBuffer ctlGitPanel::execRequestBinary(wxString url) {
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
+        this,
+        url
+    );
+    wxMemoryBuffer buf;
+    if (!request.IsOk()) {
+        // This is not expected, but handle the error somehow.
+        return buf;
+    }
+    wxString pt;
+    cfg["private_token"].AsString(pt);
+    request.SetHeader("PRIVATE-TOKEN", pt);
+    wxString rez;
+    wxMemoryOutputStream output;
+    
+    Bind(wxEVT_WEBREQUEST_STATE, [&rez,&buf](wxWebRequestEvent& evt) {
+        switch (evt.GetState())
+        {
+            // Request completed
+        case wxWebRequest::State_Completed:
+        {
+            wxWebResponse response = evt.GetRequest().GetResponse();
+            if (response.GetStatus() == 200) {
+                 wxInputStream* stream = response.GetStream();
+                 if (stream) {
+
+                // Создаем буфер (например, 4 КБ)
+                    char buffer[4096];
+                    while (!stream->Eof()) {
+                        // Читаем порцию данных из входного потока
+                        stream->Read(buffer, sizeof(buffer));
+                        
+                        // Определяем, сколько байт было реально прочитано
+                        size_t bytesRead = stream->LastRead();
+
+                        if (bytesRead > 0) {
+                            // Записываем прочитанные байты в файл
+                            buf.AppendData(buffer, bytesRead);
+                            //output.Write(buffer, bytesRead);
+                        }
+                    }
+                    //output.Close();
+                 }
+            }
+
+            //buffer = response.GetStream();
+
+            rez=wxString::Format("Loaded %lld bytes binary data (Status: %d %s)",
+                evt.GetResponse().GetContentLength(),
+                evt.GetResponse().GetStatus(),
+                evt.GetResponse().GetStatusText());
+            break;
+        }
+        // Request failed
+        case wxWebRequest::State_Unauthorized:
+        {
+            rez.Printf("%s", evt.GetErrorDescription());
+            break;
+        }
+        case wxWebRequest::State_Failed:
+            rez.Printf("%s", evt.GetErrorDescription());
+            break;
+        }
+        });
+    error_msg = "";
+    request.Start();
+    while (request.IsOk() && rez.Len() == 0)
+    {
+        wxYield();
+    }
+    m_textResponseTextCtrl->SetLabelText(rez);
+    if (!rez.StartsWith("Load")) error_msg=rez;
+    return buf;
+}
+
 wxJSONValue ctlGitPanel::execRequest(wxString url, wxJSONValue args,wxString cmd) {
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         this,
@@ -683,6 +763,46 @@ ex_for:
     }
     return br;
 }
+void ctlGitPanel::GetRepositoryArchive(wxString branchName) {
+    wxJSONValue r;
+    wxString ur;
+    //m_git_tree[path] = "need load";
+
+    cfg["url"].AsString(ur);
+    wxString pr;
+    cfg["project_id"].AsString(pr);
+    ur = ur + "projects/" + pr + "/repository/archive";
+    wxJSONValue rez;
+    wxJSONValue prrr;
+    r["sha"] = getCurBranch(branchName);
+    ur = ur + ArgsForGet(r);
+    m_urlTextCtrl->SetValue(ur);
+    wxMemoryBuffer buf=execRequestBinary(ur);
+    if (buf.GetDataLen()>0) {
+         wxMemoryInputStream zipstream(buf.GetData(), buf.GetDataLen());
+         wxZlibInputStream gzIn(zipstream);
+         wxTarInputStream tarIn(gzIn);
+            wxString entryName;
+            wxTarEntry* entry;
+            // 4. Читать записи архива по одной
+            while (entry = tarIn.GetNextEntry()) {
+                entryName = entry->GetName();
+                if (!entry->IsDir()) {
+                    wxString filecontext;
+                    wxStringOutputStream out;
+                    tarIn.Read(out);
+                    filecontext=out.GetString();
+                    wxString path=branchName+'/'+entryName.AfterFirst('/');
+                    out.Close();
+                        m_git_content[path] = filecontext;
+                        m_treeName[path] = "git";
+                        m_count_git++;
+                }
+                delete entry; // Освободить память
+            }
+
+    }
+}
 void ctlGitPanel::GetRepositoryTree(wxString branchName, wxString path, wxString typeElement, wxString value) {
     wxJSONValue r;
     wxString ur;
@@ -704,48 +824,46 @@ void ctlGitPanel::GetRepositoryTree(wxString branchName, wxString path, wxString
     m_urlTextCtrl->SetValue(ur);
     while (true)
     {
-
-    
-    rez=execRequest(ur, prrr, "GET");
-    if (rez.AsArray()) {
-        wxString prefix = path.BeforeFirst('/');
-        for (int j = 0; j < rez.Size(); j++) {
-            wxJSONValue ss = rez[j];
-            wxString name = branchName + "/"+ss["path"].AsString();
-            if (ss["type"].AsString() != "tree") { 
-                m_treeName[name] = "git";
-                m_count_git++;
-            }
-            //if (name==path) m_treeName[path] = "both";
-        }
-        if (!response_link.IsEmpty()) {
-            int st = 0;
-            wxString tmp;
-            while (true) {
-                int p3 = response_link.find(',',st);
-                if (p3 < 0) p3 = response_link.Len();
-                if (p3 > 0) {
-                    tmp = response_link.substr(st, p3 - st);
-                    int p1 = tmp.Find("rel=\"next");
-                    if (p1 < 0 && p3 == response_link.Len()) {
-                        return;
-                    };
-                    if (p1 > 0) {
-                        int e = tmp.Index('>');
-                        int s = tmp.Index('<');
-                        ur = tmp.substr(s + 1, e - s - 1);
-                        break;
-                    }
-                    st = p3 + 1;
-
+        rez=execRequest(ur, prrr, "GET");
+        if (rez.AsArray()) {
+            wxString prefix = path.BeforeFirst('/');
+            for (int j = 0; j < rez.Size(); j++) {
+                wxJSONValue ss = rez[j];
+                wxString name = branchName + "/"+ss["path"].AsString();
+                if (ss["type"].AsString() != "tree") { 
+                    m_treeName[name] = "git";
+                    m_count_git++;
                 }
-                else break;
+                //if (name==path) m_treeName[path] = "both";
             }
-            //ur = response_link;
-            continue;
+            if (!response_link.IsEmpty()) {
+                int st = 0;
+                wxString tmp;
+                while (true) {
+                    int p3 = response_link.find(',',st);
+                    if (p3 < 0) p3 = response_link.Len();
+                    if (p3 > 0) {
+                        tmp = response_link.substr(st, p3 - st);
+                        int p1 = tmp.Find("rel=\"next");
+                        if (p1 < 0 && p3 == response_link.Len()) {
+                            return;
+                        };
+                        if (p1 > 0) {
+                            int e = tmp.Index('>');
+                            int s = tmp.Index('<');
+                            ur = tmp.substr(s + 1, e - s - 1);
+                            break;
+                        }
+                        st = p3 + 1;
+
+                    }
+                    else break;
+                }
+                //ur = response_link;
+                continue;
+            }
         }
-    }
-    break;
+        break;
     }
     return;
 }
@@ -843,7 +961,7 @@ bool ctlGitPanel::ApplyCommit(wxString branchName, wxJSONValue params) {
     rez = execRequest(ur, params, "POST");
     if (!rez.IsNull()) {
         wxString u = rez["web_url"].AsString();
-        m_link->SetURL(u);
+        m_link->SetLabel(u);
         return true;
     }
     return false;
@@ -975,7 +1093,8 @@ void ctlGitPanel::GetExpandedChildNodes(wxTreeItemId node, wxArrayString& expand
             if ((typenam != "Schema" && typenam != "Database")&& !obj->IsCollection()) {
                 //����� SQL ��� ����� �� ���������, ��� ��� ��� ��������� ������� � �� ���� � Git
                 wxString p = pat + '/' + browser->GetItemText(child).Trim();
-                m_link->SetLabel(p);
+                //m_link->SetLabel(p);
+                formMain->SetStatusText(p);
                 m_count_db++;
                 expandedNodes.Add(p);
                 s.Replace("\r\n", "\n");
@@ -986,7 +1105,13 @@ void ctlGitPanel::GetExpandedChildNodes(wxTreeItemId node, wxArrayString& expand
                     wxString v = it->second;
                     wxString g_path= it->first;
                     if (v == "git") {
-                        wxString s2 = GetRepositoryFile(currentDBname, p);
+                        wxString s2;
+                        auto it = m_git_content.find(p);
+                        if (it != m_git_content.end()) 
+                                s2=it->second;
+                            else {
+                                s2 = GetRepositoryFile(currentDBname, p);
+                            }
                         if (!s2.IsSameAs(s)) {
                             m_treeName[p] = "update";
                             ReplaceItem(p, Files::Update_File);
@@ -1027,9 +1152,13 @@ void ctlGitPanel::OnLoadGitButton(wxCommandEvent& WXUNUSED(evt))
         if (getCurBranch(currentDBname).IsEmpty()) {
             goto ex;
         };
-
+        
         wxString path = '/';
-        GetRepositoryTree(currentDBname,path,"", "");
+        if (true)
+                GetRepositoryArchive(currentDBname);
+            else
+                GetRepositoryTree(currentDBname,path,"", "");
+
         if (!error_msg.IsEmpty()) { msg = error_msg;  goto ex; }
         GetExpandedChildNodes(nodeDB, expandedNodes, currentDBname, 1);
         wxStringToStringHashMap::iterator it= m_treeName.begin();

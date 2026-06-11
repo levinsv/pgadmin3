@@ -510,7 +510,9 @@ bool pgConn::BackendMinimumVersion(int major, int minor)
 		}
 		isPgProEnt=false;
 		wxString ed=ExecuteScalar(wxT("select to_regproc('pgpro_edition')::text"));
-		if (!ed.IsEmpty()) ed=ExecuteScalar(wxT("select pgpro_edition()"));
+		if (ed=="pgpro_edition") {
+			ed=ExecuteScalar(wxT("select pgpro_edition()"));
+		}
 		if (ed==wxT("enterprise")) isPgProEnt=true;
 
 		isGreenplum = version.Upper().Matches(wxT("*GREENPLUM DATABASE*"));

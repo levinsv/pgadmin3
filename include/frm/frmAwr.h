@@ -11,6 +11,7 @@ public:
 
 private:
 	void OnChange(wxCommandEvent& ev);
+	void OnChangeText(wxCommandEvent& ev);
 	void OnOK(wxCommandEvent& ev);
 	void OnCancel(wxCommandEvent& ev);
 	void OnBrowseFile(wxCommandEvent& ev);

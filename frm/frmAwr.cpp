@@ -8,10 +8,10 @@
 #define btnOK           CTRL_BUTTON("wxID_OK")
 #define rbTypeReport    CTRL_RADIOBOX("rbTypeReport")
 #define cbServer        CTRL_COMBOBOX("cbServer")
-#define cbStartId1      CTRL_COMBOBOX("cbStartId1")
-#define cbStartId2      CTRL_COMBOBOX("cbStartId2")
-#define cbEndId1        CTRL_COMBOBOX("cbEndId1")
-#define cbEndId2        CTRL_COMBOBOX("cbEndId2")
+#define cbStartId1      CTRL_COMBOBOX2("cbStartId1")
+#define cbStartId2      CTRL_COMBOBOX2("cbStartId2")
+#define cbEndId1        CTRL_COMBOBOX2("cbEndId1")
+#define cbEndId2        CTRL_COMBOBOX2("cbEndId2")
 
 BEGIN_EVENT_TABLE(frmAwr, pgDialog)
 
@@ -20,6 +20,10 @@ EVT_COMBOBOX(XRCID("cbStartId1"), frmAwr::OnChange)
 EVT_COMBOBOX(XRCID("cbStartId2"), frmAwr::OnChange)
 EVT_COMBOBOX(XRCID("cbEndId1"), frmAwr::OnChange)
 EVT_COMBOBOX(XRCID("cbEndId2"), frmAwr::OnChange)
+EVT_TEXT(XRCID("cbStartId1"), frmAwr::OnChangeText)
+EVT_TEXT(XRCID("cbEndId1"), frmAwr::OnChangeText)
+EVT_TEXT(XRCID("cbStartId2"), frmAwr::OnChangeText)
+EVT_TEXT(XRCID("cbEndId2"), frmAwr::OnChangeText)
 EVT_BUTTON(wxID_OK, frmAwr::OnOK)
 EVT_BUTTON(wxID_CANCEL, frmAwr::OnCancel)
 END_EVENT_TABLE()
@@ -85,7 +89,15 @@ frmAwr::frmAwr(frmMain* parent, pgObject* obj)
 	OnChange(ev);
 
 }
+void frmAwr::OnChangeText(wxCommandEvent& ev)
+{
+	ctlComboBox *w=(ctlComboBox *) ev.GetEventObject();
+	//ctlComboBox *cb = cbStartId1;
+	if (w)
+		w->GuessSelection(ev);
+	OnChange(ev);
 
+}
 void frmAwr::OnChange(wxCommandEvent& ev)
 {
 //	cbQuoteChar->Enable(rbQuoteStrings->GetValue() || rbQuoteAll->GetValue());
@@ -122,7 +134,8 @@ void frmAwr::OnChange(wxCommandEvent& ev)
 	int s1 = cbStartId1->GetSelection();
 	int e1 = cbEndId1->GetSelection();
 	if (cbStartId1->GetValue() != cstart1 || cbEndId1->GetValue() != cend1 ) {
-		if ((s1 - 1) >= 0 && ((e1 >= s1)|| (e1<0))) cbEndId1->SetSelection(s1 - 1);
+		if ((s1 - 1) >= 0 && ((e1 >= s1)|| (e1<0))) 
+			cbEndId1->SetSelection(s1 - 1);
 		cstart1 = cbStartId1->GetValue();
 		cend1 = cbEndId1->GetValue();
 	}

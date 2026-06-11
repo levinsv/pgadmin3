@@ -109,8 +109,8 @@
              <option>0</option>
              <flag>wxALL|wxEXPAND</flag>
              <border>5</border>
-             <object class="wxComboBox" name="cbStartId1">
-              <style>wxCB_READONLY</style>
+             <object class="ctlComboBox" name="cbStartId1">
+              <style></style>
               <value>cbStartId1</value>
               <content />
              </object>
@@ -128,8 +128,8 @@
              <option>0</option>
              <flag>wxALL|wxEXPAND</flag>
              <border>5</border>
-             <object class="wxComboBox" name="cbEndId1">
-              <style>wxCB_READONLY</style>
+             <object class="ctlComboBox" name="cbEndId1">
+              <style></style>
               <value>cbEndId1</value>
               <content />
              </object>
@@ -171,8 +171,8 @@
              <option>0</option>
              <flag>wxALL|wxEXPAND</flag>
              <border>5</border>
-             <object class="wxComboBox" name="cbStartId2">
-              <style>wxCB_READONLY</style>
+             <object class="ctlComboBox" name="cbStartId2">
+              <style></style>
               <value>cbStartId2</value>
               <content />
              </object>
@@ -190,8 +190,8 @@
              <option>0</option>
              <flag>wxALL|wxEXPAND</flag>
              <border>5</border>
-             <object class="wxComboBox" name="cbEndId2">
-              <style>wxCB_READONLY</style>
+             <object class="ctlComboBox" name="cbEndId2">
+              <style></style>
               <value>cbEndId2</value>
               <content />
              </object>

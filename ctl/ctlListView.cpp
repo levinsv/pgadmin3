@@ -44,10 +44,7 @@ ctlListView::ctlListView(wxWindow* p, int id, wxPoint pos, wxSize siz, long attr
 		if (iswayland) {
 			SetBackgroundColour(wxTRANSPARENT);
 			SetBackgroundStyle(wxBG_STYLE_PAINT);
-		} else
-			SetBackgroundStyle(wxBG_STYLE_TRANSPARENT);
-		
-		
+		} //else SetBackgroundStyle(wxBG_STYLE_TRANSPARENT);
 	}
 #endif
 	Create(p, id, pos, siz, attr | wxLC_REPORT);
