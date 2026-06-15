@@ -214,6 +214,7 @@ private:
 	void OnCut(wxCommandEvent &event);
 	void OnCopy(wxCommandEvent &event);
 	void OnPaste(wxCommandEvent &event);
+	void OnDiffText(wxCommandEvent &ev);
 	void OnClear(wxCommandEvent &event);
 	void OnSummary_Column(wxCommandEvent &event);
 	void OnCompare_2Cell(wxCommandEvent& event);
