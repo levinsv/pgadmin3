@@ -4,7 +4,14 @@ project(pgAdmin3 VERSION 1.26.0)
 include_directories(. include)
 set(PRECOMP_FILE precomp.h)
 if(NOT CROSS_COMPILE)
-    include_directories(include/libssh2)
+        include_directories(include/libssh2)
+        find_package(CURL)
+	   if(NOT CURL_FOUND)
+	    add_compile_definitions(NO_WXJSON_GIT)
+	   else()
+	    include_directories(${CURL_INCLUDE_DIR})
+	    link_libraries(${CURL_LIBRARIES})
+        endif()
 	find_package(LibXslt REQUIRED)
 	if(NOT LIBXSLT_FOUND)
 	    message(SEND_ERROR "Failed to find LibXslt")
@@ -50,18 +57,6 @@ else()
 
 endif()
 
-SET(FILEPGSCRIPT "pgscript/*.c*")
-SET(FILEPGSCRIPT "")
-if(FILEPGSCRIPT STREQUAL "")
-	add_compile_definitions(NO_PGSCRIPT)
-	message(STATUS "Disable pg_script.")
-endif()
-
-SET(FILEDES "dd/*.c* hotdraw/*.c*")
-#if (DATABASEDESIGNER)
-#	add_compile_definitions(DATABASEDESIGNER)
-#	SET(FILEDES "dd/*.c* hotdraw/*.c*")
-#endif()
 
 add_compile_definitions(wxUSE_UNICODE)
 add_compile_definitions(EMBED_XRC)
@@ -72,14 +67,12 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE SOURCES
-	${FILEPGSCRIPT}
     agent/*.c*
     ctl/*.c*
     db/*.c*
-    dd/*.c* hotdraw/*.c*
-	debugger/*.c* dlg/*.c* frm/*.c*
+    dd/*.c* debugger/*.c* dlg/*.c* frm/*.c*
     gqb/*.c*
-    ogl/*.c*
+     hotdraw/*.c* ogl/*.c* pgscript/*.c*
      pro_scheduler/*.c* schema/*.c* slony/*.c* ui/xrcDialogs.cpp utils/*.c*
 )
 
