@@ -920,6 +920,11 @@ void frmMain::OnSelRightClick(wxTreeEvent &event)
 
 void frmMain::OnDelete(wxCommandEvent &ev)
 {
+	wxWindow *f=FindFocus();
+	if (f!=GetBrowser()) {
+		ev.Skip();
+		return;
+	}
 	if (currentObject->CanDrop())
 		ExecDrop(false);
 }

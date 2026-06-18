@@ -351,6 +351,9 @@ wxMemoryBuffer ctlGitPanel::execRequestBinary(wxString url) {
     }
     wxString pt;
     cfg["private_token"].AsString(pt);
+    bool sslverify=true;
+    cfg["sslverify"].AsBool(sslverify);
+    if (!sslverify) request.DisablePeerVerify();
     request.SetHeader("PRIVATE-TOKEN", pt);
     wxString rez;
     wxMemoryOutputStream output;
@@ -427,6 +430,9 @@ wxJSONValue ctlGitPanel::execRequest(wxString url, wxJSONValue args,wxString cmd
     }
     wxString pt;
     cfg["private_token"].AsString(pt);
+    bool sslverify=true;
+    cfg["sslverify"].AsBool(sslverify);
+    if (!sslverify) request.DisablePeerVerify();
     request.SetHeader("PRIVATE-TOKEN", pt);
     if (cmd != "GET") request.SetMethod(cmd);
     if (!args.IsNull()) {

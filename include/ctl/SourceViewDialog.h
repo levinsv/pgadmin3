@@ -11,6 +11,7 @@ class SourceViewDialog : public wxFrame
     wxCheckBox* m_showNumber;
     wxCheckBox* m_linescompare;
     wxCheckBox* m_symantecclean;
+    int m_dialogparam=0;
     wxButton* m_btn_next;
     wxButton* m_btn_html;
     wxButton* m_btn_htmlcopy;
@@ -30,6 +31,8 @@ public:
     void onClose(wxCloseEvent& evt)
     {
         //EndModal(GetReturnCode());
+        int v=GetDialogParam();
+        if (m_dialogparam!=v) settings->SetCompareDialogParam(v);
         evt.Skip();
 
     }
@@ -258,12 +261,26 @@ public:
         m_btn_htmlcopy->Enable(isdiff);
 
     }
+    int GetDialogParam() {
+        int v=0;
+        if (m_visibleSpace->IsChecked()) v+=1;
+        if (m_showNumber->IsChecked()) v+=2;
+        if (m_linescompare->IsChecked()) v+=4;
+        if (m_symantecclean->IsChecked()) v+=8;
+        return v;
+    }
+    void SetDialogParam(int v) {
+        m_visibleSpace->SetValue(v & 1);
+        m_showNumber->SetValue(v & 2);
+        m_linescompare->SetValue(v & 4);
+        m_symantecclean->SetValue(v & 8);
+    }
     SourceViewDialog(wxWindow* parent, wxString sqlL, wxString sqlR, wxString title) :
         wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxSize(1200, 700))
     {
         m_changing_values = false;
 
-
+        m_dialogparam=settings->GetCompareDialogParam();
 
         wxBoxSizer* bSizer1;
         bSizer1 = new wxBoxSizer(wxVERTICAL);
@@ -323,6 +340,11 @@ public:
 
         //        wxButton *m_btn_cancel = new wxButton(m_panelOpt, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0);
         //        bSizer4->Add(m_btn_cancel, 0, wxALL, 5);
+
+        SetDialogParam(m_dialogparam);
+        wxCommandEvent evt;
+        OnShowCheckBoxSpace(evt);
+        OnShowCheckShowNumber(evt);
 
         difftext(m_text1, m_text2, sqll, sqlr);
         m_panelOpt->SetSizer(bSizer4);

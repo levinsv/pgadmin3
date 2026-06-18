@@ -83,6 +83,7 @@
 #include "images/query_rollback.pngc"
 #include "images/mode_transaction.pngc"
 #include "images/mode_autocommit.pngc"
+#include "images/diff_text.pngc"
 #include "images/help.pngc"
 #include "images/gqbJoin.pngc"
 #include <map>
@@ -119,6 +120,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_CUT,               frmQuery::OnCut)
 	EVT_MENU(MNU_COPY,              frmQuery::OnCopy)
 	EVT_MENU(MNU_PASTE,             frmQuery::OnPaste)
+	EVT_MENU(MNU_DIFF_TEXT,         frmQuery::OnDiffText)
 	EVT_MENU(MNU_CLEAR,             frmQuery::OnClear)
 	EVT_MENU(MNU_SUMMARY_COL,       frmQuery::OnSummary_Column)
 	EVT_MENU(MNU_COMPARE_2CELL,		frmQuery::OnCompare_2Cell)
@@ -616,6 +618,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	toolBar->AddTool(MNU_CUT, wxEmptyString, GetBundleSVG(clip_cut_png_bmp, "clip_cut.svg", tbsz) , _("Cut selected text to clipboard"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_COPY, wxEmptyString, GetBundleSVG(clip_copy_png_bmp, "clip_copy.svg", tbsz), _("Copy selected text to clipboard"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_PASTE, wxEmptyString, GetBundleSVG(clip_paste_png_bmp, "clip_paste.svg", tbsz), _("Paste selected text from clipboard"), wxITEM_NORMAL);
+	toolBar->AddTool(MNU_DIFF_TEXT, wxEmptyString, GetBundleSVG(diff_text_png_bmp, "diff_text.svg", tbsz), _("Compare the selected text with the clipboard"), wxITEM_NORMAL);
 	toolBar->AddTool(MNU_CLEAR, wxEmptyString, GetBundleSVG(edit_clear_png_bmp, "edit_clear.svg", tbsz), _("Clear edit window"), wxITEM_NORMAL);
 	toolBar->AddSeparator();
 	toolBar->AddTool(MNU_UNDO, wxEmptyString, GetBundleSVG(edit_undo_png_bmp, "edit_undo.svg", tbsz), _("Undo last action"), wxITEM_NORMAL);
@@ -1747,6 +1750,11 @@ void frmQuery::OnCopy(wxCommandEvent &ev)
 	updateMenu();
 }
 
+void frmQuery::OnDiffText(wxCommandEvent &ev)
+{
+	if (currentControl() == sqlQuery)
+		sqlQuery->OnDiff(ev);
+}
 
 void frmQuery::OnPaste(wxCommandEvent &ev)
 {
@@ -1919,6 +1927,7 @@ void frmQuery::updateMenu(bool allowUpdateModelSize)
 	editMenu->Enable(MNU_COPY, canCopy);
 
 	toolBar->EnableTool(MNU_PASTE, canPaste);
+	toolBar->EnableTool(MNU_DIFF_TEXT, canPaste);
 	editMenu->Enable(MNU_PASTE, canPaste);
 
 	toolBar->EnableTool(MNU_CUT, canCut);

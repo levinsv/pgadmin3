@@ -841,6 +841,16 @@ public:
 	{
 		WriteInt(wxT("RefreshOnClick"), newval);
 	}
+	int GetCompareDialogParam() const
+	{
+		int i;
+		Read(wxT("CompareDialogParam"), &i, 0);
+		return i;
+	}
+	void SetCompareDialogParam(const int newval)
+	{
+		WriteInt(wxT("CompareDialogParam"), newval);
+	}
 
 	bool GetShowNotices() const
 	{
