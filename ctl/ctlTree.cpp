@@ -367,6 +367,7 @@ void ctlTree::OnChar(wxKeyEvent &event)
 							data = GetItemData(currid);
 						} else return;
 					}
+					int closeIconId=serverFactory.GetClosedIconId();
 					wxTreeItemIdValue groupcookie;
 					wxTreeItemId groupitem;
 					std::vector<wxTreeItemId> openservers;
@@ -379,7 +380,7 @@ void ctlTree::OnChar(wxKeyEvent &event)
 						wxTreeItemIdValue groupcookie2;
 						nId = GetFirstChild(groupitem, groupcookie2);
 						while (nId) {
-							if (HasChildren(nId)) {
+							if (GetItemImage(nId)!=closeIconId) {
 								openservers.push_back(nId);
 								if (nId==currid) delta=-1;
 							}
