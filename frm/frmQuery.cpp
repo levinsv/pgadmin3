@@ -3701,7 +3701,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 		else
 		{
 			wxString errMsg, errMsg2;
-			long errPos;
+			long errPos=0;
 
 			pgError err = sqlResult->GetResultError();
 			errMsg = err.formatted_msg;
