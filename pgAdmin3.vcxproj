@@ -1435,7 +1435,6 @@
     <ClInclude Include="utils\diff_match_patch.h" />
   </ItemGroup>
   <ItemGroup>
-    <png2c Include="ex_pscan.png" />
     <png2c Include="include\images\aggregate-sm.png" />
     <png2c Include="include\images\aggregate.png" />
     <png2c Include="include\images\aggregates.png" />
@@ -1510,6 +1509,7 @@
     <png2c Include="include\images\delete.png" />
     <png2c Include="include\images\dictionaries.png" />
     <png2c Include="include\images\dictionary.png" />
+    <png2c Include="include\images\diff_text.png" />
     <png2c Include="include\images\disabled.png" />
     <png2c Include="include\images\dnd_copy.png" />
     <png2c Include="include\images\dnd_move.png" />
