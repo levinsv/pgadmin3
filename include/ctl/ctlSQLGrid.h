@@ -104,7 +104,16 @@ public:
         end.Add(-1, g->GetNumberRows());
         run.Clear();
         run.Add(0.0, g->GetNumberRows());
+        endsectionrow=-1;
+        endsectiontotal=0;
     };
+    /**
+     * @brief Определяет строчный диапазон узла и время его выполнения
+     * 
+     * @param rowgroup Начальная строка узла со знаком ->
+     * @param lastrowgroup Последняя строка узла
+     * @param actualtime Время выполнения узла
+     */
     void AddGroup(int rowgroup, int lastrowgroup, double actualtime) {
         // default group open
         rowsGroup[rowgroup] = -rowgroup;
@@ -113,6 +122,18 @@ public:
         end[rowgroup] = lastrowgroup;
         run[rowgroup] = actualtime;
     };
+    void SetTimeToRow(int row, double actualtime) {
+        // default group open
+        //beg[rowgroup]=rowgroup;
+        //wxASSERT_MSG(lastrowgroup > end.Count(), " out of bounds");
+        run[row] = actualtime;
+    };
+    /**
+     * @brief Скрывает или показывает узел плана
+     * 
+     * @param row начальная строка узла
+     * @param visible 
+     */
     void VisibleGroup(int row, bool visible) {
         int endg = end[row];
         int grp = IsGroupRow(row);
@@ -173,6 +194,12 @@ public:
         pAttr->SetBackgroundColour(color);
         g->SetRowAttr(row, pAttr);
     };
+    /**
+     * @brief Подсчёт времени всех узлов. Начиная со строки endsectionrow 
+     * считается время планирования и выполнения триггеров. 
+     * Эти расчёты не связаны с проценьами по узлам плана.
+     * 
+     */
     void CalcTime() {
         //g->GetTable()->SetRowLabelValue(row-1,s);
         double sum = 0;
@@ -186,15 +213,20 @@ public:
             else
             {
                 wxString str;
-                if (total == 0 || t == 0) {
-                    str = "";
-                }
-                else
+                if (i>=endsectionrow && endsectionrow!=-1)
                 {
-
-                    t = (t / total) * 100;
-                    str.Printf(wxT("%5.2f"), t);
+                    total=endsectiontotal;
+                    if (i==endsectionrow) total+=t; // % plan = plan time / (plan time + execute time)
                 }
+
+                    if (total == 0 || t == 0) {
+                        str = "";
+                    }
+                    else
+                    {
+                        t = (t / total) * 100;
+                        str.Printf(wxT("%5.2f"), t);
+                    }
                 g->GetTable()->SetRowLabelValue(i, str);
             }
 
@@ -202,7 +234,8 @@ public:
 
 
     };
-
+int endsectionrow; // start section after Planning time;
+double endsectiontotal; // value Execution Time:
 private:
     ctlSQLGrid* g;
     wxArrayInt rowsGroup, end;
