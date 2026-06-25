@@ -2260,7 +2260,6 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 
 	if ((rows.GetCount()))
 	{
-		xmenu->Enable(MNU_COPY, true);
 		xmenu->Enable(MNU_DELETE, true);
 		xmenu->Enable(MNU_PASTE, true);
 
@@ -2271,6 +2270,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 		xmenu->Enable(MNU_DELETE, false);
 		xmenu->Enable(MNU_PASTE, false);
 	}
+	xmenu->Enable(MNU_COPY, true);
 	xmenu->Enable(MNU_CLEAR_FILTER, isfilterresult);
 	sqlResult->PopupMenu(xmenu);
 }
@@ -3701,7 +3701,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 		else
 		{
 			wxString errMsg, errMsg2;
-			long errPos;
+			long errPos=0;
 
 			pgError err = sqlResult->GetResultError();
 			errMsg = err.formatted_msg;

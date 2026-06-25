@@ -390,8 +390,12 @@ void dlgDatabase::OnOK(wxCommandEvent &ev)
 #endif
 	if (database)
 	{
-		database->iSetSchemaRestriction(txtSchemaRestr->GetValue().Trim());
-		settings->Write(wxString::Format(wxT("Servers/%ld/Databases/%s/SchemaRestriction"), database->GetServer()->GetServerIndex(), database->GetName().c_str()), txtSchemaRestr->GetValue().Trim());
+		wxString newval=txtSchemaRestr->GetValue().Trim();
+		if (newval!=database->GetSchemaRestriction())
+		{
+			database->iSetSchemaRestriction(newval);
+			settings->Write(wxString::Format(wxT("Servers/%ld/Databases/%s/SchemaRestriction"), database->GetServer()->GetServerIndex(), database->GetName().c_str()), newval);
+		}
 
 		/*
 		 * The connection from the database will get disconnected before execution of any

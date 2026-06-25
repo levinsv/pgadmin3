@@ -1893,6 +1893,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int textlen=GetTextLength();
 	bool refreshgbcolor=false;
 	bool newlineadd=false;
+	wxString bgclrDel="#ebb1c4";
 	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
@@ -1960,7 +1961,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		if ((k-1)>=pos) {
 			if (GetSimpleMode()) {
 				// this compare dialog Append Delete text
-				wxString bgclrDel="#ebb1c4";
+				
 				if (newlineadd) {
 					size_t p44=0,p45=0;
 					wxString searchStr = "<br>";
@@ -1995,6 +1996,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		newlineadd=false;
 		str += lstr;
 		lstr="";
+		if (k==lenstr && pos==lenstr) str+=wxString::Format("<span style=\"background-color: %s\">%s</span>",bgclrDel, obj);
 	}
 	str+= wxT("</font></div>");
 	return str;

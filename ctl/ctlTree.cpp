@@ -347,7 +347,60 @@ void ctlTree::OnChar(wxKeyEvent &event)
 	}
 	else
 	{
-		event.Skip(true);
+		bool directionup;
+		if (event.ControlDown()) 
+			{
+				wxTreeItemId serverId;
+				if (keyCode==WXK_UP) {
+					directionup=true;
+					serverId=GetSelection();
+				} else if (keyCode==WXK_DOWN) {
+					directionup=false;
+					serverId=GetSelection();
+				}
+				if (serverId.IsOk()) {
+					wxTreeItemId currid=serverId;
+					wxTreeItemData* data = GetItemData(currid);
+					while (data && (((pgObject*)data)->GetMetaType() != PGM_SERVER)) {
+						currid=GetItemParent(currid);
+						if (currid.IsOk()) {
+							data = GetItemData(currid);
+						} else return;
+					}
+					int closeIconId=serverFactory.GetClosedIconId();
+					wxTreeItemIdValue groupcookie;
+					wxTreeItemId groupitem;
+					std::vector<wxTreeItemId> openservers;
+					// Count number of servers and groups
+					groupitem = GetFirstChild(GetRootItem(), groupcookie);
+					int idx=-1,delta=0;
+					while (groupitem)
+					{
+						wxTreeItemId nId;
+						wxTreeItemIdValue groupcookie2;
+						nId = GetFirstChild(groupitem, groupcookie2);
+						while (nId) {
+							if (GetItemImage(nId)!=closeIconId) {
+								openservers.push_back(nId);
+								if (nId==currid) delta=-1;
+							}
+							if (nId==currid && directionup) idx=delta+openservers.size()-1;
+							if (nId==currid && !directionup) idx=openservers.size();
+							nId=GetNextChild(groupitem, groupcookie2);
+						}
+						groupitem =GetNextChild(GetRootItem(), groupcookie);
+					}
+					if (openservers.size()>0) {
+						if (idx>=0 && idx<openservers.size()) {
+							currid=openservers[idx];
+							SelectItem(currid);
+							EnsureVisible(currid);
+						}
+					}
+					return;
+				}
+			}
+			event.Skip(true);
 	}
 }
 

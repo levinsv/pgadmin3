@@ -1383,7 +1383,8 @@ void frmMain::StoreServers()
 						pgDatabase *db;
 
 						while ((db = (pgDatabase *)dbs.GetNextObject()) != 0)
-							settings->Write(key + wxT("Databases/") + db->GetName() + wxT("/SchemaRestriction"), db->GetSchemaRestriction());
+							if (!db->GetSchemaRestriction().IsEmpty())
+							 settings->Write(key + wxT("Databases/") + db->GetName() + wxT("/SchemaRestriction"), db->GetSchemaRestriction());
 					}
 				}
 				serveritem = browser->GetNextChild(folderitem, servercookie);
