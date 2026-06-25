@@ -1227,6 +1227,7 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
     wxString text;
     double leveltime = 0; //actual time level
     double lastnode = 0;
+    double plan=0;
     while (row < g->GetNumberRows()) {
         text = g->GetCellValue(row, 0);
         int p = 0;
@@ -1263,6 +1264,35 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
             else
             {
                 g->grp->ColoriseRow(row, wxColour(224, 255, 224)); // green
+                // end section
+                if (g->grp->endsectionrow==-1 && p==0 && pos==0) {
+                        wxRegEx foundstr(wxT("Planning Time: ([0-9.]+)"), wxRE_ADVANCED);
+                        if (foundstr.Matches(text)) {
+                            wxString v = foundstr.GetMatch(text, 1);
+                            v.ToCDouble(&plan);
+                            g->grp->SetTimeToRow(row,plan);
+                            g->grp->endsectionrow=row;
+                        }
+                        
+                }
+                if (g->grp->endsectionrow!=-1 && p==0 && pos==0) {
+                    //Planning Time: 1.919 ms
+                    wxRegEx foundstr(wxT("time=([0-9.]+)"), wxRE_ADVANCED);
+                    double currtime=0;
+                    if (foundstr.Matches(text)) {
+                        wxString v = foundstr.GetMatch(text, 1);
+                        v.ToCDouble(&currtime);
+                        g->grp->SetTimeToRow(row,currtime);
+                    } else {
+                        wxRegEx foundstr(wxT("Execution Time: ([0-9.]+)"), wxRE_ADVANCED);
+                        double totalexecute=0;
+                        if (foundstr.Matches(text)) {
+                            wxString v = foundstr.GetMatch(text, 1);
+                            v.ToCDouble(&totalexecute);
+                            g->grp->endsectiontotal=totalexecute;
+                        }
+                    }
+                }
                 g->GetTable()->SetRowLabelValue(row, wxEmptyString);
             }
             row++;
@@ -1280,8 +1310,10 @@ int recurse(ctlSQLGrid* g, int pos, int row, double& transfer) {
             // 
             //leveltime=leveltime+transfer;
             //GroupRows *u=g->getgroup();
+            // Вычисляется чистое время узла без учёта времени вложенного
             double tt = lastnode - transfer;
             text = g->GetCellValue(row - 1, 0);
+            // эти узлы будут показывать полное время с учётом вложеннных 
             if ((text.Find("Append") > 0)
                 || (text.Find("Gather") > 0))
                 tt = lastnode;
