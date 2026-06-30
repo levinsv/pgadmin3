@@ -150,6 +150,11 @@ frmExport::frmExport(wxWindow *p)
 	wxString val;
 	settings->Read(wxT("Export/LastFile"), &val, wxEmptyString);
 	txtFilename->SetValue(val);
+	ctlSQLResult* ctrl= dynamic_cast<ctlSQLResult*>(parent);
+	if (!ctrl) {
+		chkXlsCopy->SetValue(false);
+		chkXlsCopy->Enable(false);
+	}
 
 	wxCommandEvent ev;
 	OnChange(ev);
