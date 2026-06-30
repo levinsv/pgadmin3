@@ -3140,7 +3140,10 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 			}
 		}
 	}
-	execQuery(query);
+	if (event.GetId()==MNU_EXECFILE) {
+		execQuery(query, 0, false, 0, true);
+	} else
+		execQuery(query);
 	sqlQuery->SetFocus();
 }
 
@@ -3211,21 +3214,7 @@ void frmQuery::OnExecScript(wxCommandEvent &event)
 
 void frmQuery::OnExecFile(wxCommandEvent &event)
 {
-	if(sqlNotebook->GetSelection() == 1)
-	{
-		if (!updateFromGqb(true))
-			return;
-	}
-
-	wxString query = sqlQuery->GetSelectedText();
-	if (query.IsNull())
-		query = sqlQuery->GetText();
-
-	if (query.IsNull())
-		return;
-
-	execQuery(query, 0, false, 0, true);
-	sqlQuery->SetFocus();
+	OnExecute(event);
 }
 void frmQuery::OnAutoReplaceManage(wxCommandEvent &event)
 {
@@ -3341,9 +3330,6 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	//sqlQuery->StartStyling(0);
 	//sqlQuery->SetStyling(sqlQuery->GetText().Length(), 0);
 
-	int i=sqlQueryBook->GetSelection();
-	sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxColour(255,0,0)));
-
 	if (!sqlQuery->IsChanged())
 		setExtendedTitle();
 
@@ -3353,9 +3339,6 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	sqlResult=ctlSQL[indexResult];
 	sqlResult->ClearFilter();
 	ctlSBox[indexResult]=sqlQuery;
-	//
-	int idx=outputPane->GetPageIndex(sqlResult);
-	outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
 
 	QueryExecInfo *qi = new QueryExecInfo();
 	qi->queryOffset = queryOffset;
@@ -3375,6 +3358,12 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 			return;
 		}
 	}
+	//
+	int i=sqlQueryBook->GetSelection();
+	sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxColour(255,0,0)));
+
+	int idx=outputPane->GetPageIndex(sqlResult);
+	outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
 
 	// Remember the tab from which execute was called. By the time query completes, SQL tab selection may change.
 	sqlQueryExec = sqlQuery;
@@ -3390,8 +3379,9 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	SetStatusText(wxT(""), STATUSPOS_ROWS);
 	msgResult->Clear();
 	msgResult->SetFont(settings->GetSQLFont());
-
-	msgHistory->AppendText(wxString::Format(_("-- Executing query [%s]:\n"), sqlQueryExec->GetTitle(false).c_str()));
+	wxDateTime curr=wxDateTime::Now();
+	wxString str_curr=curr.FormatISOCombined(' ');
+	msgHistory->AppendText(wxString::Format(_("-- Executing query [%s]:[%s]\n"), sqlQueryExec->GetTitle(false).c_str(),str_curr.c_str()));
 	msgHistory->AppendText(query);
 	msgHistory->AppendText(wxT("\n"));
 	Update();
