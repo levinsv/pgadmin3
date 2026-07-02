@@ -2849,6 +2849,7 @@ void frmQuery::OnCancel(wxCommandEvent &event)
 
 void frmQuery::OnExplain(wxCommandEvent &event)
 {
+	if (!queryMenu->IsEnabled(MNU_EXPLAIN)) return;	
 	if(sqlNotebook->GetSelection() == 1)
 	{
 		if (!updateFromGqb(true))
@@ -3038,6 +3039,7 @@ void frmQuery::SelectQuery() {
 void frmQuery::OnExecuteShift(wxCommandEvent &event)
 {
 	//add new page outpane
+	if (!queryMenu->IsEnabled(MNU_EXECUTE_2)) return;
 	int len = sizeof(ctlSQL) / sizeof(ctlSQL[0]);
 	wxString titlename;
 	for (int i=0;i<len;i++) if (ctlSQL[i]==NULL) {
@@ -3055,6 +3057,7 @@ void frmQuery::OnExecuteShift(wxCommandEvent &event)
 }
 void frmQuery::OnExecute(wxCommandEvent &event)
 {
+	if (!queryMenu->IsEnabled(MNU_EXECUTE)) return;
 	if(sqlNotebook->GetSelection() == 1)
 	{
 		if (!updateFromGqb(true))
@@ -3154,6 +3157,7 @@ void frmQuery::OnExecScript(wxCommandEvent &event)
 		wxMessageBox(("pgScript disable."), ("Disable compile support pgScript."), wxICON_WARNING | wxOK);
 		return;
 	#endif
+	if (!queryMenu->IsEnabled(MNU_EXECUTE)) return;
 	// Get the script
 	wxString query = sqlQuery->GetSelectedText();
 	if (query.IsNull())
@@ -3319,6 +3323,9 @@ void frmQuery::showMessage(const wxString &msg, const wxString &msgShort)
 
 void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singleResult, const int queryOffset, bool toFile, bool explain, bool verbose)
 {
+	// check is query running
+	if (!queryMenu->IsEnabled(MNU_EXECUTE)) return;
+
 	setTools(true);
 	queryMenu->Enable(MNU_SAVEHISTORY, true);
 	queryMenu->Enable(MNU_CLEARHISTORY, true);
@@ -3768,7 +3775,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 
 		if (qi->toFileExportForm)
 		{
-			SetStatusText(wxString::Format(wxPLURAL("%d row.", "%d rows.", rowsTotal), rowsTotal), STATUSPOS_ROWS);
+			SetStatusText(wxString::Format(wxPLURAL("%ld row.", "%ld rows.", rowsTotal), rowsTotal), STATUSPOS_ROWS);
 
 			if (rowsTotal)
 			{
