@@ -2008,6 +2008,7 @@ std::wstring reportCompareFactory::printdiff(std::wstring str1, std::wstring str
 		  return L"";
 	  }
 	  diffs=dmp.diff_main(str1,str2,true);
+	  dmp.diff_cleanupSemantic(diffs);
 	  int nstart=0;
 	  int pos=0;
 	  countdiffline=0;
