@@ -100,8 +100,8 @@ public:
             return;
         }
         if (m_linescompare && m_linescompare->IsChecked()) {
-            //auto a = dmp.diff_linesToChars(sL.wc_str(), sR.wc_str());
-            auto a = dmp.diff_wordsToChars(sL.wc_str(), sR.wc_str());
+            auto a = dmp.diff_linesToChars(sL.wc_str(), sR.wc_str());
+            //auto a = dmp.diff_wordsToChars(sL.wc_str(), sR.wc_str());
             auto lineText1 = std::get<0>(a);
             auto lineText2 = std::get<1>(a);
             std::vector<std::wstring> lineArray = std::get<2>(a);
@@ -320,7 +320,7 @@ public:
 
         m_showNumber = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Show number line"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer4->Add(m_showNumber, 0, wxALL, 5);
-        m_linescompare = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Words compare"), wxDefaultPosition, wxDefaultSize, 0);
+        m_linescompare = new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Lines compare"), wxDefaultPosition, wxDefaultSize, 0);
         
         m_symantecclean= new wxCheckBox(m_panelOpt, wxID_ANY, wxT("Cleanup semantic"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer4->Add(m_linescompare, 0, wxALL, 5);

@@ -28,10 +28,11 @@
         <item>;</item>
         <item>,</item>
         <item>|</item>
+        <item>\t</item>
       </content>
       <selection>0</selection>
-      <pos>100,53d</pos>
-      <size>25,12d</size>
+      <pos>90,53d</pos>
+      <size>35,12d</size>
       <style>wxCB_DROPDOWN</style>
     </object>
     <object class="wxStaticText" name="stQuoteChar">
@@ -44,8 +45,8 @@
         <item>'</item>
       </content>
       <selection>0</selection>
-      <pos>100,68d</pos>
-      <size>25,12d</size>
+      <pos>90,68d</pos>
+      <size>35,12d</size>
       <style>wxCB_DROPDOWN</style>
     </object>
     <object class="wxStaticText" name="stColnames">
@@ -105,15 +106,16 @@
       <pos>235,105d</pos>
       <size>15,-1d</size>
     </object>
-    <object class="wxButton" name="wxID_HELP">
-      <label>&amp;Help</label>
+    <object class="wxCheckBox" name="chkCopy">
+      <label>format COPY</label>
+      <checked>0</checked>
+      <size>70,12d</size>
       <pos>2,125d</pos>
-      <style></style>
     </object>
     <object class="wxCheckBox" name="chkXlsCopy">
       <label>Xls fmt copy</label>
       <checked>1</checked>
-      <pos>55,125d</pos>
+      <pos>80,125d</pos>
       <size>70,12d</size>
     </object>
     <object class="wxButton" name="wxID_OK">

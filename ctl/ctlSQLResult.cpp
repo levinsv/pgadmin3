@@ -1088,8 +1088,10 @@ void ctlSQLResult::OnKeyChar(wxKeyEvent& event) {
 	}
 	else
 	{
+		bool skip=false;
+		if (event.AltDown() || event.ControlDown()) skip=true;
 		wxChar uc = event.GetUnicodeKey();
-		if (uc != WXK_NONE) {
+		if (uc != WXK_NONE && !skip) {
 			if (uc >= 32) {
 				this->searchStr.Append(uc);
 				if (this->searchStr.Len() == 1) {

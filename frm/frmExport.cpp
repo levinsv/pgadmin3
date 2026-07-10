@@ -34,6 +34,7 @@
 #define rbQuoteAll      CTRL_RADIOBUTTON("rbQuoteAll")
 #define rbQuoteNone     CTRL_RADIOBUTTON("rbQuoteNone")
 #define chkColnames     CTRL_CHECKBOX("chkColnames")
+#define chkCopy         CTRL_CHECKBOX("chkCopy")
 #define chkXlsCopy      CTRL_CHECKBOX("chkXlsCopy")
 #define cbColSeparator  CTRL_COMBOBOX("cbColSeparator")
 #define cbQuoteChar     CTRL_COMBOBOX("cbQuoteChar")
@@ -42,10 +43,11 @@
 BEGIN_EVENT_TABLE(frmExport, pgDialog)
 	EVT_TEXT(XRCID("txtFilename"),          frmExport::OnChange)
 	EVT_RADIOBUTTON(XRCID("rbQuoteNone"),   frmExport::OnChange)
-	EVT_RADIOBUTTON(XRCID("rbQuoteStrings"), frmExport::OnChange)
+	EVT_RADIOBUTTON(XRCID("rbQuoteStrings"),frmExport::OnChange)
 	EVT_RADIOBUTTON(XRCID("rbQuoteAll"),    frmExport::OnChange)
+	EVT_CHECKBOX(XRCID("chkCopy"),          frmExport::OnChange)
+	EVT_CHECKBOX(XRCID("chkXlsCopy"),       frmExport::OnChange)
 	EVT_BUTTON(XRCID("btnFilename"),        frmExport::OnBrowseFile)
-	EVT_BUTTON(wxID_HELP,                   frmExport::OnHelp)
 	EVT_BUTTON(wxID_OK,                     frmExport::OnOK)
 	EVT_BUTTON(wxID_CANCEL,                 frmExport::OnCancel)
 END_EVENT_TABLE()
@@ -154,6 +156,10 @@ frmExport::frmExport(wxWindow *p)
 	if (!ctrl) {
 		chkXlsCopy->SetValue(false);
 		chkXlsCopy->Enable(false);
+	} else {
+		chkCopy->SetValue(false);
+		chkCopy->Enable(false);
+
 	}
 
 	wxCommandEvent ev;
@@ -176,6 +182,16 @@ void frmExport::OnHelp(wxCommandEvent &ev)
 void frmExport::OnChange(wxCommandEvent &ev)
 {
 	cbQuoteChar->Enable(rbQuoteStrings->GetValue() || rbQuoteAll->GetValue());
+	bool ischk = chkXlsCopy->GetValue(); 
+	if (ev.GetEventObject()==chkXlsCopy ) {
+		if (chkCopy->IsEnabled()) chkCopy->SetValue(!chkXlsCopy->GetValue());	
+	}
+	if (ev.GetEventObject()==chkCopy ) {
+		if (chkXlsCopy->IsEnabled()) chkXlsCopy->SetValue(!chkCopy->GetValue());
+	}
+
+	
+
 	btnOK->Enable(!txtFilename->GetValue().IsEmpty() && !cbColSeparator->GetValue().IsEmpty());
 }
 
@@ -266,7 +282,7 @@ wxString textEscapeXml(wxString &text)
 					for ( i = text.begin(); i != text.end(); ++i )
 					{
 #if wxCHECK_VERSION(3, 0, 0)
-					char c=*i;
+					wxChar c=*i;
 					switch (c)
 #else
 					switch (*i)
@@ -442,7 +458,9 @@ bool frmExport::Export(pgSet *set)
 		colCount = grid->GetNumberCols();
 		rowCount = grid->NumRows();
 	}
-
+	bool isCOPY= chkCopy->GetValue();
+	wxString colsep=cbColSeparator->GetValue();
+	if (colsep=="\\t" || isCOPY) colsep="\t";
 	int col;
 	if (chkColnames->GetValue())
 	{
@@ -451,9 +469,9 @@ bool frmExport::Export(pgSet *set)
 			if (!col)
 				line = wxEmptyString;
 			else
-				line += cbColSeparator->GetValue();
+				line += colsep;
 
-			if (rbQuoteStrings->GetValue() || rbQuoteAll->GetValue())
+			if ((rbQuoteStrings->GetValue() || rbQuoteAll->GetValue())&& (!isCOPY))
 			{
 				wxString qc = cbQuoteChar->GetValue();
 
@@ -503,7 +521,7 @@ bool frmExport::Export(pgSet *set)
 			if (!col)
 				line = wxEmptyString;
 			else
-				line += cbColSeparator->GetValue();
+				line += colsep;
 
 			bool needQuote = rbQuoteAll->GetValue();
 
@@ -531,14 +549,34 @@ bool frmExport::Export(pgSet *set)
 						break;
 				}
 			}
-			if (needQuote)
+			if (needQuote && !isCOPY)
 			{
 				wxString qc = cbQuoteChar->GetValue();
 				text.Replace(qc, qc + qc);
 				line += qc + text + qc;
 			}
-			else
-				line += text;
+			else {
+				if (isCOPY) {
+					for (size_t i = 0; i < text.length(); ++i) {
+        				wxChar c = text[i];
+						switch (c) {
+									case '\\': line += "\\\\"; break;
+									case '\n': line += "\\n"; break;
+									case '\r': line += "\\r"; break;
+									case '\t': line += "\\t"; break;
+									default:   line += c; break;
+								}						
+					}
+					if (set) {
+						if (set->IsNull(col)) line+="\\N";
+					}
+					else {
+						if (text.length()==0) line+="\\N";
+					}
+				} else
+					line += text;
+			}
+				
 		}
 		if (rbCRLF->GetValue())
 			line += wxT("\r\n");
