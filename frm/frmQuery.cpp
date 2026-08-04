@@ -4754,9 +4754,8 @@ void frmQuery::SqlBookAddPage(wxString& title)
 
 	box->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	box->Connect(wxID_ANY, wxEVT_KILL_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
-
-	if (title.BeforeFirst(' ')=="Query") {
-		wxString np = title.AfterFirst(' ');
+	wxString np = title.AfterLast(' ');
+	if (np.Length()>0) {
 		long nl = 0;
 		if (np.ToLong(&nl)) {
 			if (sqlQueryCounter < nl) sqlQueryCounter = nl;
