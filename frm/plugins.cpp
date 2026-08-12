@@ -305,6 +305,68 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 			execCmd.Replace(wxT("$$HOSTNAME"), srv->GetName());
 			execCmd.Replace(wxT("$$USERNAME"), srv->GetUsername());
 			execCmd.Replace(wxT("$$PORT"), NumToStr((long)srv->GetPort()));
+			if (!obj->IsCollection() && applies_to.Index("far2l") != wxNOT_FOUND ) {
+						wxString path = wxFileName::GetHomeDir() + sepPath + ".config" + sepPath + "far2l"+ sepPath + "plugins"+ sepPath + "NetRocks";
+						if (wxDirExists(path)) {
+							if (winMain) {
+								wxMenu *m=winMain->GetPluginsMenu();
+								ctlTree *tree=winMain->GetBrowser();
+								wxString name=tree->GetItemText(obj->GetId()).BeforeFirst('(').Trim();;
+								//winMain->GetCurrentNodePath
+								wxString nameparent=tree->GetItemText(tree->GetItemParent(obj->GetId())).BeforeFirst('(').Trim();;
+
+								path=path+sepPath+nameparent+".sites"+sepPath+"sites.cfg";
+								if (wxFileExists(path)) {
+										wxString fcont = FileRead(path);
+										wxStringTokenizer tkz(fcont, wxT("\n"));
+										wxString hostname=srv->GetName();
+										wxString rez="";
+										wxString nw="";
+										bool istitle=false;
+										// Loop round the lines in the file. Everytime we find a new 'Title' value
+										// we create the current plugin and start a new one
+										while (tkz.HasMoreTokens())
+										{
+											wxString token = tkz.GetNextToken();
+											wxString ntoken=token;
+											
+											if (token.Length()>0 && token[0]=='[') {
+												if (istitle) {
+													ntoken="";
+													token="";
+												} else 
+													ntoken='['+name+']';
+												istitle=true;
+											} else 
+												if (token.Lower().StartsWith("host="))
+												{
+													ntoken="Host="+hostname;
+												}
+											rez.Append(token);
+											rez.Append('\n');
+											nw.Append(ntoken);
+											nw.Append('\n');
+											if (token.Length()==0) break;
+										}
+										wxFontEncoding encoding = wxFONTENCODING_SYSTEM;
+										wxUtfFile file;
+										rez+=nw;
+										//file.Open(path, wxFile::write, wxS_DEFAULT, encoding);
+										file.Create(path,true);
+										if (file.IsOpened())
+										{
+											file.Write(wxTextBuffer::Translate(rez));
+											file.Close();
+										}
+										wxString a=nameparent+sepPath+name;
+										execCmd.Replace(wxT("$$FAR2LCONNECT"), a);
+
+								}
+							}
+							
+						}
+			}
+
 		} else
 			execCmd.Replace(wxT("$$HOSTNAME"), wxEmptyString);
 
@@ -409,8 +471,31 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 	if (obj && applies_to.Count() > 0)
 	{
 		if (applies_to.Index(wxString(obj->GetFactory()->GetTypeName()).Lower()) == wxNOT_FOUND)
-			if (applies_to.Index("puttyforward") == wxNOT_FOUND)
-				return false;
+			if (applies_to.Index("puttyforward") == wxNOT_FOUND) {
+				if (applies_to.Index("far2l") == wxNOT_FOUND)
+					return false;
+				else {
+					//far2l
+					if (obj->GetMetaType()==PGM_SERVER && !obj->IsCollection()) {
+						wxString path = wxFileName::GetHomeDir() + sepPath + ".config" + sepPath + "far2l"+ sepPath + "plugins"+ sepPath + "NetRocks";
+						if (wxDirExists(path)) {
+							if (winMain) {
+								ctlTree *tree=winMain->GetBrowser();
+								wxString name=tree->GetItemText(obj->GetId()).BeforeFirst('(').Trim();;
+								//winMain->GetCurrentNodePath
+								wxString nameparent=tree->GetItemText(tree->GetItemParent(obj->GetId())).BeforeFirst('(').Trim();;
+								path=path+sepPath+nameparent+".sites"+sepPath+"sites.cfg";
+								if (wxFileExists(path)) {
+									return true;
+								}
+							}
+							
+						}
+					}
+					return false;
+				}
+				
+			}
 			else {
 				//"puttyforward"
 				int id=GetId();
