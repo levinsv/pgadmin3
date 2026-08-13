@@ -1067,7 +1067,10 @@ void pgAdmin3::InitAppPaths()
 	wxString olddatadir=wxFileName::GetHomeDir()+sepPath+"postgresql";
 
     if ( !wxGetEnv(wxS("XDG_DATA_HOME"), &newdir) || newdir.empty() )
-        	newdir = wxFileName::GetHomeDir() + wxT("/.local/share/pgadmin3");
+        		newdir = wxFileName::GetHomeDir() + wxT("/.local/share/pgadmin3");
+			else {
+				newdir = newdir+sepPath+"pgadmin3";
+			}
 	dataDir=newdir ;
 	if (!wxDir::Exists(newdir)) {
 			wxMkDir(newdir,wxS_IRUSR|wxS_IWUSR|wxS_IXUSR);
