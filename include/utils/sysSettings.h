@@ -847,6 +847,18 @@ public:
 		Read(wxT("CompareDialogParam"), &i, 0);
 		return i;
 	}
+	/*
+	 0 - pgpass
+	 1 - pgpass + secret
+	 2 - secret 
+	*/
+	int GetStoreTypePass() const
+	{
+		int i;
+		Read(wxT("GetStoreTypePass"), &i, 0);
+		if ((i>2) || (i<0)) i=0;
+		return i;
+	}	
 	void SetCompareDialogParam(const int newval)
 	{
 		WriteInt(wxT("CompareDialogParam"), newval);
