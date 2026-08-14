@@ -17,6 +17,7 @@
 #include <wx/dir.h>
 #include <wx/fileconf.h>
 #include <wx/wfstream.h>
+#include <wx/secretstore.h>
 
 // App headers
 #include "ctl/ctlMenuToolbar.h"
@@ -570,7 +571,38 @@ wxString pgServer::passwordFilename()
 bool pgServer::GetPasswordIsStored()
 {
 	wxString fname = passwordFilename();
+	wxString seekStr = GetName() + wxT(":")
+		                   + NumToStr((long)GetPort()) + wxT(":*:")
+		                   + username + wxT(":") ;
 
+	wxString seekStr2 = wxString(GetName().mb_str(wxConvUTF8), wxConvLibc) + wxT(":")
+		                    + NumToStr((long)GetPort()) + wxT(":*:")
+		                    + wxString(username.mb_str(wxConvUTF8), wxConvLibc) + wxT(":") ;
+	bool issecret=false;
+	int type = 	settings->GetStoreTypePass();
+#ifdef wxUSE_SECRETSTORE
+	if (type>0) {
+		wxSecretStore store = wxSecretStore::GetDefault();
+		wxString errmsg;
+		if ( store.IsOk(&errmsg) )
+		{
+			wxString username2;
+			wxSecretValue password2;
+			issecret=true;
+			if (type>0 && store.Load("pgadmin3/"+seekStr, username2, password2) ) {
+				// store password in pgServer object
+				password=password2.GetAsString();
+				return true;
+			}
+		}
+		else
+		{
+			if (type>0)
+				wxLogWarning("This system doesn't support storing passwords securely "
+						"(%s).", errmsg);
+		}
+	}
+#endif
 
 	if (!wxFile::Exists(fname))
 		return false;
@@ -584,22 +616,29 @@ bool pgServer::GetPasswordIsStored()
 
 		wxStringTokenizer lines(before, wxT("\n\r"));
 
-		wxString seekStr = GetName() + wxT(":")
-		                   + NumToStr((long)GetPort()) + wxT(":*:")
-		                   + username + wxT(":") ;
-
-		wxString seekStr2 = wxString(GetName().mb_str(wxConvUTF8), wxConvLibc) + wxT(":")
-		                    + NumToStr((long)GetPort()) + wxT(":*:")
-		                    + wxString(username.mb_str(wxConvUTF8), wxConvLibc) + wxT(":") ;
-
+		int seeklen=0;
 		while (lines.HasMoreTokens())
 		{
 			wxString str = lines.GetNextToken();
 			if (str.Left(seekStr.Length()) == seekStr)
+				seeklen=seekStr.Length();
+			else
+				if (str.Left(seekStr2.Length()) == seekStr2)
+					seeklen=seekStr2.Length();
+			if (seeklen>0) {
+#ifdef wxUSE_SECRETSTORE
+			if (type>0) {
+				wxSecretStore store = wxSecretStore::GetDefault();
+				if ( store.IsOk() )
+				{
+					wxSecretValue secret(str.substr(seeklen));
+					if (issecret && !store.Save("pgadmin3/"+seekStr, username, secret) )
+						wxLogWarning("Failed to save credentials to the system secret store.");
+				}
+			}
+#endif
 				return true;
-
-			if (str.Left(seekStr2.Length()) == seekStr2)
-				return true;
+			}
 		}
 	}
 
@@ -609,8 +648,31 @@ bool pgServer::GetPasswordIsStored()
 
 void pgServer::StorePassword()
 {
+	wxString seekStr = GetName() + wxT(":")
+		                   + NumToStr((long)GetPort()) + wxT(":*:")
+		                   + username + wxT(":") ;
+	bool issecret=false;	
+	int type = 	settings->GetStoreTypePass();
+#ifdef wxUSE_SECRETSTORE
+	if (type>0) {
+		wxSecretStore store = wxSecretStore::GetDefault();
+		wxString errmsg;
+		if ( store.IsOk(&errmsg) )
+		{
+			issecret=true;
+			wxSecretValue secret(password);
+			if (issecret && !store.Save("pgadmin3/"+seekStr, username, secret) )
+				wxLogWarning("Failed to save credentials to the system secret store.");
+		}
+		else
+		{
+				wxLogWarning("This system doesn't support storing passwords securely "
+						"(%s).", errmsg);
+		}
+	}
+#endif
+	if (type==2) return;
 	wxString fname = passwordFilename();
-
 	if (!wxFile::Exists(fname))
 	{
 		return;
