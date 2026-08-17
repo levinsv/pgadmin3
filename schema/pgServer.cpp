@@ -580,7 +580,7 @@ bool pgServer::GetPasswordIsStored()
 		                    + wxString(username.mb_str(wxConvUTF8), wxConvLibc) + wxT(":") ;
 	bool issecret=false;
 	int type = 	settings->GetStoreTypePass();
-#ifdef wxUSE_SECRETSTORE
+#if wxUSE_SECRETSTORE
 	if (type>0) {
 		wxSecretStore store = wxSecretStore::GetDefault();
 		wxString errmsg;
@@ -626,7 +626,7 @@ bool pgServer::GetPasswordIsStored()
 				if (str.Left(seekStr2.Length()) == seekStr2)
 					seeklen=seekStr2.Length();
 			if (seeklen>0) {
-#ifdef wxUSE_SECRETSTORE
+#if wxUSE_SECRETSTORE
 			if (type>0) {
 				wxSecretStore store = wxSecretStore::GetDefault();
 				if ( store.IsOk() )
@@ -653,7 +653,7 @@ void pgServer::StorePassword()
 		                   + username + wxT(":") ;
 	bool issecret=false;	
 	int type = 	settings->GetStoreTypePass();
-#ifdef wxUSE_SECRETSTORE
+#if wxUSE_SECRETSTORE
 	if (type>0) {
 		wxSecretStore store = wxSecretStore::GetDefault();
 		wxString errmsg;
