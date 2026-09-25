@@ -130,7 +130,15 @@ public:
         sizew = top_sz;
         //SetSize(top_sz);
         this->hhelper = hhelper;
-        SetBackgroundColour(*wxBLACK);
+        
+        bgcolor=getTextParameter("PreviewOptions","bgcolor");
+        fgcolor=getTextParameter("PreviewOptions","fgcolor");
+        linkcolor=GetLinkColor();
+        if (isDark()) {
+            SetBackgroundColour(*wxYELLOW);
+        } else {
+            SetBackgroundColour(*wxBLACK);
+        }
         extern sysSettings* settings;
         wxFont fnt = settings->GetSQLFont();
         int size = fnt.GetPointSize();
@@ -314,13 +322,14 @@ private:
         wxString h;
         int p = innerbody.Find("<body>");
         if (innerbody.Find("<html>")>=0) h = innerbody;
-        else
+        else {
             if (p > -1) {
-                innerbody.Replace("<body>", "<html><body TEXT=\"#000000\" BGCOLOR=\"#FFFFE0\" LINK=\"#0000FF\" VLINK=\"#FF0000\" ALINK=\"#000088\">", false);
+                innerbody.Replace("<body>", "<html><body TEXT=\""+fgcolor+"\" BGCOLOR=\""+bgcolor+"\" LINK=\""+linkcolor+"\" VLINK=\"#FF0000\" ALINK=\"#000088\">", false);
                 h = "" + innerbody + "";
             }
             else
-                h = "<html><body  TEXT=\"#000000\" BGCOLOR=\"#FFFFE0\" LINK=\"#0000FF\" VLINK=\"#FF0000\" ALINK=\"#000088\">" + innerbody + "</body></hmtl>";
+                h = "<html><body  TEXT=\""+fgcolor+"\" BGCOLOR=\""+bgcolor+"\" LINK=\""+linkcolor+"\" VLINK=\"#FF0000\" ALINK=\"#000088\">" + innerbody + "</body></hmtl>";
+        }
 
         if (gethistory) {
             if (hist.size() < 2) {
@@ -350,5 +359,6 @@ private:
     }
 private:
     wxTimer *closeTimer=NULL;
+    wxString bgcolor,fgcolor,linkcolor;
 };
 #endif

@@ -587,7 +587,7 @@ void dlgTransformText::SetStyled(ctlStyledText* s) {
 	int regstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
 	s->StyleClearAll();
 	s->ClearDocumentStyle();
-	bool isdark=wxSystemSettings::GetAppearance().IsUsingDarkBackground() ;
+	bool isdark=isDark() ;
 	countGroupColor = opt["colorGroup"].Size();
 	for (int i = regstyle; i < regstyle + countGroupColor; i++) {
 		wxString strcl = opt["colorGroup"][i - regstyle].AsString();

@@ -126,6 +126,48 @@
                       <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
                       <border>4</border>
                     </object>
+	                <object class="sizeritem">
+	                  <object class="wxStaticText" name="stSelectColorTheme">
+	                    <label>Select theme</label>
+	                  </object>
+	                  <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+	                  <border>4</border>
+	                </object>
+	                <object class="sizeritem">
+	                      <object class="wxFlexGridSizer">
+	                        <cols>3</cols>
+	                        <vgap>4</vgap>
+	                        <hgap>4</hgap>
+	                        <growablecols>0</growablecols>
+	                        <object class="sizeritem">
+	                          <object class="wxComboBox" name="cbColorTheme">
+	                            <content>
+	                              <item>Default</item>
+	                            </content>
+	                            <style>wxCB_DROPDOWN</style>
+	                          </object>
+	                          <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+	                          <border>4</border>
+	                        </object>
+	                        <object class="sizeritem">
+	                          <object class="wxButton" name="btnLoadTheme">
+	                            <label>Load</label>
+	                          </object>
+	                          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+	                          <border>4</border>
+	                        </object>
+	                        <object class="sizeritem">
+	                          <object class="wxButton" name="btnSaveTheme">
+	                            <label>Save</label>
+	                          </object>
+	                          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+	                          <border>4</border>
+	                        </object>
+	                      </object>
+	                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+	                      <border>4</border>
+                        </object>
+
                   </object>
                 </object>
                 <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>

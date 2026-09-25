@@ -113,9 +113,8 @@ wxColour ctlSQLBox::SetSQLBoxColourBackground(bool transaction) {
 	{
 		bgColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
 	}
-	if (transaction) bgColor = wxColour(241, 241, 186);
+	if (transaction) bgColor = bgtransactioncolor;
 	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
-//	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	return bgColor;
 }
 void ctlSQLBox::SetQueryBook(ctlAuiNotebook *query_book)
@@ -142,21 +141,27 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	int bookmarkalpha=70;
 	def["bookmarkcolor"]= bookmarkcolor.GetAsString(wxC2S_HTML_SYNTAX);
 	def["bookmarkalpha"]=bookmarkalpha;
+	wxString bgtransactioncolortext="#F1F1BA";
+	def["bgtransactioncolor"]=bgtransactioncolortext;
 	// Font
 	settings->ReloadJsonFileIfNeed();
     settings->ReadJsonObect("ctlSQLBox", opt, def);
     //    settings->WriteJsonFile();
     if (!opt.IsNull()) {
+		bool ischange=false;
 		wxString txtcolor=opt["bookmarkcolor"].AsString();
 		wxColour cc(txtcolor);
         if (!cc.IsOk()) opt["bookmarkalpha"]=def["bookmarkalpha"];
 		int tmp=opt["bookmarkalpha"].AsInt();
-        if (tmp<0 || tmp>255) opt["bookmarkalpha"]=def["bookmarkalpha"];
+        if (tmp<0 || tmp>255) {opt["bookmarkalpha"]=def["bookmarkalpha"]; ischange=true;}
+		wxColour cc1(opt["bgtransactioncolor"].AsString());
+		if (!cc1.IsOk()) { opt["bgtransactioncolor"]=def["bgtransactioncolor"]; ischange=true;}
+		if (ischange) settings->WriteJsonObect("ctlSQLBox", opt);
     }
     else opt = def;
 	bookmarkcolor = wxColour(opt["bookmarkcolor"].AsString());
 	bookmarkalpha = opt["bookmarkalpha"].AsInt();
-
+	bgtransactioncolor = wxColour(opt["bgtransactioncolor"].AsString());
 
 	caretWidth=settings->GetWidthCaretForKeyboardLayout();
 	refreshUITimer = new wxTimer(this, TIMER_REFRESHUICARRET_ID);
@@ -174,7 +179,12 @@ void ctlSQLBox::Create(wxWindow *parent, wxWindowID id, const wxPoint &pos, cons
 	{
 		frColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	}
-//	StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColor);
+	if (isDark()) {
+		CallTipSetForeground(frColor);
+		CallTipSetBackground(bgColor);
+		wxColour nf=AddColorComponent(frColor,-90);
+		CallTipSetForegroundHighlight(nf);
+	}
 	StyleSetForeground(wxSTC_STYLE_DEFAULT, frColor);
 	StyleSetFont(wxSTC_STYLE_DEFAULT, fntSQLBox);
 
@@ -1838,6 +1848,13 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	wxColor frColor[40];
 	wxString str;
 	wxColour frc = settings->GetSQLBoxColourForeground();
+	wxColour bgColor = settings->GetSQLBoxColourBackground();
+	wxString bgAddColor,bgRemoveColor;
+	if (settings->GetSQLBoxUseSystemBackground())
+	{
+		bgColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	}
+	wxString bgColortext=bgColor.GetAsString(wxC2S_HTML_SYNTAX);
 	wxString selText = GetTextRange(start,end);
 	if (settings->GetSQLBoxUseSystemForeground())
 	{
@@ -1852,11 +1869,15 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 			frColor[i] = StyleGetForeground(i);
 		else
 			frColor[i] = frc;
-
-		//StyleSetBackground(i, bgColor);
-		//StyleSetFont(i, fntSQLBox);
 	}
-	//<h1 style="color:blue;">
+
+	if (isDark()) {
+		bgAddColor="#70702d";
+		bgRemoveColor="#990335";
+	} else {
+		bgAddColor="#ffff00";
+		bgRemoveColor="#ebb1c4";
+	}
 	int endp = end;
 	int startp = start;
 	wxString prevColor = wxEmptyString;
@@ -1874,7 +1895,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int lenstr = selText.Length();
 	//str = wxT("<div style=\"font-family: ") + fontName + wxT("; font-size: " + sz + "px\"><font>");
 	str.Alloc(lenstr*2);
-	str = wxString::Format("<div style=\"font-family: %s; font-size: %spt\"><span>", fontName, sz);
+	str = wxString::Format("<div style=\"font-family: %s; font-size: %spt;background-color:%s \"><span>", fontName, sz,bgColortext);
 	int k = 0;
 	int l = 1;
 	int indic=9;
@@ -1900,7 +1921,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int textlen=GetTextLength();
 	bool refreshgbcolor=false;
 	bool newlineadd=false;
-	wxString bgclrDel="#ebb1c4";
+	wxString bgclrDel=bgRemoveColor;
 	while (k<lenstr) {
 		int st = GetStyleAt(startp);
 		if (st < 34) tColor = frColor[st].GetAsString(wxC2S_HTML_SYNTAX);
@@ -1918,7 +1939,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 
 		if (startp>=spos && spos!=-1) {
 			refreshgbcolor=true;
-			bgclr="#ffff00";
+			bgclr=bgAddColor;
 			tmppos=IndicatorEnd(indic,epos);
 			if (tmppos==textlen)
 				 spos=-1;
@@ -1992,7 +2013,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 					wxString s,n;
 					make_identifier(obj,s,n,true);
 					if (!s.IsEmpty()) obj=s+'.'+n; else obj=n;
-					lstr=wxString::Format("<a href=\"%s\">%s</a>", obj, lstr);
+					lstr=wxString::Format("<a href=\"%s\">%s</a>", obj,lstr);
 				} else
 					continue; // link not ready
 			}

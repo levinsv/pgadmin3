@@ -23,6 +23,7 @@
 class sysSettings : private wxConfig
 {
 	friend class ctlTreeJSON;
+	friend class frmOptions;
 public:
 	sysSettings(const wxString &name);
 	~sysSettings();

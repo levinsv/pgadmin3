@@ -73,6 +73,7 @@ public:
     // Fast searh
     wxString searchStr;
     wxColour colorodd,colorplanrow,colorplannode,colorplannodecollapse;
+    int rowsoddcount;
     WX_DECLARE_STRING_HASH_MAP(int, ColKeySizeHashMap);
 
     DECLARE_DYNAMIC_CLASS(ctlSQLGrid)

@@ -78,7 +78,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     wxJSONValue def(wxJSONType::wxJSONTYPE_OBJECT);
     wxJSONValue opt(wxJSONType::wxJSONTYPE_OBJECT);
     wxString scol;
-    if (wxSystemSettings::GetAppearance().IsUsingDarkBackground()) {
+    if (isDark()) {
         scol="#616800ff";
         def["colorWithNewLine"]=scol;
         scol="#085f00ff";
@@ -105,14 +105,20 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     }
 	int t_width=0;
 	def["thousandsWidthSeparator"]=t_width;
+    t_width=1000;
+    def["rowsOddCount"]=t_width;
     //color.Set(239, 228, 176);
+    bool ischange=false;
+    rowsoddcount = 1000;
 	settings->ReloadJsonFileIfNeed();
     settings->ReadJsonObect("ctlSQLGrid", opt, def);
     if (!opt.IsNull()) { // check
-        bool ischange=false;
+        
 		int tmp=opt["thousandsWidthSeparator"].AsInt();
-
+        wxJSONValue isnull(wxJSONTYPE_NULL);
         if (tmp<-15 || tmp>15) {opt["thousandsWidthSeparator"]=def["thousandsWidthSeparator"]; ischange=true;}
+        if (opt.Get("rowsOddCount",isnull).IsNull()) {opt["rowsOddCount"] =def["rowsOddCount"]; ischange=true;}
+        rowsoddcount = opt["rowsOddCount"].AsInt();
         wxString c5=opt["colorWithNewLine"].AsString();
         wxColour cl5(c5);
         if (!cl5.IsOk()) {opt["colorWithNewLine"] = def["colorWithNewLine"]; ischange=true;}
@@ -128,9 +134,13 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
         c5=opt["colorPlanNodeCollapse"].AsString();
         cl5=c5;
         if (!cl5.IsOk()) {opt["colorPlanNodeCollapse"] = def["colorPlanNodeCollapse"]; ischange=true;}
+        
     }
-    else 
-        opt = def;
+    else {
+        opt = def; 
+        ischange=true;
+    }
+    if (ischange) settings->WriteJsonObect("ctlSQLGrid", opt);
 	int thousandsWidthSeparator = opt["thousandsWidthSeparator"].AsInt();
     wxString c5=opt["colorWithNewLine"].AsString();
     wxColour cl5(c5);
@@ -550,8 +560,9 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
     bool isRowsArray = rows.GetCount() > 0;
     if (isRowsArray) numRows = rows.GetCount();
     wxString bg = GetGridRowLabelWindow()->GetBackgroundColour().GetAsString(wxC2S_HTML_SYNTAX);
+    wxString fr = GetGridRowLabelWindow()->GetForegroundColour().GetAsString(wxC2S_HTML_SYNTAX);
     wxString head;
-    head = wxString::Format("<tr style=\"font-weight: bold; background: %s;\">", bg);
+    head = wxString::Format("<tr style=\"font-weight: bold; background: %s;color:%s\">", bg,fr);
     htm += wxString::Format("TD#cn { width: %dpx;font-weight: bold; background: %s;}\n", GetRowLabelSize(), bg);
     head += wxString::Format("<td id=\"cn\"></td>");
     int sumWidth = GetRowLabelSize();
@@ -577,7 +588,7 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
         if (isRowsArray) rowPos = rows.Item(i);
         if (GetRowSize(rowPos) == 0) continue;
         htm += "<tr>\n";
-        htm += wxString::Format("<td id=\"cn\"><pre>%ld</pre></td>", rowPos + 1);
+        htm += wxString::Format("<td id=\"cn\">%ld</td>", rowPos + 1);
         for (int c = 0; c < cols.Count(); c++) {
             wxString text = GetCellValue(rowPos, cols[c]);
             htm += wxString::Format("<td id=\"c%d\"><pre>%s</pre></td>", c, escapeHtml(text, true));
@@ -1008,7 +1019,7 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         html = box->TextToHtml(0, box->GetLength(),false);
         delete box;
         s = html;
-        s = "<html><body BGCOLOR=\"" + bg + "\">" + s + "</body></html>";
+        s = "<html><body BGCOLOR=\"" + bg + "\" LINK=\""+GetLinkColor()+"\">" + s + "</body></html>";
     }
     else {
         //simple text

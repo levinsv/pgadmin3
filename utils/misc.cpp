@@ -53,7 +53,7 @@ extern "C"
 	typedef int YYSTYPE;
 #include "parser/keywords.h"
 }
-
+extern bool isdark;
 // we dont have an appropriate wxLongLong method
 #ifdef __WIN32__
 #define atolonglong _atoi64
@@ -1527,6 +1527,27 @@ wxString getTextParameter(const wxString section, const wxString namepar) {
 	return "";
 
 }
+wxString GetLinkColor()
+{
+        wxString linkcolor="#0000FF";
+        if (isDark()) {
+            linkcolor="#9191ff";
+        }
+		return linkcolor;
+}
+bool isDark() {
+	return isdark;
+}
+wxColour AddColorComponent(const wxColour &src, int delta) {
+	int r=src.GetRed(),g=src.GetGreen(),b=src.GetBlue();
+	r= r+delta>255 ? 255: (r+delta);
+	r= r<0 ? 0: r;
+	g= g+delta>255 ? 255: (g+delta);
+	g= g<0 ? 0: g;
+	b= b+delta>255 ? 255: (b+delta);
+	b= b<0 ? 0: b;
+	return wxColour(r,g,b);
+}
 //show help window
 void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size) {
     FunctionPGHelper fh(htmlHelp);
@@ -1578,29 +1599,5 @@ bool isPortOpen(const wxString& host, int port , int timeout_ms) {
 		}
 		bool success = client.IsConnected();
 return success;	
-
-/*     int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        return false;
-    }
-
-    sockaddr_in addr{};
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    inet_pton(AF_INET, host.c_str(), &addr.sin_addr);
-
-    // Установка таймаута (опционально, для ускорения)
-    timeval tv{};
-    tv.tv_sec = timeout_ms / 1000;
-    tv.tv_usec = (timeout_ms % 1000) * 1000;
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-    int result = connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
-
-    close(sock);
-
-    return result == 0;  // true, если порт открыт (сервер принимает соединения)
- */
 }
 

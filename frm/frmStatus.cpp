@@ -1238,7 +1238,11 @@ void frmStatus::AddLogPane()
     grdLog->Fit(pnlLog);
 
     logcol[0] = logList->GetBackgroundColour();
-    logcol[1] = wxColour("#afafaf");
+    if (isDark()) {
+        logcol[1] = AddColorComponent(logcol[0],30);
+    }
+        else logcol[1] = wxColour("#afafaf");
+
     // We don't need this report (but we need the pane)
     // if server release is less than 8.0 or if server has no adminpack
     if (!is_read_log) {
@@ -3134,10 +3138,17 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
     if (!logFormatKnown) {
         logList->AppendItemLong(-1, str);
         int colorindex = nav->TryMarkItem(row, str);
-        if (colorindex>=0)
-            logList->SetItemBackgroundColour(row, nav->GetColorByIndex(colorindex));
-        else 
+        if (isDark()) {
             logList->SetItemBackgroundColour(row, logcol[addodd % 2]);
+            if (colorindex>=0)
+                logList->SetItemTextColour(row, nav->GetColorByIndex(colorindex));
+        } else 
+        {
+            if (colorindex>=0)
+                logList->SetItemBackgroundColour(row, nav->GetColorByIndex(colorindex));
+            else 
+                logList->SetItemBackgroundColour(row, logcol[addodd % 2]);
+        }
     }
     else if ((!csv_log_format) && str.Find(':') < 0)
     {

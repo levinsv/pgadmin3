@@ -264,7 +264,16 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         } else 
             html+= generateHtml(); // tokens -> html
     }
-    if (strlist.size() > 1) html = "<table CELLPADDING=\"1\">" + html + "</table>";
-    wxString ttt = wxString::Format("<html><body BGCOLOR=\"%s\" FGCOLOR=\"%s\">%s</body></html>", bgcolor, fgcolor, html);
+    if (strlist.size() > 1) html = wxString::Format("<table BGCOLOR=\"%s\" CELLPADDING=\"1\">%s</table>",bgcolor,html);
+    //wxString ttt = wxString::Format("<html><body BGCOLOR=\"%s\" TEXT=\"%s\">%s</body></html>", bgcolor, fgcolor, html);
+	wxFont fntSQLBox = settings->GetSQLFont();
+	wxString fontName = fntSQLBox.GetFaceName();
+#ifdef __WXGTK__	
+	if (fontName.Find("Consolas")==-1) {
+		fontName="Consolas,"+fontName;
+	}
+#endif
+    if (strlist.size() > 1) html = wxString::Format("<table BGCOLOR=\"%s\" CELLPADDING=\"1\" style=\"font-family: %s;\">%s</table>",bgcolor,fontName,html);
+    wxString ttt = html;
     return ttt;
 }

@@ -841,7 +841,7 @@ void MywxAuiDefaultTabArt::DrawTab(wxDC& dc,
     int drawn_tab_yoff = border_points[1].y;
     int drawn_tab_height = border_points[0].y - border_points[1].y;
 
-    bool isdark = wxSystemSettings::GetAppearance().IsUsingDarkBackground();
+    bool isdark = isDark();
 
     wxColor back_color = m_baseColour;
     if (page.active)

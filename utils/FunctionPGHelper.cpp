@@ -7,6 +7,7 @@
 #include "frm/frmMain.h"
 #include "ctl/ctlSQLBox.h"
 #include <stack>
+#include "utils/misc.h"
 
 extern sysSettings* settings;
 extern frmMain *winMain;
@@ -258,7 +259,8 @@ order by objname;
                     wxColour cbg=box->GetBackgroundColour();
                     wxString bg=cbg.GetAsString(wxC2S_HTML_SYNTAX);
                     delete box;
-                    html = "<html><body BGCOLOR=\"" + bg + "\">" + html + "</body></html>";
+                    html ="<html><body BGCOLOR=\"" + bg + "\" LINK=\""+GetLinkColor()+"\">" + html + "</body></html>";
+                    //html=wxString::Format("<div style=\"background: %s;\">%s</div>", bg, html);
                     return html;
             }
 

@@ -200,7 +200,7 @@ void ctlSQLResult::DisplayData(bool single)
 	delete msg;
 	table->initSort();
 	SetSort(true);
-	if (NumRows()<1000) {
+	if (NumRows()<rowsoddcount) {
 		int h, v;
 		GetDefaultCellAlignment(&h, &v);
 	for(int row = 0; row < NumRows(); ++row) {
