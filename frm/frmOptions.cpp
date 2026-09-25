@@ -17,10 +17,12 @@
 #include <wx/fontdlg.h>
 #include <wx/fontutil.h>
 #include <wx/file.h>
+#include <wx/dir.h>
 #include <wx/clrpicker.h>
 #include <wx/filepicker.h>
 #include <wx/fontpicker.h>
 #include <wx/treectrl.h>
+#include <wx/wfstream.h>
 
 // App headers
 #include "frm/frmOptions.h"
@@ -31,9 +33,13 @@
 #include "utils/misc.h"
 #include "frm/menu.h"
 #include "ctl/ctlColourPicker.h"
+#include "utils/json/jsonwriter.h"
+#include "utils/json/jsonreader.h"
 
 // Must be after pgAdmin3.h or MSVC++ complains
 #include <wx/colordlg.h>
+extern wxString dataDir;
+extern wxString defPath;
 
 #include "images/properties.pngc"
 
@@ -85,6 +91,7 @@
 #define txtIndent                   CTRL_TEXT("txtIndent")
 #define chkSpacesForTabs			CTRL_CHECKBOX("chkSpacesForTabs")
 #define cbCopyQuote					CTRL_COMBOBOX("cbCopyQuote")
+#define cbColorTheme				CTRL_COMBOBOX("cbColorTheme")
 #define cbCopyQuoteChar				CTRL_COMBOBOX("cbCopyQuoteChar")
 #define cbCopySeparator				CTRL_COMBOBOX("cbCopySeparator")
 #define chkStickySql                CTRL_CHECKBOX("chkStickySql")
@@ -170,6 +177,8 @@
 BEGIN_EVENT_TABLE(frmOptions, pgDialog)
 	EVT_MENU(MNU_HELP,                                            frmOptions::OnHelp)
 	EVT_BUTTON (XRCID("btnDefault"),                              frmOptions::OnDefault)
+	EVT_BUTTON (XRCID("btnSaveTheme"),                            frmOptions::OnSaveTheme)
+	EVT_BUTTON (XRCID("btnLoadTheme"),                            frmOptions::OnLoadTheme)
 	EVT_CHECKBOX(XRCID("chkSuppressHints"),                       frmOptions::OnSuppressHints)
 	EVT_CHECKBOX(XRCID("chkResetHints"),                          frmOptions::OnResetHints)
 	EVT_CHECKBOX(XRCID("chkSQLUseSystemBackgroundColour"),        frmOptions::OnChangeSQLUseCustomColour)
@@ -354,15 +363,42 @@ frmOptions::frmOptions(frmMain *parent)
 	pickerEnterprisedbPath->SetPath(settings->GetEnterprisedbPath());
 	pickerGPDBPath->SetPath(settings->GetGPDBPath());
 	chkIgnoreVersion->SetValue(settings->GetIgnoreVersion());
-
+	cbColorTheme->Clear();
+	wxString jFile;
+	wxArrayString paths;
+	wxString p=dataDir+sepPath+"themes"; // user themes
+	if (wxDirExists(p)) paths.Add(p);
+	p=defPath+sepPath+"themes";
+	if (wxDirExists(p)) paths.Add(p); // default themes
+	for(int c=0;c<paths.Count();c++)
+	{
+		wxDir jDir(paths[c]);
+		if (!jDir.IsOpened())
+			continue;
+		bool cont = jDir.GetFirst(&jFile, wxT("*.json"), wxDIR_FILES);
+		while(cont)
+		{
+			// Load the config file
+			wxFileName jj(paths[c] + sepPath + jFile);
+			if (jj.FileExists())
+			{
+				ItemWithString fullname;
+				filesTheme.push_back(jj.GetFullPath());
+				
+				cbColorTheme->Append(jj.GetName());
+			}
+			cont = jDir.GetNext(&jFile);
+		}
+	}
 	// Get back the colours
-	pickerIdleProcessColour->SetColour(settings->GetIdleProcessColour());
-	pickerActiveProcessColour->SetColour(settings->GetActiveProcessColour());
-	pickerSlowProcessColour->SetColour(settings->GetSlowProcessColour());
-	pickerBlockedProcessColour->SetColour(settings->GetBlockedProcessColour());
-	pickerBlockedbyProcessColour->SetColour(settings->GetBlockedbyProcessColour());
-	pickerIdle_in_transaction_session_timeoutProcessColour->SetColour(settings->GetIdle_in_transaction_session_timeoutProcessColour());
-
+	def_theme.SetType(wxJSONTYPE_OBJECT);
+	def_theme[".pgadmin3"]["IdleProcessColour"]=settings->GetIdleProcessColour();
+	def_theme[".pgadmin3"]["ActiveProcessColour"]=settings->GetActiveProcessColour();
+	def_theme[".pgadmin3"]["SlowProcessColour"]=settings->GetSlowProcessColour();
+	def_theme[".pgadmin3"]["BlockedProcessColour"]=settings->GetBlockedProcessColour();
+	def_theme[".pgadmin3"]["BlockedbyProcessColour"]=settings->GetBlockedbyProcessColour();
+	def_theme[".pgadmin3"]["Idle_in_transaction_session_timeoutProcessColour"]=settings->GetIdle_in_transaction_session_timeoutProcessColour();
+	
 	pickerFavouritesFile->SetPath(settings->GetFavouritesFile());
 	pickerMacrosFile->SetPath(settings->GetMacrosFile());
 	pickerHistoryFile->SetPath(settings->GetHistoryFile());
@@ -377,16 +413,55 @@ frmOptions::frmOptions(frmMain *parent)
 	chkSQLUseSystemForegroundColour->SetValue(settings->GetSQLBoxUseSystemForeground());
 	UpdateColourControls();
 
-	pickerSQLColour1->SetColour(settings->GetSQLBoxColour(1));
-	pickerSQLColour2->SetColour(settings->GetSQLBoxColour(2));
-	pickerSQLColour3->SetColour(settings->GetSQLBoxColour(3));
-	pickerSQLColour4->SetColour(settings->GetSQLBoxColour(4));
-	pickerSQLColour5->SetColour(settings->GetSQLBoxColour(5));
-	pickerSQLColour6->SetColour(settings->GetSQLBoxColour(6));
-	pickerSQLColour7->SetColour(settings->GetSQLBoxColour(7));
-	pickerSQLColour10->SetColour(settings->GetSQLBoxColour(10));
-	pickerSQLColour11->SetColour(settings->GetSQLBoxColour(11));
+	for(int index=1;index<12;index++) {
+		wxString key=wxString::Format(wxT("Colour%i"), index);
+		if (!(index==8 || index==9)) def_theme[".pgadmin3"][key]=settings->GetSQLBoxColour(index);
+	}
 
+	UpdateColourControlsFromJSON(def_theme);
+	// 
+	wxJSONValue &jroot =settings->jsoncfg;
+	if (!jroot.IsNull()) {
+		wxArrayString arr = jroot.GetMemberNames();
+			for (int i = 0; i < arr.Count(); ++i) {
+				wxJSONValue def(wxJSONTYPE_NULL);
+				wxJSONValue& jv = jroot.Item(arr[i]);
+				if (!jv.IsNull()) {
+					
+					if (arr[i]=="ctlSQLBox") {
+						wxJSONValue o(wxJSONTYPE_OBJECT);
+						wxString c=jv["bookmarkcolor"].AsString();
+						o["bookmarkcolor"]=c;
+						c=jv["bgtransactioncolor"].AsString();
+						if (c!="null") o["bgtransactioncolor"]=c;
+						int a=jv["bookmarkalpha"].AsInt();
+						o["bookmarkalpha"]=a;
+						def_theme[arr[i]]=o;
+					} else if (arr[i]=="PreviewOptions") {
+						wxJSONValue o(wxJSONTYPE_OBJECT);
+						o["bgcolor"]=jv["bgcolor"].AsString();
+						o["fgcolor"]=jv["fgcolor"].AsString();
+						o["quotecolor"]=jv["quotecolor"].AsString();
+						o["numcolor"]=jv["numcolor"].AsString();
+						def_theme[arr[i]]=o;
+					} else if (arr[i]=="ctlSQLGrid") {
+						wxJSONValue o(wxJSONTYPE_OBJECT);
+						o["colorPlanNodeCollapse"]=jv["colorPlanNodeCollapse"].AsString();
+						o["colorWithNewLine"]=jv["colorWithNewLine"].AsString();
+						o["colorOdd"]=jv["colorOdd"].AsString();
+						o["colorPlanRow"]=jv["colorPlanRow"].AsString();
+						o["colorPlanNode"]=jv["colorPlanNode"].AsString();
+						def_theme[arr[i]]=o;
+
+					} else if (arr[i]=="dlgTransformText") {
+						wxJSONValue o(wxJSONTYPE_OBJECT);
+						o["colorGroup"]=jv["colorGroup"];
+						def_theme[arr[i]]=o;
+					}
+					
+				}
+			}
+	}
 	chkKeywordsInUppercase->SetValue(settings->GetSQLKeywordsInUppercase());
 	chkASUTPstyle->SetValue(settings->GetASUTPstyle());
 	chkHideQueryHistory->SetValue(settings->GetHideQueryHistory());
@@ -524,6 +599,48 @@ void frmOptions::OnHelp(wxCommandEvent &ev)
 {
 	DisplayHelp(wxT("options"), HELP_PGADMIN);
 }
+void frmOptions::OnSaveTheme(wxCommandEvent &ev)
+{
+	wxString filename=cbColorTheme->GetValue();
+	if (filename.IsEmpty()) return;
+	wxString dirname=dataDir+sepPath+"themes";
+	if (!wxDirExists(dirname)) wxMkDir(dirname,wxS_IRUSR|wxS_IWUSR|wxS_IXUSR);
+	filename=dirname+sepPath+filename+".json";
+				wxFileOutputStream out(filename);
+				if (out.IsOk()) {
+					wxJSONWriter writer(wxJSONWRITER_STYLED | wxJSONWRITER_WRITE_COMMENTS);
+					writer.Write(def_theme, out);
+					//writer.Write(jsoncfg, s);
+					out.Close();
+					wxString msg=wxString::Format(_("Color theme save to file %s"),filename);
+					wxMessageBox(msg, _("Save file"), wxICON_INFORMATION | wxOK, this);
+				}
+}
+void frmOptions::OnLoadTheme(wxCommandEvent &ev)
+{
+	wxString name=cbColorTheme->GetValue();
+	int i=cbColorTheme->GetSelection();
+	if (i>=0 ) {
+		wxString filename=filesTheme[i];
+			wxFileInputStream input(filename);
+			if (input.IsOk()) {
+				wxJSONReader reader;
+				wxJSONValue newtheme;
+				int errnum = reader.Parse(input, &newtheme);
+				if (errnum > 0) {
+					//wxLogError("Parse json file %s errors. Number errors %d", path, errnum);
+					return ;
+				}
+				treeJSON->MergeJson(treeJSON->GetRootItem(),newtheme);
+				UpdateColourControlsFromJSON(newtheme);
+				UpdateColourControls(newtheme);
+				wxString msg=wxString::Format(_("Color theme load from file %s"),filename);
+				wxMessageBox(msg, _("Load theme"), wxICON_INFORMATION | wxOK, this);
+			}
+
+	}
+
+}
 
 void frmOptions::OnDefault(wxCommandEvent &ev)
 {
@@ -545,36 +662,33 @@ void frmOptions::OnResetHints(wxCommandEvent &ev)
 	if (chkResetHints->GetValue())
 		chkSuppressHints->SetValue(false);
 }
-
-void frmOptions::UpdateColourControls()
+void frmOptions::UpdateColourControls(wxJSONValue &theme)
 {
-	if (chkSQLUseSystemBackgroundColour->GetValue())
-	{
+	wxString clrtxt=theme[".pgadmin3"]["SQLBackgroundColour"].AsString();
+	chkSQLUseSystemBackgroundColour->SetValue(clrtxt.IsEmpty());
+	if (clrtxt.IsEmpty()) {
 		pickerSQLBackgroundColour->Enable(false);
 		pickerSQLBackgroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 		stSQLCustomBackgroundColour->Enable(false);
-	}
-	else
-	{
+	} else {
 		pickerSQLBackgroundColour->Enable(true);
-		pickerSQLBackgroundColour->SetColour(settings->GetSQLBoxColourBackground());
+		pickerSQLBackgroundColour->SetColour(clrtxt);
 		stSQLCustomBackgroundColour->Enable(true);
 	}
-	if (chkCaretUseSystemBackgroundColour->GetValue())
-	{
+	clrtxt=theme[".pgadmin3"]["CaretBackgroundColour"].AsString();
+	chkCaretUseSystemBackgroundColour->SetValue(clrtxt.IsEmpty());
+	if (clrtxt.IsEmpty()) {
 		pickerCaretBackgroundColour->Enable(false);
 		pickerCaretBackgroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 		stCaretCustomBackgroundColour->Enable(false);
-	}
-	else
-	{
+	} else {
 		pickerCaretBackgroundColour->Enable(true);
-		pickerCaretBackgroundColour->SetColour(settings->GetCaretColourBackground());
-		stCaretCustomBackgroundColour->Enable(true);
+		pickerCaretBackgroundColour->SetColour(clrtxt);
 		stCaretCustomBackgroundColour->Enable(true);
 	}
-
-	if (chkSQLUseSystemForegroundColour->GetValue())
+	clrtxt=theme[".pgadmin3"]["SQLForegroundColour"].AsString();
+	chkSQLUseSystemForegroundColour->SetValue(clrtxt.IsEmpty());
+	if (clrtxt.IsEmpty())
 	{
 		pickerSQLForegroundColour->Enable(false);
 		pickerSQLForegroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
@@ -583,13 +697,91 @@ void frmOptions::UpdateColourControls()
 	else
 	{
 		pickerSQLForegroundColour->Enable(true);
+		pickerSQLForegroundColour->SetColour(clrtxt);
+		stSQLCustomForegroundColour->Enable(true);
+	}
+	clrtxt=theme[".pgadmin3"]["SQLCaretColour"].AsString();
+	pickerSQLCaretColour->SetColour(clrtxt);
+	clrtxt=theme[".pgadmin3"]["SQLMarginBackgroundColour"].AsString();
+	pickerSQLMarginBackgroundColour->SetColour(clrtxt);
+	
+}
+void frmOptions::UpdateColourControlsFromJSON(wxJSONValue &theme)
+{
+	wxString clr=theme[".pgadmin3"]["IdleProcessColour"].AsString();
+	pickerIdleProcessColour->SetColour(clr);
+	clr=theme[".pgadmin3"]["ActiveProcessColour"].AsString();
+	pickerActiveProcessColour->SetColour(clr);
+	clr=theme[".pgadmin3"]["SlowProcessColour"].AsString();
+	pickerSlowProcessColour->SetColour(clr);
+	clr=theme[".pgadmin3"]["BlockedProcessColour"].AsString();
+	pickerBlockedProcessColour->SetColour(clr);
+	clr=theme[".pgadmin3"]["BlockedbyProcessColour"].AsString();
+	pickerBlockedbyProcessColour->SetColour(clr);
+	clr=theme[".pgadmin3"]["Idle_in_transaction_session_timeoutProcessColour"].AsString();
+	pickerIdle_in_transaction_session_timeoutProcessColour->SetColour(clr);
+
+	pickerSQLColour1->SetColour(theme[".pgadmin3"]["Colour1"].AsString());
+	pickerSQLColour2->SetColour(theme[".pgadmin3"]["Colour2"].AsString());
+	pickerSQLColour3->SetColour(theme[".pgadmin3"]["Colour3"].AsString());
+	pickerSQLColour4->SetColour(theme[".pgadmin3"]["Colour4"].AsString());
+	pickerSQLColour5->SetColour(theme[".pgadmin3"]["Colour5"].AsString());
+	pickerSQLColour6->SetColour(theme[".pgadmin3"]["Colour6"].AsString());
+	pickerSQLColour7->SetColour(theme[".pgadmin3"]["Colour7"].AsString());
+	pickerSQLColour10->SetColour(theme[".pgadmin3"]["Colour10"].AsString());
+	pickerSQLColour11->SetColour(theme[".pgadmin3"]["Colour11"].AsString());
+
+}
+void frmOptions::UpdateColourControls()
+{
+	if (chkSQLUseSystemBackgroundColour->GetValue())
+	{
+		pickerSQLBackgroundColour->Enable(false);
+		pickerSQLBackgroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
+		stSQLCustomBackgroundColour->Enable(false);
+		def_theme[".pgadmin3"]["SQLBackgroundColour"]=wxString("");
+	}
+	else
+	{
+		pickerSQLBackgroundColour->Enable(true);
+		pickerSQLBackgroundColour->SetColour(settings->GetSQLBoxColourBackground());
+		stSQLCustomBackgroundColour->Enable(true);
+		def_theme[".pgadmin3"]["SQLBackgroundColour"]=settings->GetSQLBoxColourBackground();
+	}
+	if (chkCaretUseSystemBackgroundColour->GetValue())
+	{
+		pickerCaretBackgroundColour->Enable(false);
+		pickerCaretBackgroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
+		stCaretCustomBackgroundColour->Enable(false);
+		def_theme[".pgadmin3"]["CaretBackgroundColour"]=wxString("");
+	}
+	else
+	{
+		pickerCaretBackgroundColour->Enable(true);
+		pickerCaretBackgroundColour->SetColour(settings->GetCaretColourBackground());
+		stCaretCustomBackgroundColour->Enable(true);
+		def_theme[".pgadmin3"]["CaretBackgroundColour"]=settings->GetCaretColourBackground();
+	}
+
+	if (chkSQLUseSystemForegroundColour->GetValue())
+	{
+		pickerSQLForegroundColour->Enable(false);
+		pickerSQLForegroundColour->SetColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+		stSQLCustomForegroundColour->Enable(false);
+		def_theme[".pgadmin3"]["SQLForegroundColour"]=wxString("");
+	}
+	else
+	{
+		pickerSQLForegroundColour->Enable(true);
 		pickerSQLForegroundColour->SetColour(settings->GetSQLBoxColourForeground());
 		stSQLCustomForegroundColour->Enable(true);
+		def_theme[".pgadmin3"]["SQLForegroundColour"]=settings->GetSQLBoxColourForeground();
 	}
 
 	pickerSQLCaretColour->SetColour(settings->GetSQLColourCaret());
-
+	def_theme[".pgadmin3"]["SQLCaretColour"]=settings->GetSQLColourCaret();
 	pickerSQLMarginBackgroundColour->SetColour(settings->GetSQLMarginBackgroundColour());
+	def_theme[".pgadmin3"]["SQLMarginBackgroundColour"]=settings->GetSQLMarginBackgroundColour();
 }
 
 void frmOptions::OnChangeSQLUseCustomColour(wxCommandEvent &ev)

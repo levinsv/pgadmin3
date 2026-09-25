@@ -155,7 +155,7 @@ void RegExpParser::SetStyleControl(wxStyledTextCtrl* ctrl) {
 		return;
 	}
 	//((ctlStyledText *)ctrl)->setDecorate();
-	bool isdark=wxSystemSettings::GetAppearance().IsUsingDarkBackground() ;
+	bool isdark=isDark() ;
 	for (int i = 0; i < sizeof(stylemap) / sizeof(stylemap[0]); i++) stylemap[i] = -1;
 	wxColour bgdef = ctrl->GetBackgroundColour();
 	wxColour fgdef = ctrl->GetForegroundColour();

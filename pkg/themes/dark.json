@@ -1,0 +1,59 @@
+{
+   "ctlSQLGrid" : {
+      "colorPlanRow" : "#013a01",
+      "colorWithNewLine" : "#616800",
+      "colorPlanNode" : "#968c00",
+      "colorPlanNodeCollapse" : "#47348b",
+      "colorOdd" : "#085f00"
+   },
+   "ctlSQLBox" : {
+      "bookmarkalpha" : 70,
+      "bookmarkcolor" : "#67E722",
+      "bgtransactioncolor" : "#3F3F3F"
+   },
+   ".pgadmin3" : {
+      "BlockedProcessColour" : "#CB3722",
+      "CaretBackgroundColour" : "#3F3F3F",
+      "Colour10" : "#E0E0E0",
+      "IdleProcessColour" : "##4D4D4D",
+      "Colour4" : "#FFD54F",
+      "Colour3" : "#888888",
+      "Colour7" : "#FF6B6B",
+      "SQLCaretColour" : "#FFFFFF",
+      "Colour1" : "#A5E6A8",
+      "BlockedbyProcessColour" : "#E2D931",
+      "SlowProcessColour" : "#A5804A",
+      "Colour5" : "#5DB0D5",
+      "Colour6" : "#FF6B6B",
+      "Idle_in_transaction_session_timeoutProcessColour" : "#751CCE",
+      "Colour2" : "#A5E6A8",
+      "SQLMarginBackgroundColour" : "#4D4D4D",
+      "SQLForegroundColour" : "",
+      "Colour11" : "#E0E0E0",
+      "ActiveProcessColour" : "#005D00",
+      "SQLBackgroundColour" : ""
+   },
+   "PreviewOptions" : {
+      "fgcolor" : "#EFEFEF",
+      "bgcolor" : "#4D4D4D",
+      "quotecolor" : "#FF6B6B",
+      "numcolor" : "#FFD54F"
+   },
+   "dlgTransformText" : {
+      "colorGroup" : [
+         "#FFFF00",
+         "#C4E8AC",
+         "#F7D6A6",
+         "#C7C7FC",
+         "#F1CDFD",
+         "#FFC6BE",
+         "#CAE7D6",
+         "#C4E7AB",
+         "#F4D7A5",
+         "#C7C8FE",
+         "#F2CFFD",
+         "#FFC4BD",
+         "#C7E7D4"
+      ]
+   }
+}

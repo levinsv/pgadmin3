@@ -1245,7 +1245,7 @@ void pgServer::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 	{
 		// Add the properties view columns
 		CreateListColumns(properties);
-		bool isdark = wxSystemSettings::GetAppearance().IsUsingDarkBackground();
+		bool isdark = isDark();
 		wxString kw=GetKeywords();
 		// Display the Server properties
 		if (!kw.IsEmpty()) {

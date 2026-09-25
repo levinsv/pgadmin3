@@ -14,7 +14,7 @@
 
 #include "dlg/dlgClasses.h"
 #include "utils/factory.h"
-
+#include "utils/json/jsonval.h"
 class frmMain;
 
 class ItemWithString : public wxClientData
@@ -33,11 +33,14 @@ public:
 private:
 	frmMain *mainForm;
 	wxString menuSelection;
-
+	wxJSONValue def_theme;
+    std::vector<wxString> filesTheme;
 	void OnOK(wxCommandEvent &ev);
 	void OnCancel(wxCommandEvent &ev);
 	void OnHelp(wxCommandEvent &ev);
 	void OnDefault(wxCommandEvent &ev);
+	void OnSaveTheme(wxCommandEvent &ev);
+	void OnLoadTheme(wxCommandEvent &ev);
 	void OnSuppressHints(wxCommandEvent &ev);
 	void OnResetHints(wxCommandEvent &ev);
 	void OnChangeCopyQuote(wxCommandEvent &ev);
@@ -45,6 +48,8 @@ private:
 	void OnTreeSelChanged(wxTreeEvent &event);
 	wxString CheckColour(wxString colour);
 	void UpdateColourControls();
+	void UpdateColourControls( wxJSONValue &theme);
+	void UpdateColourControlsFromJSON( wxJSONValue &theme);
 	wxTreeItemId GetTreeItemByLabel(const wxTreeItemId &root, const wxString &label);
 	void ShowPanel(const wxTreeItemId &menuItem);
 	DECLARE_EVENT_TABLE()

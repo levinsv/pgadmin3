@@ -135,7 +135,10 @@ install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 # Установка переводов
 install(DIRECTORY pkg/i18n/ DESTINATION share/${PROJECT_NAME}/i18n PATTERN "*.po" EXCLUDE)
+#Иконки в svg
 install(DIRECTORY pkg/svg/ DESTINATION share/${PROJECT_NAME}/svg)
+#Две стандартные цветовые темы 
+install(DIRECTORY pkg/themes/ DESTINATION share/${PROJECT_NAME}/themes)
 install(FILES include/images/pgadmin3.svg DESTINATION share/icons)
 install(FILES pkg/textcompare_report.template DESTINATION share/${PROJECT_NAME})
 install(FILES pkg/${PROJECT_NAME}.desktop DESTINATION share/applications)

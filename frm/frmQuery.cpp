@@ -305,10 +305,13 @@ void frmQuery::seticon()
 	}
 
 	wxColor cl=GetServerColour(conn);
-	int rgb = cl.GetRGB();
-	int b = (rgb >> 16) & 255;
-	int g = (rgb >> 8) & 255;
-	int r = rgb & 255;
+	int rgb,b=255,r=255,g=255;
+	if (cl.IsOk()) {
+		rgb = cl.GetRGB();
+		b = (rgb >> 16) & 255;
+		g = (rgb >> 8) & 255;
+		r = rgb & 255;
+	}
 	if (r == 255 && g == 255 && b == 255) {
 		//SetBitmapBundle()
 		SetIcon(*sql_32_png_ico);

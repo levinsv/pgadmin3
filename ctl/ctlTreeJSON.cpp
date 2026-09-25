@@ -16,7 +16,6 @@ EVT_LEFT_DCLICK(ctlTreeJSON::OnDoubleClick)
 EVT_TREE_DELETE_ITEM(wxID_ANY, ctlTreeJSON::OnDeleteItem)
 END_EVENT_TABLE()
 IMPLEMENT_DYNAMIC_CLASS(ctlTreeJSON, wxTreeCtrl)
-
 void ctlTreeJSON::OnChar(wxKeyEvent& event) {
 	wxTreeItemId id = GetSelection();
 	if (!id.IsOk()) return;
@@ -32,20 +31,15 @@ void ctlTreeJSON::OnChar(wxKeyEvent& event) {
 	if (event.GetKeyCode() == WXK_CONTROL_Z) {
 		if (GetItemBackgroundColour(id) != GetBackgroundColour()) {
 			if (orig.find(id) != orig.end()) {
-				conf[id] = orig[id];
+				//conf[id] = orig[id];
 				wxString t = GetItemText(id);
 				wxString newtext = orig[id].AsString();
 				wxString key = t.BeforeFirst(':');
 				if (key !=t) {
 					newtext = key + ":" + newtext;
 				}
+				if (!SetValue(id,newtext)) return;
 				SetItemText(id, newtext);
-				SetItemBackgroundColour(id, GetBackgroundColour());
-				wxColour empty;
-				int rez = 0;
-				if (newtext != t && newtext.length() > 0) 
-					rez=RefreshImages(id, empty, newtext);
-				if (rez!=1) orig.erase(id);
 
 				return;
 			}
@@ -141,7 +135,7 @@ void ctlTreeJSON::BuildFind() {
 		if (itemtext.Contains(searchtext)) {
 			//findsId.push_back(item);
 			findsId.emplace(item, 0);
-			SetItemBackgroundColour(item, wxColour("#FFFF00"));
+			SetItemBackgroundColour(item, findcolor);
 			if (flag)
 			{
 				last = item;
@@ -218,13 +212,8 @@ wxColour getColorFromString(const wxString& str) {
 	wxColour empty;
 	if (!strcolor.IsEmpty() && strcolor.length() > 5) {
 		wxString strc = "#" + strcolor.Mid(0, 6);
-		unsigned long tmp;
-		int scanned = wxSscanf(strcolor, "%lx", &tmp);
-		if (scanned == 1) {
-			wxColour c;
-			c.Set((tmp>>16) & 0xFF | (tmp  & 0x00FF00)| (tmp & 0xFF)<<16);
-			if (c.IsOk()) return c;
-		}
+		wxColour c(strc);
+		if (c.IsOk()) return c;
 	}
 	return empty;
 }
@@ -253,17 +242,14 @@ int ctlTreeJSON::RefreshImages(const wxTreeItemId& id, wxColour newColour, wxStr
 			wxJSONValue v = conf[id];
 			conf[id] = newtextcolor;
 			m_change = true;
-			if (orig.find(id) != orig.end()) {
-				if (conf[id].AsString() == orig[id].AsString()) {
-					SetItemBackgroundColour(id, GetBackgroundColour());
-					orig.erase(id);
-				}
-			}
-			else {
+			if (orig.find(id) == orig.end()) {
 				// save original value
 				orig[id] = v;
-				SetItemBackgroundColour(id, wxColour("#c0ffff"));
-			}
+				SetItemBackgroundColour(id, changecolor);
+			} else
+					if (conf[id].AsString().Upper() == orig[id].AsString().Upper()) {
+						SetItemBackgroundColour(id, GetBackgroundColour());
+					} else SetItemBackgroundColour(id, changecolor);
 
 			RefreshImageList();
 			rez = 1;
@@ -332,36 +318,33 @@ void ctlTreeJSON::OnDoubleClick(wxMouseEvent& event) {
 void ctlTreeJSON::OnBeginEdit(wxTreeEvent& event) {
 	//wxTrap();
 };
-void ctlTreeJSON::OnEndEdit(wxTreeEvent& event) {
-	if (event.IsEditCancelled()) return;
-	wxString newtext = event.GetLabel();
-	auto id = event.GetItem();
+/// @brief Устанавливает новое значение
+/// @return true если упешно
+bool ctlTreeJSON::SetValue(wxTreeItemId& id, wxString newvalue) {
 	wxString oldtext = GetItemText(id);
 	auto parent_id = GetItemParent(id);
 	wxString name;
 	wxJSONValue v = conf[id];
 	if (v.IsArray() || v.IsObject()) {
-		event.Veto();
-		return;
+		return false;
 	}
 	if (parent_id.IsOk()) {
 		wxJSONValue p = conf[parent_id];
-		wxString newvaluetext = newtext;
+		wxString newvaluetext = newvalue;
 		wxString n; // name parameter
 		int idx = -1; // index array
 		if (p.IsObject()) {
 			n = oldtext.BeforeFirst(':');
 			if (!(n.length() > 0 && p.HasMember(n))) {
-				event.Veto();
-				return;
+				// need exist name key
+				return false;
 			}
 			// 
-			if (!(n.length() > 0 && newtext.StartsWith(n + ":"))) {
+			if (!(n.length() > 0 && newvalue.StartsWith(n + ":"))) {
 				// name need equals
-				event.Veto();
-				return;
+				return false;
 			}
-			newvaluetext = newtext.Mid(n.length() + 1);
+			newvaluetext = newvalue.Mid(n.length() + 1);
 		}
 		else if (p.IsArray()) {
 			for (int j = 0; j < conf[parent_id].Size(); ++j) {
@@ -384,8 +367,7 @@ void ctlTreeJSON::OnEndEdit(wxTreeEvent& event) {
 			int ii = 0;
 			int scaned = wxSscanf(newvaluetext, "%d", &ii);
 			if (scaned != 1) {
-				event.Veto();
-				return;
+				return false;
 			}
 			//if (n.IsEmpty()) p[idx] = ii;  else p[n] = ii;
 			conf[id] = ii;
@@ -394,39 +376,34 @@ void ctlTreeJSON::OnEndEdit(wxTreeEvent& event) {
 		else {
 			// string value
 			//if (n.IsEmpty()) p[idx] = newvaluetext;  else p[n] = newvaluetext;
+			wxColour empty;
+			if (newvalue != oldtext && newvalue.length() > 0) {
+				int rez = RefreshImages(id, empty, newvalue);
+				if (rez > 0) return true;
+				if (rez < 0) return false; // bad colour
+			}
+			// simple string 
 			conf[id] = newvaluetext;
 			m_change = true;
 			//if (n.IsEmpty()) conf[parent_id][idx] = conf[id];  else conf[parent_id][n] = conf[id];
 		}
-		//p[n] = newtext.Mid(n.length());
-		if (orig.find(id) != orig.end()) {
+		if (orig.find(id) == orig.end()) {
+				// save original value
+				orig[id] = v;
+				SetItemBackgroundColour(id, changecolor);
+		} else
 			if (conf[id].AsString() == orig[id].AsString()) {
 				SetItemBackgroundColour(id, GetBackgroundColour());
-				orig.erase(id);
-			}
-		}
-		else {
-			// save original value
-			orig[id] = v;
-			SetItemBackgroundColour(id, wxColour("#c0ffff"));
-		}
-
-
-
-
+			} else SetItemBackgroundColour(id, changecolor);
 	}
+	return true;
+}
 
-	wxColour empty;
-	if (newtext != oldtext && newtext.length() > 0) {
-		int rez = RefreshImages(id, empty, newtext);
-		if (rez > 0) return;
-		if (rez < 0)event.Veto(); // bad colour
-		else
-		{
-			// no colour
-
-		}
-	}
+void ctlTreeJSON::OnEndEdit(wxTreeEvent& event) {
+	if (event.IsEditCancelled()) return;
+	wxString newtext = event.GetLabel();
+	auto id = event.GetItem();
+	if (!SetValue(id,newtext)) event.Veto();
 };
 wxTreeItemId ctlTreeJSON::NodeToJSON(const wxTreeItemId& id, wxJSONValue& newjson) {
 	wxTreeItemId item = id, child;
@@ -584,7 +561,7 @@ wxTreeItemId ctlTreeJSON::addtree(const wxTreeItemId& idParent, wxString text, w
 		item = AddRoot(text, -1, -1, 0);
 	}
 	if (m_root == idParent) {
-		SetItemBackgroundColour(item, *wxLIGHT_GREY);
+		if (isDark()) SetItemBackgroundColour(item, wxColour("#383838")); else SetItemBackgroundColour(item, *wxLIGHT_GREY);
 	}
 	if (text.length() >= 7) {
 		wxColour c = getColorFromString(text);
@@ -597,9 +574,15 @@ wxTreeItemId ctlTreeJSON::addtree(const wxTreeItemId& idParent, wxString text, w
 void ctlTreeJSON::RefreshImageList() {
 	auto it = GetFirstVisibleItem();
 	wxRect r;
-	wxSize sz(15, 15);
+	wxSize sz(25, 25);
 	if (GetBoundingRect(it, r)) {
 	#ifdef __WXGTK__
+		wxFont font = GetFont();
+		wxClientDC dc(this);
+		dc.SetFont(font);
+		wxSize textSize = dc.GetTextExtent("M");
+		int rowHeight = textSize.GetHeight() + 4; // +отступ на иконку/интервалы
+		r.height=rowHeight-2;
 		sz.x=r.height;
 		sz.y=r.height;
 	#else
@@ -640,7 +623,7 @@ void ctlTreeJSON::RefreshImageList() {
 }
 void ctlTreeJSON::LoadInTree(wxJSONValue& jval, const wxTreeItemId& idParent) {
 	wxJSONValue def;
-	if (jval.AsArray()) {
+	if (jval.IsArray()) {
 		for (int i = 0; i < jval.Size(); ++i) {
 			wxString key = "";
 			wxJSONValue jv = jval.Item(i);
@@ -665,7 +648,7 @@ void ctlTreeJSON::LoadInTree(wxJSONValue& jval, const wxTreeItemId& idParent) {
 			std::vector<ss> ord;
 			for (int i = 0; i < arr.Count(); ++i) {
 				const wxJSONValue& jv = jval.Get(arr[i], def);
-				if (jv.AsArray()) ord.push_back({ 5000,arr[i] });
+				if (jv.IsArray()) ord.push_back({ 5000,arr[i] });
 				else if (jv.IsObject())  ord.push_back({ 4000,arr[i] });
 				else ord.push_back({ 3000,arr[i] });
 			}
@@ -692,13 +675,85 @@ void ctlTreeJSON::LoadInTree(wxJSONValue& jval, const wxTreeItemId& idParent) {
 			conf[item] = jval;
 		}
 };
+/// @brief Заменяет в текущей конфигурации JSON объекты, не добавляет новые
+/// @return true если упешно
+wxTreeItemId ctlTreeJSON::MergeJson(const wxTreeItemId& item, wxJSONValue json) {
+	wxTreeItemId child;
+	wxTreeItemIdValue cookie;
+	if (json.IsArray()) {
+		child = GetFirstChild(item, cookie);
 
-//ctlTreeJSON::ctlTreeJSON(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style): wxTreeCtrl(parent, id, pos, size, style) {};
+		for (int i = 0; i < json.Size(); ++i) {
+			wxString value = "";
+			wxJSONValue jv = json.Item(i);
+			wxTreeItemId item;
+			if (!(jv.IsObject() || jv.IsArray())) {
+				 value += "" + jv.AsString();
+				 wxString oldvalue = GetItemText(child);
+				 if (oldvalue!=value && SetValue(child,value)) SetItemText(child, value);
+			} else 
+					if (HasChildren(child)) MergeJson(child, jv);
+			child=GetNextSibling(child);
+			if (!child.IsOk()) break;
+		}
+	}
+	else if (json.IsObject()) {
+		    child = GetFirstChild(item, cookie);
+			wxArrayString arr = json.GetMemberNames();
+			std::map<wxString,int> uniq_name;
+			// sort
+			wxJSONValue def;
+			for (int i = 0; i < arr.Count(); ++i) {
+				uniq_name[arr[i]]=0;
+			}
+			do
+			{
+				wxString keyname = GetItemText(child);
+				wxString oldvalue=keyname;
+				if (keyname.Find(':')!=wxNOT_FOUND)
+							keyname=keyname.BeforeFirst(':');
+						else keyname=keyname.Left(keyname.Length()-2);
+				if (uniq_name.find(keyname)!=uniq_name.end() ) {
+					wxJSONValue jv = json.Item(keyname);
+					uniq_name.erase(keyname);
+					if (!(jv.IsObject() || jv.IsArray())) {
+						wxString value=keyname+':'+jv.AsString();
+						if (oldvalue!=value && SetValue(child,value)) SetItemText(child, value);
+					} else 
+							if (HasChildren(child)) MergeJson(child, jv);
+				}
+				child=GetNextSibling(child);
+			} while (child.IsOk());
+			if (uniq_name.size()>0)  {
+					// this new JSON object
+					 wxString result;
+					 bool first = true;
+					 for (const auto& pair : uniq_name) {
+						if (!first) {
+							result+=",";
+						}
+						if (pair.first==".pgadmin3") continue;
+						result+=pair.first;
+						first = false;
+					 }
+					if (result.Length()>0) wxLogWarning("The loaded JSON object contains keys (%s) that are missing from the current configuration.",result);
+			}
+	}
+	return child;
+}
 
 void ctlTreeJSON::InitMy() {
 	//ReadJSON();
 	settings->ReloadJsonFileIfNeed();
+    bool isdark=isDark();
+	if (isdark) {
+		findcolor="#575702ff";
+		changecolor="#008383ff";
 
+	} else {
+		findcolor="#FFFF00";
+		changecolor="#c0ffff";
+	}
 	wxJSONValue r(wxJSONTYPE_NULL);
 	DeleteAllItems();
 	colors.clear();

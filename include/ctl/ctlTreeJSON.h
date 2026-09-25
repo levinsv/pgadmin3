@@ -17,6 +17,7 @@ public:
 	void ReadJSON();
 	void AddJSONValue(const wxJSONValue& parent, const wxJSONValue& jval);
 	void LoadInTree(wxJSONValue& jval, const wxTreeItemId& idParent);
+	wxTreeItemId MergeJson(const wxTreeItemId& item, wxJSONValue json);
 	void Save();
 	void InitMy();
 	DECLARE_DYNAMIC_CLASS(ctlTreeJSON)
@@ -44,6 +45,7 @@ private:
 	wxTreeItemId findTreeItem(const wxTreeItemId& root, const wxString& text, bool bCaseSensitive, bool bExactMatch);
 	wxTreeItemId nextTreeItem(const wxTreeItemId& item);
 	wxJSONValue copyjson(wxJSONValue& src);
+	bool SetValue(wxTreeItemId& id, wxString newvalue);
 	std::map<wxTreeItemId, wxJSONValue> conf;
 	std::map<wxTreeItemId, wxJSONValue> orig;
 	std::map<wxTreeItemId, wxColour> colors;
@@ -52,6 +54,7 @@ private:
 	wxString m_FindString;
 	std::map<wxTreeItemId, int> findsId;
 	bool m_change = false;
+	wxColour findcolor,changecolor;
 };
 
 #endif
