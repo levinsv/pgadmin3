@@ -1,10 +1,10 @@
 {
    "ctlSQLGrid" : {
-      "colorPlanRow" : "#e0ffe0ff",
+      "colorPlanRow" : "#e0ffe0",
       "colorWithNewLine" : "#EFE4B0",
-      "colorPlanNode" : "#f8f082ff",
-      "colorPlanNodeCollapse" : "#c8bfe8ff",
-      "colorOdd" : "#e0ffe0ff"
+      "colorPlanNode" : "#f8f082",
+      "colorPlanNodeCollapse" : "#c8bfe8",
+      "colorOdd" : "#e0ffe0"
    },
    "ctlSQLBox" : {
       "bgtransactioncolor" : "#F1F1BA",
