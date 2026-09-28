@@ -302,12 +302,14 @@ bool pgAdmin3::OnInit()
 
 	// Setup additional helper paths etc. Requires settings!
 	InitXtraPaths();
-#ifndef __WXMSW__
+#if defined(__WXMSW__) && wxCHECK_VERSION(3,3,0)
 	// wxwidgets 3.2 not support dark mode from windows
-	if (wxSystemSettings::GetAppearance().IsDark()) {
-		isdark=true;
-	}
-#endif	
+	isdark=wxSystemSettings::GetAppearance().IsDark();
+#else
+	#ifndef __WXMSW__
+		isdark=wxSystemSettings::GetAppearance().IsDark();
+	#endif
+#endif
 	locale = new wxLocale();
 	locale->AddCatalogLookupPathPrefix(i18nPath);
 
