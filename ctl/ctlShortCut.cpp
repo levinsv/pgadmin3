@@ -178,6 +178,10 @@ void ctlShortCut::OnChar(wxKeyEvent& event) {
         if (event.GetKeyCode() == WXK_BACK) {
             txt->EmulateKeyPress(event);
             //txt->SetValue(s.Left(s.Length()-1));
+            s = txt->GetValue();
+            SetText(s, false);
+            pop->Refresh();
+            return;
         }
         if (wxIsprint(charcode))
         {
