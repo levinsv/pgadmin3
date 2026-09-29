@@ -243,6 +243,12 @@ Item AlignWrap::parseItem(int& pos, bool& breakline) {
 		return i;
 	}
 	c = str[p];
+	bool spec=false;
+	if (c=='E' && (p+1<len) && str[p+1]=='\'') {
+		p++;
+		c = str[p];
+		spec=true;
+	}
 	if (c == '\'' || c == '"') {
 		p++;
 		
@@ -259,6 +265,7 @@ Item AlignWrap::parseItem(int& pos, bool& breakline) {
 				p++;
 				break;
 			}
+			if (c2=='\\' && spec) p++;
 			p++;
 		}
 		l = p - pos;

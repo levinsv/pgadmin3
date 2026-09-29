@@ -1,6 +1,35 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch2/catch.hpp>
 #include "utils/FormatterSQL.h"
+#include "utils/align/AlignWrap.h"
+#include <iostream>
+
+TEST_CASE( "AlignWrap", "[align]" ) {
+			int cfg = AlignWrap::ALL_LINES| AlignWrap::FIRST_LINE;
+			AlignWrap a;
+			wxString lineEnd = "\n";
+SECTION( "Выравнивание ALL_LINES|FIRST_LINE" ) {
+			wxString rez,str,exp;
+			str = wxString(R"((177,'name1',null,1000),
+(17,'Compare',null,1000),
+(18,'Сompare',null,1000),
+(277,E'name_long_child\nsecondline',177,22),
+(8000000,E'namechild\ttabsep',177 ,333 );
+)",wxConvUTF8);
+			CHECK(str.length()>0);
+			rez=a.build(str,cfg,lineEnd);
+			exp = wxString(R"((177    ,'name1'                       ,null,1000),
+(17     ,'Compare'                     ,null,1000),
+(18     ,'Сompare'                     ,null,1000),
+(277    ,E'name_long_child\nsecondline',177 ,22  ),
+(8000000,E'namechild\ttabsep'          ,177 ,333 );)",wxConvUTF8);
+                        CHECK(rez!=exp);
+                        CHECK(rez.ToStdWstring().length()>0);
+                        CAPTURE(str,rez,exp,lineEnd);
+}
+}
+
+
 
 using namespace FSQL;
 
@@ -393,6 +422,7 @@ end;		 )");
 [ t2,] 
 )";
  	 	CHECK(o==exp);
+
 }
 
 
