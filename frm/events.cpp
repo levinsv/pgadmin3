@@ -489,6 +489,18 @@ void frmMain::OnTreeSelChanged(wxTreeEvent &event)
 		
 }
 
+void frmMain::FreezeALL() {
+	if (!properties->IsFrozen()) properties->Freeze();
+	if (!statistics->IsFrozen()) statistics->Freeze();
+	if (!dependencies->IsFrozen()) dependencies->Freeze();
+	if (!dependents->IsFrozen()) dependents->Freeze();
+}
+void frmMain::ThawALL() {
+	if (properties->IsFrozen()) properties->Thaw();
+	if (statistics->IsFrozen()) statistics->Thaw();
+	if (dependencies->IsFrozen()) dependencies->Thaw();
+	if (dependents->IsFrozen()) dependents->Thaw();
+}
 
 // Reset the list controls
 void frmMain::ResetLists()
@@ -511,7 +523,7 @@ void frmMain::ResetLists()
 void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 {
 	static bool refresh = true;
-
+	FreezeALL();
 	if (currentNode)
 	{
 		ResetLists();
@@ -563,9 +575,8 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 
 					if (obj && obj->CheckOpenDialogs(browser, currentItem))
 					{
-						properties->Freeze();
 						setDisplay(currentObject, properties, sqlPane);
-						properties->Thaw();
+						ThawALL();
 						refresh = true;
 						return;
 					}
@@ -604,15 +615,13 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 
 		if (currentNode)
 		{
-			properties->Freeze();
 			setDisplay(currentObject, properties, sqlPane);
-			properties->Thaw();
 		}
 		else
 			setDisplay(currentObject, 0, 0);
 		browser->DrawDbName(currentObject->GetId());
 	}
-	
+	ThawALL();	
 }
 
 
