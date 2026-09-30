@@ -312,6 +312,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
                 idle_in_transaction_session_timeout= dataSet1->GetLong(wxT("idle_in_transaction_session_timeout"));
                 isrecovery = (v == wxT("t"));
                 track_commit_timestamp = connection->HasFeature(FEATURE_TRACK_COMMIT_TS);
+                file_namemask=connection->GetLogFileNameMask();
                 long sz = dataSet1->GetLong(wxT("hsize"));
                 long p = dataSet1->GetLong(wxT("hperiod"));
                 if (!dataSet1->GetBool(wxT("wsh"))) p = 0;
@@ -3059,8 +3060,9 @@ void frmStatus::addLogFile(wxDateTime *dt, bool skipFirst)
 {
     pgSet* set;
     if (settings->GetASUTPstyle()) {
+        wxString log_filenamemask= file_namemask;
         wxString sql = "select current_setting('log_directory')||'/'||name filename,modification filetime,size len\n"
-            "  FROM pg_ls_logdir()  where name ~ '.csv' and modification >= '" + DateToAnsiStr(*dt) + "'::timestamp order by modification-'" + DateToAnsiStr(*dt) + "'::timestamp limit 1";
+            "  FROM pg_ls_logdir()  where name ~ '"+log_filenamemask+"' and modification >= '" + DateToAnsiStr(*dt) + "'::timestamp order by modification-'" + DateToAnsiStr(*dt) + "'::timestamp limit 1";
         set = logconn->ExecuteSet(sql);
     } else
         set = logconn->ExecuteSet(
@@ -3476,12 +3478,13 @@ int frmStatus::fillLogfileCombo()
     else
         count--;
     pgSet* set;
-    if (settings->GetASUTPstyle())
+    if (settings->GetASUTPstyle()) {
+        wxString filemask=file_namemask;
         set = logconn->ExecuteSet(
         wxT("select name filename,modification filetime\n")
-        wxT("  FROM pg_ls_logdir()  where name ~ '.csv'\n")
+        wxT("  FROM pg_ls_logdir()  where name ~ '"+filemask+"'\n")
         wxT(" ORDER BY modification DESC"),false);
-
+        }
     else set = logconn->ExecuteSet(
            wxT("SELECT name filename,modification filetime\n")
            wxT("  FROM pg_ls_logdir()\n")
