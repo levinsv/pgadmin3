@@ -1390,7 +1390,7 @@ void frmStatus::OnCopyQuery(wxCommandEvent &ev)
 }
 
 void frmStatus::OnPaneActivated(wxAuiManagerEvent& evt) {
-    wxTimerEvent event;
+    wxTimerEvent event(*refreshUITimer);
     OnRefreshUITimer(event);
 }
 void frmStatus::OnPaneClose(wxAuiManagerEvent &evt)
@@ -1497,7 +1497,7 @@ void frmStatus::OnToggleLogPane(wxCommandEvent &event)
         cbRate->SetValue(rateToCboString(logRate));
         if (logRate > 0 && logTimer)
             logTimer->Start(logRate * 1000L);
-        wxTimerEvent e;
+        wxTimerEvent e(*refreshUITimer);
         OnRefreshLogTimer(e);
     }
     else
@@ -1578,7 +1578,7 @@ void frmStatus::OnDefaultView(wxCommandEvent &event)
 
 void frmStatus::OnHighlightStatus(wxCommandEvent &event)
 {
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
 
     OnRefreshStatusTimer(evt);
 }
@@ -3007,7 +3007,7 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
 
 void frmStatus::OnRefresh(wxCommandEvent &event)
 {
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
 
     OnRefreshStatusTimer(evt);
     OnRefreshLocksTimer(evt);
@@ -3815,7 +3815,7 @@ void frmStatus::OnAddLabelTextThread(wxThreadEvent& event) {
         return;
     }
     {
-        wxTimerEvent event;
+        wxTimerEvent event(*refreshUITimer);
         OnRefreshLogTimer(event);
     }
     
@@ -4256,7 +4256,7 @@ void frmStatus::OnSelStatusItem(wxListEvent &event)
     toolBar->EnableTool(MNU_COPY_QUERY, statusList->GetFirstSelected() >= 0);
 
     //OnRefresh(event);
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
     OnRefreshStatusTimer(evt);
     OnRefreshLocksTimer(evt);
     OnRefreshXactTimer(evt);
@@ -4483,7 +4483,7 @@ void frmStatus::OnRightClickStatusItem(wxListEvent& event)
     toolBar->EnableTool(MNU_CLEAR_FILTER_SERVER_STATUS, true);
     toolBar->EnableTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, false);
     
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
     OnRefreshStatusTimer(evt);
 }
 
@@ -4501,7 +4501,7 @@ void frmStatus::OnClearFilter(wxCommandEvent& event) {
     filterColumn.Clear();
     filterValue.Clear();
     onlyhightligth = false;
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
     OnRefreshStatusTimer(evt);
 
 }
@@ -4537,7 +4537,7 @@ void frmStatus::OnSortStatusGrid(wxListEvent &event)
         SetColumnImage(statusList, statusSortColumn - 1, 1);
 
     // Refresh grid
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
     OnRefreshStatusTimer(evt);
 }
 
@@ -4578,7 +4578,7 @@ void frmStatus::OnSortLockGrid(wxListEvent &event)
         SetColumnImage(lockList, lockSortColumn - 1, 1);
 
     // Refresh grid
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
     OnRefreshLocksTimer(evt);
 }
 
@@ -4619,7 +4619,7 @@ void frmStatus::OnSortXactGrid(wxListEvent &event)
         SetColumnImage(xactList, xactSortColumn - 1, 1);
 
     // Refresh grid
-    wxTimerEvent evt;
+    wxTimerEvent evt(*refreshUITimer);
     OnRefreshXactTimer(evt);
 }
 
@@ -4760,7 +4760,7 @@ void frmStatus::OnRightClickLogGrid(wxListEvent& event)
 {
     delayHitLog->Stop();
     lastmouse = wxGetMousePosition();
-    wxTimerEvent tm;
+    wxTimerEvent tm(*refreshUITimer);
     //logList->GetItem();
     //int flags = wxLIST_HITTEST_ONITEMLABEL;
     //long item=logList->HitTest(mp,flags);
