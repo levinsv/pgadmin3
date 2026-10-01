@@ -566,7 +566,7 @@ void ExecutionDialog::OnOK(wxCommandEvent &ev)
 
 			if (thread->DataSet() != NULL)
 			{
-				wxLogInfo(wxString::Format(wxT("%d rows."), thread->DataSet()->NumRows()));
+				wxLogInfo(wxString::Format(wxT("%ld rows."), thread->DataSet()->NumRows()));
 			}
 
 			if (isOk)
