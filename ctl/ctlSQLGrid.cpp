@@ -1191,14 +1191,6 @@ void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
      // First pass: auto-size columns
     for (col = 0; col < nCols; col++)
     {
-        ColKeySizeHashMap::iterator it = colSizes.find(GetColKeyValue(col));
-        if (it != colSizes.end()) // Restore user-specified size
-        {
-            newSize = it->second;
-            colMaxSizes.Add(-1);
-        }
-        else
-        {
             wxClientDC dc(GetGridWindow());
             newSize = 0;
             // get cells's width
@@ -1221,13 +1213,20 @@ void ctlSQLGrid::AutoSizeColumns(bool setAsMin)
                 maxH = h;
             if (w > newSize)
                 newSize = w;
-
             if (!newSize)
                 newSize = GetRowLabelSize();
             else
                 // leave some space around text
                 newSize += FromDIP(EXTRAEXTENT_WIDTH);
 
+        ColKeySizeHashMap::iterator it = colSizes.find(GetColKeyValue(col));
+        if (it != colSizes.end()) // Restore user-specified size
+        {
+            newSize = it->second;
+            colMaxSizes.Add(-1);
+        }
+        else
+        {
             colMaxSizes.Add(newSize);
         }
         SetColSize(col, newSize);

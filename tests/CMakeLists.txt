@@ -1,6 +1,7 @@
 
 find_package(Catch2)
-add_executable(test_Formatter test_Formatter.cpp ../utils/FormatterSQL.cpp)
+add_executable(test_Formatter test_Formatter.cpp ../utils/FormatterSQL.cpp
+ ../utils/align/Item.cpp ../utils/align/AlignWrap.cpp )
 #target_include_directories(test_Formatter PRIVATE ${CMAKE_SOURCE_DIR}/include)
 #target_link_libraries(test_Formatter Catch2::Catch2)
 

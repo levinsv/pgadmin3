@@ -557,12 +557,13 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT(                  " 'pgstattuple', 'pgstatindex','bt_index_parent_check','slonyversion')\n")
 		    wxT("   AND nspname IN ('pg_catalog', 'public','profile')")
 		    wxT(" union all select current_setting('log_destination'),555,null,null,null")
+			wxT(" union all select current_setting('log_filename'),777,null,null,null")
 		    wxT(" union all select setting,666,null,null,null from pg_settings s where s.name='track_commit_timestamp'");
 
 		pgSet *set = ExecuteSet(sql);
-
 		if (set)
 		{
+			wxString log_filename;
 			while (!set->Eof())
 			{
 				wxString proname = set->GetVal(wxT("proname"));
@@ -592,12 +593,27 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_PGPRO_PWR] = true;
 				else if (proname == wxT("bt_index_parent_check") && pronargs == 2 )
 					features[FEATURE_PGCHECKINDEX] = true;
-				else if (proname == wxT("csvlog") && pronargs == 555)
+				else if (proname.Find("csvlog")>=0 && pronargs == 555)
 					features[FEATURE_CSVLOG] = true;
 				else if (proname == "on" && pronargs == 666)
 					features[FEATURE_TRACK_COMMIT_TS] = true;
+				else if (pronargs == 777)
+					log_filename = set->GetVal(wxT("proname"));
 				
 				set->MoveNext();
+			}
+			if (log_filename.Length()>0) {
+				wxString ext=log_filename.AfterLast('.');
+				int lenext=0;
+				if (ext=="log") {
+					lenext=4;
+					if (features[FEATURE_CSVLOG]) log_filename=log_filename.Left(log_filename.Length()-3)+"csv";
+				}
+				wxString file=log_filename.BeforeFirst('%');
+				if (file!=log_filename) {
+					log_filenamemask=file+".*"+log_filename.Right(lenext);
+				} else 
+					log_filenamemask=log_filename;
 			}
 			delete set;
 		}

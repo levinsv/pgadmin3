@@ -1,37 +1,84 @@
-## 2026-09-17: fix: Parser plpgsql with recursive query
+## Master (current development)
+### 2026-09-30: feat: Use parameter log_filename.
+
+Для более точного поиска файлов логов параметр используется как маска поиска файлов логов базы.
+используется часть имени до первого символа "%".
+Расширение файла заменяется на csv для log_destination='csvlog'.
+
+### 2026-09-30: fix: Crush application.
+Если после перезапуска СУБД в диалоге повторного соединения ответить "Нет" происходило падение приложения.
+
+### 2026-09-29: fix: Align literal and test.
+При выравнивании не учитывались литералы вида E'str'.
+Добавлен тест для проверки выравнивания.
+
+### 2026-09-29: fix: Fixing the disappearing column header.
+В некоторых случаях у результатов запроса пропадал заголовок.
+
+### 2026-09-28: fix: Refresh shortcut dialog if press backspace.
+Не обновлялся  список найденных серверов при нажатии backspace в окне быстрого поиска.
+
+### 2026-09-27: feat: Disable dark mode for Windows
+Отключено определение темного режима в Windows.
+wxwidgets 3.2 не поддержививает работу темного режима в Windows.
+
+### 2026-09-25: feat: Add support color themes (load/save)
+1. Добавлена поддержка загрузки и сохранения цветовых тем.
+   Созданы две стандартые темы light и dark которые можно загрузить в настройках в разделе "Интерфейс".
+   Кнопка "Save" сохраняет текущие настройки в каталоге пользователя.
+   Кнопка "Load" загружает выбранную тему из каталога инсталяции или пользователя.
+   Загрузка замещает текущие значения цветов на значения из тем (тема это json файл).
+   После загрузки можно посмотреть новые цвета в настройках, нажать "Ок" и перезапустить приложение.
+2. Добавлены новые цветовые параметры для результатов запроса (секция ctlSQLGrid в json файле):
+   * rowsOddCount - максимальное количестве строк в результате запроса когда включается цветовая "зебра".
+   * colorOdd - цвет фона для раскраски под "зебру".
+   * colorWithNewLine - цвет фона для значений содежащих перевод строки "\n".
+   * colorPlanRow - цвет фона для строки плана запроса.
+   * colorPlanNode - цвет фона для узла плана запроса.
+   * colorPlanNodeCollapse - цвет фона для свёрнутого узла плана запроса.
+3. Добавлены новые цветовые параметры для редактора запросов(секция ctlSQLBox в json файле):
+   * bgtransactioncolor - цвет фона в режиме транзакции
+4. Добавлен фон при копировании запроса и результата запроса в HTML.
+   Добавлена поддержка фона для контекстной справки при копировании.
+   Исправлены цвета фона при показе отличий в тексте с учётом темного режима.
+   При подсветке строк лога в темном режиме цвета индикаторов используются для текста.
+   Цвета групп в диалоге трасформации также устанвливаются для текста в темном режиме.
+
+## Version 1.27.0 
+### 2026-09-17: fix: Parser plpgsql with recursive query
 Таблица из рекурсивной секции with попадала в зависимости функции.
 Добавлена обработка into при разборе запросов plpgsql.
 Небольшие оптимизации.
 
-## 2026-09-16: refactor:  Support plugin far2l
-## 2026-09-16: fix(ui): Store color server empty
-## 2026-09-15: fix(ui): Support Dark mode(explain)
-## 2026-09-14: docs: Prepare release
-Исправлены инструкции. Изменена версия pgadmin3 на 1.27.0.
+### 2026-09-16: refactor:  Support plugin far2l
+### 2026-09-16: fix(ui): Store color server empty
+### 2026-09-15: fix(ui): Support Dark mode(explain)
+### 2026-09-14: docs: Prepare release
+Исправлены инструкции сборки и установки. Изменена версия pgadmin3 на 1.27.0.
 Создан changelog.md из содержимого коммитов.
 Добавлена инструкция для инсталяции в linux.
 
-## 2026-09-14: fix(ui): Correct visible SSL page for linux
-## 2026-09-14: refactor: Move files for install
+### 2026-09-14: fix(ui): Correct visible SSL page for linux
+### 2026-09-14: refactor: Move files for install
 Для установки некоторые файлы вынесены в каталог pkg.
 
-## 2026-09-14: feat: Correct path for svg icons and pligins
+### 2026-09-14: feat: Correct path for svg icons and pligins
 1. Установка приложения копирует svg иконки в каталог установки. Они используются по умолчанию,
 если пользователь не заменит их другими из каталога ~/.local/share/pgadmin3/svg.
 2. Стандартная настройка плагинов копируется инсталяцией и может быть дополнена настройками из
 пользовательского каталога ~/.local/share/pgadmin3/plugins.d.
 Примеры плагинов для far2l, putty, и ssh не устанвливаются и могут быть взяты из каталога pkg.
 
-## 2026-09-11: fix: Correct test
-## 2026-09-09: fix: Autosize for F4 window
-## 2026-09-08: fix: Support dark theme for linux (Server properties)
+### 2026-09-11: fix: Correct test
+### 2026-09-09: fix: Autosize for F4 window
+### 2026-09-08: fix: Support dark theme for linux (Server properties)
 Добавлены настройки для темного режима для Свойства сервера
 
-## 2026-09-08: fix: Support dark theme for linux (dlgTransform)
+### 2026-09-08: fix: Support dark theme for linux (dlgTransform)
 Добавлены настройки для темного режима для диалога Трасформация текста
 
-## 2026-09-07: fix: Appication crash
-## 2026-09-07: feat: Support dark theme for linux
+### 2026-09-07: fix: Appication crash
+### 2026-09-07: feat: Support dark theme for linux
 Добавлены настройки для цветов фона некоторых элементов.
 Цвета хранятся в pgadmin3opt.json в узле ctlSQLGrid
 Для результатов запроса доступны следующие параметры:
@@ -45,18 +92,18 @@
 Для темного фона добавлены значения цветов по умолчанию.
 Для изменения этих цветов достаточно задать в файле выше описанные параметры.
 
-## 2026-09-07: fix: The window background color is not saved for the server
+### 2026-09-07: fix: The window background color is not saved for the server
 Цвет для сервера совпадающий с цветом фоном теперь не сохраняется. (Храниться как пустая строка)
 
-## 2026-09-04: feat: Show the dependencies of functions on tables,views,functions
+### 2026-09-04: feat: Show the dependencies of functions on tables,views,functions
 В настройки браузера вкладка "Свойства" добавлен флаг
 "Show the dependencies of functions on tables,views,functions". Если его установить то
 для функций и процедур на вкладке "Зависимости" будут отображаться используемые
 функции, таблицы, представления.
 Парсер простой и может ошибаться в некоторых случаях. (временные таблицы, сложные запросы).
 
-## 2026-09-03: fix: Correct parse pgpgsql
-## 2026-08-31: feat: Paste Server connect information
+### 2026-09-03: fix: Correct parse pgpgsql
+### 2026-08-31: feat: Paste Server connect information
 Если в буфер обмена поместить информацию о соединении с сервером то она заполнит поля
 диалога добавления нового сервера.
 Поддерживается только такой формат Ключ=Значение\n и ниже перечисленные ключи:
@@ -70,45 +117,45 @@ Port=
 StorePwd=
 Restore=
 ```
-## 2026-08-28: feat: Add $$DESCRIPTION parameter for plugin
+### 2026-08-28: feat: Add $$DESCRIPTION parameter for plugin
 Можно передавать плагинам описание сервера.
 
-## 2026-08-27: fix: linix application name change
-## 2026-08-27: fix: Color correct
-## 2026-08-27: fix: Localization
-## 2026-08-27: feat: Information about keywords is displayed in the server properties
+### 2026-08-27: fix: linix application name change
+### 2026-08-27: fix: Color correct
+### 2026-08-27: fix: Localization
+### 2026-08-27: feat: Information about keywords is displayed in the server properties
 Если для сервера добавлены слова поиска, то в свойства сервера эти слова будут показаны зеленым
 цветом. Если в словах встретиться символ "#" то цвет будет красным.
 
-## 2026-08-26: feat: The rules for auto-loading tabs have been changed
+### 2026-08-26: feat: The rules for auto-loading tabs have been changed
 Добавлена загрузка по описанию сервера. Если префикс имени вкладки более 2 символов и совпадает
 с описанием сервера то закладка будет загружена.
 Это позволит фильтровать загрузку вкладки между множеством баз имеющих одинаковое имя БД.
 
-## 2026-08-26: fix: SQL name identificator
+### 2026-08-26: fix: SQL name identificator
 SQL идентификаторы начинающиеся с символа "_" считались не корректными.
 
-## 2026-08-25: feat: added viewing of DB parameters in server properties
+### 2026-08-25: feat: added viewing of DB parameters in server properties
 Можно задать имена параметров в массиве showparams в узле Servers файла pgadmin3opt.json.
 Для суперпользователя доступна возможность увидеть не применённые параметры заданные в
 конфигурационном файле. Они отображаются в виде: старое_значение(новое_значение)
 Параметры подсвечиваются сервым цветом обычные, голубым не применённые.
 
-## 2026-08-25: fix: Correct define datlastsysoid
-## 2026-08-21: fix: GetVersionNumber.
+### 2026-08-25: fix: Correct define datlastsysoid
+### 2026-08-21: fix: GetVersionNumber.
 Исправлено формирование номера версии СУБД на более надежную реализацию.
 При экзотических названиях некорректно распозновалась строка с версией СУБД.
 
-## 2026-08-21: fix: Colorize,font-size,font-family.
+### 2026-08-21: fix: Colorize,font-size,font-family.
 Исправлена подсветка "<>" в html тексте. Размер шрифта для font-size указывается в pt.
 В linux версии в font-family добавлен Consolas для корректного отображения в Windows.
 
-## 2026-08-17: Minor changes for the operation of a non‑privileged user.
+### 2026-08-17: Minor changes for the operation of a non‑privileged user.
 Некоторые улучшения для возможности работы ограниченных пользователей.
 (permission denied for table pg_proc)
 
-## 2026-08-17: fix check wxUSE_SECRETSTORE
-## 2026-08-14: Storing passwords in an encrypted vault.
+### 2026-08-17: fix check wxUSE_SECRETSTORE
+### 2026-08-14: Storing passwords in an encrypted vault.
 Добавлена возможность сохранения паролей в зашифрованном хранилище пользователя ОС.
 Для Linux это возможно если wxwidgets скомпилирован с библиотекой libsecret .
 Для выбора стратегии хранения паролей нужно создать параметр GetStoreTypePass со одним из
@@ -122,8 +169,8 @@ SQL идентификаторы начинающиеся с символа "_" 
 подключении к БД пароль к которой ещё не сохранён в хранилище, но есть в pgpass.
 Никакого экспорта/импорта нет.
 
-## 2026-08-13: fix XDG_DATA_HOME
-## 2026-08-12: Add plugin far2l(use NetRocks connect).
+### 2026-08-13: fix XDG_DATA_HOME
+### 2026-08-12: Add plugin far2l(use NetRocks connect).
 Добавлена поддержка far2l как плагина для подключения к серверу используя хост соединения БД.
 Условия использования.
 1. В плагине NetRocks создать каталог с именем группы серверов (Обычно Servers)
@@ -148,79 +195,79 @@ SetPassword=No
 При выборе плагина "far2l" в NetRocks будет прописано соединение к серверу и запущена Command
 с этим соединением.
 
-## 2026-08-04: Fix Query Counter
-## 2026-07-10: In the comparison dialog, word-by-word comparison has been replaced with line-by-line comparison.
-## 2026-07-02: Report Diff db using cleanupSemantic function
-## 2026-07-02: Exporting query results in the format COPY.
+### 2026-08-04: Fix Query Counter
+### 2026-07-10: In the comparison dialog, word-by-word comparison has been replaced with line-by-line comparison.
+### 2026-07-02: Report Diff db using cleanupSemantic function
+### 2026-07-02: Exporting query results in the format COPY.
 Для команды "Выполнить в файл" добавлен экспорт в формате COPY в текстовом режиме.
 Учитывается флаг "имена колонок" , кодировка и переводы строк.
 
-## 2026-07-02: fix application crash
+### 2026-07-02: fix application crash
 При постоянном нажатии клавиши запуска запроса происходило падение приложения.
 Исправлено.
 
-## 2026-07-02: Fix Alt-E.
+### 2026-07-02: Fix Alt-E.
 При нажатии **Alt-E** для вызова диалога экспорта клавиша E доходила для результатов запроса.
 
-## 2026-07-02: feat: Add query start time, correct Execute to file
+### 2026-07-02: feat: Add query start time, correct Execute to file
 1. Добавлено время начала выполнения каждого запроса во вкладке "История".
 2. Исправлено поведения команды "Выполнить в файл". Теперь она работает также как и "Выполнить",
    но результаты идут в файл.
    Следует учитывать что в этом случае Флажок "Формат для XLS" не работает.
 
-## 2026-07-02: feat: Add planning time
+### 2026-07-02: feat: Add planning time
 Добавлен подсчёт времени в процентах от "Execution Time:" для триггеров при выполнении **Shift+F7** в инструменте запросов.
 Для строки "Planning Time:" - процент от общего времени запроса равного "Planning Time:"+"Execution Time:"
 Для всех остальных процент времени от "Execution Time:"
 
-## 2026-06-23: fix  incorrect error position
-## 2026-06-22: The function of copying the result is always enabled in the context menu.
-## 2026-06-19: fix copy diff to HTML.
+### 2026-06-23: fix  incorrect error position
+### 2026-06-22: The function of copying the result is always enabled in the context menu.
+### 2026-06-19: fix copy diff to HTML.
 Не копировался удаленный текст если он был в конце исходного текста.
 
-## 2026-06-19: Disabling writing empty SchemaRestruction in the config.
-## 2026-06-19: Moving between open servers.
+### 2026-06-19: Disabling writing empty SchemaRestruction in the config.
+### 2026-06-19: Moving between open servers.
 Нажатие на **Ctrl+UP** и **Ctrl+DOWN** перемещает фокус к вышележащей или нижележащей открытой БД в дереве объектов.
 
-## 2026-06-17: Add option to disable certificate verification for the gitlab site.
+### 2026-06-17: Add option to disable certificate verification for the gitlab site.
 Добавлена настройка "sslverify" в файл gitlab.json по умолчанию true.
 При установке в false сайт указаный в "url" не проверяется.
 Настройка добавлена для решения проблем с ошибками SSL certificate verification failed: certificate signer not trusted.
 
-## 2026-06-16: Saving the parameters of the comparison dialog.
-## 2026-06-15: When deleting objects in the browser, the browser's focus is checked.
-## 2026-06-15: Added the "DiffText" button to the query tool.
-## 2026-06-11: Disable flicker optimization for linux.
+### 2026-06-16: Saving the parameters of the comparison dialog.
+### 2026-06-15: When deleting objects in the browser, the browser's focus is checked.
+### 2026-06-15: Added the "DiffText" button to the query tool.
+### 2026-06-11: Disable flicker optimization for linux.
 На X11 кроме проблемы высокой нагрузки на CPU, появилась проблема с
 пропуском GUI сообщений.
 
-## 2026-06-11: Space substitution is taken into account when converting to html
-## 2026-06-11: Added download of the git repository archive.
+### 2026-06-11: Space substitution is taken into account when converting to html
+### 2026-06-11: Added download of the git repository archive.
 Все файлы ветки скачиваются архивом.
 Мелкие правки в UI.
 
-## 2026-06-11: fix compile Microsoft VS.
+### 2026-06-11: fix compile Microsoft VS.
 Оптимизация для linux конфликтует с компиляцией на VS.
 Добавлено усиление проверки версии БД.
 
-## 2026-06-08: Fix report AWR.
+### 2026-06-08: Fix report AWR.
 Разрешено редактирование при выборе даты и времени снимков.
 Для большого количества снимков (для Linux особенно) удобнее ввести в ручную дату и время снимка.
 
-## 2026-06-05: Fix comapare dialog.
+### 2026-06-05: Fix comapare dialog.
 Некоторые исправления для уточнения подсветки изменений при использовании unicode символов.
 Также изменено позиционирование при переходе к следующему изменению (кнопка "Next").
 Исправлена потеря расцветки при копировании в html больших текстов.
 
-## 2026-05-27: fix words mode for diff_math_patch
-## 2026-05-27: Added a comparison of the original text of the function and the modified one in the function editing dialog.
+### 2026-05-27: fix words mode for diff_math_patch
+### 2026-05-27: Added a comparison of the original text of the function and the modified one in the function editing dialog.
 1. При редактировании текста функции нажатие **F11** вызывает диалог сравнения исходного текста и
    изменённого. Если в тексте запроса будет выделение то отработает поведение п. 2.
 2. **F11** можно использовать и для сравнения запросов в инструменте редактирования запросов.
     Исходный текст запроса должен быть скопирован в буфер, а текущий либо выделен либо будет
     выделен автоматически.
 
-## 2026-05-26: Improved the dialog for comparing two cells.
+### 2026-05-26: Improved the dialog for comparing two cells.
 1. Устранена проблема с отображением номеров строк.
 2. Добавлена опция "Cleanup semantic" для более красивого отображения различий.
 3. Добавлена кнопка "Copy diff to HTML" копирования правого окна с объединением различий левого.
@@ -229,28 +276,28 @@ SetPassword=No
 4. Добавлена кнопка "Copy Left/Right to HTML" в зависимости от фокуса копируется левая или правая
    часть.
 
-## 2026-05-26: selecting the entire text by pressing "a" in the context help.
+### 2026-05-26: selecting the entire text by pressing "a" in the context help.
 В контекстной помощи весь текст можно выделить нажав "a".
 
-## 2026-05-25: Disable Ellipsize for wxGTK.
+### 2026-05-25: Disable Ellipsize for wxGTK.
 Отключено так как на wxGTK работает медленно если в ячейках большие тексты.
 
-## 2026-05-25: Added a comparison option for the two-cell comparison dialog.
+### 2026-05-25: Added a comparison option for the two-cell comparison dialog.
 Добавлена опция "Words compare". Когда она включена то тексты разбиваются на слова которые
 будут являться минимальными единицами сравнения.
 
-## 2026-05-07: Copy bookmark selection.
+### 2026-05-07: Copy bookmark selection.
 Выделеные **Ctrl+B** фрагменты текста теперь копируются в виде выделенного желтым фоновым цветом.
 
-## 2026-04-30: fix compare report.
+### 2026-04-30: fix compare report.
 При сравнении баз некорректно определялся путь в дереве объектов.
 
-## 2026-04-24: Commands for working with the server have been added to the Server submenu.
-## 2026-04-24: Added the Set keywords menu item to add server search keywords
+### 2026-04-24: Commands for working with the server have been added to the Server submenu.
+### 2026-04-24: Added the Set keywords menu item to add server search keywords
 Добавлена возможность через контекстное меню сервера добавлять ключевые слова.
 Требуется перезапуск приложения для применения изменений.
 
-## 2026-04-22: Added a parameter for the Keywords server. Used to search for the server after pressing F4
+### 2026-04-22: Added a parameter for the Keywords server. Used to search for the server after pressing F4
 Для удобного поиска серверов к параметрам сервера добавлен Keywords параметр.
 Это текстовый параметр в котором через пробел можно перечислить слова по которым будет проводиться
 поиск сервера при нажатии **F4**.
@@ -258,14 +305,14 @@ SetPassword=No
 GUI интерфейса для настройки параметра нет.
 Если ключевые слова заданы то отображаются в [].
 
-## 2026-04-20: fix bug clipboard for linux
-## 2026-04-20: dlgSelectConnection resore Group.
-## 2026-04-20: fix parse plugins.ini file.
+### 2026-04-20: fix bug clipboard for linux
+### 2026-04-20: dlgSelectConnection resore Group.
+### 2026-04-20: fix parse plugins.ini file.
 При наличии нескольких плагинов в файле некорректно очищались предыдущие значения параметров.
 
-## 2026-04-20: Add SVG icons
-## 2026-04-17: fix Default view size for query tool
-## 2026-04-16: Toolbar set size 32x32 for query tool. Use SVG icons.
+### 2026-04-20: Add SVG icons
+### 2026-04-17: fix Default view size for query tool
+### 2026-04-16: Toolbar set size 32x32 for query tool. Use SVG icons.
 Стандартные иконки можно заменить на SVG иконки. Которые находятся в
 каталоге include/images.
 ВАЖНО: иконки для COMMIT и ROLLBACK поменяны местами,
@@ -277,11 +324,11 @@ SVG файлы должны быть размещены:
 Windos - %APPDATA%/postgresql/svg
 LINUX  - ~/.local/share/pgadmin3/svg
 
-## 2026-04-16: fix position plugins menu
-## 2026-04-13: fix GTK bug
+### 2026-04-16: fix position plugins menu
+### 2026-04-13: fix GTK bug
 Нажатие правой кнопки не передавалось окну.
 
-## 2026-04-13: Support hotkey for context help window.
+### 2026-04-13: Support hotkey for context help window.
 Улучшена поддержка клавиши для навигации в контекстной справке.
 Краткий список:
 **PAGEDOWN,PAGEUP,UP,DOWN,HOME,END** - скроллинг окна.
@@ -289,7 +336,7 @@ LINUX  - ~/.local/share/pgadmin3/svg
 **S** - screenshot контекстной справки.
 **C** - копирование в html формате.
 
-## 2026-04-13: Add support putty for Windows
+### 2026-04-13: Add support putty for Windows
 Добавлена поддержка туннелей организованных в putty.exe.
 Для работы с putty нужно добавить в plugins.ini строки:
 ```
@@ -307,17 +354,17 @@ SetPassword=No
 ```
 Так же устранено падение pgadmin3.exe при закрытии соединения по нажатию **Ctrl+W**
 
-## 2026-04-13: Add support Wayland
-## 2026-03-27: fix view scale_factor value.
+### 2026-04-13: Add support Wayland
+### 2026-03-27: fix view scale_factor value.
 Целые числа не показывались в значениях autovacuum_analyze_scale_factor и других подобных.
 
-## 2026-03-26: Full view server groups to the connection selection dialog.
+### 2026-03-26: Full view server groups to the connection selection dialog.
 В диалоге выбора соединения список серверов имеет текстовое представление как в дереве объектов.
 
-## 2026-03-18: Server groups have been added to the connection selection dialog.
+### 2026-03-18: Server groups have been added to the connection selection dialog.
 Добавлен список групп серверов, для упрощения поиска нужного соединения.
 
-## 2026-03-17: Auto execute plugin puttyforward for linux.
+### 2026-03-17: Auto execute plugin puttyforward for linux.
 При наличии такого плагина:
 ```
 ; SSH (Unix): tunnel putty forward
@@ -337,73 +384,73 @@ SetPassword=No
 туннеля описанного в putty то будет проверятся наличие открытого порта на localhost
 и если он закрыт то запускается выше указанный плагин для организации туннеля.
 
-## 2026-03-04: support single quote for PreviewHtml
-## 2026-03-04: fix AutoSelectQuery.
+### 2026-03-04: support single quote for PreviewHtml
+### 2026-03-04: fix AutoSelectQuery.
 Автовыбор запроса выбирал все запросы если курсор находиться в конце документа.
 Теперь выбирает пустой запрос.
 
-## 2026-03-04: Copy screenshot context help press 's'.fix asserts.
+### 2026-03-04: Copy screenshot context help press 's'.fix asserts.
 Копирование окна контекстной помощи в буфер обмена по нажатию 's'.
 
-## 2026-03-03: Add help for options pgadmin3opt.Press **Ctrl+F1**
-## 2026-03-03: Zoom in on the contexl help window by press "+"
-## 2026-02-27: In the query results, integers can be viewed in a human-readable form.
+### 2026-03-03: Add help for options pgadmin3opt.Press **Ctrl+F1**
+### 2026-03-03: Zoom in on the contexl help window by press "+"
+### 2026-02-27: In the query results, integers can be viewed in a human-readable form.
 В расширенном представлении ячейки большие числа будут показаны в удобочитаемом виде.
 
-## 2026-02-27: A hotkey Ctrl-F1 to JSON options.
+### 2026-02-27: A hotkey Ctrl-F1 to JSON options.
 Добавлена справка **Ctrl-F1** по командам редактирования настроек JSON.
 
-## 2026-02-25: A hotkey Ctrl-W to disconnect from the database.
+### 2026-02-25: A hotkey Ctrl-W to disconnect from the database.
 Для отключения открытой БД из любого места браузера объектов можно использовать **Ctrl-W**.
 Теперь эта команда доступна из любого места дерева объектов.
 
-## 2026-02-25: Added division of digits for thousands. Only integers. Only Result query.
+### 2026-02-25: Added division of digits for thousands. Only integers. Only Result query.
 Для результатов запросов для целых чисел добавлено визуальное разделение тысяч.
 Величина отделения задаётся в точках и храниться в pgadmin3opt.json
 в параметре "thousandsWidthSeparator" раздела "ctlSQLGrid" разрешенные величины от -15 до 15.
 Значение по умолчанию 0.
 В отличии от стандартного разделителя тысяч этот влияет только на отображении чисел.
 
-## 2026-02-20: Remove localization application_name
-## 2026-02-18: In the Server Status window, working with the database is moved to a separate thread.
+### 2026-02-20: Remove localization application_name
+### 2026-02-18: In the Server Status window, working with the database is moved to a separate thread.
 Выполнения запросов для окна "Активность" и "Состояние запроса" вынесено в отдельный поток.
 Соединение к БД одно.
 
-## 2026-02-18: Add context help for generation
-## 2026-02-18: fix crush app.
+### 2026-02-18: Add context help for generation
+### 2026-02-18: fix crush app.
 Устраняет аварийное завершение приложения при проверки плагинов для не подлюченной БД.
 
-## 2026-02-18: fix flickering of the Activity window for linux.
+### 2026-02-18: fix flickering of the Activity window for linux.
 Окно Activity теперь использует при создании стиль wxBG_STYLE_TRANSPARENT. (только linux)
 Мерцание устраняется, но начинается повышенная нагрузка на CPU.
 Также в режиме показа только раскрашенных строк отключается пользовательский ввод.
 По причине аварийного завершения приложений при обработке нажатий мыши по строкам которые
 буду удалены при обновлении данных.
 
-## 2026-02-17: fix perfomance generation. add context help.
+### 2026-02-17: fix perfomance generation. add context help.
 Для больших результатов запроса добавлена оптимизация. В скрипт "_extract_func_help.pl" добавлено
 описание генерации шаблона. Вызывается при выделении  "@gen" и нажатии **Ctrl+F1**
 
-## 2026-02-17: fix perfomance set/clear filter.
+### 2026-02-17: fix perfomance set/clear filter.
 Установка/сброс фильтра по результатам запроса оптимизирована.
 
-## 2026-02-17: fix Compare database for linux.
+### 2026-02-17: fix Compare database for linux.
 Шаблон textcompare_report.template можно размещать в ~/.local/share/pgadmin3.
 
-## 2026-02-06: Added a new command for the Log window that enable/disable the auto hint.
+### 2026-02-06: Added a new command for the Log window that enable/disable the auto hint.
 Добавлена команда (hotkey **F9**) отключение/включение автоматически всплывающих подсказок для лога сервера.
 По умолчанию подсказки отключены.
 Описание команды храниться в JSON в разделе LogNavigatePanel.
 Добавляется после первого открытия окна лога сервера.
 
-## 2026-02-04: Save select item server.
+### 2026-02-04: Save select item server.
 При запуске приложение выделяется в браузере последний используемый сервер.
 
-## 2026-01-30: fix frmLog list log files.
+### 2026-01-30: fix frmLog list log files.
 Добавлена фильтрация файла лога db.csv.
 Пока в коде, но возможно имена файлов будут вынесены в настройки.
 
-## 2026-01-30: Using putty for the tunnel.
+### 2026-01-30: Using putty for the tunnel.
 В linux можно использовать сохранённые в putty конфигурации туннелей.
 Для этого нужно в plugins.ini добавить строки нового элемента плагина:
 ```
@@ -426,21 +473,21 @@ SetPassword=No
 Если такое совпадение найдено, то пункт меню плагинов [Putty tunnel forward]
 заменяется на имя конфигурации putty. Хост сервера должен быть указан как localhost.
 
-## 2026-01-27: The context menu of the "Log File" window has been removed. Clicking on the right button opens the row preview.
+### 2026-01-27: The context menu of the "Log File" window has been removed. Clicking on the right button opens the row preview.
 Убрано контекстное меню с командами. Нужно использовать горячие клавиши для вызова команд.
 Правая кнопка вызывает окно просмотра строки лога.
 
-## 2026-01-21: Little fixes. Added a hotkey to generate.
+### 2026-01-21: Little fixes. Added a hotkey to generate.
 Два первых шаблона генерации можно вызвать **Ctrl+1** и **Ctrl+2** соответственно.
 
-## 2026-01-16: A new flag has been added for generation.
+### 2026-01-16: A new flag has been added for generation.
 Добавлен локальный флаг "e" отключающий квотирование для колонки.
 Пример: --@gen:Выгрузка как есть:@?column?,e@\n
 
-## 2026-01-16: Fix copying 3 byte characters into HTML.
+### 2026-01-16: Fix copying 3 byte characters into HTML.
 При копировании запроса в HTML содержащего 3-х байтовые символы UNICODE сбивалась раскраска.
 
-## 2026-01-16: Template parsing error messages have been added to the status bar.
+### 2026-01-16: Template parsing error messages have been added to the status bar.
 Сообщения об ошибках:
 "The column name %s was not found in the query results" - имя колонки не найдено в результатах запроса.
 "The column name  %s is not closed"                     - пропущен закрывающий символ @.
@@ -449,7 +496,7 @@ SetPassword=No
 
 Добавлено экранирование \t, \r
 
-## 2026-01-14: Fix generate Insert SQL instruction. Copying result lines based on a template.
+### 2026-01-14: Fix generate Insert SQL instruction. Copying result lines based on a template.
 1. При некоторых настройках при генерации Insert инструкций, пустые строки заменялись на null.
    Этот коммит исправляет проблему.
 2. Результаты запросов можно оформить произвольным образом используя шаблоны указанные в однострочных
@@ -472,21 +519,21 @@ SetPassword=No
    Шаблоны сохраняются перед выполнением SQL команды и после редактирования шаблона
    запрос нужно выполнить повторно.
 
-## 2026-01-13: fix GUI for linux.
+### 2026-01-13: fix GUI for linux.
 Исправления в отображения окна сравнения двух ячеек результата.
 Размер панели инструмента в окне запросов увеличен до 32 при использовании svg иконок.
 Функция для чтения логов приведена к одному виду (LogView).
 
-## 2025-12-30: The view of foreign tables has been added to the contextual help.
+### 2025-12-30: The view of foreign tables has been added to the contextual help.
 В контекстную справку добавлен просмотр внешних таблиц.
 Выводиться предупреждающее сообщение если не создан файл
 контекстной справки _func.txt и/или не настроен путь
 к файлам справки в формате html.
 
-## 2025-12-29: fix crash application.
+### 2025-12-29: fix crash application.
 Падение приложения при перемещении по дереву объектов, если включено отображение имени БД.
 
-## 2025-12-25: The data path of the linux application has been changed to XDG_DATA_HOME.
+### 2025-12-25: The data path of the linux application has been changed to XDG_DATA_HOME.
 Файлы которые создаёт приложение помещаются в $XDG_DATA_HOME/pgadmin3 или
 ~/.local/share/pgadmin3.
 Уже существующие файлы копируются из ~/postgresql на новое место.
@@ -504,47 +551,47 @@ SetPassword=No
 ├── pgadmin3opt.json           # дополнительные настройки приложения
 └── pgadmin_autoreplace.xml    # списки автозамены
 ```
-## 2025-12-24: Underlining the query results with a red line if they were truncated due to the set maximum column size.
+### 2025-12-24: Underlining the query results with a red line if they were truncated due to the set maximum column size.
 Результаты запроса которые были усечены из-за превышения
 максимального размера колонки будут подчёркнуты красной линией.
 
-## 2025-12-24: Limitation of the coloring of hints in the query results.
+### 2025-12-24: Limitation of the coloring of hints in the query results.
 Ограничения добавлены для повышения производительности.
 Раскраска отключается при размерах строки более 32000 символа (MAX_TEXT_LEN_COLORIZE)
 При более 500000 вызывается диалог подтверждения вывода окна подсказки (MAX_TEXT_LEN_WARNING).
 Вывод подсказки для csv пока не ограничен.
 
-## 2025-12-12: The method of copying in the context help has been changed.
+### 2025-12-12: The method of copying in the context help has been changed.
 Для Linux для копирования выделенного текста нажать **Ctrl+C** это стандартное поведение элемента.
 Для Windows используется старый способ правая кнопка мыши.
 
-## 2025-12-09: fix visual optimization for Linux
-## 2025-12-08: Fixed colors for labels for "TopActivity".
+### 2025-12-09: fix visual optimization for Linux
+### 2025-12-08: Fixed colors for labels for "TopActivity".
 Для Linux цвета всплывающих подсказок были некорректны.
 Сейчас цвета шрифта и фона определяется настройками ОС.
 
-## 2025-12-08: Highlighting the "autovacuum launcher" process in the presence of inactive replication slots.
+### 2025-12-08: Highlighting the "autovacuum launcher" process in the presence of inactive replication slots.
 Добавлена подсветка процесса "autovacuum launcher" если нет активных слотов репликации.
 Цвет подсветки как для заблокированного процесса.
 
-## 2025-12-03: Navigation keys in the context help.
+### 2025-12-03: Navigation keys in the context help.
 Добавлен по страничный скроллинг (PgDn,PgUp), строчный (Up,Down) и начало,конец текста (Home,End).
 
-## 2025-12-02: Correction of the lost ";" during formatting SQL.
+### 2025-12-02: Correction of the lost ";" during formatting SQL.
 При форматировании SQL терялся символ ";". Мелкие правки для перевода сообщений.
 
-## 2025-11-28: Using anchors in the function help.
+### 2025-11-28: Using anchors in the function help.
 Добавлена возможность использовать файлы справки на прямую, но с учётом структуры справки Postgresql.
 
-## 2025-11-21: Added several functions to the contextual help.
+### 2025-11-21: Added several functions to the contextual help.
 Добавлена возможность просмотра объектов БД в контекстной справке.
 
-## 2025-11-21: Added the possibility of contextual help on user functions.
+### 2025-11-21: Added the possibility of contextual help on user functions.
 Добавлена возможность просмотра скриптов создания пользовательских объектов
 в контекстной помощи. В скриптах имена других объектов заменяются на ссылки.
 
-## 2025-11-17: fix #54. Update libpq.dll (pg17)
-## 2025-11-11: Add align option Compat view for All Line mode. Some optimuzation.
+### 2025-11-17: fix #54. Update libpq.dll (pg17)
+### 2025-11-11: Add align option Compat view for All Line mode. Some optimuzation.
 Добавлена опция Compat view для All Line режима. В некоторых случаях она делает более красивое выравнивание.
 Для примера:
 ```
@@ -554,7 +601,7 @@ f(iObjId+2,1   ,'te2' ,iObjId+1);
 ```
 Исправлено добавление пробелов в конце строки в режиме All Line.
 
-## 2025-11-11: Add autocomplite dlgFunction. Fix multibyte char support.
+### 2025-11-11: Add autocomplite dlgFunction. Fix multibyte char support.
 Добавлено использование автоподстановки в окно редактирования процедур и функции.
 Добавлена поддержка UTF-8.
 Добавлена поддержка unicode для идентификаторов.
@@ -566,44 +613,44 @@ f(iObjId+2,1   ,'te2' ,iObjId+1);
 добавлен поиск серверов по их хостам.
 
 
-## 2025-10-24: fix bug pgAdmin3 are not responding
+### 2025-10-24: fix bug pgAdmin3 are not responding
 Исправлено зависание в бесконечном цикле.
 Если было выделен узел "Сервера" и активна вкладка "Статистика" приложение попадало в бесконечный цикл.
 
-## 2025-10-24: Extended use shortcut
+### 2025-10-24: Extended use shortcut
 Быстрый поиск по **F4** выполняется теперь не только по посещенным узлам, но и не явно по серверам и их хостам.
 В выпадающем списке сервера не указываются, поиск производится при наборе фразы.
 
-## 2025-10-22: Translate message ctlNavigatePanel
-## 2025-10-20: fix bug Blocked_by_ProcessColor
-## 2025-10-17: Add shortcut Ctrl-O  for Options menu item
-## 2025-10-17: Bookmark color save pgadmin3opt.json
-## 2025-10-15: Press ESC close context help window (Linux)
-## 2025-10-08: fix html escape char
-## 2025-10-06: Fix issue #6
+### 2025-10-22: Translate message ctlNavigatePanel
+### 2025-10-20: fix bug Blocked_by_ProcessColor
+### 2025-10-17: Add shortcut Ctrl-O  for Options menu item
+### 2025-10-17: Bookmark color save pgadmin3opt.json
+### 2025-10-15: Press ESC close context help window (Linux)
+### 2025-10-08: fix html escape char
+### 2025-10-06: Fix issue #6
 Исправление issue #6. Чисто теоретическое. Проверить работу на 11 версии нет возможности.
 Добавлена некоторая поддержка 18 версии.
 Оптимизация для GTK.
 
-## 2025-10-03: PG18 support,  enfoced, virtual cols
-## 2025-10-03: GTK visual optimization
+### 2025-10-03: PG18 support,  enfoced, virtual cols
+### 2025-10-03: GTK visual optimization
 Исправления для GTK.
 Эксперементальная возможность кросскомпиляции для windows с  использованием
 mingw64.
 Скрипт генерации контекстной справки улучшен, добавлены функции с нестандартным описанием
 coalesce, case, pg_sleep и другие.
 
-## 2025-09-26: Add  description context help functions
-## 2025-09-24: Fast dlgTable for GTK. Fix errors.
-## 2025-09-22: Change color
-## 2025-09-17: Marking selected text with color by pressing Ctrl-B.
+### 2025-09-26: Add  description context help functions
+### 2025-09-24: Fast dlgTable for GTK. Fix errors.
+### 2025-09-22: Change color
+### 2025-09-17: Marking selected text with color by pressing Ctrl-B.
 Выделенный текст можно отметить цветом. Снятия выделения повторным нажатием.
 При нажатии без выделения текста, циклический переход к выделенному тексту ниже.
 
-## 2025-09-12: View change last timestamp for functions
+### 2025-09-12: View change last timestamp for functions
 Выводит время последнего изменения функции/процедуры, если включено track_commit_timestamp=on.
 
-## 2025-09-08: fix start db intervals.
+### 2025-09-08: fix start db intervals.
 В навигационной панели добавлены менее строгие условия поиска интервалов
 запуска БД. Добавлен вариант перезапуска инициированный postmaster.
 
@@ -625,16 +672,16 @@ Database=No
 SetPassword=No
 ;
 ```
-## 2025-08-25: fix show find mark.
+### 2025-08-25: fix show find mark.
 При отсутствии маркеров ошибок, маркеры поиска не отображались
 в навигационной панели.
 
-## 2025-08-19: Add hightlight event frmStatus
+### 2025-08-19: Add hightlight event frmStatus
 1. Добавлена подсветка клиентов c открытой транзакцией превышающей время idle_in_transaction_session_timeout.
    Цвет выбирается в настройках.
 2. Добавлен фильтр показывающий только строки с подсветкой.
 
-## 2025-08-18: Autocomplite, server status, publications
+### 2025-08-18: Autocomplite, server status, publications
 Добавлен контроль прав доступа на select для таблиц и представления
 при использовании автодополнения.
 Добавлен контроль доступа при получении информации о подписках.
@@ -642,46 +689,46 @@ SetPassword=No
 При получении логов в окне "Статус сервера" добавлена проверка наличия прав на используемые функции при получении файлы логов.
 Мелкие правки при работе с автодополнениями в окне запросов.
 
-## 2025-08-18: Optimization for VS2022
+### 2025-08-18: Optimization for VS2022
 Уборка в файлах проекта. Исправления в названиях каталогов.
 
-## 2025-08-14: fix publication
+### 2025-08-14: fix publication
 Исправлен вывод SQL команд создания публикаций.
 
-## 2025-08-14: fix crush autocomplite
+### 2025-08-14: fix crush autocomplite
 Исправлено падение после автозавершения после слова "create".
 
-## 2025-08-13: Fixes and improvements (fmrReport)
+### 2025-08-13: Fixes and improvements (fmrReport)
 1. Сортировка колонок на вкладках Статистика сохраняется по возможности.
 2. Узлы плана которые помечены как (never executed) не подсвечиваются.
 3. При построении плана всегда добавляется опция "SUMMARY on"
 4. Исправлено не корректное отображение зависимостей для таблиц из публикаций.
 5. В отчетах о статистике добавлена итоговая информация по таблицам отчета.
 
-## 2025-08-06: fix crush pgadmin3
+### 2025-08-06: fix crush pgadmin3
 Исправление ошибки открытия диалогов и немного описания.
 Повышение производительности Server Status.
 
 
-## 2025-08-06: fix crash pgadmin3
+### 2025-08-06: fix crash pgadmin3
 Исправлена ошибка которая стала появлятся после новых изменений.
 Ошибка вызвана особенностями работы диалоговых окон.
 
-## 2025-08-04: Perfomance Server Status window
+### 2025-08-04: Perfomance Server Status window
 Информация о блокирующих процессах теперь получается функцией pg_blocking_pids.
 Что более быстрый способ.
 Так же в статусной строке выводиться время получение информации о процессах БД.
 Время выводиться только для окна "Активность".
 
-## 2025-07-31: Extended hints
+### 2025-07-31: Extended hints
 В результатах запроса, нажатием правой кнопки мыши можно вызвать окно
 подсказки, с возможностью выделения содержимого и его копирования (Rbutton).
 
-## 2025-06-16: Using Pk to self-intersrc tables.
+### 2025-06-16: Using Pk to self-intersrc tables.
 Для автоподстановки PK используется для соединения таблиц самих с собой.
 
-## 2025-07-31: pgAdmin3.vcxproj
-## 2025-04-28: Visual optimization. Fix bugs.
+### 2025-07-31: pgAdmin3.vcxproj
+### 2025-04-28: Visual optimization. Fix bugs.
 1. На странице "Статистика" для таблиц улучшено выравнивание отображение больших чисел (Beautiful big number).
    Символ "R" заменён на двойную стрелку "⇒".
 2. На странице "Зависимости" корректно обрабатывается значения deptype равные S,P,e,x.
@@ -689,7 +736,7 @@ SetPassword=No
 3. Исправлена ошибка поиска зависимостей последовательностей (более строгое условие).
 4. Для Linux исправлена установка application_name.
 
-## 2025-04-16: fixed bugs in the Linux version and performance
+### 2025-04-16: fixed bugs in the Linux version and performance
 Исправлены пути к файлам для AWR отчетов и сохранения фильтров Log View.
 Исправлена падение при вызове "Script Recreate Cascade".
 Убрано повтороное назначение **Ctrl-G** для "View Filtered Rows" теперь вызов происходит по **Ctrl-F**.
@@ -697,18 +744,18 @@ SetPassword=No
 Для повышение производительности отключен поиск не парной скобки для текстов запросов
 более 100000 байт.
 
-## 2025-04-16: fix attstattarget value
+### 2025-04-16: fix attstattarget value
 В 17 версии изменили значение по умолчанию для attstattarget.
 
-## 2025-03-27: Optimization for linux.
+### 2025-03-27: Optimization for linux.
 Исправлено форматирование и учтены особенности GTK для корректного
 отображения Log View.
 
-## 2025-03-27: Added the Ctrl modifier to the "Copy table html format" command.
+### 2025-03-27: Added the Ctrl modifier to the "Copy table html format" command.
 При выборе команды "Copy table html format" и удержании **Ctrl**
 будет выполнено копирование только строк результата запроса.
 
-## 2025-03-20: Graph query explain optimization
+### 2025-03-20: Graph query explain optimization
 Добавлено два узла Partial GroupAggregate, Finalize GroupAggregate.
 Добавлено наглядное представление Memoize.
 Добавлена поддержка колеса мыши.
@@ -716,20 +763,20 @@ SetPassword=No
 артефактов при прокрутке экрана.
 
 
-## 2025-03-18: Linux optimization for frmStatus.
+### 2025-03-18: Linux optimization for frmStatus.
 В окне "Status Server" снижено мерцание при обновлении строк активных процессов.
 Была добавлена фиктивная строка в конец списка процессов при использовании фильтра.
 В ctlSQLGrid добавлена проверка на совпадение цветов сетки и заголовков строк.
 
-## 2025-03-17: Converting servers information to a Linux file format.
+### 2025-03-17: Converting servers information to a Linux file format.
 Для переноса информации на линукс версию можно выполнить pgAdmin3.exe с
 ключем -el. В логе будет информацио а о файле где была сохранена информация.
 
-## 2025-03-05: Added the ability to collect N recent logs in LogView
+### 2025-03-05: Added the ability to collect N recent logs in LogView
 В Log view добавлено поле с числом последних файлов логов которые нужно загрузить.
 Логи будут загружаться после нажатия Enter.
 
-## 2025-02-10: Added new features autocomplite.
+### 2025-02-10: Added new features autocomplite.
 1. Добавлена подстановка соединений таблиц(и представлений) по их FK.
    Подстановка работает в двух вариантах:
    1.1 После ключевого слова ON:самая правая таблица соединяется с любой левой.
@@ -738,38 +785,38 @@ SetPassword=No
    Представления можно соединить только если поле представления является полем таблицы.
 3. Стандартное автодополнение теперь выдаёт список таблиц и представление после JOIN.
 
-## 2025-02-05: Displaying the "Cluster" property of the primary key.
+### 2025-02-05: Displaying the "Cluster" property of the primary key.
 Исправлено отображение признака кластеризации у первичного ключа.
 
-## 2025-01-20: View tab simbol as arrow.
+### 2025-01-20: View tab simbol as arrow.
 Если в результатах запроса есть символ \t то он отображается как стрелка.
 
-## 2024-12-27: fix incorrect view autovacuum_vacuum_threshold field
+### 2024-12-27: fix incorrect view autovacuum_vacuum_threshold field
 При индивидуальной настройки автовакуума, некорректно отображались поля и
 изменения.
 
-## 2024-12-27: Add view MAINTAIN privilege
+### 2024-12-27: Add view MAINTAIN privilege
 Добавлена поддержка отображения новой привелегии MAINTAIN.
 
-## 2024-12-26: fix frmStatus freeze
+### 2024-12-26: fix frmStatus freeze
 При закрытии одного из окон frmStatus приложение зависало.
 
-## 2025-01-04: Fixed the background of the line title where the cursor is located.
+### 2025-01-04: Fixed the background of the line title where the cursor is located.
 Изменение фона заголовка строки с курсором более корректное.
 
-## 2025-01-04: Added rule "subroutine_reference" for PCRE editor.
+### 2025-01-04: Added rule "subroutine_reference" for PCRE editor.
 Подсветка синтаксиса добавлена для этого правила PCRE.
 
-## 2024-12-24: Add Align option "Remove multi spaces".
+### 2024-12-24: Add Align option "Remove multi spaces".
 Добавлена опция заменяющая несколько пробелов на один.
 
-## 2024-12-20: fix error position query, change view text cursor position.
+### 2024-12-20: fix error position query, change view text cursor position.
 Учтены символы UNICODE при определении позиции ошибки в запросе.
 Если информация о позиции курсора превышает 24 символа то используется компактный вид,
 без учёта языка интерфейса.
 Последний элемент ("Ch") в позиции курсора изменён на код символа находящегося справа от курсора.
 
-## 2024-12-19: fix Align command for unlosed literal
+### 2024-12-19: fix Align command for unlosed literal
 Не закрытые литералы теперь будут закрываться переводом строк.
 Например:
 ```
@@ -784,7 +831,7 @@ SetPassword=No
 ('2023-12-19 10:42:00','delEntity'         ,null,'%' ,'info','n
 ```
 
-## 2024-12-17: New features of the Query Editor
+### 2024-12-17: New features of the Query Editor
 1. Добавлена возможность быстрой подстановки слов на латинице по нажатию
    **Alt+RIGHT**. Возможность включается настройкой "Use word hints".
    Список слов составляется при загрузке запроса и по мере ввода новых слов.
@@ -796,30 +843,30 @@ SetPassword=No
    Возможность включается настройкой "Replace variables in a query".
    Выделить правой кнопкой выполненный запрос не получиться т.к. текст выполненного запроса и текст в редакторе будет отличаться.
 
-## 2024-12-09: New features UI query tools.
+### 2024-12-09: New features UI query tools.
 1. Добавлена подсветка строки с курсором. В настройках можно выбрать цвет фона.
 2. Можно указать ширину курсора для раскладки отличной от 0x409 "En" (только Windows).
 3. Исправлена проблема с выделением найденного UNICODE текста.
 
-## 2024-12-09: fix autocomplite bug
+### 2024-12-09: fix autocomplite bug
 При некорректном запросе иногда происходило зависание приложения.
 
-## 2024-12-06: UI navigate panel
+### 2024-12-06: UI navigate panel
 В навигационной панели интервал запуска БД (от старта до готовности принимать подключения)
 обозначается вертикальной цветной полоской.
 Цвет указывается в json в параметре "startdbcolor".Если его там нет, добавьте его руками.
 
-## 2024-12-06: fix UI autocomplite
+### 2024-12-06: fix UI autocomplite
 Изменён порядок колонок при подстановке alias.* на порядок
  указанный при создании таблицы.
 
-## 2024-11-14: Save filter frmGridEditor
+### 2024-11-14: Save filter frmGridEditor
 При открытии таблицы на редактирование с фильтром, значение заданного
 фильтра сохраняется в pgadmin3opt.json.
 Мелкие правки dlgTransformText
 
-## 2024-11-19: Update version support PG. fix issue #50
-## 2024-11-12: New features TransformText.
+### 2024-11-19: Update version support PG. fix issue #50
+### 2024-11-12: New features TransformText.
 В строке замены добавлены следующие возможности:
 1. Добавлена подсветка групп.
    Только цвета заданные в настройке "colorGroup" . 13 цветов по умолчанию.
@@ -839,43 +886,43 @@ SetPassword=No
    Переводы строк при замене игнорируются.
    Если нужно добавить перевод строк в текст замены нужно явно указать \n\r.
 
-## 2024-11-08: View grants for foreign tables.
+### 2024-11-08: View grants for foreign tables.
 Не отображались права для сторонних таблиц
 
-## 2024-11-11: fix issue #49 part 2
+### 2024-11-11: fix issue #49 part 2
 Исправление исправления.
 
-## 2024-11-10: fix issue #49
+### 2024-11-10: fix issue #49
 Такое поведение возможно на 10,11,12 версиях.
 Я убрал возможность просмотра xmin реплик для этих версий.
 
-## 2024-10-25: Grants all db
+### 2024-10-25: Grants all db
 Гранты для пользователя теперь отображаются для всех открытых БД.
 
-## 2024-10-25: Optimization
+### 2024-10-25: Optimization
 Оптимизация TopActivity.
 
-## 2024-10-11: fix issue #48
+### 2024-10-11: fix issue #48
 При обработке заголовка файла бекапа, не все данные обрабатывались правильно.
 Мелкие исправления в dlgTransformText.
 
-## 2024-10-09: fix frmRestore
-## 2024-10-08: fix issue #47
+### 2024-10-09: fix frmRestore
+### 2024-10-08: fix issue #47
 1. Добавлена проверка пустого имени файла перед удалением (frmRestore).
 2. Проблема в неверном втором аргументе функции pg_get_expr.
 При наличии сложного DEFUALT выражения для колонки выводилось ошибка при выполнении функции.
 Исправлено в dlgSearchObject, frmEditGrid, ShowDependencies.
 
-## 2024-10-07: Optimize topactivity widget
+### 2024-10-07: Optimize topactivity widget
 Оптимизация CPU нагрузки, мелкие ошибки.
 
-## 2024-10-03: Support PG17
+### 2024-10-03: Support PG17
 attstattarget, add login element (create event trigger)
 
-## 2024-10-01: fix linux compile error
-## 2024-09-29: Add CPU wait
-## 2024-09-29: fix file
-## 2024-09-24: Added collection of waiting events.
+### 2024-10-01: fix linux compile error
+### 2024-09-29: Add CPU wait
+### 2024-09-29: fix file
+### 2024-09-24: Added collection of waiting events.
 В окне "Status server" при получении информации о процессах добавлен сбор событий ожидания.
 Должно быть установлено расширение pg_wait_sampling.
 И правильно настроены параметры. Для примера минимальный размер буфера:
@@ -887,7 +934,7 @@ pg_wait_sampling.history_period=10
 События ожидания можно сохранить в текстовый файл.
 В настройках pgadmin3opt.json можно выбрать цвета для отдельных событий или отключить сбор.
 
-## 2024-09-23: Add navigate panel log file.
+### 2024-09-23: Add navigate panel log file.
 В окне "Server Status" при просмотре лога сервера добавлена навигационная панель c маркерами.
 Список доступных команд отображается по **F1**.
 Работает только с CSV логами.
@@ -895,72 +942,72 @@ pg_wait_sampling.history_period=10
 При закрытии основной программы может иногда потребоваться два нажания на кнопку "Закрыть" (при медленных соединениях и больших логах).
 Это особенность реализации завершения потока LogReader.
 
-## 2024-09-23: Add new dialog Transformation text.
+### 2024-09-23: Add new dialog Transformation text.
 В окне редактирования запросов можно вызвать диалог транформации текста (**Ctrl+M**).
 Где при помощи PCRE регулярных выражений можно изменить выделенный текст или текст из буфера обмена.
 Регулярные выражения имеют подсветку синтаксиса и подсветку найденных групп.
 В выражении замены можно ссылаться на найденные группы при помощи \g{номер_группы}
 Настройки цветов можно редактировать в pgadmin3opt.json файле.
 
-## 2024-09-23: New control ctlStyledText with RegExp hightligth
+### 2024-09-23: New control ctlStyledText with RegExp hightligth
 Добавлен элемент для редактирования RegExp выражений с подсветкой.
 По цвету сделан похожим на regex101.com.
 Для разбора выражений использовалась грамматика
 https://github.com/bkiers/pcre-parser/blob/master/src/main/antlr4/nl/bigo/pcreparser/PCREParser.g4
 
-## 2024-09-23: New control ctlTreeJSON
+### 2024-09-23: New control ctlTreeJSON
 Добавлен новый элемент для редактирования JSON файла pgadmin3opt.json
 Этот файл используется для хранения настроек навигационной панели лог файла(ctlNavigatePanel),
 хранения конфигураций диалога трансформации текста(dlgTransformText), настройки событий ожиданий(WaitSample).
 
-## 2024-09-23: fix bug formatting with bindarg parameters
+### 2024-09-23: fix bug formatting with bindarg parameters
 Запросы с параметрами ($1) некорректно обрабатывались что могло приводить к аварийному завершению программы.
 
-## 2024-08-29: Fix issue#44. Show View Query editor on linux.
+### 2024-08-29: Fix issue#44. Show View Query editor on linux.
 Исправлено расположение окон в перспективе редактора запросов для linux.
 
-## 2024-08-05: fix crash app autocomplite
+### 2024-08-05: fix crash app autocomplite
 Приложение падало при вызове autocomplite если в тексте sql встречался
 оператор is dictinct from.
 В определении имён не учитывались вложенные скобки, что приводило
 к неполному перечню полей в списке autocomplite.
 
-## 2024-08-05: Add json support for linux.
+### 2024-08-05: Add json support for linux.
 Добавлена поддержка json формата для Linux.
 sysSetting поддерживает чтение/запись в файл расширенных настроек pgadmin3opt.json.
 
-## 2024-08-06: Non-superusers are allowed to use the functions pg_conf_load_time,pg_postmaster_start_time
+### 2024-08-06: Non-superusers are allowed to use the functions pg_conf_load_time,pg_postmaster_start_time
 Отключены проверки на суперпользователя для некоторых функций.
 
-## 2024-06-19: fix issue #41
+### 2024-06-19: fix issue #41
 При сбросе флага "Auto save query text" отключалась возможность автоматического сохранения запросов.
 Но ранее сохраненные запросы не удалялись.
 Теперь эти запросы будут удалены при первом же открытии "Редактора SQL".
 
-## 2024-06-19: fix issue #42
+### 2024-06-19: fix issue #42
 Добавлена в "Вид по умолчанию" кнопка режима транзакций (T|A).
 Раньше её там не было, что приводило к неадекватным размерам в не которых случаях.
 Нажатие **Ctrl+Alt+V** приведёт всё в норму.
 
-## 2024-06-19: fix issue #43
+### 2024-06-19: fix issue #43
 Потерялся event.Skip() в обработчике ctlSQLGrid::OnCellRightClick
 из-за чего нажатие правой кнопки на ячейке не доходило вышестоящим обработчикам.
 
-## 2024-06-17: Add modificator Ctrl for popup menu "List columns header"
+### 2024-06-17: Add modificator Ctrl for popup menu "List columns header"
 При нажатом **Ctrl** в буфер обмена копируются только имена столбцов с разделителем ",".
 
-## 2024-06-17: Add table properties "Create table timestamp"
+### 2024-06-17: Add table properties "Create table timestamp"
 Для серверов с установленным track_commit_timestamp=on у таблиц можно определить время создания.
 Это время равно значению запроса:
 `select pg_xact_commit_timestamp(xmin) create_ts from pg_type where typrelid=$oid_table`.
 Если это время определить не удалось то "Create table timestamp" не отображается.
 
-## 2024-06-17: Add sql formatter
+### 2024-06-17: Add sql formatter
 Добавлено встроенное форматирование Sql запросов.
 Доработано автодополнение колонок.
 Добавлено раскрытие <alias>.* в список колонок.
 
-## 2024-05-06: Add context help for PG functions.
+### 2024-05-06: Add context help for PG functions.
 Добавлен вызов контекстной помощи по именам функций Postgresql.
 Для этого требуется:
 1. в параметрах указать путь к html файлам документации.
@@ -978,140 +1025,140 @@ sysSetting поддерживает чтение/запись в файл рас
 
 Для отображения помощи используется  wxHtmlWindow https://docs.wxwidgets.org/latest/overview_html.html.
 
-## 2024-02-05: Change encoding from CP1251 to UTF-8
-## 2024-02-04: add kwlist.h for linux
-## 2024-02-03: Minimal version of wxWidgets set in CMake
-## 2024-02-03: Fix arguments to pgServer constructor call
-## 2024-02-03: Fix destructor definition
-## 2024-02-03: Fix headers to support Linux
-## 2024-02-03: CMake flags to support Linux
-## 2024-02-04: replacee LnCr in frmAwr.cpp
-## 2024-02-02: fixed a few bugs and a few improvements.
+### 2024-02-05: Change encoding from CP1251 to UTF-8
+### 2024-02-04: add kwlist.h for linux
+### 2024-02-03: Minimal version of wxWidgets set in CMake
+### 2024-02-03: Fix arguments to pgServer constructor call
+### 2024-02-03: Fix destructor definition
+### 2024-02-03: Fix headers to support Linux
+### 2024-02-03: CMake flags to support Linux
+### 2024-02-04: replacee LnCr in frmAwr.cpp
+### 2024-02-02: fixed a few bugs and a few improvements.
 Обновлено описание и исполняемый файл.
 Описание изменений в commits.
 
-## 2024-02-02: fix lost focus SQL editor.
+### 2024-02-02: fix lost focus SQL editor.
 При потере фокуса окна редактора запроса,
 вернуть его можно было только нажав на окно левой кнопкой мыши.
 Теперь это можно сделать нажав на имя закладки.
 
-## 2024-02-01: fix autoselect query
+### 2024-02-01: fix autoselect query
 Если в многострочном комментарии встречался символ ";"
 то он ошибочно считался окончанием запроса.
 
-## 2024-02-01: Fixed the sequence property is_cycled
+### 2024-02-01: Fixed the sequence property is_cycled
 Начиная с 10 версии это свойство ошибочно всегда определялось как false.
 
-## 2024-01-11: Add action Compare 2 Cells
+### 2024-01-11: Add action Compare 2 Cells
 При помощи команды можно сравнить 2 не пустые ячейки в результах запроса.
 
-## 2023-12-11: Show column parameters for the FDW table.
-## 2023-10-27: update Readme.md
-## 2023-10-27: Add AWR report
+### 2023-12-11: Show column parameters for the FDW table.
+### 2023-10-27: update Readme.md
+### 2023-10-27: Add AWR report
 Если установлено расширение pgpro_pwr в схему profile, то появляется возможность получить для базы данных AWR отчет.
 Отчет формируется функциями get_report и get_diffreport.
 
-## 2023-10-25: fix #38. Add options "Quick jump to the root node" and "Auto save query text".
+### 2023-10-25: fix #38. Add options "Quick jump to the root node" and "Auto save query text".
 Первая предназначена для отключения/включения быстрого перемещения к корневым узлам.
 Вторая для отключения/включения автоматического сохранения закладок в Query Tool.
 После отключения авто сохранения возможно понадобиться вручную очистить каталог
 с сохранёнными закладками %APPDATA%\postgresql\recovery
 
-## 2023-10-25: Small changes COPY_TABLEHTML
+### 2023-10-25: Small changes COPY_TABLEHTML
 Добавил возможность выбирать отдельные строки для копирования.
 
-## 2023-10-13: fix #37 Add extend connect string.
+### 2023-10-13: fix #37 Add extend connect string.
 Добавлена возможность добавлять дополнительные опции в параметры соединения.
 
-## 2023-10-13: Add extend options in connstr.
+### 2023-10-13: Add extend options in connstr.
 Для сервера можно добавить дополнительные параметры подключения.
 В настройка сервера на закладке "Дополнительно" в поле "Connect str"
 
-## 2023-10-13: Add ellipsize in gridcell
+### 2023-10-13: Add ellipsize in gridcell
 Для значений, которые не могут быть отображены полностью в ячейке результата,
 то справа или слева выводиться "..."
 
-## 2023-10-03: fix linux compile
-## 2023-09-27: fix issue#36
+### 2023-10-03: fix linux compile
+### 2023-09-27: fix issue#36
 Исправлена проблема видимости кнопки "завершение процесс клиента" в окне Состояние сервера.
 Проблема связан с изменнием числа аргументов у функции pg_terminate_backend
 
-## 2023-09-27: fix error convert type text
-## 2023-09-27: Change version string
+### 2023-09-27: fix error convert type text
+### 2023-09-27: Change version string
 Исправлена отображаемая в диалоге версия.
 Мелкие исправления оформления.
 
-## 2023-09-27: Revert "PG16 support privilege MAINTAIN"
+### 2023-09-27: Revert "PG16 support privilege MAINTAIN"
 This reverts commit bcb87cf9e41c87efdcbeb7c80389d9fee35d29b8.
 
-## 2023-09-27: frmLog change. The database survey has been moved to a separate thread.
+### 2023-09-27: frmLog change. The database survey has been moved to a separate thread.
 Опрос баз данных перенесен из GUI потока в отдельный поток.
 
-## 2023-09-07: Change LogView indication
+### 2023-09-07: Change LogView indication
 Имена недоступных серверов подсвечиваются.
 Информационное окно об отсутствии соединения не показывается.
 Таймаут между попытками установки соединения сокращен до 2 минут.
 
-## 2023-09-07: Add ShortCut functional
+### 2023-09-07: Add ShortCut functional
 Появилась возможность быстрой навигации по дереву объектов.
 При нажатии **F4** появляется список с 50 последними элементами выбранными в дереве.
 
-## 2023-09-25: Fix issue#35
+### 2023-09-25: Fix issue#35
 Исправление определения присутствующих языков.
 
-## 2023-08-15: STORAGE clause support, COMPRESS clause support
-## 2023-08-04: Beautiful big numbers
+### 2023-08-15: STORAGE clause support, COMPRESS clause support
+### 2023-08-04: Beautiful big numbers
 Можно включить более понятное отображение больших чисел на странице Статистика.
 Для этого установите флажок "Beautiful big numbers on the statistics page"
 
 Небольшие исправления в диалоге выбора соединения (dlgSelectConnection.cpp)
 
-## 2023-08-02: Fix changes in the PCRE (wxRegEx template)
+### 2023-08-02: Fix changes in the PCRE (wxRegEx template)
 Были проблемы при выполнении pgScript.
 
-## 2023-08-02: PG16 support inherit_option, set_option
+### 2023-08-02: PG16 support inherit_option, set_option
 Добавлена поддержка новых опций для членов ролей.
 
-## 2023-08-02: PG16 support privilege MAINTAIN
+### 2023-08-02: PG16 support privilege MAINTAIN
 Добавлена поддержка отображения новой привелегии.
 
-## 2023-08-02: Add new option "Hide query history"
+### 2023-08-02: Add new option "Hide query history"
 Добавлена возможность скрыть строку с историей запросов.
 История зпросов будет сохраняться вне зависимости от это опции.
 
-## 2023-07-26: fix GDI leaks
-## 2023-06-29: Add OnFatalException method
+### 2023-07-26: fix GDI leaks
+### 2023-06-29: Add OnFatalException method
 Добавил обработку аварийных завершений.
 Мелкие правки.
 
-## 2023-06-28: Performance improvement and usability
+### 2023-06-28: Performance improvement and usability
 Повышение производительности вывода результатов запроса и дерева объектов.
 Мелкие исправления.
 
-## 2023-06-27: Add support DPI part 2
+### 2023-06-27: Add support DPI part 2
 Добавлены svg файлы иконок. и другие улучшения.
 
-## 2023-06-29: config MSVS
-## 2023-06-25: Add support High DPI
+### 2023-06-29: config MSVS
+### 2023-06-25: Add support High DPI
 Выполнен переход на wxWidgets 3.2 для улучшения поддержки DPI.
 Также обновлена среда разработки до Microsoft Visual Studio 2022.
 
-## 2023-06-08: Сorrect TextToHtml
+### 2023-06-08: Сorrect TextToHtml
 Некоторые символы unicode неправильно обрабатывались.
 
-## 2023-05-31: Search only servers.
+### 2023-05-31: Search only servers.
 Если текущий выделенный элемент является сервером, то при наборе символов
 поиск по дереву будет проводиться только на уровне серверов.
 
 Изменния смотри в commits
 
-## 2023-05-23: Draw DBname in browse
+### 2023-05-23: Draw DBname in browse
 Для улучшения наглядности и понимания в какой БД мы находимся в строке
 браузера объектов при выделении элемента будет напротив отображаться имя
 БД. Это поведение можно отключить в настройках.
 
-## 2023-05-23: Correct query counter
-## 2023-05-22: List alignment algorithm
+### 2023-05-23: Correct query counter
+### 2023-05-22: List alignment algorithm
 Добавлен в проект выравниватель списков IN и других упорядоченных данных.
 Вызывается комбинацией **Ctrl+Shift+A** (если внешний выравниватель не задан).
 Интегрировать код выравнивателя пришлось из-за бага wxWidgets.
@@ -1138,92 +1185,92 @@ int align = LEFT;
 int maxlen = 0;
 wxString it;
 
-## 2023-05-02: Add alignment command
+### 2023-05-02: Add alignment command
 Добавлена возможность запуска внешней команды для выравнивания текста
 по разделителям. 
 
-## 2023-02-08: Additional information from pg_replication_slots
+### 2023-02-08: Additional information from pg_replication_slots
 В поле backend_xmin для процесса backend_type='autovacuum launcher'
 добавлен вывод значения `select min(xmin::text::bigint) from pg_replication_slots`
 
-## 2023-02-14: fix for linix
-## 2023-02-14: Support compile under Linux by disabling wxJSON and GIT stuff
-## 2023-02-02: Add action CopyTableToHtml
+### 2023-02-14: fix for linix
+### 2023-02-14: Support compile under Linux by disabling wxJSON and GIT stuff
+### 2023-02-02: Add action CopyTableToHtml
 Копирование результатов запроса в буфер обмена в виде таблицы html.
 
-## 2023-01-30: for linux compile
+### 2023-01-30: for linux compile
 Исправления для компиляции под linux (ubunta)
 
-## 2023-01-26: fix bug
+### 2023-01-26: fix bug
 Устранено падение по нажатию **F4** возникающее при определенных пользовательских настройках
 
-## 2023-01-21: Highlighting the header row with the cursor.
+### 2023-01-21: Highlighting the header row with the cursor.
 Заголовок строки в результатах запроса подсвечивается, если в строке находиться курсор.
 
-## 2023-01-12: Double the single quote.
+### 2023-01-12: Double the single quote.
 Добавлена команда удвоения одиночной кавычки в выделенном тексте и обратная команда.
 
-## 2022-12-29: fix GitLab connect error.
+### 2022-12-29: fix GitLab connect error.
 Окно информации при ошибке соединения с GitLab.
 
-## 2022-12-19: Save the operation position to the maintenance window
+### 2022-12-19: Save the operation position to the maintenance window
 Выбранная операция сохраняется,
 в вывод сообщений добавлен текст SQL инструкций.
 
-## 2022-11-25: View count line in Activity window
+### 2022-11-25: View count line in Activity window
 Число строк в окне Активность отображается в заголовке
 
-## 2022-12-12: Statistic page correct
+### 2022-12-12: Statistic page correct
 Исправлено отображение поля n_live_tup
 
-## 2022-11-24: fix error PG15 version
+### 2022-11-24: fix error PG15 version
 В 15 версии команда `select '1'::"char"||'2'::text`
 Приводит к ошибке. Исправлены найденные ошибки такого типа.
 
-## 2022-11-24: Change Title windows Server ststus,Query
+### 2022-11-24: Change Title windows Server ststus,Query
 Убраны не важные слова из заголовка.
 
-## 2022-11-24: Support GitLab experimental
+### 2022-11-24: Support GitLab experimental
 Добавлена возможность сохранять SQL представления объектов в GitLab
 Описание в Readme.MD
 
-## 2022-11-24: Change icon Server Status window.
-## 2022-11-23: show colour rows statistics page
+### 2022-11-24: Change icon Server Status window.
+### 2022-11-23: show colour rows statistics page
 Строки в статистике по таблицам подсвечиваются, если по таблицам нет статистики оптимизатора.
 Поле о числе строк в таблице перенесоно ближе к началу.
 
-## 2022-11-19: fix version info
+### 2022-11-19: fix version info
 Убрано предупреждение о не поддерживаемой версии.
 
-## 2022-11-06: Support PG15 issues#31
+### 2022-11-06: Support PG15 issues#31
 Добавлена частичная поддержка возможностей PG15:
 - поддержка списка колонок при задании FK
 - поддержка NULLS NOT DISTINCT для уникальных индексов
 
-## 2022-10-15: fix issues #30
+### 2022-10-15: fix issues #30
 Это была непонятная реализация самих разработчиков.
 Там есть и другие не понятные для меня решения, к примеру
 нет явного указания ENABLE [ REPLICA | ALWAYS ].
 
-## 2022-08-19: Correct ALTER DEFAULT PRIVILEGES section
+### 2022-08-19: Correct ALTER DEFAULT PRIVILEGES section
 Не учитавалось что ALTER DEFAULT PRIVILEGES может быть назначено для
 нескольких пользователей и выводилось только одно значение
 
-## 2022-08-12: Replace bind parameters in Log view
+### 2022-08-12: Replace bind parameters in Log view
 При установленном параметре log_parameter_max_length_on_error
 есть возможность подставлять в запросы вместо $N значения параметров.
 В Log View так и происходит. Значения параметров выбираются из поля context.
 
-## 2022-08-12: Add help message for Log view
+### 2022-08-12: Add help message for Log view
 Добавил кнопку Help - с описанием возможностей.
 Но только на русском языке.
 
-## 2022-07-25: Reload script file after modification
+### 2022-07-25: Reload script file after modification
 Если загруженный на вкладку sql файл был изменён вне pgAdmin3,
 то при смене закладок или попытке выполнения
 будет предложено загрузить файл заново.
 
-## 2022-07-15: Highlight SQL Result chars sequences
+### 2022-07-15: Highlight SQL Result chars sequences
 При вводе с клавиатуры последовательности символов в окне SQL Result,
  он будет подсвечена во всех колонках.
 Нажатие Esc отменяет режим подсветки.
@@ -1231,10 +1278,10 @@ wxString it;
 Нажатие Backspace удаляет последний символ.
 Для удобства введенные символы отображаются в заголовке колонки.
 
-## 2022-07-13: Add "Copy list columns header" context command SQL Result
+### 2022-07-13: Add "Copy list columns header" context command SQL Result
 Добавлено копирование в буфер обмена списка имен и типов колонок результата запроса.
 
-## 2022-05-27: Add Bar plot
+### 2022-05-27: Add Bar plot
 Добавлена отрисовка столбчатой диаграммы. Формат данных:
 L  | Y
 ------
@@ -1242,7 +1289,7 @@ L1 | Y1
 L2 | Y2
 ...
 
-## 2022-05-25: Add draw plot XY series
+### 2022-05-25: Add draw plot XY series
 Для результатов запроса, можно построить график по трём колонкам:
 L  | X | Y
 ----------
@@ -1268,29 +1315,29 @@ Y - числа
 Серии данных располагаются вертикально. Легенда это заголовок столбца
 Колонка Х общая для всех серий.
 
-## 2022-05-23: fix bug query tool size
-## 2022-05-13: autosize column CFS
-## 2022-05-11: fix issues#26
+### 2022-05-23: fix bug query tool size
+### 2022-05-13: autosize column CFS
+### 2022-05-11: fix issues#26
 Добавил автоподбор ширины колонки по содержимому ячейки.
 
-## 2022-04-28: fix issues#24
-## 2022-04-28: correct merge
-## 2022-04-27: add short key for run frmStatus
-## 2022-04-27: fix default size frmStatus
+### 2022-04-28: fix issues#24
+### 2022-04-28: correct merge
+### 2022-04-27: add short key for run frmStatus
+### 2022-04-27: fix default size frmStatus
 Исправление размеров по умолчанию frmStatus для Windows
 
-## 2022-04-27: fix without patch
+### 2022-04-27: fix without patch
 Приведение в соответствие с github
 Патч делать не нужно.
 
-## 2022-04-21: Merge win/linux code
+### 2022-04-21: Merge win/linux code
 Объединение кода с поддержкой linux версии.
 
-## 2022-04-16: set 50 chars for format copy command
-## 2022-03-25: Correct highlight select text copy
+### 2022-04-16: set 50 chars for format copy command
+### 2022-03-25: Correct highlight select text copy
 Копировать подсвеченный SQL текст можно везде где он выводиться по нажатию **Ctrl+C**
 
-## 2022-03-21: fix issues#23. Add query tool new hot keys.
+### 2022-03-21: fix issues#23. Add query tool new hot keys.
 Можно добавить к пунктам меню дополнительные горячие клавиши.
 Всего определено 15 пунктов меню для которых это можно сделать
 MNU_COMMENT_TEXT,MNU_DOCOMMIT,MNU_DOROLLBACK,MNU_EXECFILE,
@@ -1308,48 +1355,48 @@ MNU_UNCOMMENT_TEXT Alt+K
 MNU_EXECFILE F9
 MNU_EXECPGS F6
 
-## 2022-03-21: FrmLog change. In detail mode, the window does not close, but switches to group mode.
-## 2022-03-21: FrmLog change.
+### 2022-03-21: FrmLog change. In detail mode, the window does not close, but switches to group mode.
+### 2022-03-21: FrmLog change.
 In detail mode, the window does not close, but switches to group mode.
 
-## 2022-03-04: fix issue#22
+### 2022-03-04: fix issue#22
 Так же исправление падения при открытии инструмента запросов из командной строки.
 
-## 2022-03-04: fix issue#22
+### 2022-03-04: fix issue#22
 Так же исправление падения при открытии инструмента запросов из командной строки.
 
-## 2022-02-11: Support in defining a FUNCTION keyword trigger
+### 2022-02-11: Support in defining a FUNCTION keyword trigger
 Начиная с 11 версии вместо PROCEDURE будет использовано FUNCTION.
 
-## 2022-02-11: Support in defining a FUNCTION keyword trigger
+### 2022-02-11: Support in defining a FUNCTION keyword trigger
 Начиная с 11 версии вместо PROCEDURE будет использовано FUNCTION.
 
-## 2022-01-24: fix issue #21.
+### 2022-01-24: fix issue #21.
 Убрано предупреждение для 14 версии.
 
-## 2022-01-24: Version PG14 fix.
+### 2022-01-24: Version PG14 fix.
 Поддерживаемая версия поднята до 14-ой.
 Мелкие правки.
 
-## 2022-01-24: Version PG14 fix.
+### 2022-01-24: Version PG14 fix.
 Поддерживаемая версия поднята до 14-ой.
 Мелкие правки.
 
-## 2022-01-14: Add write file autoSaveConfig.reg, small optimization frmLog
+### 2022-01-14: Add write file autoSaveConfig.reg, small optimization frmLog
 При выходе из приложения конфигурация сохраняется в файле autoSaveConfig.reg.
 Уплотнение вывода информации в frmLog. Если поле Detail пустое то туда помещается содержимое Context.
 Шаблон для письма переименован в mail.template.
 
-## 2022-01-13: fix bug position active tab
+### 2022-01-13: fix bug position active tab
 Утранена ошибка позиционирования закладок при автовосстановлении.
 
-## 2022-01-18: update readme.md
-## 2022-01-14: Add write file autoSaveConfig.reg, small optimization frmLog
+### 2022-01-18: update readme.md
+### 2022-01-14: Add write file autoSaveConfig.reg, small optimization frmLog
 При выходе из приложения конфигурация сохраняется в файле autoSaveConfig.reg.
 Уплотнение вывода информации в frmLog. Если поле Detail пустое то туда помещается содержимое Context.
 Шаблон для письма переименован в mail.template.
 
-## 2021-12-09: change pgConn, frmLog, frmStatus
+### 2021-12-09: change pgConn, frmLog, frmStatus
 При возникновении ошибки "server closed the connection unexpectedly"
 сообщение об этом не выводиться на экран. Т.к. происходило падение pgAdmin3
 В frmLog добавлены сохраняемые пользовательские фильтры.
@@ -1357,28 +1404,28 @@ In detail mode, the window does not close, but switches to group mode.
 В окне "Status Server" устанавливается парамер "SET statement_timeout=10000;"
 чтобы избежать зависания функции pg_query_state.
 
-## 2022-01-13: fix bug position active tab
+### 2022-01-13: fix bug position active tab
 Утранена ошибка позиционирования закладок при автовосстановлении.
 
-## 2022-01-12: bug fix view statistics pg_proscheduler
-## 2021-10-23: Add new feature frmLog
+### 2022-01-12: bug fix view statistics pg_proscheduler
+### 2021-10-23: Add new feature frmLog
 Для окна состояние "Server status" выполняется: set log_min_messages = FATAL
 Для Log view добавлена: подержка быстрой навигации: **Shift+UP**,**Alt+DOWN**
 переход на запись с тем же sql_state,
 **Alt+UP**,**Alt+DOWN** - переход на запись с другим sql_state
 Добавлена колонка Server - сервер с которого получен лог.
 
-## 2021-10-12: Add view info pg_stat_progress_*
+### 2021-10-12: Add view info pg_stat_progress_*
 В окне "Состояние сервера" в поле "Имя приложения" отображается информация из
 pg_stat_progress_*. Только начиная с PG13.
 
-## 2021-10-05: Add bt_index_check call frmMaintenance, bug fix issues #19.
+### 2021-10-05: Add bt_index_check call frmMaintenance, bug fix issues #19.
 добавлен вызов функции bt_index_check в форме обслуживания.
 Рассширение amcheck должно быть установлено.
 Исправлена ошибка #19. После изменения вывода bytea на hex формат,
 перестали распознаваться аргументы триггера.
 
-## 2021-10-01: Move node "Jobs" in node Database
+### 2021-10-01: Move node "Jobs" in node Database
 Задания для pgpro_scheduler теперь отображаются в узле Database
 Так же вывод лога работы Job в закладке "Статистика" изменён.
 Выводятся строки лога таким запросом:
@@ -1388,170 +1435,170 @@ select log_time,detail critical,message,hint
                  and l.log_time<'$Finised'::timestamp + interval '1min'
                  and detail::int>=0
 ```
-## 2021-10-01: Do not use "Enable ASUTP style" for "Log View.."
+### 2021-10-01: Do not use "Enable ASUTP style" for "Log View.."
 Отключил проверку при чтении файлов настройки "Enable ASUTP style"
 
-## 2021-09-29: check the sequence of dates.
+### 2021-09-29: check the sequence of dates.
 Добавлена проверка последовательности дат в результате запроса.
 По первым двум строкам вычисляется разница дат и все последующие строки
 должны иметь такую же разницу в датах.
 Строки нарушающие это правило отмечаются желтым цветом.
 
-## 2021-09-15: add README_EN.md #18
+### 2021-09-15: add README_EN.md #18
 Добавлен перевод на английский Readme.md на дату 13.09.2021
 Спасибо, tobwen
 
-## 2021-09-15: Add Log view in CSV mode
+### 2021-09-15: Add Log view in CSV mode
 Добавлено окно просмотра лога БД в CSV формате с фильтрами, группами.
 Описание в Readme.md
 
-## 2021-09-15: add README_EN.md #13
+### 2021-09-15: add README_EN.md #13
 Добавлен перевод на английский Readme.md на дату 13.09.2021
 Спасибо, tobwen
 
-## 2021-06-30: fix read log server
+### 2021-06-30: fix read log server
 Изменена функция чтения лог сервера для избежания ошибок некорректного формата UTF-8.
 Эти изменения применяются при устанавленом флаге ASUTP Style.
 
-## 2021-06-03: bug fix
+### 2021-06-03: bug fix
 мелкие правки: более правильное сохранение активной закладки.
 Учтено использование ctltree не только в браузере объектов.
 
-## 2021-06-03: Navagate jump top level tree
+### 2021-06-03: Navagate jump top level tree
 Добавлен быстрый переход на родительские узлы в дереве объектов.
 Переход выполняется по щелчку левой кнопкой мыши по отступам.
 
-## 2021-05-31: bug fix #15. skip last token
+### 2021-05-31: bug fix #15. skip last token
 При отображении токенов конфигурации, последний токен не отображался.
 
 Переход на новую версию wxWidgets.
 
-## 2021-05-21: Migration to wxWidgets 3.1.5
+### 2021-05-21: Migration to wxWidgets 3.1.5
 Выполнен переход на новые библтотеки. Устранены проблемы совместимости.
 Множество мелких правок.
 
-## 2021-04-15: remove word Query in title
-## 2021-04-09: automatic select sql tab
+### 2021-04-15: remove word Query in title
+### 2021-04-09: automatic select sql tab
 При шелчке правой кнопкой мыши по закладке с результатами запроса,
 активируется sql окно с запросом.
 
 Не выполнялась команда CLUSTER
 
-## 2021-03-31: fix issue #14.
+### 2021-03-31: fix issue #14.
 Добавлен вывод Include для не индексируемых столбцов в определении ограничений.
 
-## 2021-03-27: Fix Issues #13. Add support INCLUDE index column.
+### 2021-03-27: Fix Issues #13. Add support INCLUDE index column.
 Добавлено правильное отображение не ключевых колонок индекса.
 
-## 2021-02-19: Change icon for SQL query window.
+### 2021-02-19: Change icon for SQL query window.
 Есть два способа изменения icon для окна query.
 1.  Поместить новую icon в %APPDATA%\postgresql\icons
     Имя файла задать следующим образом: hostname_dbname.png или hostname.png или dbname.png
     Размер icon 32х32
 2.  Задать для сервера цвет. Фон icon будет окрашен в цвет сервера.
 
-## 2021-02-19: Save position outputPane.
+### 2021-02-19: Save position outputPane.
 Сохраняется расположении окон при скрытии outputPane и применяется при показе.
 
-## 2021-02-18: Add "Next start job" properties
+### 2021-02-18: Add "Next start job" properties
 Дабавлено указание следующего времени запуска Job.
 
-## 2021-02-03: fix bug
+### 2021-02-03: fix bug
 Если секционированая таблица последняя списке таблиц узла дерева,
 то не работало обновление Sql окна.
 
-## 2021-02-19: Save position outputPane.
+### 2021-02-19: Save position outputPane.
 Сохраняется расположении окон при скрытии outputPane и применяется при показе.
 
-## 2021-02-18: Add "Next start job" properties
+### 2021-02-18: Add "Next start job" properties
 Дабавлено указание следующего времени запуска Job.
 
-## 2021-02-03: fix bug
+### 2021-02-03: fix bug
 Если секционированная таблица последняя списке таблиц узла дерева,
 то не работало обновление Sql окна.
 
-## 2021-01-19: Add reset index statistics.
+### 2021-01-19: Add reset index statistics.
 Добавлена команда "Reset index statistics".
 
-## 2021-01-19: Add dialog properties for job pgpro_scheduler.
+### 2021-01-19: Add dialog properties for job pgpro_scheduler.
 Добавлен диалог для редактирования заданий для pgpro_scheduler.
 
-## 2021-01-19: Add reset index statistics.
+### 2021-01-19: Add reset index statistics.
 Добавлена команда "Reset index statistics".
 
-## 2021-01-14: Job pgpro_scheduler refresh.
+### 2021-01-14: Job pgpro_scheduler refresh.
 Добавлено для заданий "время устаревания" в 5 мин.
 По истечении этого интервала времени при щелчке на задании оно будет обновлено.
 
-## 2021-01-13: Add control schedule run for pro_scheduler.
+### 2021-01-13: Add control schedule run for pro_scheduler.
 Добавлен контроль запуска задач по расписанию (из-за проблем в версии 2.7)
 При найденных пропусках запуска, добавляется строчка "Previous sched time run skip"
 в Свойства. Всего проверяется 100 последних запусков.
 
-## 2021-01-06: Add visual extension need update.
+### 2021-01-06: Add visual extension need update.
 Отображение расширений требующих обновления в узле Extensions
 
-## 2021-01-06: Add visual extension need update.
+### 2021-01-06: Add visual extension need update.
 Отображение расширений требующих обновления в узле Extensions
 
-## 2021-01-06: Add CFS defragmentation for table or index.
+### 2021-01-06: Add CFS defragmentation for table or index.
 В frmMaintenance добавлено выполнение принудительной дефрагментации сжатой таблицы
 или индекса. При выборе сжатой таблицы, автоматически дефрагментируются её сжатые индексы если их дефрагметация более 1%.
 
-## 2021-01-01: Add context menu for statistic partition tables (PG12 only).
+### 2021-01-01: Add context menu for statistic partition tables (PG12 only).
 Для окна статистики секционированной таблицы добавлено контекстное меню.
 Статистика по секц. таблице работает с 12 версии
 
-## 2020-12-31: Add column sort ctlListView. Add Partition statistics.
+### 2020-12-31: Add column sort ctlListView. Add Partition statistics.
 Добавлена сортировка при щелчке по заголовку таблице.
 Добавлена заполнение статистики при выборе секционированной таблицы.
 Статистика берётся по всем уровням иерархии.
 
-## 2020-12-05: Add index btree check
+### 2020-12-05: Add index btree check
 Добавлена проверка индекса функций bt_index_parent_check(regclass,true)
 Вызывается из контекстного меню.
 Solve #10 and bug fix
-## 2020-12-02: Fix SERVER_MAX_VERSION_N and fix other bug
+### 2020-12-02: Fix SERVER_MAX_VERSION_N and fix other bug
 Повышена максимально допустимая версия.
 При выгрузке в Sql разделитель полей исправлен на запятую.
 
-## 2020-10-02: Support PG13
+### 2020-10-02: Support PG13
 Добавлена поддержка новых табличных параметров, set statistics,
  параметра для публикаций, исправлено отображение statistics для секций.
 
-## 2020-09-30: fix view ROLE grant
+### 2020-09-30: fix view ROLE grant
 Убраны повторяющиеся разделители ";" при выводе прав для роли
 
-## 2020-09-07: Properties dependents fix
+### 2020-09-07: Properties dependents fix
 Для выборки зависимостей усилены условия отбора зависимых объектов, но не для всех возможных объектов.
 
-## 2020-09-04: Add Compare options dialog.
+### 2020-09-04: Add Compare options dialog.
 При сравнении объектов добавлена возможность исключать сравнение привилегий и комментариев.
 
-## 2020-09-04: Optimization compare filter (Server Status). bug fix copy query
+### 2020-09-04: Optimization compare filter (Server Status). bug fix copy query
 Исправлено копирование текста запроса из под фильтра.
 При сравнении текста из колонки Client порт не учитывается.
 
-## 2020-09-02: Add row filter, bug fix #8
-## 2020-09-02: bug fix issues#8 (dropping overloaded procedures)
-## 2020-09-02: Added copying of selected cells IN list format.
+### 2020-09-02: Add row filter, bug fix #8
+### 2020-09-02: bug fix issues#8 (dropping overloaded procedures)
+### 2020-09-02: Added copying of selected cells IN list format.
 Результаты запроса могут скопированы в формате In списка и в формате условия WHERE.
 Копирование выполняется через контекстное меню.
 
-## 2020-09-02: bug fix issues#8 (dropping overloaded procedures)
-## 2020-09-02: Added copying of selected cells IN list format.
+### 2020-09-02: bug fix issues#8 (dropping overloaded procedures)
+### 2020-09-02: Added copying of selected cells IN list format.
 Результаты запроса могут скопированы в формате In списка и в формате условия WHERE.
 Копирование выполняется через контекстное меню.
 
-## 2020-08-31: Add LogPane color
+### 2020-08-31: Add LogPane color
 Добавлена подсветка новых строк в логе. Изменены читающие функции для новых версий PG
 
-## 2020-07-23: Add filter for Server status.
+### 2020-07-23: Add filter for Server status.
 При нажатии правой кнопкой на любой строке и колонке в окне Активность,
  значение под мышью становиться точным фильтром для этой колонки.
 Сбросить фильтр можно по кнопке в панели инструментов.
 
-## 2020-07-10: Add support walsender process in form Server Status
+### 2020-07-10: Add support walsender process in form Server Status
 - Для процессов walsender отображается дополнительная информация, которая получается запросом
 ```
   select coalesce(sl.xmin,sl.catalog_xmin)::text xmin_slot,':'||slot_name||'['||sl.slot_type||']' slotinfo,'LagSent:'||pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),coalesce(confirmed_flush_lsn,restart_lsn)))||' LagXmin: '||coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0)||' s' xminlag,coalesce(extract(epoch from (pg_last_committed_xact()).timestamp - pg_xact_commit_timestamp(xmin))::int,0) xminslotdelta from pg_replication_slots sl;
@@ -1560,133 +1607,133 @@ Solve #10 and bug fix
   в поле query отображается xminlag
 - Добавлена подсветка строки оранжевым цветом, если xminslotdelta >= 1800 секунд
 
-## 2020-07-09: change pg_xlog to pg_wal
-## 2020-07-09: fix compile and rm svnversion.h
-## 2020-07-09: change pg_xlog to pg_wal
-## 2020-07-07: remove libssh2 source
-## 2020-07-07: add files for correct compile
-## 2020-05-09: bug fix
+### 2020-07-09: change pg_xlog to pg_wal
+### 2020-07-09: fix compile and rm svnversion.h
+### 2020-07-09: change pg_xlog to pg_wal
+### 2020-07-07: remove libssh2 source
+### 2020-07-07: add files for correct compile
+### 2020-05-09: bug fix
 bug fix refresh table and dialog crash
 
-## 2020-05-08: fix issue #6 (Child tables are not dispayed)
+### 2020-05-08: fix issue #6 (Child tables are not dispayed)
 fix issue #6
 
-## 2020-05-05: bug fix #4 Crash after close sql editor
-## 2020-04-22: Add many output windows
-## 2020-04-19: bug fix frmmaintebance
-## 2020-04-19: remove old Release dir
-## 2020-04-19: add generate and identity columns
+### 2020-05-05: bug fix #4 Crash after close sql editor
+### 2020-04-22: Add many output windows
+### 2020-04-19: bug fix frmmaintebance
+### 2020-04-19: remove old Release dir
+### 2020-04-19: add generate and identity columns
 add generate and identity columns
 add storage opts for PG12
 
-## 2020-04-13: buf fix sort and procedure
-## 2020-04-11: multicolumns sort query result, vacuum opt
+### 2020-04-13: buf fix sort and procedure
+### 2020-04-11: multicolumns sort query result, vacuum opt
 Add multicolumns sort
 Vacuum opt and reindex opt
 
-## 2020-03-26: add cfs partition table
-## 2020-03-25: CFS options add
+### 2020-03-26: add cfs partition table
+### 2020-03-25: CFS options add
 remove OID option table.
 CFS fragmentation option add
 
-## 2020-03-04: add CREATE STATISTICS
+### 2020-03-04: add CREATE STATISTICS
 add create statistics
 pgpro_scheduler correct array comands
 
-## 2019-12-25: compare text fix
+### 2019-12-25: compare text fix
 add event javascript
 
-## 2019-12-23: compare bug fix
-## 2019-12-22: Update README.md
-## 2019-12-22: Compare add
+### 2019-12-23: compare bug fix
+### 2019-12-22: Update README.md
+### 2019-12-22: Compare add
 add support VS2012 dll
 add compare objects tree
 
-## 2019-10-05: Postgrsql 12
+### 2019-10-05: Postgrsql 12
 add PG12 support.
 Bug fix
 
-## 2019-09-15: add autofilter
-## 2019-09-11: fix crash server status frame
-## 2019-09-01: bug fix
+### 2019-09-15: add autofilter
+### 2019-09-11: fix crash server status frame
+### 2019-09-01: bug fix
 pg_query_state incorrect  visible
 Avtoselect query fix non-ansi char
 
-## 2019-08-03: fix recreate script , fix object name for role
-## 2019-07-28: add view grant objects
-## 2019-07-16: pgJob fixbug
-## 2019-06-28: correct find and new color for stattus server
-## 2019-06-02: add global find
+### 2019-08-03: fix recreate script , fix object name for role
+### 2019-07-28: add view grant objects
+### 2019-07-16: pgJob fixbug
+### 2019-06-28: correct find and new color for stattus server
+### 2019-06-02: add global find
 Query form add find all tabs
 
-## 2019-05-29: correct bugs
-## 2019-05-20: inherit support
-## 2019-05-19: add inhrit support
+### 2019-05-29: correct bugs
+### 2019-05-20: inherit support
+### 2019-05-19: add inhrit support
 add inhrit support
 
-## 2019-05-14: add copy insert format
+### 2019-05-14: add copy insert format
 add copy insert format
 replace path for autosave query
 
-## 2019-04-06: double click select
+### 2019-04-06: double click select
 select word double click press
 
-## 2019-02-10: bug fix
+### 2019-02-10: bug fix
 correct font
 
-## 2019-02-09: bug fix
+### 2019-02-09: bug fix
 bug plan fix
 Add copy sql html format
 
-## 2019-01-26: bug fix and slow working
-## 2019-01-12: buf fix
+### 2019-01-26: bug fix and slow working
+### 2019-01-12: buf fix
 fix crush press **F4** to table
 
-## 2019-01-11: bug fix frmStatus
-## 2019-01-09: fix correct time plan labels
-## 2018-12-28: Update README.md
-## 2018-12-28: wxWidgets 3.0
+### 2019-01-11: bug fix frmStatus
+### 2019-01-09: fix correct time plan labels
+### 2018-12-28: Update README.md
+### 2018-12-28: wxWidgets 3.0
 add plan view unexpand/expand
 
-## 2018-12-11: bug fix
+### 2018-12-11: bug fix
 autocomlite fix
 
-## 2018-12-10: add dll and bugfix
-## 2018-12-09: extended autocomplite
+### 2018-12-10: add dll and bugfix
+### 2018-12-09: extended autocomplite
 Add CallTipShow for function arguments,
 Add autocomplite name fields
 
-## 2018-12-05: Create pgproJob.cpp
-## 2018-12-05: Update README.md
-## 2018-12-05: Update pgDatabase.cpp
-## 2018-12-05: add subscription
-## 2018-12-05: bug fix
+### 2018-12-05: Create pgproJob.cpp
+### 2018-12-05: Update README.md
+### 2018-12-05: Update pgDatabase.cpp
+### 2018-12-05: add subscription
+### 2018-12-05: bug fix
 Export to excel
 Cluster table wait
 Add sql resul color
 
-## 2018-11-28: Add pgpro_scheduler
-## 2018-11-22: Add support Subscription
+### 2018-11-28: Add pgpro_scheduler
+### 2018-11-22: Add support Subscription
 Only view browser tree
 
-## 2018-11-19: Correct dlgProcedure
-## 2018-11-12: Add F4 key Open object
-## 2018-11-10: Update schema/pgObject.cpp
-## 2018-11-10: Correct display of statistics for  partitions
+### 2018-11-19: Correct dlgProcedure
+### 2018-11-12: Add F4 key Open object
+### 2018-11-10: Update schema/pgObject.cpp
+### 2018-11-10: Correct display of statistics for  partitions
 Correct display of statistics for  partitions.
 Change path for autosave query tabs
 
-## 2018-11-01: add publication
+### 2018-11-01: add publication
 Add view publications.
 Change shortkeys Commit/Rollback
 
-## 2018-10-16: Update include/pgAdmin3.h
-## 2018-10-16: Readme.md append
-## 2018-10-10: drop trash files
-## 2018-10-10: Update .gitignore
-## 2018-10-10: Update README.md
-## 2018-10-10: Update README.md
+### 2018-10-16: Update include/pgAdmin3.h
+### 2018-10-16: Readme.md append
+### 2018-10-10: drop trash files
+### 2018-10-10: Update .gitignore
+### 2018-10-10: Update README.md
+### 2018-10-10: Update README.md
 Добавлено описание
 
-## 2018-10-10: support PG11
+### 2018-10-10: support PG11
 Поддержка PostgreSQL 11 только для Windows

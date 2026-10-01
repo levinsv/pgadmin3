@@ -166,6 +166,10 @@ public:
 	{
 		return save_database;
 	}
+	wxString GetLogFileNameMask() const
+	{
+		return log_filenamemask;
+	}
 	wxString GetApplicationName() const
 	{
 		return save_applicationname;
@@ -311,6 +315,7 @@ private:
 
 	wxString reservedNamespaces;
 	wxString connstr;
+	wxString log_filenamemask;
 
 	wxString save_server, save_service, save_hostaddr, save_database, save_username, save_password, save_rolename, save_addconnstr, save_applicationname;
 	wxString save_sslcert, save_sslkey, save_sslrootcert, save_sslcrl;

@@ -208,6 +208,7 @@ private:
     long idle_in_transaction_session_timeout=30;
     int wait_event_type_col;
     bool isrecovery,track_commit_timestamp, is_read_log;
+    wxString file_namemask;
     bool wait_sample, wait_enable, wait_save,std,pro;
     bool frm_exit = false; // need close form
     bool logisread = false; // need close form

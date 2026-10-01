@@ -294,6 +294,8 @@ private:
 	void OnPositionStc(wxStyledTextEvent &event);
 
 	void ResetLists();
+	void FreezeALL();
+	void ThawALL();
 	bool dropSingleObject(pgObject *data, bool updateFinal, bool cascaded);
 	void doPopup(wxWindow *win, wxPoint point, pgObject *object);
 	void setDisplay(pgObject *data, ctlListView *props = 0, ctlSQLBox *sqlbox = 0, bool showtree=true);
