@@ -64,7 +64,7 @@ extern wxString defPath;
 #define MISC_HELPPATH_ITEM _("Help paths")
 #define MISC_GURUHINTS_ITEM _("Guru hints")
 #define MISC_LOGGING_ITEM _("Logging")
-
+#define MISC_AI_ITEM _("AI Chat")
 #define txtPgHelpPath               CTRL_TEXT("txtPgHelpPath")
 #define txtEdbHelpPath              CTRL_TEXT("txtEdbHelpPath")
 #define txtGpHelpPath               CTRL_TEXT("txtGpHelpPath")
@@ -170,9 +170,15 @@ extern wxString defPath;
 #define pnlMiscHelpPath             CTRL_PANEL("pnlMiscHelpPath")
 #define pnlMiscGuruHints          	CTRL_PANEL("pnlMiscGuruHints")
 #define pnlMiscLogging          	CTRL_PANEL("pnlMiscLogging")
+#define pnlAI 			         	CTRL_PANEL("pnlAI")
 #define cbRefreshOnClick			CTRL_COMBOBOX("cbRefreshOnClick")
 #define pickerFontDD                CTRL_FONTPICKER("pickerFontDD")
 #define treeJSON					CTRL_TREEJSON("treeJSON")
+#define txtChatURL			        CTRL_TEXT("txtChatURL")
+#define txtBaseURL			        CTRL_TEXT("txtBaseURL")
+#define txtSystemPrompt		        CTRL_TEXT("txtSystemPrompt")
+#define txtParameters		        CTRL_TEXT("txtParameters")
+
 
 BEGIN_EVENT_TABLE(frmOptions, pgDialog)
 	EVT_MENU(MNU_HELP,                                            frmOptions::OnHelp)
@@ -363,6 +369,12 @@ frmOptions::frmOptions(frmMain *parent)
 	pickerEnterprisedbPath->SetPath(settings->GetEnterprisedbPath());
 	pickerGPDBPath->SetPath(settings->GetGPDBPath());
 	chkIgnoreVersion->SetValue(settings->GetIgnoreVersion());
+	txtSystemPrompt->SetValue(settings->GetAISystemPrompt());
+	txtBaseURL->SetValue(settings->GetAIBaseURL());
+	txtChatURL->SetValue(settings->GetAIChatURL());
+	txtParameters->SetValue(settings->GetAIParameters());
+
+
 	cbColorTheme->Clear();
 	wxString jFile;
 	wxArrayString paths;
@@ -575,7 +587,7 @@ frmOptions::frmOptions(frmMain *parent)
 	menus->AppendItem(node, MISC_HELPPATH_ITEM);
 	menus->AppendItem(node, MISC_GURUHINTS_ITEM);
 	menus->AppendItem(node, MISC_LOGGING_ITEM);
-
+	menus->AppendItem(node, MISC_AI_ITEM);
 	node = menus->AppendItem(root, TREEJSON_ITEM);
 
 	menus->ExpandAllChildren(root);
@@ -1004,6 +1016,25 @@ void frmOptions::OnOK(wxCommandEvent &ev)
 	settings->SetGpHelpPath(txtGpHelpPath->GetValue());
 	settings->SetSlonyHelpPath(txtSlonyHelpPath->GetValue());
 
+	settings->SetAISystemPrompt(txtSystemPrompt->GetValue());
+	settings->SetAIBaseURL(txtBaseURL->GetValue());
+	settings->SetAIChatURL(txtChatURL->GetValue());
+	if (!txtParameters->GetValue().IsEmpty()) {
+		wxString ptxt="{"+txtParameters->GetValue()+"}";
+		wxJSONValue v;
+		wxJSONReader r;
+		wxStringInputStream input(ptxt);
+		int err=r.Parse(input, &v);
+		if (err > 0) {
+			wxString err_msg=wxJoin(r.GetErrors(),'\n');
+			wxMessageBox(_("Parse json value error in AI Chat Parameters\n")+err_msg, _("Error"), wxICON_ERROR | wxOK);
+			txtParameters->SetFocus();
+			return;
+
+		}
+	}
+	settings->SetAIParameters(txtParameters->GetValue());
+
 	settings->SetSystemSchemas(txtSystemSchemas->GetValue());
 
 	// Save the display options
@@ -1272,6 +1303,7 @@ void frmOptions::ShowPanel(const wxTreeItemId &menuItem)
 	pnlMiscHelpPath->Show(false);
 	pnlMiscGuruHints->Show(false);
 	pnlMiscLogging->Show(false);
+	pnlAI->Show(false);
 
 	// Find the one to show
 	menuSelection = menus->GetItemText(menuItem);
@@ -1336,6 +1368,8 @@ void frmOptions::ShowPanel(const wxTreeItemId &menuItem)
 		pnlMiscGuruHints->Show(true);
 	else if (menuSelection == MISC_LOGGING_ITEM)
 		pnlMiscLogging->Show(true);
+	else if (menuSelection == MISC_AI_ITEM)
+		pnlAI->Show(true);
 
 	pnlBrowserDisplay->GetParent()->Layout();
 	// we don't need to call GetParent()->Layout() for all panels

@@ -1483,6 +1483,7 @@ wxJSONReader::ReadValue(wxInputStream& is, int ch, wxJSONValue& val)
 
     if (tDouble) {
         r = s.ToDouble(&d);
+        if (!r) r = s.ToCDouble(&d);
         wxLogTrace(traceMask, _T("(%s) convert to double result=%d"),
             __PRETTY_FUNCTION__, r);
         if (r) {

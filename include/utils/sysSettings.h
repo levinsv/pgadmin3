@@ -298,7 +298,45 @@ public:
 	{
 		WriteBool(wxT("frmQuery/ExplainTiming"), newval);
 	}
-
+	wxString GetAISystemPrompt() const
+	{
+		wxString s;
+		Read(wxT("AISystemPrompt"), &s, "You are an SQL assistant for PostgreSQL. Explain the queries in simple words. Don’t make up tables and fields.");
+		return s;
+	}
+	void SetAISystemPrompt(const wxString &newval)
+	{
+		Write(wxT("AISystemPrompt"), newval);
+	}
+	wxString GetAIBaseURL() const
+	{
+		wxString s;
+		Read(wxT("AIBaseURL"), &s, "");
+		return s;
+	}
+	void SetAIBaseURL(const wxString &newval){Write(wxT("AIBaseURL"), newval);}
+	wxString GetAIChatURL() const
+	{
+		wxString s;
+		Read(wxT("AIChatURL"), &s, "/v1/chat/completions");
+		return s;
+	}
+	void SetAIChatURL(const wxString &newval){Write(wxT("AIChatURL"), newval);}
+	wxString GetAIParameters() const
+	{
+		wxString s;
+		Read(wxT("AIParameters"), &s, "\"temperature\": 0.2");
+		return s;
+	}
+	void SetAIParameters(const wxString &newval){Write(wxT("AIParameters"), newval);}
+/*	wxString Get() const
+	{
+		wxString s;
+		Read(wxT(""), &s, "");
+		return s;
+	}
+	void Set(const wxString &newval){Write(wxT(""), newval);}
+*/
 	// Display options
 	wxString GetSystemSchemas() const
 	{

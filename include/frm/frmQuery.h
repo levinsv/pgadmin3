@@ -13,6 +13,7 @@
 #define __FRM_QUERY_H
 
 #include "ctl/ctlAuiNotebook.h"
+#include "ctl/ctlChat.h"
 #include "db/pgQueryResultEvent.h"
 #include "dlg/dlgClasses.h"
 #include "gqb/gqbViewController.h"
@@ -119,6 +120,7 @@ public:
 	void UpdateAllRecentFiles();
 	void UpdateAllFavouritesList();
 	void UpdateAllMacrosList();
+	void SetBitmapForoutputPane(wxWindow *pageobj,wxColour clr);
 
 private:
 	frmMain *mainForm;
@@ -133,6 +135,7 @@ private:
 	ctlSQLBox    *ctlSBox[MAX_RESULT_COUNT];
 	int indexResult;
 	ExplainCanvas *explainCanvas;
+	ctlChat *aiChat;
 	wxTextCtrl *msgResult, *msgHistory;
 	wxBitmapComboBox *cbConnection;
 	wxButton *btnModeTransaction;
@@ -229,6 +232,7 @@ private:
 	void OnAutoColsPlot(wxCommandEvent& ev);
 	void OnSearchReplace(wxCommandEvent &event);
 	void OnTransformText(wxCommandEvent& ev);
+	void OnAISelection(wxCommandEvent& ev);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);
 	void OnSaveHistory(wxCommandEvent &event);
