@@ -174,6 +174,70 @@
                 <border>4</border>
               </object>
               <object class="sizeritem">
+			          <object class="wxPanel" name="pnlAI">
+				          <hidden>1</hidden>
+                  <object class="wxFlexGridSizer">
+                    <cols>2</cols>
+                    <vgap>5</vgap>
+                    <hgap>5</hgap>
+                    <growablecols>1</growablecols>
+                    <object class="sizeritem">
+                      <object class="wxStaticText" name="stBaseURL">
+                        <label>Host server</label>
+                      </object>
+                      <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxTextCtrl" name="txtBaseURL"/>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+
+                    <object class="sizeritem">
+                      <object class="wxStaticText" name="stChatURL">
+                        <label>Chat Part URL</label>
+                      </object>
+                      <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxTextCtrl" name="txtChatURL"/>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxStaticText" name="stSystemPrompt">
+                        <label>System prompt</label>
+                      </object>
+                      <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxTextCtrl" name="txtSystemPrompt"/>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxStaticText" name="stParameters">
+                        <label>Parameters</label>
+                      </object>
+                      <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxTextCtrl" name="txtParameters"/>
+                      <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                      <border>4</border>
+                    </object>
+
+                  </object>
+                </object>
+                <flag>wxEXPAND|wxTOP|wxLEFT|wxRIGHT</flag>
+                <border>4</border>
+
+              </object>
+              <object class="sizeritem">
 			          <object class="wxPanel" name="pnlBrowserDisplay">
 				          <hidden>1</hidden>
                   <object class="wxFlexGridSizer">

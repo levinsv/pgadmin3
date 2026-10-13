@@ -60,6 +60,7 @@
 #include "pgscript/pgsApplication.h"
 #include "schema/pgPartition.h"
 #include "dlg/dlgVariable.h"
+#include "ctl/ctlChat.h"
 // Icons
 #include "images/sql-32.pngc"
 
@@ -134,6 +135,7 @@ BEGIN_EVENT_TABLE(frmQuery, pgFrame)
 	EVT_MENU(MNU_AUTOCOLSPLOT,      frmQuery::OnAutoColsPlot)
 	EVT_MENU(MNU_FIND,              frmQuery::OnSearchReplace)
 	EVT_MENU(MNU_TRANSFORM,			frmQuery::OnTransformText)
+	EVT_MENU(MNU_AISELECTION,		frmQuery::OnAISelection)
 	EVT_MENU(MNU_UNDO,              frmQuery::OnUndo)
 	EVT_MENU(MNU_REDO,              frmQuery::OnRedo)
 	EVT_MENU(MNU_EXECUTE,           frmQuery::OnExecute)
@@ -429,7 +431,9 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	editMenu->Append(MNU_AUTOREPLACE_MANAGE, _("Manage autoreplace..."), _("Edit and delete autoreplace strings"));
 	editMenu->Append(MNU_AUTOEDITOBJECT, _("Open object\tF4"), _("Open object in brouser tree"));
 	editMenu->Append(MNU_TRANSFORM, _("Text transform...\tCtrl+M"), _("Open dialog transform"));
-
+	if (!settings->GetAIBaseURL().IsEmpty()) {
+		editMenu->Append(MNU_AISELECTION, _("Send selection to AI Chat\tF9"), _("Send selection to AI chat"));
+	}
 	autoreplace = queryMacroFileProvider::LoadAutoReplace(true);
 
 	menuBar->Append(editMenu, _("&Edit"));
@@ -743,7 +747,11 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	outputPane->AddPage(explainCanvas, _("Explain"));
 	outputPane->AddPage(msgResult, _("Messages"));
 	outputPane->AddPage(msgHistory, _("History"));
-
+	aiChat=NULL;
+	if (!settings->GetAIBaseURL().IsEmpty()) {
+		aiChat= new ctlChat(outputPane,this);
+		outputPane->AddPage(aiChat, aiChat->GetNameChat());
+	}
 	sqlResult->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	msgResult->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
 	msgHistory->Connect(wxID_ANY, wxEVT_SET_FOCUS, wxFocusEventHandler(frmQuery::OnFocus));
@@ -1829,6 +1837,24 @@ void frmQuery::OnTransformText(wxCommandEvent& ev)
 {
 	sqlQuery->OnTransformText(ev);
 }
+void frmQuery::OnAISelection(wxCommandEvent& ev)
+{
+	if (aiChat== NULL) return;
+	wxString query = sqlQuery->GetSelectedText();
+	if (query.IsNull()) {
+		if (queryMenu->IsChecked(MNU_AUTOSELECTQUERY)) {
+			// Auto-select
+			SelectQuery();
+			query = sqlQuery->GetSelectedText();
+		} else
+			query = sqlQuery->GetText();
+	}
+	if (query.IsNull())
+		return;
+	if (!aiChat->SendText(query)) {
+		SetStatusText("AI busy",STATUSPOS_MSGS);
+	}
+}
 
 
 void frmQuery::OnUndo(wxCommandEvent &ev)
@@ -2173,6 +2199,16 @@ void frmQuery::OnClose(wxCloseEvent &event)
 	{
 		event.Veto();
 		return;
+	}
+//	for (int i = 0; i < outputPane->GetPageCount(); ++i)
+	{
+		int i=outputPane->GetPageIndex(aiChat);
+		if (i>=0 ) {
+            if (!aiChat->RequestClose()) {   // запрос активен — отменяем и ждём,
+				event.Veto();
+				return;
+			}
+		}
 	}
 
 	closing = true;
@@ -3342,7 +3378,12 @@ void frmQuery::showMessage(const wxString &msg, const wxString &msgShort)
 	SetStatusText(str, STATUSPOS_MSGS);
 }
 
+void frmQuery::SetBitmapForoutputPane(wxWindow *pageobj,wxColour clr) {
+	int idx=outputPane->GetPageIndex(pageobj);
+	if (idx>=0)
+		outputPane->SetPageBitmap(idx,CreateBitmap(clr));
 
+}
 void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singleResult, const int queryOffset, bool toFile, bool explain, bool verbose)
 {
 	// check is query running
@@ -3391,8 +3432,7 @@ void frmQuery::execQuery(const wxString &query, int resultToRetrieve, bool singl
 	int i=sqlQueryBook->GetSelection();
 	sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxColour(255,0,0)));
 
-	int idx=outputPane->GetPageIndex(sqlResult);
-	outputPane->SetPageBitmap(idx,CreateBitmap(wxNullColour));
+	SetBitmapForoutputPane(sqlResult,wxNullColour);
 
 	// Remember the tab from which execute was called. By the time query completes, SQL tab selection may change.
 	sqlQueryExec = sqlQuery;
@@ -4731,7 +4771,6 @@ void frmQuery::OnSqlBookPageClose(wxAuiNotebookEvent &event)
 		event.Veto();
 		return;
 	}
-
 	// If removing the tab for which results are displayed, reset the output pane's caption
 	if (sqlQuery == sqlQueryExecLast)
 	{
@@ -4981,7 +5020,7 @@ bool frmQuery::SqlBookClose(bool canVeto)
 		if (box != NULL)
 			SqlBookDisconnectPage(box);
 	}
-
+ 	
 	return false;
 }
 
