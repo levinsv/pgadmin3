@@ -246,6 +246,7 @@
     </ClCompile>
     <ClCompile Include="ctl\calbox.cpp" />
     <ClCompile Include="ctl\ctlShortCut.cpp" />
+    <ClCompile Include="ctl\ctlChat.cpp" />
     <ClCompile Include="ctl\ctlAuiNotebook.cpp" />
     <ClCompile Include="ctl\ctlCheckTreeView.cpp" />
     <ClCompile Include="ctl\ctlColourPicker.cpp" />
@@ -469,6 +470,7 @@
     <ClCompile Include="utils\align\Item.cpp" />
     <ClCompile Include="utils\csvfiles.cpp" />
     <ClCompile Include="utils\FormatterSQL.cpp" />
+    <ClCompile Include="utils\chatclient.cpp" />
     <ClCompile Include="utils\diff_match_patch.cc">
     </ClCompile>
     <ClCompile Include="utils\factory.cpp" />
@@ -961,6 +963,7 @@
   <ItemGroup>
     <ClInclude Include="include\copyright.h" />
     <ClInclude Include="include\ctl\ctlGitPanel.h" />
+    <ClInclude Include="include\ctl\ctlChat.h" />
     <ClInclude Include="include\ctl\ctlShortCut.h" />
     <ClInclude Include="include\dlg\dlgProJob.h" />
     <ClInclude Include="include\dlg\dlgVariable.h" />
@@ -999,6 +1002,8 @@
     <ClInclude Include="include\utils\favourites.h" />
     <ClInclude Include="include\utils\macros.h" />
     <ClInclude Include="include\utils\misc.h" />
+    <ClInclude Include="include\utils\mdhtml.h" />
+    <ClInclude Include="include\utils\chatclient.h" />
     <ClInclude Include="include\utils\pgconfig.h" />
     <ClInclude Include="include\utils\pgDefs.h" />
     <ClInclude Include="include\utils\pgfeatures.h" />

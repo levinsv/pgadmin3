@@ -1,4 +1,4 @@
-
+#include "pgAdmin3.h"
 #include "utils/chatclient.h"
 #include "utils/mdhtml.h"
 #include "utils/misc.h"

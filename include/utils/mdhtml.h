@@ -295,7 +295,7 @@ static bool IsListItem(const wxString& line, int& indent, bool& ordered, wxStrin
     if (i >= line.size()) return false;
 
     const wxChar c = line[i];
-    if (c == wxT('-') || c == wxT('*') || c == wxT('+')) {
+    if (c == wxT('-') || c == wxT('*') || c == wxT('+')|| c == L'\u2022') {
         if (i + 1 < line.size() && line[i + 1] == wxT(' ')) {
             ordered = false;
             content = line.Mid(i + 2);
@@ -393,7 +393,8 @@ static void ConvertBlock(const wxString& text, wxString& out, const Palette& pal
             // fallthrough
         }
 
-        if (t.empty() && (lists.size()==0)) { flushPara(); continue; }
+        //if (t.empty() && (lists.size()==0)) { flushPara(); continue; }
+        if (t.empty()) { flushPara(); continue; }
 
         if (IsHrLine(t)) {
             flushPara(); CloseLists(out, lists);
