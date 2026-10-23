@@ -770,7 +770,9 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 	// Now load the layout
 	wxString perspective;
 	settings->Read(wxT("frmQuery/Perspective-") + wxString(FRMQUERY_PERSPECTIVE_VER), &perspective, FRMQUERY_DEFAULT_PERSPECTIVE);
-	manager.LoadPerspective(perspective, true);
+	if (!wxGetKeyState(WXK_SHIFT)) 
+		manager.LoadPerspective(perspective, true);
+
 	outputPaneInfo = manager.SavePerspective();
 	// and reset the captions for the current language
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
@@ -954,7 +956,7 @@ frmQuery::frmQuery(frmMain *form, const wxString &_title, pgConn *_conn, const w
 		 //outputPane->GetPageText(curpage) == _("History");
 
 		 int ii = -1;
-		 for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
+		 for (int i = 0; i < (int)sqlQueryBook->GetPageCount(); i++) {
 			 wxString textpage = sqlQueryBook->GetPageText(i);
 			 if (wxNOT_FOUND !=activePage.Index(textpage)) {
 				 wxString prefname=textpage.BeforeFirst('.');			
@@ -2288,7 +2290,7 @@ void frmQuery::OnLabelRightClick(wxGridEvent &event)
 	wxMenu *submenu = NULL;
 		//wxString t="begin @obj_id@ end";
 		int cnt=0;
-		for(int i=0;i<body_template.Count();i++) {
+		for(int i=0;i<(int)body_template.Count();i++) {
 			wxString s=sqlResult->GenerateTemplate(body_template[i],1);
 			if (s=="OK")
 			{
@@ -2368,7 +2370,7 @@ void frmQuery::OnGenerateInvoke(wxCommandEvent& ev)
 	int id=ev.GetId()-MNU_GENERATESQL-1;
 	wxString s = _("No template generate.");
     //wxMenu* mi = static_cast<wxMenu*>(ev.GetEventObject());
-	if (id>=0 && id<body_template.Count() ) {
+	if (id>=0 && id<(int)body_template.Count() ) {
 	{
 		wxString templ = body_template[id];
 		s=sqlResult->GenerateTemplate(templ,0);
@@ -2699,7 +2701,7 @@ void frmQuery::OnAutoEditObject(wxCommandEvent &event)
 	//parent->SetCurrentNode(parent->GetBrowser()->GetRootItem(), path);
 	pgObject *obj = mainForm->GetBrowser()->GetObject(mainForm->GetBrowser()->GetSelection());
 	if (!obj) return;
-	pgFunction *fun=(pgFunction *)obj;//obj->Show
+	//pgFunction *fun=(pgFunction *)obj;
 	//mainForm.propFactory->StartDialog(mainForm, obj);
 	//showMessage(obj->GetTypeName());
 	//return;
@@ -3076,11 +3078,8 @@ bool frmQuery::updateFromGqb(bool executing)
 	return false;
 }
 void frmQuery::SelectQuery() {
-	long p;
-	bool selected = false;
 	//sqlQuery->GetSelection();
 	wxString name = sqlQuery->GetSelectedText();
-	int s,e,i=0;
 	if (!name.IsEmpty())
 	{
 		// never execute
@@ -3156,7 +3155,7 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 		std::vector<var_query> v_list;
 		body_template.Clear();
 		title_template.Clear();
-		while (f.GetNextPositionSqlParse() < query.length() && f.ParseSql(0) >= 0) { // many querys
+		while (f.GetNextPositionSqlParse() < (int)query.length() && f.ParseSql(0) >= 0) { // many querys
 
 			int i = 0;
 			int n_check = 0;
@@ -3184,7 +3183,7 @@ void frmQuery::OnExecute(wxCommandEvent &event)
 				}
 			}
 
-			if (isddm && v_list.size() > 0 && f.GetNextPositionSqlParse() >= query.length()) {
+			if (isddm && (int)v_list.size() > 0 && f.GetNextPositionSqlParse() >= (int)query.length()) {
 				dlgVariable* m_dlgVar = new dlgVariable(sqlQuery, query, v_list);
 				int rez = m_dlgVar->ShowModal();
 				if (rez == wxID_OK) {
@@ -3826,7 +3825,7 @@ void frmQuery::OnQueryComplete(pgQueryResultEvent &ev)
 	else
 	{
 		done = true;
-		for(int i=0;i<outputPane->GetPageCount();i++)
+		for(int i=0;i<(int)outputPane->GetPageCount();i++)
 		{
 			if (wxDynamicCast(outputPane->GetPage(i), ctlSQLResult)==sqlResult) {
 				outputPane->SetSelection(i);
@@ -4119,7 +4118,7 @@ void frmQuery::completeQuery(bool done, bool explain, bool verbose)
 	// Change the output pane caption so the user knows which tab the result came from
 	sqlQueryExecLast = sqlQueryExec;
 	SetOutputPaneCaption(true);
-	for (int i=0;i<sqlQueryBook->GetPageCount();i++)
+	for (int i=0;i<(int)sqlQueryBook->GetPageCount();i++)
 		if ((sqlQueryBook->GetPageBitmap(i)).IsOk()) sqlQueryBook->SetPageBitmap(i,wxNullBitmap);
  	//int i=sqlQueryBook->GetPageCount()-1;
 	//sqlQueryBook->SetPageBitmap(i,CreateBitmap(wxNullColour));
@@ -4552,7 +4551,7 @@ void frmQuery::fileMarkerActive(bool addOrRemove, const wxString &sqlTabName) {
 		wxFile file(fn, wxFile::write);
 		// remove any ohher files
 
-		for (int i = 0; i < sqlQueryBook->GetPageCount(); i++) {
+		for (int i = 0; i < (int)sqlQueryBook->GetPageCount(); i++) {
 			wxString textpage = sqlQueryBook->GetPageText(i);
 			if (tabname != textpage)
 			{
@@ -4588,11 +4587,6 @@ void frmQuery::OnSqlBookPageChanged(wxAuiNotebookEvent &event)
 			SetEOLModeDisplay(sqlQuery->GetEOLMode());
 			setExtendedTitle();
 			curpage = outputPane->GetSelection();
-			ctlSQLResult *r;
-			r=NULL;
-			if (wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult)) {
-				ctlSQLResult *r = wxDynamicCast(outputPane->GetPage(curpage), ctlSQLResult);
-			}
 			int pos=-1;
 			//if (r!=NULL) for (int i=0;i<MAX_RESULT_COUNT;i++) if (ctlSQL[i]==r && ctlSBox[i]==sqlQuery) pos=i;
 			if (pos==-1) {
@@ -4670,7 +4664,8 @@ void frmQuery::OnSqlBookPageClosed(wxAuiNotebookEvent &event)
 void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
 //ctlSQL
 	size_t curpage = outputPane->GetSelection();
-	if ( event.GetSelection()!=curpage) return;
+	int sel=event.GetSelection();
+	if ( sel!=outputPane->GetSelection()) return;
 	wxBitmap b=outputPane->GetPageBitmap(curpage);
 	if (b.IsOk()) {
 		if (sqlQuery!=NULL) {
@@ -4699,7 +4694,7 @@ void frmQuery::OnNotebookOutpaneTabRDown(wxAuiNotebookEvent &event) {
 			for (int i = 0; i < len; i++)
 				if (ctlSQL[i] != NULL && c == ctlSQL[i])
 				{
-					ctlSQLResult *sqlRes = ctlSQL[i];
+					//ctlSQLResult *sqlRes = ctlSQL[i];
 					ctlSQLBox *box= ctlSBox[i];
 					int querypage= sqlQueryBook->GetPageIndex(box);
 					if (querypage >= 0) {
@@ -4827,7 +4822,7 @@ void frmQuery::SqlBookAddPage(wxString& title)
 	if (np.Length()>0) {
 		long nl = 0;
 		if (np.ToLong(&nl)) {
-			if (sqlQueryCounter < nl) sqlQueryCounter = nl;
+			if (sqlQueryCounter < (size_t)nl) sqlQueryCounter = nl;
 		}
 
 	}
@@ -4984,10 +4979,10 @@ void frmQuery::SqlBookUpdatePageTitle()
 
 	if (sqlQueryBook->GetPageCount() > 0 && sqlQuery != NULL)
 	{
-		index = sqlQueryBook->GetPageIndex(sqlQuery);
-		if (index == wxNOT_FOUND)
+		int idx = sqlQueryBook->GetPageIndex(sqlQuery);
+		if (idx == wxNOT_FOUND)
 			return;
-
+		index = idx;
 		title = sqlQuery->GetTitle();
 		if (sqlQueryBook->GetPageText(index) != title)
 			sqlQueryBook->SetPageText(index, title);
@@ -5238,7 +5233,6 @@ bool queryToolCreateCascadeFactory::CheckEnable(pgObject *obj)
 		return false;
 	if (obj->IsCreatedBy(tableFactory)||obj->IsCreatedBy(pg_partitionFactory))
 		return true;
-	pgView *view = (pgView *)obj;
 
 	return true;
 }

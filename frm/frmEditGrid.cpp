@@ -121,7 +121,7 @@ frmEditGrid::frmEditGrid(frmMain *form, const wxString &_title, pgConn *_conn, p
 
 	// Set up toolbar
 	toolBar = new ctlMenuToolbar(this, -1, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_NODIVIDER);
-	toolBar->SetToolBitmapSize(wxSize(16, 16));
+	toolBar->SetToolBitmapSize(FromDIP(wxSize(32, 32)));
 
 	toolBar->AddTool(MNU_SAVE, wxEmptyString, *storedata_png_bmp, _("Save the changed row."), wxITEM_NORMAL);
 	toolBar->AddSeparator();
@@ -146,7 +146,9 @@ frmEditGrid::frmEditGrid(frmMain *form, const wxString &_title, pgConn *_conn, p
 
 	// Setup the limit bar
 #ifndef __WXMAC__
-	cbLimit = new wxComboBox(this, CTRLID_LIMITCOMBO, wxEmptyString, wxPoint(0, 0), wxSize(GetCharWidth() * 12, -1), wxArrayString(), wxCB_DROPDOWN);
+	wxSize sz=wxSize(-1, -1);
+	//wxSize(GetCharWidth() * 12, -1)
+	cbLimit = new wxComboBox(this, CTRLID_LIMITCOMBO, wxEmptyString, wxPoint(0, 0), sz, wxArrayString(), wxCB_DROPDOWN);
 #else
 	cbLimit = new wxComboBox(this, CTRLID_LIMITCOMBO, wxEmptyString, wxPoint(0, 0), wxSize(GetCharWidth() * 24, -1), wxArrayString(), wxCB_DROPDOWN);
 #endif
@@ -247,7 +249,8 @@ frmEditGrid::frmEditGrid(frmMain *form, const wxString &_title, pgConn *_conn, p
 	// Now load the layout
 	wxString perspective;
 	settings->Read(wxT("frmEditGrid/Perspective-") + wxString(FRMEDITGRID_PERSPECTIVE_VER), &perspective, FRMEDITGRID_DEFAULT_PERSPECTIVE);
-	manager.LoadPerspective(perspective, true);
+	if (!wxGetKeyState(WXK_SHIFT)) 
+		manager.LoadPerspective(perspective, true);
 
 	// and reset the captions for the current language
 	manager.GetPane(wxT("toolBar")).Caption(_("Tool bar"));
@@ -2419,15 +2422,15 @@ sqlTable::sqlTable(pgConn *conn, pgQueryThread *_thread, const wxString &tabName
 					editor = new sqlGridBoolEditor();
 					break;
 				case PGOID_TYPE_INT8:
-				case PGOID_TYPE_SERIAL8:
+				case (Oid)PGOID_TYPE_SERIAL8:
 					SetNumberEditor(i, 20);
 					break;
 				case PGOID_TYPE_INT2:
-				case PGOID_TYPE_SERIAL2:
+				case (Oid)PGOID_TYPE_SERIAL2:
 					SetNumberEditor(i, 5);
 					break;
 				case PGOID_TYPE_INT4:
-				case PGOID_TYPE_SERIAL:
+				case (Oid)PGOID_TYPE_SERIAL:
 					SetNumberEditor(i, 10);
 					break;
 				case PGOID_TYPE_OID:
@@ -3050,8 +3053,6 @@ bool sqlTable::Paste()
 	wxString text, quoteChar, colSep;
 	bool inQuotes, inData, skipSerial;
 
-	if (!this)
-		return false;
 
 	if (wxTheClipboard->Open())
 	{
