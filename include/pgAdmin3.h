@@ -97,6 +97,10 @@ extern wxString uiPath;                 // Where ui data is stored
 extern wxString i18nPath;               // Where i18n data is stored
 extern wxString pluginsDir;             // The plugins ini file directory
 extern wxString settingsIni;            // The default settings file
+extern wxString defPath;
+extern wxString svgPath;
+extern wxString dataDir;
+extern wxString brandingPath;
 
 extern sysSettings *settings;           // The settings manager
 
@@ -105,6 +109,8 @@ extern bool iswayland;
 extern wxLocale *locale;                // Application locale
 extern wxArrayInt existingLangs;        // Language IDs
 extern wxArrayString existingLangNames; // Language Names
+extern bool isdark;
+extern wxBrush selectFindBrush;
 
 #if defined(HAVE_OPENSSL_CRYPTO) || defined(HAVE_GCRYPT)
 class CSSHTunnelThread;

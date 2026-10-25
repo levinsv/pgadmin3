@@ -45,9 +45,10 @@ if(NOT CROSS_COMPILE)
             message(STATUS "path postgresql= ${PostgreSQL_LIBRARIES}")
 	endif()
      add_compile_definitions(WX_PRECOMP PG_SSL)
+     set(COMPILE_FLAG "-Wall -Wno-unused-function -Wno-deprecated-declarations -Wno-deprecated -Wno-reorder")
 else()
 #windows
-
+set(COMPILE_FLAG "-Wno-unused-function -Wno-deprecated-declarations -Wno-deprecated")
 endif()
 
 
@@ -55,8 +56,7 @@ add_compile_definitions(wxUSE_UNICODE)
 add_compile_definitions(EMBED_XRC)
 add_compile_options(-Wno-narrowing)
 list(APPEND CMAKE_CXX_SOURCE_FILE_EXTENSIONS c)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAG}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE SOURCES
@@ -67,6 +67,7 @@ file(GLOB_RECURSE SOURCES
     gqb/*.c*
      hotdraw/*.c* ogl/*.c* pgscript/*.c*
      pro_scheduler/*.c* schema/*.c* slony/*.c* ui/xrcDialogs.cpp utils/*.c*
+	 globalvar.cpp
 )
 
 ##########################################################
@@ -74,9 +75,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(RPATH ".")
 	list(APPEND CMAKE_BUILD_RPATH ${RPATH})
 endif()
-add_executable(${PROJECT_NAME} )
-#
-
+add_library( ${PROJECT_NAME}_lib STATIC ${SOURCES} )
+add_executable(${PROJECT_NAME} pgAdmin3.cpp )
+target_include_directories(${PROJECT_NAME}_lib PUBLIC . include )
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 # После сборки — разделить символы и приложение
@@ -90,7 +92,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE  $<$<CONFIG:Debug>:_DEBUG>)
-target_sources(${PROJECT_NAME} PUBLIC pgAdmin3.cpp ${SOURCES})
+#target_sources(${PROJECT_NAME} PUBLIC pgAdmin3.cpp ${SOURCES})
 if(CROSS_COMPILE STREQUAL "Windows")
   ENABLE_LANGUAGE(RC)
   set(CMAKE_RC_COMPILER_INIT windres)

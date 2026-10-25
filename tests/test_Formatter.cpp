@@ -2,8 +2,33 @@
 #include <catch2/catch.hpp>
 #include "utils/FormatterSQL.h"
 #include "utils/align/AlignWrap.h"
+#include "utils/misc.h"
 #include <iostream>
-
+////////// make_identifier
+TEST_CASE( "Parse Identifier", "[ident]" ) {
+std::vector<wxString> names = {"\"Scheme\".Lower_Table","\"T\"","\"S\".\"T\"","S.t","T",L"S.\"Таб\""};
+std::vector<wxString> exps = {"Scheme.lower_table","T","S.T","s.t","t",L"s.Таб"};
+			wxString name = "Scheme.Lower_Table";
+                        wxString exp,rez;
+SECTION( "Приведение к регистру" ) {
+                        wxString s,n;
+			make_identifier(name,s,n,true);
+                        rez=s+"."+n;
+                        CHECK(rez=="scheme.lower_table");
+                        make_identifier(name,s,n,false);
+                        rez=s+"."+n;
+                        CHECK(rez==name);
+}
+SECTION( "Сочетания схемы и таблицы" ) {
+                        wxString s,n;
+ for (size_t i = 0; i < names.size(); ++i) {
+			make_identifier(names[i],s,n,true);
+                        rez= s.Len()>0 ? s+"."+n : n;
+        CHECK(exps[i] == rez);
+    }
+}
+}
+/////////////// ALIGN
 TEST_CASE( "AlignWrap", "[align]" ) {
 			int cfg = AlignWrap::ALL_LINES| AlignWrap::FIRST_LINE;
 			AlignWrap a;

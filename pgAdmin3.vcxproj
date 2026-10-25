@@ -756,6 +756,7 @@
     <ClCompile Include="hotdraw\utilities\hdPoint.cpp" />
     <ClCompile Include="hotdraw\utilities\hdRect.cpp" />
     <ClCompile Include="hotdraw\utilities\hdRemoveDeleteDialog.cpp" />
+    <ClCompile Include="globalvar.cpp" />
     <ClCompile Include="pgAdmin3.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
