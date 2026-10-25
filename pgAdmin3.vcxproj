@@ -160,7 +160,7 @@
       <AdditionalIncludeDirectories>$(WXWIN)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase$(wxShortVersionString)u.lib;wxbase$(wxShortVersionString)u_xml.lib;wxbase$(wxShortVersionString)u_net.lib;wxmsw$(wxShortVersionString)u_adv.lib;wxmsw$(wxShortVersionString)u_core.lib;wxmsw$(wxShortVersionString)u_html.lib;wxmsw$(wxShortVersionString)u_aui.lib;wxregexu.lib;wxpng.lib;wxzlib.lib;wxjpeg.lib;wxtiff.lib;wxmsw$(wxShortVersionString)u_stc.lib;wxmsw$(wxShortVersionString)u_xrc.lib;wxexpat.lib;libpq.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;winmm.lib;libssl64MD.lib;libcrypto64MD.lib;libiconv.lib;libxml2.lib;libssh2.lib;libxslt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase$(wxShortVersionString)u.lib;wxbase$(wxShortVersionString)u_xml.lib;wxbase$(wxShortVersionString)u_net.lib;wxmsw$(wxShortVersionString)u_adv.lib;wxmsw$(wxShortVersionString)u_core.lib;wxmsw$(wxShortVersionString)u_html.lib;wxmsw$(wxShortVersionString)u_aui.lib;wxregexu.lib;wxpng.lib;wxzlib.lib;wxjpeg.lib;wxtiff.lib;wxmsw$(wxShortVersionString)u_stc.lib;wxmsw$(wxShortVersionString)u_xrc.lib;wxexpat.lib;libpq.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;winmm.lib;libssl.lib;libcrypto.lib;libiconv.lib;libxml2.lib;libssh2.lib;libxslt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(PROJECTDIR)/../libssh2/src/Release;$(OPENSSL)/lib/VC;$(WXWIN)/lib/vc14x_x64_dll;$(PGDIR)/lib;$(PGBUILD)/lib;$(PGBUILD)/libxml2/lib;$(PGBUILD)/libxslt/lib;$(PGBUILD)/iconv/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcd.lib;libcid.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -1441,7 +1441,7 @@
     <ClInclude Include="utils\diff_match_patch.h" />
   </ItemGroup>
   <ItemGroup>
-    <png2c Include="ex_pscan.png" />
+    <png2c Include="include\images\ex_pscan.png" />
     <png2c Include="include\images\aggregate-sm.png" />
     <png2c Include="include\images\aggregate.png" />
     <png2c Include="include\images\aggregates.png" />
