@@ -27,12 +27,11 @@ wxString GetTextFromContainer(const wxHtmlCell *cellup) {
     if (cc) {
             const wxHtmlCell *c;
             bool br=true;
-            int len2=str.Length();
             int c2=0;
             for ( c = cellup->GetFirstChild();
                     c ; c = c->GetNext())
             {
-                int len=str.Length();
+                auto len=str.Length();
                 str+=GetTextFromContainer(c);
                 if (len==str.Length() && br) {
                     br=false;
@@ -137,9 +136,6 @@ m_clearBtn->SetMaxSize(wxSize(-1, btnFixedH));
 bottomPanel->SetSizer(bottomSizer);
 bottomPanel->Layout();
 
-// Минимальная высота нижней панели по содержимому
-// (учтёт поле ввода, кнопки и статус — пересчитывать вручную не нужно)
-const int bottomH = bottomSizer->CalcMin().GetHeight();
 
 
 auto* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -257,7 +253,6 @@ SetSizer(mainSizer);
                     start=start->GetNext();
                 }
                 if (ce) c=ce; else ce=cell;
-                bool isConainer=false;
                 wxString str;
                 while (c) {
                     wxHtmlFontCell *cc = wxDynamicCast(c, wxHtmlFontCell);
@@ -279,7 +274,6 @@ SetSizer(mainSizer);
                         wxString ss=c->GetId();
 //                         std::cout << ss.c_str(); 
                          ce=c;
-                         isConainer=true;
                          break;
                     }
                     if (c==ce) {

@@ -682,30 +682,24 @@ const wxString dlgSchedule::ChkListBox2StrArray(wxCheckListBox *lb)
 void dlgSchedule::OnSelectAll(wxCommandEvent &ev, int origin)
 {
 	bool check = false;
-	wxBitmapButton *btn;
 	wxCheckListBox *lb;
 	wxString tooltip;
 
 	switch (origin)
 	{
 		case 1:
-			btn = ((wxBitmapButton *)btnWeekdays);
 			lb = chkWeekdays;
 			break;
 		case 2:
-			btn = ((wxBitmapButton *)btnMonthdays);
 			lb = chkMonthdays;
 			break;
 		case 3:
-			btn = ((wxBitmapButton *)btnMonths);
 			lb = chkMonths;
 			break;
 		case 4:
-			btn = ((wxBitmapButton *)btnHours);
 			lb = chkHours;
 			break;
 		case 5:
-			btn = ((wxBitmapButton *)btnMinutes);
 			lb = chkMinutes;
 			break;
 		default:

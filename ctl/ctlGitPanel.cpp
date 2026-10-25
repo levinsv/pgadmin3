@@ -270,7 +270,6 @@ ctlGitPanel::ctlGitPanel(wxWindow* parent, frmMain* form, wxJSONValue cf) :
 
 }
 void ctlGitPanel::OnListRClick(wxListEvent& evt) {
-    int i = evt.GetIndex();
     wxListItem it=evt.GetItem();
     wxString pat = it.GetText();
     if (it) {
@@ -361,6 +360,10 @@ wxMemoryBuffer ctlGitPanel::execRequestBinary(wxString url) {
     Bind(wxEVT_WEBREQUEST_STATE, [&rez,&buf](wxWebRequestEvent& evt) {
         switch (evt.GetState())
         {
+        case wxWebRequest::State_Idle:
+        case wxWebRequest::State_Active:
+        case wxWebRequest::State_Cancelled:
+            break;
             // Request completed
         case wxWebRequest::State_Completed:
         {
@@ -451,6 +454,10 @@ wxJSONValue ctlGitPanel::execRequest(wxString url, wxJSONValue args,wxString cmd
     Bind(wxEVT_WEBREQUEST_STATE, [&link, &rez, &answer](wxWebRequestEvent& evt) {
         switch (evt.GetState())
         {
+        case wxWebRequest::State_Idle:
+        case wxWebRequest::State_Active:
+        case wxWebRequest::State_Cancelled:
+            break;
             // Request completed
         case wxWebRequest::State_Completed:
         {
@@ -535,7 +542,7 @@ void ctlGitPanel::GetBranchList(bool refresh) {
             m_Branch_List_Ctrl->Append(name);
         }
     }
-    int i;
+    unsigned int i;
     for (i = 0; i < m_Branch_List_Ctrl->GetCount(); i++) {
         if (m_Branch_List_Ctrl->GetString(i) == currentDBname) {
             m_Branch_List_Ctrl->SetSelection(i);
@@ -716,7 +723,7 @@ wxString url_encode(const wxString param) {
     char *readBuff = utf8CB.data();
     size_t len = strlen(readBuff);
     wxString encode;
-    for (int i = 0; i < len;i++) {
+    for (size_t i = 0; i < len;i++) {
         char c = readBuff[i];
         if ((c>0) && ((isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~'|| c=='='))) {
             encode.Append(c);
@@ -791,7 +798,7 @@ void ctlGitPanel::GetRepositoryArchive(wxString branchName) {
             wxString entryName;
             wxTarEntry* entry;
             // 4. Читать записи архива по одной
-            while (entry = tarIn.GetNextEntry()) {
+            while ((entry = tarIn.GetNextEntry())) {
                 entryName = entry->GetName();
                 if (!entry->IsDir()) {
                     wxString filecontext;
@@ -851,7 +858,7 @@ void ctlGitPanel::GetRepositoryTree(wxString branchName, wxString path, wxString
                     if (p3 > 0) {
                         tmp = response_link.substr(st, p3 - st);
                         int p1 = tmp.Find("rel=\"next");
-                        if (p1 < 0 && p3 == response_link.Len()) {
+                        if (p1 < 0 && p3 == (int)response_link.Len()) {
                             return;
                         };
                         if (p1 > 0) {
@@ -877,7 +884,7 @@ wxString ctlGitPanel::ArgsForGet(wxJSONValue r) {
     wxArrayString key = r.GetMemberNames();
     wxString params;
     wxJSONValue rez;
-    for (int i = 0; i < key.Count(); i++) {
+    for (size_t i = 0; i < key.Count(); i++) {
         //if (key[i]=="path") 
             wxString p = key[i] + "=" + r[key[i]].AsString();
             if (params.IsEmpty()) params = "?";
@@ -1012,8 +1019,6 @@ void ctlGitPanel::GetExpandedChildNodes(wxTreeItemId node, wxArrayString& expand
     else child = browser->GetFirstChild(node, cookie);
     pgObject* obj;
     wxString path;
-    time_t tmp;
-    int size = expandedNodes.Count();
     while (child.IsOk())
     {
         obj = browser->GetObject(child);
@@ -1177,7 +1182,7 @@ void ctlGitPanel::OnLoadGitButton(wxCommandEvent& WXUNUSED(evt))
             }
         }
 
-        for (int i = 0; i < expandedNodes.GetCount(); i++) {
+        for (size_t i = 0; i < expandedNodes.GetCount(); i++) {
             wxString s = expandedNodes[i];
             //m_commit_List_View->InsertItem(m_commit_List_View->GetItemCount(), s, 2);
         }

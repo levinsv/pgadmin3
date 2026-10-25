@@ -1179,7 +1179,7 @@ void frmStatus::AddQuerystatePane()
 
 void frmStatus::AddLogPane()
 {
-    int rc = -1;
+    //int rc = -1;
     wxString hint = HINT_INSTRUMENTATION;
 
     // Create panel
@@ -1352,7 +1352,7 @@ void frmStatus::OnCopyQuery(wxCommandEvent &ev)
     int row, col;
     wxString text = wxT("");
     wxString dbname = wxT("");
-    unsigned int maxlength;
+    //unsigned int maxlength;
 
     // Only the status list shows the query
     list = statusList;
@@ -1369,7 +1369,7 @@ void frmStatus::OnCopyQuery(wxCommandEvent &ev)
     }
     else return;
     // Check if we have a query whose length is maximum
-    maxlength = -1024;
+    //maxlength = -1024;
 
     // If we have some real query, launch the query tool
     if (text.Length() > 0 && dbname.Length() > 0
@@ -1835,13 +1835,13 @@ void frmStatus::OnRefreshStatusTimer(wxTimerEvent &event)
         , phase, pid from pg_stat_progress_create_index\
         ) v) v\
         ";
-    bool iswalsend = false;
+    //bool iswalsend = false;
     if (BackendMinimumVersion(10, 0))
     {
         if (BackendMinimumVersion(13, 0))
             {
                 q += wxT(",backend_type,wait_event_type,wait_event,v.progress_info,case when backend_type='autovacuum launcher' then (select min(xmin::text::bigint) from pg_replication_slots) end av_replica\n");
-                iswalsend = true;
+                //iswalsend = true;
                 if (wait_sample && wait_enable) {
                     q += ",transaction_timestamp() tt,hs.wait_sample,hs.maxts";
                 }
@@ -2117,7 +2117,7 @@ void frmStatus::OnRefreshStatusTimer_After()
 
                 // filter apply
                 bool flt = false;
-                for (int i = 0; i < filterColumn.size(); i++) {
+                for (int i = 0; i < (int)filterColumn.size(); i++) {
                     int col = filterColumn[i];
                     wxListItem listitem;
                     listitem.SetMask(wxLIST_MASK_TEXT);
@@ -2153,7 +2153,7 @@ void frmStatus::OnRefreshStatusTimer_After()
         {
             if (countsenders == 0 && pidAV>0) {
                 // all walsender active='f'
-                for(long i = 0; i < pids.size(); i++)
+                for(long i = 0; i < (long)pids.size(); i++)
                 {
                     if (pids[i]==pidAV) 
                         statusList->SetItemBackgroundColour(i,
@@ -2167,7 +2167,7 @@ void frmStatus::OnRefreshStatusTimer_After()
             numstr=blocked.BeforeFirst(',',&str);
             while (!numstr.IsEmpty()) {
                 int number = wxAtoi(numstr);
-                for(long i = 0; i < pids.size(); i++)
+                for(long i = 0; i < (long)pids.size(); i++)
                 {
                     if (pids[i]==number) {
                         statusList->SetItemBackgroundColour(i,
@@ -2180,7 +2180,7 @@ void frmStatus::OnRefreshStatusTimer_After()
             }
             if (onlyhightligth) {
                 wxArrayString newquerys;
-                long r = statusList->GetItemCount();
+                //long r = statusList->GetItemCount();
                 //wxColour bg = *WHITE;
                 wxColour bgidle=wxColour(settings->GetIdleProcessColour());
                 long  rr = 0;
@@ -2213,7 +2213,7 @@ void frmStatus::OnRefreshStatusTimer_After()
         if (tt.IsValid() && wait_sample && wait_enable) {
             WS.EndSeriosSample();
         }
-        bool selverify=true;
+        //bool selverify=true;
         long r = statusList->GetItemCount();
         long fuck_rows=0;
         while ((row) < statusList->GetItemCount()) {
@@ -2807,7 +2807,7 @@ void frmStatus::OnRefreshLogTimer(wxTimerEvent &event)
             long lastrow = logList->GetItemCount();
             bool remote = lastrow - 1 == logList->GetFocusedItem();
             long cnt = 0;
-            float pr = 0;
+            //float pr = 0;
             long timeout = logTimer->GetInterval();
             const wxMilliClock_t waitUntil = wxGetLocalTimeMillis() + timeout;
             logisread = true;
@@ -3133,7 +3133,7 @@ void frmStatus::addLogLine(const wxString &str, bool formatted, bool csv_log_for
 {
     int row = logList->GetItemCount();
 
-    int idxTimeStampCol = -1, idxLevelCol = -1;
+    int idxLevelCol = -1;
     int idxLogEntryCol = 0;
 
 
@@ -3587,7 +3587,6 @@ void ReadLogThread::DoTerminate() {
 }
 
 void* ReadLogThread::Entry() {
-    int size_rows = 0;
     while (!m_exit)
     {
         {
@@ -3602,7 +3601,6 @@ void* ReadLogThread::Entry() {
     return NULL;
 }
 void ReadLogThread::getFilename() {
-    pgSet* set;
     if (logfileName.length() == 0) return;
     if (m_exit || m_break) return;
         if (!conn->IsAlive()) {
@@ -4390,7 +4388,6 @@ void frmStatus::OnSelQuerystateItem(wxListEvent &event)
 void frmStatus::ActivatePane(wxString name) {
     if (!manager.GetPane(name).HasFlag(wxAuiPaneInfo::optionActive)) {
         //manager.GetPane("Logfile").HasFlag(wxAuiPaneInfo::optionActive);
-        int i, pane_count;
         wxAuiPaneInfo* active_paneinfo = NULL;
         for (unsigned int i = 0; i < manager.GetAllPanes().GetCount(); i++)
         {
@@ -4662,7 +4659,7 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
     if (!rc.Contains(m)) {
     }
     else {
-        wxPoint curr = logList->ScreenToClient(m);
+        //wxPoint curr = logList->ScreenToClient(m);
         if (lastmouse == m && lastlogitem != -1 && lastlogitemShow != lastlogitem) {
             {
                 wxString s;
@@ -4678,7 +4675,6 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
                 wxSize rr(350, 25);
                 // 
                 wxString key = "content";
-                int x, y;
                 wxPoint p = m;
                 p.x = p.x + 5;
                 p.y = p.y + 5;
@@ -4719,7 +4715,7 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
                     if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
                     if (oldp == p) p.x = p.x + 20;
                     m_Popup->Move(p);
-                    wxRect r = m_Popup->GetScreenRect();
+                    //wxRect r = m_Popup->GetScreenRect();
                     //m_PopupHelp->Position(p, wxSize(0, 17));
                     m_Popup->Popup();
                     //wxPopupTransientWindow

@@ -127,7 +127,7 @@ wxString pgDomain::GetSql(ctlTree *browser)
 			sql += wxT("\n  NOT NULL");
 
 		// Get a count of the constraints.
-		int consCount = 0;
+		//int consCount = 0;
 		pgCollection *constraints = browser->FindCollection(checkFactory, GetId());
 		if (constraints)
 		{

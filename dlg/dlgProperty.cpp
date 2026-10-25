@@ -819,7 +819,7 @@ void dlgProperty::ShowObject()
 	if (owneritem)
 	{
 		// Get the object node in case we need it later
-		wxTreeItemId objectnode = mainForm->GetBrowser()->GetItemParent(owneritem);
+		//wxTreeItemId objectnode = mainForm->GetBrowser()->GetItemParent(owneritem);
 
 		// Stash the selected items path
 		wxString currentPath = mainForm->GetCurrentNodePath();

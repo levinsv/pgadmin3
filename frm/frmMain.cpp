@@ -310,7 +310,7 @@ MyHash1 bundleHash;
 
 wxBitmapBundle GetBundleSVG(wxBitmap* std, wxString name, wxSize sz) {
 	wxBitmapBundle bb;
-	wxBitmapBundle *b=NULL;
+	//wxBitmapBundle *b=NULL;
 	bb = bundleHash[name];
 	if (bb.IsOk()) return bb;
 	extern wxString dataDir;

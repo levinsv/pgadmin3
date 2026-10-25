@@ -516,7 +516,7 @@ void dlgRole::OnVarSelChange(wxListEvent &ev)
 		// We used to raise an OnVarnameSelChange() event here, but
 		// at this point the combo box hasn't necessarily updated.
 		wxString value = lstVariables->GetText(pos, 2);
-		int sel = cbVarname->FindString(lstVariables->GetText(pos, 1));
+		cbVarname->FindString(lstVariables->GetText(pos, 1));
 
 		txtValue->SetValue(value);
 		chkValue->SetValue(value == wxT("on"));

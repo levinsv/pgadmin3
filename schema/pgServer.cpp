@@ -1421,7 +1421,7 @@ void pgServer::ShowTreeDetail(ctlTree *browser, frmMain *form, ctlListView *prop
 			pgSet *showparam = ExecuteSet(sql);
 			if (showparam)
 			{
-				int pos = 0;
+				//int pos = 0;
 				std::map<wxString,int> uniq;
 				wxColour diff("#c6f2f3");
 				wxColour user("#dfdfdf");

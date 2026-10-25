@@ -11,10 +11,10 @@ int s_pid_HIGHLIGH = -1;
 std::vector<int> sort_vec_map(const std::vector<int>& src, int& sum) {
     std::vector<int> tmp(src.size());
     std::vector<int> ok(src.size());
-    for (int i = 0; i < src.size(); i++) {
+    for (size_t i = 0; i < src.size(); i++) {
         int k = -1;
         int max = -1;
-        for (int j = 0; j < src.size(); j++) {
+        for (size_t j = 0; j < src.size(); j++) {
             if (ok[j] == 0 && src[j] > max) { max = src[j]; k = j; }
         }
         if (k == -1) break;
@@ -219,8 +219,8 @@ wxTopActivity::wxTopActivity(wxWindow* parent, WaitSample* WS, wxSize sz) :
 void wxTopActivity::SetFilter(long long qid) {
     if (qid != -1) {
         unsigned long long ull = qid;
-        int h = ull >> 32;
-        int l = ull & 0xFFFFFFFF;
+        //int h = ull >> 32;
+        //int l = ull & 0xFFFFFFFF;
         m_filter_detail = wxString::Format("%llx", ull);
         m_qid_filter = qid;
     }
@@ -307,7 +307,7 @@ void wxTopActivity::render(wxDC& dc)
 
     wxRect a(YaxisWidth, ypos, xw, btl_y);
     m_area = a;
-    int max_label = xw / time_sz.x;
+    //int max_label = xw / time_sz.x;
     int msLen = ws->GetInterval(0, -1);
     if (msLen == 0) return;
     int width_sample = 2;
@@ -324,7 +324,7 @@ void wxTopActivity::render(wxDC& dc)
         m_regroup = false;
         m_sumtotal.clear();
         // calc sum
-        for (size_t j = 0; j < m_count_wait; j++) // serios group
+        for (size_t j = 0; j < (size_t)m_count_wait; j++) // serios group
         {
             int Yv = val[0][j];
             if (Yv < 0) continue;
@@ -385,8 +385,8 @@ void wxTopActivity::render(wxDC& dc)
                 if (m_collapse.find(name) != m_collapse.end()) m_collapse.emplace(name, 0);
                 wxString fn;
                 wxString grp_name = name;
-                long long w_sum = 0;
-                int grp_total = m_sumtotal[name];
+                //long long w_sum = 0;
+                //int grp_total = m_sumtotal[name];
                 int start = m_title_i.size() + 1;
                 while (!s.empty())
                 {
@@ -400,9 +400,9 @@ void wxTopActivity::render(wxDC& dc)
                 all_remove = true;
                 cnt_rem = 0;
                 // sort buuble
-                for (int j = 1; j < m_title_i.size() - start; j++) {
+                for (int j = 1; j < (int)m_title_i.size() - start; j++) {
                     bool exit = true;
-                    for (int i = start; i <= m_title_i.size() - j - 1; i++) {
+                    for (int i = start; i <= (int)m_title_i.size() - j - 1; i++) {
                         if (m_title_i[i].total < m_title_i[i + 1].total) {
                             info = m_title_i[i];
                             m_title_i[i] = m_title_i[i + 1];
@@ -435,7 +435,7 @@ void wxTopActivity::render(wxDC& dc)
     wxString grp_name;
     int iscollapse = 0;
     int total = 0;
-    for (int i = 0; i < m_title_i.size() && LegengWidth>0; i++)
+    for (size_t i = 0; i < m_title_i.size() && LegengWidth>0; i++)
     {
 
         title_info info = m_title_i[i];
@@ -443,14 +443,12 @@ void wxTopActivity::render(wxDC& dc)
         wxSize _sz;
         wxString name = info.title;
         wxFont f = dc.GetFont();
-        int addspc = 0;
         long long  w_sum = 0;
         wxString fn;
         wxString tpr;
         if (info.iner) {
             if (iscollapse == 0) continue;
             f.SetPointSize(f.GetPointSize() - 1);
-            addspc = 0;
             if (info.total == 0) w_sum = -1;
             else
                 w_sum = 100 * info.total / total;
@@ -566,13 +564,13 @@ void wxTopActivity::render(wxDC& dc)
     std::vector<wxPoint> down_poly;
     // xAxis
     int xAareaW = time_sz.GetWidth() + 24;
-    int Nlabel = (a.width - 1) / xAareaW;
+    //int Nlabel = (a.width - 1) / xAareaW;
     int stepx = (xAareaW / width_sample);
     if (stepx == 0) stepx = 1;
     dc.SetPen(ws->GetColorGui(Color_GUI::LABEL));
     wxRect rd;
     wxPoint ptest;
-    for (int i = stepx / 2; i < xAxis.size() && LegengWidth > 0; i = i + stepx)
+    for (int i = stepx / 2; i < (int)xAxis.size() && LegengWidth > 0; i = i + stepx)
     {
         wxDateTime t = xAxis.at(i);
         //t.Add(wxTimeSpan(0, 0, 0, m_agg_int));
@@ -603,7 +601,7 @@ void wxTopActivity::render(wxDC& dc)
     if (down_poly.size() < 2) down_poly.push_back(wxPoint(cx, cy));
     //down_poly.push_back(wxPoint(cx,cy));
     //float koef=(float)t_maxY /(float)(a.height - 10) ;
-    int vert_line = m_agg_int;
+    //int vert_line = m_agg_int;
     float koef = (float)(a.height - 2) / (float)t_maxY;
     wxPoint selP(0, 0);
     int selIdx = -1;
@@ -612,8 +610,8 @@ void wxTopActivity::render(wxDC& dc)
         int Yv = val[0][j];
         if (Yv < 0) continue;
 
-        int ii = down_poly.size() - 1;
-        ii = 0;
+//        int ii = down_poly.size() - 1;
+//        ii = 0;
         std::vector<wxPoint> up_poly;
         wxPoint p;
         for (size_t i = 0; i < val.size(); i++)
@@ -636,16 +634,16 @@ void wxTopActivity::render(wxDC& dc)
                 }
             }
         }
-        vert_line = -1;
+        //vert_line = -1;
         if (up_poly.size() < 2) {
             up_poly.push_back(wxPoint(down_poly[1].x, p.y));
         }
         std::vector<wxPoint> poly(down_poly.size());
-        for (int i = 0; i < poly.size(); i++)
+        for (size_t i = 0; i < poly.size(); i++)
         {
             poly[i] = down_poly[i];
         }
-        for (int i = up_poly.size() - 1; i >= 0; i--)
+        for (int i = (int)up_poly.size() - 1; i >= 0; i--)
         {
             poly.push_back(up_poly[i]);
         }
@@ -653,7 +651,7 @@ void wxTopActivity::render(wxDC& dc)
         c.Set(cl);
         dc.SetBrush(c);
         dc.DrawPolygon(poly.size(), poly.data());
-        for (int i = 0; i < down_poly.size(); i++)
+        for (size_t i = 0; i < down_poly.size(); i++)
         {
             down_poly[i] = up_poly[i];
         }
@@ -713,7 +711,7 @@ void wxTopActivity::render(wxDC& dc)
             if (sa.wait_id >= m_count_wait) continue; // new wait append
             if (m_qid_filter != -1 && m_qid_filter != q) continue;
             int idx = -1;
-            for (int i = 0; i < qid_.size(); i++) {
+            for (size_t i = 0; i < qid_.size(); i++) {
                 if (qid_[i] == q) { idx = i; break; }
             }
             if (idx == -1) {
@@ -799,7 +797,7 @@ void wxTopActivity::render(wxDC& dc)
                         ypos += title_sz.y + VERT_SPC;
                     }
                     //
-                    for (int i = 0; i < map_sum_all.size(); i++) {
+                    for (int i = 0; i < (int)map_sum_all.size(); i++) {
                         int wait_index = map_sum_all[i];
                         long long w_sum = (100 * sum_all[wait_index] / total);
                         float sek = (period * sum_all[wait_index]) / 1000.0;
@@ -861,7 +859,7 @@ void wxTopActivity::render(wxDC& dc)
                                     k.sum = v;
                                     if (v < 100) continue;
                                     bool ff = true;
-                                    for (int p = 0; p < sortv.size(); p++) {
+                                    for (int p = 0; p < (int)sortv.size(); p++) {
                                         if (sortv[p].sum < v) {
                                             sortv.insert(sortv.begin() + p, k);
                                             ff = false;
@@ -871,7 +869,7 @@ void wxTopActivity::render(wxDC& dc)
                                     if (ff) sortv.push_back(k);
                                 }
                             }
-                            for (int j1 = 0; j1 < sortv.size(); j1++) {
+                            for (int j1 = 0; j1 < (int)sortv.size(); j1++) {
                                 key3 k = sortv[j1];
                                 if (k.w == wait_index) {
                                     v = k.sum;
@@ -880,8 +878,8 @@ void wxTopActivity::render(wxDC& dc)
                                     float fsek = (float)w_sum / 1000;
                                     if (fsek < limit) continue;
                                     unsigned long long ull = k.qid;
-                                    int h = ull >> 32;
-                                    int l = ull & 0xFFFFFFFF;
+                                    //int h = ull >> 32;
+                                    //int l = ull & 0xFFFFFFFF;
                                     wxString tqid = wxString::Format("%llx", ull);
                                     k.pid = -1;
                                     int cnt = qid_wait_countPID[k];
@@ -987,7 +985,7 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
     if (m_area.Contains(mouse)) {
         int dl = cx - mouse.x;
         dl = dl / width_sample;
-        if (dl >= 0 && dl < xAxis.size()) {
+        if (dl >= 0 && dl < (int)xAxis.size()) {
             t = xAxis.at(dl);
             // t.Add(wxTimeSpan(0, 0, 0, m_agg_int));
         }
@@ -1100,7 +1098,7 @@ void wxTopActivity::paintSelRange(wxDC& dc, int width_sample) {
         wxString l3text = ElapsedTimeToStr(ll.GetValue());
         wxSize sz3 = dc.GetTextExtent(l3text);
         wxRect r2(tx2.x - 1, tx2.y, sz.x + 2, sz.y);
-        int maxx = 0; bool isup = true;
+        int maxx = 0;
         if (szf.x < (p2.x - p1.x)) {
             // | labelLeft 
             dc.DrawRectangle(r); // inner
@@ -1254,10 +1252,11 @@ void wxTopActivity::resize(wxSizeEvent& event) {
 void wxTopActivity::mouseWheelMoved(wxMouseEvent& event) {
     int r = event.GetWheelRotation();
     int n = -1;
-    for (int i = 0; i < sizeof(m_inter) / sizeof(int); i++)
+    int size_m= (int) (sizeof(m_inter) / sizeof(int));
+    for (int i = 0; i < size_m; i++)
     {
         if (m_inter[i] == m_agg_int) {
-            n = i;
+            n = (int)i;
             if (r < 0) {
                 i--;
                 n = i < 0 ? -1 : i;
@@ -1265,7 +1264,7 @@ void wxTopActivity::mouseWheelMoved(wxMouseEvent& event) {
             }
             else {
                 i++;
-                n = i >= (sizeof(m_inter) / sizeof(int)) ? -1 : i;
+                n = i >= (size_m) ? -1 : i;
                 break;
             }
         }
@@ -1330,7 +1329,7 @@ bool topDataViewCtrl::CalcRowsDataView(bool force, bool IsPidFirst) {
     std::map<key3p, int> PID_QID_SUM; //
     std::map<int, int> PID_BG; // 
     int sz2 = smp->size();
-    long long col1 = -3;
+    //long long col1 = -3;
     while (ps < sz2)
     {
         sa = smp->at(ps++);
@@ -1409,10 +1408,10 @@ bool topDataViewCtrl::CalcRowsDataView(bool force, bool IsPidFirst) {
             }
             return l.first < r.first;
         });
-    int rows = 0;
+//    int rows = 0;
     std::vector<key3> ROWS;
     for (auto const& pa : vecp) {
-        int col = 0;
+//        int col = 0;
         std::vector<pair> vecSORT;
         if (IsPidFirst) {
             key3p k3{ -1,999,pa.first.pid };
@@ -1622,8 +1621,8 @@ void wxCustomButton::render(wxDC& dc)
     int y = sz.GetHeight();
     std::vector<Sample>* smp = ws->GetSamples();
     Sample sa;
-    int vtime = 0;
-    std::vector<Sample>::iterator it = smp->end();
+    //int vtime = 0;
+    //std::vector<Sample>::iterator it = smp->end();
 
 
     int idx = smp->size() - 1;
@@ -1632,7 +1631,7 @@ void wxCustomButton::render(wxDC& dc)
     std::vector<int> clr = ws->GetColors();
     std::vector<int> hz = clr;
     std::vector<ClrSum> graph;
-    for (int i = 0; i < hz.size(); i++) hz[i] = 0;
+    for (int i = 0; i < (int)hz.size(); i++) hz[i] = 0;
     // sum(samples) from  group by wait_id
     int prev_c = -1;
     int sum_by_clr = 0;

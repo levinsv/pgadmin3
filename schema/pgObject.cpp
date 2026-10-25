@@ -1326,7 +1326,7 @@ wxString pgObject::GetGrant(const wxString &allPattern, const wxString &_grantFo
 			wxSortedArrayString acls(wxSplit(acl.Mid(1, acl.Length() - 2),','));
 
 			//while (acls.HasMoreTokens())
-			for (int j=0;j<acls.Count();j++)
+			for (int j=0;j<(int)acls.Count();j++)
 			{
 				//str = acls.GetNextToken();
 				str = acls[j];
@@ -1674,7 +1674,7 @@ void pgDatabaseObject::DisplayStatistics(ctlListView *statistics, const wxString
 				}
 			}
 			if (vmax > 0 && pretty) {
-				for (int i = 0; i < a.Count(); i++) {
+				for (int i = 0; i < (int)a.Count(); i++) {
 					if (a[i] >= 0) {
 						wxString str = statistics->GetItemText(i, 1);
 						wxLongLong l = StrToLongLong(str);
@@ -2236,7 +2236,7 @@ wxString pgObject::GetSqlReCreate(frmMain *form, pgObject *obj)
 		ctlTree *browser=form->GetBrowser();
 		wxString databasePath = form->GetNodePath(obj->GetDatabase()->GetId());
 		// получение правила и от него уже зависимости будем раскручивать
-        int colcount = 0;
+        //int colcount = 0;
         pgSetIterator set(GetConnection(),
                 wxT("WITH RECURSIVE t(lvl,classid,objid,type_child) AS (\n")
                 wxT(" select 1,c_classid::regclass,c_objid,type_child from (\n")
@@ -2289,7 +2289,7 @@ wxString pgObject::GetSqlReCreate(frmMain *form, pgObject *obj)
  
         // lvl;classid;objid;child_type;objname;sch;parent
  sql=wxT("-- ");
- pgCollection *database = 0;
+ //pgCollection *database = 0;
  wxTreeItemId dbitem = obj->GetDatabase()->GetId();
 			//pgCollection *collect = 0;
 			pgCollection *collectSchEl = 0;
@@ -2323,7 +2323,7 @@ if (1==0) {
 				sxema=set.GetVal(wxT("sch"));
 				table=refname;
 			}
-			pgaFactory *depFactory = 0;			
+			//pgaFactory *depFactory = 0;			
 			if (refname.IsEmpty())
 				continue;
 			if (findobj.Contains(wxT(",")+table+wxT(".")+refname+wxT(","))) continue;
@@ -2335,7 +2335,7 @@ if (1==0) {
 				collectSchEl = (pgCollection *)browser->GetObject(item);
 				if (collectSchEl && collectSchEl->GetMetaType() == PGM_SCHEMA && collectSchEl->GetName()==sxema)
 				{
-					    pgCollection *coll= 0;
+					    //pgCollection *coll= 0;
 						wxString whatfindt;
 						wxString tmpsql;
 						wxString fn=collectSchEl->GetFullName();
@@ -2350,7 +2350,7 @@ if (1==0) {
 						wxTreeItemId id=item;
 						wxString collTypeName;
 						while ( id.IsOk() &&
-									(  browser->GetItemText(id) == wxT("Dummy") && !browser->GetItemData(id) 
+									(  (browser->GetItemText(id) == wxT("Dummy") && !browser->GetItemData(id) )
 									  || true ))
 						{
 								pgObject *oo= ((pgObject *) browser->GetItemData(id));
@@ -2404,7 +2404,7 @@ if (1==0) {
 								}
 								wxTreeItemId matchItem = browser->FindItem(cll->GetId(),refname);
 								if ( matchItem.IsOk() ) {
-									pgObject *o=browser->GetObject(matchItem);
+									//pgObject *o=browser->GetObject(matchItem);
 									//fn=o->GetName()+wxT(" - type : ")+o->GetTypeName();
 									//sql+=fn+wxT("\n");
 									tmpsql=browser->GetObject(matchItem)->GetSql(browser);

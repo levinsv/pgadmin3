@@ -1577,9 +1577,9 @@ public:
   bool HasPage(int page);
 
 private:
-  mpPrintout() : drawn(false), plotWindow(NULL) {};
   bool drawn;
   mpWindow *plotWindow;
+  mpPrintout() : drawn(false), plotWindow(NULL) {};
 };
 
 //-----------------------------------------------------------------------------

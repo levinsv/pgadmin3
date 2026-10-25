@@ -275,8 +275,8 @@ pgError ctlSQLResult::GetResultError()
 	if (thread)
 		return thread->GetResultError();
 
-	pgError dummy;
-	memset(&dummy, 0, sizeof(dummy));
+	pgError dummy{};
+	//memset(&dummy, 0, sizeof(dummy));
 	return dummy;
 }
 
@@ -452,7 +452,6 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
 
 		wxArrayInt rows = GetSelectedRows();
 		size_t numRows = GetNumberRows();
-		size_t numRows2 = GetNumberRows();
 		if (rows.Count()>0) numRows=rows.Count();
 		size_t row=0;
 		sqlResultTable *t=(sqlResultTable *)GetTable();
@@ -470,7 +469,7 @@ wxString ctlSQLResult::GenerateTemplate(wxString &templ,int action)
 				if (e.flags.indexrow) {
 					int dr=e.row;
 					if (dr<0) dr=row+dr-1;
-					if (dr>=0 && dr<numRows) r=dr;
+					if (dr>=0 && dr<(int)numRows) r=dr;
 					if (rows.Count()>0) r=rows[r]; else r=r;
 				}
 				bool isnull=false;
@@ -520,15 +519,9 @@ wxString ctlSQLResult::CopySelColumnNameType(bool onlyname)
 	wxString ss = wxEmptyString;
 	if (GetSelectedCols().GetCount()) {
 		wxArrayInt cols = GetSelectedCols();
-		int err = 0;
-		int noformat = 0;
-		int dtType = -1;
-		//AppendColumnHeader(str, cols);
-			//str.Append(GetExportLine(i, cols));
 		for (size_t col = 0; col < cols.Count(); col++)
 		{
 			int cl = cols[col];
-			bool isDt = false;
 			wxString colName = colNames.Item(cl);
 			wxString colType = colTypes.Item(cl);
 			if (!ss.IsEmpty()) ss.Append(", ");
@@ -666,17 +659,17 @@ wxString ctlSQLResult::CompareSelectCells() {
 		if (GetSelectionBlockTopLeft().GetCount() > 0 &&
 			GetSelectionBlockBottomRight().GetCount() > 0)
 		{
-			unsigned int x1, x2, y1, y2;
-			int count = GetSelectionBlockTopLeft().GetCount();
+			unsigned int x1, y1, y2;
+			auto count = GetSelectionBlockTopLeft().GetCount();
 
 			x1 = GetSelectionBlockTopLeft()[0].GetCol();
-			x2 = GetSelectionBlockBottomRight()[0].GetCol();
+			//x2 = GetSelectionBlockBottomRight()[0].GetCol();
 			y1 = GetSelectionBlockTopLeft()[0].GetRow();
 			y2 = GetSelectionBlockBottomRight()[0].GetRow();
 			for (size_t n = 0; n < count; n++)
 			{
 				x1 = GetSelectionBlockTopLeft()[n].GetCol();
-				x2 = GetSelectionBlockBottomRight()[n].GetCol();
+				//x2 = GetSelectionBlockBottomRight()[n].GetCol();
 				y1 = GetSelectionBlockTopLeft()[n].GetRow();
 				y2 = GetSelectionBlockBottomRight()[n].GetRow();
 				for (i = y1; i <= y2; i++)
@@ -758,7 +751,6 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 		int idx = 0;
 		int cl1 = cols[idx];
 		int legC = -1;
-		int xC = -1;
 		//cols = GetSelectedCols();
 		if (cols.Count() == 2 && typeCols[idx]!= PGTYPCLASS_NUMERIC) {
 			legC = cl1; idx++; // 1 cols = legend
@@ -769,7 +761,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 			}
 			std::vector<double> x, y;
 			double xv=0, yv;
-			for (int i = 0; i < numRows; i++)
+			for (int i = 0; i < (int)numRows; i++)
 			{
 				if (GetRowSize(i) == 0) continue;
 				//str.Append(GetExportLine(i, cols));
@@ -858,7 +850,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 		std::vector<double> x,y;
 		int fmttype = -1;
 		wxDateTime dt;
-		for (int i = 0; i < numRows; i++)
+		for (int i = 0; i < (int)numRows; i++)
 		{
 			if (GetRowSize(i) == 0) continue;
 			currLg= GetCellValue(i, legC);
@@ -907,7 +899,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 		{
 			lg = leg[col];
 			int ccol = colsY[col];
-			for (int i = 0; i < numRows; i++)
+			for (int i = 0; i < (int)numRows; i++)
 			{
 				if (GetRowSize(i) == 0) continue;
 				//str.Append(GetExportLine(i, cols));
@@ -936,7 +928,7 @@ wxString ctlSQLResult::AutoColsPlot(int flags,frmQuery* parent) {
 			}
 			if (cols.GetCount() == 1) {
 				double nrows = 1;
-				for (int i = 0; i < numRows; i++) x.push_back(nrows++);
+				for (int i = 0; i < (int)numRows; i++) x.push_back(nrows++);
 			}
 			frame->AddSeries(lg, x, y,lbar);
 			y.clear();
@@ -989,10 +981,10 @@ wxString ctlSQLResult::SummaryColumn()
 	else if (GetSelectionBlockTopLeft().GetCount() > 0 &&
 	         GetSelectionBlockBottomRight().GetCount() > 0)
 	{
-		unsigned int x1, x2, y1, y2;
+		unsigned int x1, y1, y2;
 
 		x1 = GetSelectionBlockTopLeft()[0].GetCol();
-		x2 = GetSelectionBlockBottomRight()[0].GetCol();
+		//x2 = GetSelectionBlockBottomRight()[0].GetCol();
 		y1 = GetSelectionBlockTopLeft()[0].GetRow();
 		y2 = GetSelectionBlockBottomRight()[0].GetRow();
 
@@ -1009,10 +1001,10 @@ wxString ctlSQLResult::SummaryColumn()
 	}
 	else
 	{
-		int row, col;
+		//int row, col;
 
-		row = GetGridCursorRow();
-		col = GetGridCursorCol();
+		//row = GetGridCursorRow();
+		//col = GetGridCursorCol();
 
 		//AppendColumnHeader(str, col, col);
 
@@ -1051,18 +1043,19 @@ void ctlSQLResult::OnKeyChar(wxKeyEvent& event) {
 		//wxString fltval=GetCellValue(row,col);
 		wxString text;
 		int colS = GetGridCursorCol();
+		bool findCursorCol=false;
 		int rowS= GetGridCursorRow();
 		wxString fltval = this->searchStr;
 		size_t numRows = GetNumberRows();
 		size_t numCols = GetNumberCols();
-		int all = 0, show = 0, hide = 0;
 		for (size_t i = rowS; i < numRows; i++)
 		{
 			//str.Append(GetExportLine(i, cols));
 			//SetRowSize(i,sizerow);
 			if (GetRowSize(i) == 0) continue;
-			for (int col = 0; col < numCols; col++)
+			for (int col = 0; col < (int)numCols; col++)
 			{
+				if (col != colS && findCursorCol) continue;
 				if ((t->GetValueFast(i, col).Find(fltval) != wxNOT_FOUND)) {
 					MakeCellVisible(i, col);
 					SetGridCursor(i, col);
@@ -1120,7 +1113,7 @@ void ctlSQLResult::OnKeyChar(wxKeyEvent& event) {
 }
 void ctlSQLResult::OnGridColSort(wxGridEvent& event)
     {
-        const int col = event.GetCol();
+        //const int col = event.GetCol();
         //m_table->Sort(col, !(m_grid->IsSortingBy(col) && m_grid->IsSortOrderAscending()));
     }
 
@@ -1131,7 +1124,7 @@ void ctlSQLResult::OnGridSelect(wxGridRangeSelectEvent &event)
 void ctlSQLResult::ClearFilter()
 {
 	size_t numRows = GetNumberRows();
-	int sizerow=GetDefaultRowSize();
+	//int sizerow=GetDefaultRowSize();
 	Freeze();
 		for (size_t i = 0 ; i <  numRows; i++)
 		{

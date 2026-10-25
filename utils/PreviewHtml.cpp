@@ -103,8 +103,7 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
     }
     if (strlist.size() == 0) strlist.push_back(tmpstr);
     wxString html;
-    int nf = 0;
-    for (int nf = 0; nf < strlist.size();nf++) {
+    for (size_t nf = 0; nf < strlist.size();nf++) {
 
         tmpstr = strlist[nf];
         int pos = 0;
@@ -114,7 +113,6 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
         wxString currWord;
         wxString currDigits;
         wxString currSep;
-        int flag = 0;
         tokens.clear();
         bool quote = false;
         wxUniChar prevchar,quotechar;
@@ -256,7 +254,7 @@ wxString PreviewHtml::Preview(const wxString& txt, fmtpreview type) {
 
         if (strlist.size() > 1) {
             // csv log 
-            wxString tit="field"+wxString::Format("%d",nf+1);
+            wxString tit="field"+wxString::Format("%ld",nf+1);
             if (strlist.size() == 26) tit = titles_log[nf];
             tit = "<tr><td valign=\"top\"><b>" + tit + "</b></td>";
             html+=tit+"<td>" + generateHtml() + "</td></tr>";

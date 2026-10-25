@@ -42,10 +42,10 @@ hdDrawing::~hdDrawing()
 	}
 
 	//Cannot delete figures, because they belong to model not to diagram
-	hdIFigure *tmp;
+	//hdIFigure *tmp;
 	while(figures->count() > 0)
 	{
-		tmp = (hdIFigure *) figures->getItemAt(0);
+		//tmp = (hdIFigure *) figures->getItemAt(0);
 		figures->removeItemAt(0);
 	}
 

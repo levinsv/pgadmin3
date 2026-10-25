@@ -240,8 +240,6 @@ void ctlSQLGrid::DrawColLabel(wxDC& dc, int col) {
         ar.width = FromDIP(8);
         ar.y += (rect.height - ar.height) / 2;
         ar.x = ar.x + rect.width - 3 * ar.width / 2;
-        int arrowSpace = 0;
-        arrowSpace = 3 * ar.width / 2; // space to preserve when drawing the label
         wxPoint triPt[3];
         if (sortArrow & wxHDR_SORT_ICON_UP)
         {
@@ -566,7 +564,7 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
     htm += wxString::Format("TD#cn { width: %dpx;font-weight: bold; background: %s;}\n", GetRowLabelSize(), bg);
     head += wxString::Format("<td id=\"cn\"></td>");
     int sumWidth = GetRowLabelSize();
-    for (int i = 0; i < cols.Count(); i++)
+    for (int i = 0; i < (int)cols.Count(); i++)
     {
         long columnPos = cols.Item(i);
         int w = GetColWidth(columnPos);
@@ -582,14 +580,14 @@ int ctlSQLGrid::CopyTableToHtml(wxString htmlquery) {
     htm += "<br><table cellspacing=\"0\" cellpadding=\"0\" id=\"maket\">";
     //		AppendColumnHeader(str, cols);
     htm += head;
-    for (int i = 0; i < numRows; i++)
+    for (int i = 0; i < (int)numRows; i++)
     {
         long rowPos = i;
         if (isRowsArray) rowPos = rows.Item(i);
         if (GetRowSize(rowPos) == 0) continue;
         htm += "<tr>\n";
         htm += wxString::Format("<td id=\"cn\">%ld</td>", rowPos + 1);
-        for (int c = 0; c < cols.Count(); c++) {
+        for (int c = 0; c < (int)cols.Count(); c++) {
             wxString text = GetCellValue(rowPos, cols[c]);
             htm += wxString::Format("<td id=\"c%d\"><pre>%s</pre></td>", c, escapeHtml(text, true));
         }
@@ -617,10 +615,10 @@ int ctlSQLGrid::Copy(int gensql)
     generatesql = gensql;
     //sqlResultTable* t = (sqlResultTable*)GetTable();
     wxString sql = sqlquerytext.Lower();
-    int j = 0;
+    size_t j = 0;
     wxChar c;
     wxString tn = wxEmptyString;
-    while ((j = sql.find("from", j)) > -1) {
+    while ((j = sql.find("from", j)) != wxString::npos) {
         j = j + 4;
         c = sql[j];
         i = j;
@@ -723,7 +721,7 @@ int ctlSQLGrid::Copy(int gensql)
         GetSelectionBlockBottomRight().GetCount() > 0)
     {
         unsigned int x1, x2, y1, y2;
-        int count = GetSelectionBlockTopLeft().GetCount();
+        size_t count = GetSelectionBlockTopLeft().GetCount();
 
         x1 = GetSelectionBlockTopLeft()[0].GetCol();
         x2 = GetSelectionBlockBottomRight()[0].GetCol();
@@ -786,7 +784,7 @@ int ctlSQLGrid::Copy(int gensql)
         int row, col;
         if (generatesql > 1) {
             wxGridCellCoordsArray cord = GetSelectedCells();
-            int count = cord.GetCount();
+            size_t count = cord.GetCount();
             int curr_row = 1000000000;
             int next_row = 1000000000;
 
@@ -1013,7 +1011,6 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         wxString html;
         ctlSQLBox* box = new ctlSQLBox((wxWindow*) winMain, CTL_SQLQUERY, wxDefaultPosition, wxSize(0, 0), wxTE_MULTILINE | wxTE_RICH2);
         box->SetText(q);
-        int l = q.Length();
         box->Colourise(0, box->GetLength());
         //bg = box->SetSQLBoxColourBackground(false).GetAsString(wxC2S_CSS_SYNTAX);
         html = box->TextToHtml(0, box->GetLength(),false);
@@ -1404,7 +1401,7 @@ bool ctlSQLGrid::FullArrayCollapseRowsPlan(bool clear)
     if (clear) { grp = NULL; return true; }
     grp = new GroupRows(this);
     double transfersum = 0;
-    int r = recurse(this, 0, 0, transfersum);
+    recurse(this, 0, 0, transfersum);
     grp->CalcTime();
     //for(int row = 0; row < GetNumberRows(); ++row) {
     //	text = GetCellValue(row, 0);
@@ -1550,9 +1547,13 @@ retry:
                                 if (isnumber && isfirst) 
                                     /* Add thousands separator */
                                 {
-                                        int pos = text.find('.');
-                                        if (pos == wxString::npos)
-                                            pos = len;
+                                        int pos;
+                                        size_t tmp= text.find('.');
+                                        if (tmp== wxString::npos)
+                                                pos = len;
+                                                else
+                                                pos=(int)tmp;
+                                        
                                         int x=rect.GetRight()-1;
                                         int yb=rect.GetTop()+1; //GRID_TEXT_MARGIN
                                         int c=0;

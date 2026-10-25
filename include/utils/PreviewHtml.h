@@ -111,7 +111,7 @@ private:
         return false;
     }
     int FindElement(int start_pos, int flag_find, wxString& value_find, int is_what_find) {
-        int p = start_pos;
+        size_t p = start_pos;
         int rez = -1;
         while (p < tokens.size()) {
             Element t = tokens[p];

@@ -191,7 +191,7 @@ void mpInfoCoords::UpdateInfo(mpWindow &w, wxEvent &event) {
       if (ly == NULL) continue;
       if ((ly->GetLayerType() == mpLAYER_PLOT) && (ly->IsVisible())) {
           tx=xx;ty=yy;
-          double d=ly->GetDistance(tx,ty);
+          //double d=ly->GetDistance(tx,ty);
           sx= w.x2p(tx);
           sy= w.y2p(ty);
           dd=sqrt((double)(sx-mouseX)*(double)(sx-mouseX)+(double)(sy-mouseY)*(double)(sy-mouseY));
@@ -219,7 +219,7 @@ void mpInfoCoords::UpdateInfo(mpWindow &w, wxEvent &event) {
             wxString yname = yaxis->GetName();
             
             toolTipContent.Printf(_("%s\n%s = %s\n%s = %f"), namel,xname,s,yname, ty);
-            wxTipWindow** ptr = NULL;
+            //wxTipWindow** ptr = NULL;
             wxRect rectBounds(sx, sy, 5, 5);
             m_content = toolTipContent;
             //wxTipWindow* tip = new wxTipWindow(w.GetParent(), toolTipContent, 100, ptr,&rectBounds);
@@ -642,7 +642,7 @@ void mpFXY::Plot(wxDC &dc, mpWindow &w) {
                   (iy >= minYpx) && (iy <= maxYpx))) {
                   dc.DrawRectangle(ix, iy, ix2 - ix, iy2 - iy);
                   UpdateViewBoundary(ix, iy);
-                  wxCoord tx, ty;
+                  wxCoord tx=0, ty=0;
                   wxString s = v->GetLegendBar();
                   
 
@@ -865,7 +865,7 @@ mpScaleX::mpScaleX(wxString name, int flags, bool ticks, unsigned int type) {
   m_labelFormat = wxT("");
 }
 wxString mpScaleX::GetLabelTextValue(double &v) {
-    wxCoord tx, ty;
+    //wxCoord ty;
     wxString s;
     wxString fmt;
     int tmp = 2;

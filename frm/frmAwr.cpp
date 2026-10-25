@@ -115,7 +115,7 @@ void frmAwr::OnChange(wxCommandEvent& ev)
 			wxArrayString ar;
 			while (!dataSet1->Eof())
 			{
-				int s = dataSet1->GetLong(wxT("sample"));
+				//int s = dataSet1->GetLong(wxT("sample"));
 				wxString dt= dataSet1->GetVal(wxT("sample_time"));
 				ar.Add(dt);
 				dataSet1->MoveNext();

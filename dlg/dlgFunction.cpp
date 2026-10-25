@@ -901,20 +901,21 @@ wxString dlgFunction::GetSql()
 
 	bool isC = cbLanguage->GetValue().IsSameAs(wxT("C"), false);
 	bool didChange = !function
-	                 || cbLanguage->GetValue() != function->GetLanguage() && !isProcedure
-	                 || cbVolatility->GetValue() != function->GetVolatility() && !isProcedure
-					 || cbParallel->GetValue() != function->GetParallel() && !isProcedure
-	                 || chkSecureDefiner->GetValue() != function->GetSecureDefiner()
-	                 || chkStrict->GetValue() != function->GetIsStrict() && !isProcedure
-	                 || GetArgs() != function->GetArgListWithNames() && !isProcedure
-	                 || chkLeakProof->GetValue() != function->GetIsLeakProof() && !isProcedure
-	                 || (isC && (txtObjectFile->GetValue() != function->GetBin()&& !isProcedure || txtLinkSymbol->GetValue() != function->GetSource()))
-	                 || (!isC && txtSqlBox->GetText() != function->GetSource());
+	                 || (cbLanguage->GetValue() != function->GetLanguage() && !isProcedure)
+	                 || (cbVolatility->GetValue() != function->GetVolatility() && !isProcedure)
+					 || (cbParallel->GetValue() != function->GetParallel() && !isProcedure)
+	                 || (chkSecureDefiner->GetValue() != function->GetSecureDefiner())
+	                 || (chkStrict->GetValue() != function->GetIsStrict() && !isProcedure)
+	                 || (GetArgs() != function->GetArgListWithNames() && !isProcedure)
+	                 || (chkLeakProof->GetValue() != function->GetIsLeakProof() && !isProcedure)
+	                 || ((isC && ((txtObjectFile->GetValue() != function->GetBin()) && !isProcedure)))
+					 || (isC && (txtLinkSymbol->GetValue() != function->GetSource()))
+	                 || (!isC && (txtSqlBox->GetText() != function->GetSource()));
 
 	if (connection->BackendMinimumVersion(8, 3))
 	{
 		didChange = (didChange ||
-		             txtCost->GetValue() != NumToStr(function->GetCost())&& !isProcedure ||
+		             (txtCost->GetValue() != NumToStr(function->GetCost())&& !isProcedure) ||
 		             (chkSetof->GetValue()&& !isProcedure && txtRows->GetValue() != NumToStr(function->GetRows())));
 	}
 

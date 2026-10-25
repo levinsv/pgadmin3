@@ -94,7 +94,7 @@ void ctlNavigatePanel::Init(bool reorganization) {
         const wxColour def_mark_color[7] = { *wxRED, wxColour(255,125,125) ,wxColour(255,213,101),  *wxYELLOW, *wxCYAN, wxColour(196,255,14), wxColour(66,76,231) };
         //                                panic    fatal ,             errorxx                   error,     startup  LOG,XX000  WARNIG,01000
         //                                red      light red           light brown               yellow     cyan     lime       blue
-        for (int k = 0; k < sizeof(def_mark_color)/sizeof(def_mark_color[0]); k++) {
+        for (long unsigned int k = 0; k < sizeof(def_mark_color)/sizeof(def_mark_color[0]); k++) {
             wxJSONValue indicator(wxJSONType::wxJSONTYPE_OBJECT);
             indicator["color"] = def_mark_color[k].GetAsString(wxC2S_HTML_SYNTAX);
             indicator["enable"] = true;
@@ -189,7 +189,7 @@ void ctlNavigatePanel::Init(bool reorganization) {
 
     wxJSONValue r = opt["indicators"];
     if (!reorganization) mark_color.clear();
-    for (int i = 0; i < regExArray.size(); i++) 
+    for (int i = 0; i < (int)regExArray.size(); i++) 
         if (!regExArray[i]) delete regExArray[i];
     regExArray.clear();
     search_rule.clear();
@@ -320,7 +320,7 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
             bool directionUp = false;
             if (isok && cmdName == "Help") help = true;
             if (isok && cmdName == "AutoHint") {
-                bool curr=ctrl->ToggleAutoHint();
+                ctrl->ToggleAutoHint();
                 return true;
             }
             
@@ -467,7 +467,7 @@ bool ctlNavigatePanel::RunKeyCommand(wxKeyEvent& event,int numCmd) {
     return false;
 }
 ctlNavigatePanel::~ctlNavigatePanel() {
-    for (int i = 0; i < regExArray.size(); i++) if (regExArray[i]) delete regExArray[i];
+    for (int i = 0; i < (int)regExArray.size(); i++) if (regExArray[i]) delete regExArray[i];
 }
 ctlNavigatePanel::ctlNavigatePanel(wxWindow* parent, ctlListView* lst) : wxWindow(parent, wxID_ANY)
 {
@@ -539,10 +539,8 @@ void ctlNavigatePanel::render(wxDC& dc) {
     pp2.x = xr;
     // line mark
     wxColour prevc = *wxWHITE;
-    int previndex = -1;
     int prevy=-100;
     int idx = 0;
-    int countmark = items_mark.size();
     {
         wxDCPenChanger npen(dc, wxPen(bordercolor, 2, wxPENSTYLE_SOLID));
         int idx_item_mark = 0;
@@ -626,7 +624,7 @@ void ctlNavigatePanel::render(wxDC& dc) {
         wxDCPenChanger npen(dc, wxPen(startdbcolor, 2, wxPENSTYLE_SOLID));
         //dc.SetPen(startdbcolor);
 
-        for (int i = 0; i < startdbintervals.size(); i++) {
+        for (int i = 0; i < (int)startdbintervals.size(); i++) {
             long row = startdbintervals[i];
             // start
             f_frame_start = row * 1.0f / cnt;
@@ -634,7 +632,7 @@ void ctlNavigatePanel::render(wxDC& dc) {
             pp1.x = xl;
 
             //accept
-            if ((i + 1) == startdbintervals.size()) {
+            if ((i + 1) == (int)startdbintervals.size()) {
                 row = cnt - 1; //last row
                 // no accept
             }
@@ -681,7 +679,7 @@ int  ctlNavigatePanel::GetCountMark() {
     return items_mark.size();
 }
 int  ctlNavigatePanel::GetItemMark(long position) {
-    if (position < items_mark.size() && position >= 0)
+    if (position < (long)items_mark.size() && position >= 0)
         return items_mark[position];
     else
         return -1;
@@ -718,18 +716,18 @@ int ctlNavigatePanel::binary_search(long item, const std::vector<long> &arr) {
 }
 void ctlNavigatePanel::OnMouse(wxMouseEvent& evt) {
     int yy = evt.GetY() - border;
-    int page = ctrl->GetCountPerPage();
+    //int page = ctrl->GetCountPerPage();
     wxRect c = GetClientRect();
     int vpix = c.GetHeight() - 2*border;
     long cnt = ctrl->GetItemCount();
     float f_frame_start = 1;
-    float f_frame_end = 1;
+    //float f_frame_end = 1;
     f_frame_start = yy * 1.0f / vpix;
     long pos = cnt * f_frame_start;
     int i = binary_search(pos,items_mark);
     wxString tt;
-    if (i >= 0 && i < items_mark.size() && items_mark[i] > pos) i--;
-    if (i >= 0 && i < items_mark.size() ) {
+    if (i >= 0 && i < (int)items_mark.size() && items_mark[i] > pos) i--;
+    if (i >= 0 && i < (int)items_mark.size() ) {
         tt = ctrl->GetTextLong(items_mark[i]);
         this->SetToolTip(tt);
     }
@@ -783,8 +781,7 @@ int ctlNavigatePanel::ReColorizeItems(int numIndictor, bool enableColor) {
     int count = 0;
 //    mark_color[numIndictor].enable = enableColor;
     //items_mark.clear();
-    int idx = 0;
-    for (long i = 0; i < items_mark.size(); i++) {
+    for (long i = 0; i < (int)items_mark.size(); i++) {
         //int idx = TryMarkItem(i,ctrl->GetText(i));
         int item = items_mark[i];
         int numColor = color_items_mark[i];
@@ -808,7 +805,7 @@ void ctlNavigatePanel::OnContextMenu(wxCommandEvent& event) {
         RunKeyCommand(kevt, numCommand);
         return;
     }
-    if (numMark < 0|| numMark>=mark_color.size()) return;
+    if (numMark < 0|| numMark>=(int)mark_color.size()) return;
    // wxMessageBox(wxString::Format("Num command = %d",numMark), "Command");
     // context menu marker
     bool controlkey = wxGetKeyState(WXK_CONTROL);
@@ -842,11 +839,11 @@ void ctlNavigatePanel::OnContextMenu(wxCommandEvent& event) {
 }
 void ctlNavigatePanel::mouseReleased(wxMouseEvent& evt) {
     bool left = evt.LeftUp();
-    bool right = evt.RightUp();
+    //bool right = evt.RightUp();
     bool controlkey= wxGetKeyState(WXK_CONTROL);
     if (left) {
         int yy = evt.GetY() - border;
-        int page = ctrl->GetCountPerPage();
+        //int page = ctrl->GetCountPerPage();
         wxRect c = GetClientRect();
         int vpix = c.GetHeight() - 2*border;
         long cnt = ctrl->GetItemCount();
@@ -860,8 +857,8 @@ void ctlNavigatePanel::mouseReleased(wxMouseEvent& evt) {
             if (pos < cnt) {
                     // up market find
                     int i = binary_search(pos,items_mark);
-                    if (i >= 0 && i < items_mark.size() && items_mark[i] > pos) i--;
-                    if (i >= 0 && i < items_mark.size()) pos = items_mark[i];
+                    if (i >= 0 && i < (int)items_mark.size() && items_mark[i] > pos) i--;
+                    if (i >= 0 && i < (int)items_mark.size()) pos = items_mark[i];
              }
         RowVisibleCenter(pos);
         Refresh();
@@ -875,9 +872,6 @@ void ctlNavigatePanel::mouseReleased(wxMouseEvent& evt) {
         
         wxJSONValue r = opt["indicators"];
         if (!r.IsNull()) {
-            int idx = 0;
-            int numIndicator = 0;
-            int sz = opt["contextboxsize"].AsInt();
             wxString fndstr = wxEmptyString;
             if (logFindString.Len() > 30)
                 fndstr = logFindString.Left(30) + "...";
@@ -924,6 +918,7 @@ void ctlNavigatePanel::mouseReleased(wxMouseEvent& evt) {
                 menu.Append(mi);
                 mi->Check(enable);
 #if defined(__WXMSW__)
+                int sz = opt["contextboxsize"].AsInt();
                 mi->SetBitmaps(CreateBitmap(clr, true,sz), CreateBitmap(clr, false,sz));
 #endif
             }
@@ -1009,7 +1004,7 @@ int ctlNavigatePanel::TryMarkItem(long row, const wxString& str) {
 }
 wxColour ctlNavigatePanel::GetColorByIndex(int colorindex) {
     
-    if (colorindex >= 0 && colorindex < mark_color.size()) {
+    if (colorindex >= 0 && colorindex < (int)mark_color.size()) {
         return mark_color[colorindex].color;
     }
     return *wxBLACK;
@@ -1053,7 +1048,7 @@ int ctlNavigatePanel::FindText(wxString findtext, int position, bool directionUp
         if (items_find[posF] < itemFocus && !directionUp)  nextitem = posF + 1;
     }
 
-    if (nextitem == -1 || nextitem>= items_find.size())
+    if (nextitem == -1 || nextitem>= (int)items_find.size())
         wxBell();
     else
     {

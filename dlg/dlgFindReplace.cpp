@@ -245,7 +245,7 @@ void dlgFindReplace::OnFind(wxCommandEvent &ev)
 		if (note!=NULL) {
 			size_t count_pages=note->GetPageCount();
 			ctlSQLBox *sqlQuery;
-			for(int i=0;i<count_pages;i++) {
+			for(size_t i=0;i<count_pages;i++) {
 				sqlQuery = wxDynamicCast(note->GetPage(i), ctlSQLBox);
 				if (sqlQuery==sqlbox) {
 				while (true) {

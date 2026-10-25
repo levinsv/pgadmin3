@@ -74,8 +74,8 @@ public:
 
         wxString s = m_value, t;
         wxString rest;
-        wxString* pointer = &rest;
-        int x = 0, y = 0;
+//        wxString* pointer = &rest;
+        int x = 0;
         //dc->GetMultiLineTextExtent(m_value);
         wxArrayInt arr;
         wxSize h = dc->GetTextExtent("H");
@@ -85,7 +85,7 @@ public:
         int startX = 0;
 
         wxRect rectCol;
-        while (i < s.Len()) {
+        while (i < (int)s.Len()) {
 
             t = "";
             x = 0;
@@ -94,7 +94,7 @@ public:
             rectCol.y = rect.y;
             rectCol.height = h.GetHeight();
             rectCol.width = 0;
-            while (i < s.Len())
+            while (i < (int)s.Len())
             {
                 if (s[i] == '\n') {
                     startX = arr[i];
@@ -414,7 +414,7 @@ bool StorageModel::setFilterArray(std::deque<LineFilter> arr,MyDataViewCtrl* vie
 }
 void StorageModel::setIconFilter(MyDataViewCtrl* view) {
     bool yesfilter = false;
-    for (int j = 0; j < view->GetColumnCount(); j++) {
+    for (int j = 0; j < (int)view->GetColumnCount(); j++) {
         int colt = 0;
         yesfilter = false;
         wxDataViewColumn* vc = view->GetColumn(j);
@@ -489,8 +489,6 @@ void StorageModel::DeleteItem(const wxDataViewItem& item)
 
 void StorageModel::DeleteItems(const wxDataViewItemArray& items)
 {
-    unsigned i;
-    wxArrayInt rows;
 }
 
 void StorageModel::AddMany()

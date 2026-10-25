@@ -168,7 +168,7 @@ static bool IsTableSeparator(const wxString& line)
 {
     wxString t = line;
     t.Trim(false).Trim(true);
-    if (t.empty() || t.Find(wxT('|')) == wxString::npos) return false;
+    if (t.empty() || (t.Find(wxT('|')) == wxNOT_FOUND)) return false;
     bool hasDash = false;
     for (size_t i = 0; i < t.size(); ++i) {
         const wxChar c = t[i];
@@ -210,6 +210,7 @@ static wxArrayString SplitTableRow(const wxString& line)
 static wxString TableAlignAttr(TableAlign a)
 {
     switch (a) {
+        case TABLE_ALIGN_DEFAULT:
         case TABLE_ALIGN_LEFT:   return wxT(" align=\"left\"");
         case TABLE_ALIGN_CENTER: return wxT(" align=\"center\"");
         case TABLE_ALIGN_RIGHT:  return wxT(" align=\"right\"");
@@ -481,7 +482,7 @@ static void ConvertBlock(const wxString& text, wxString& out, const Palette& pal
 wxString convertMDtoHtml(const wxString md, bool isDark, const wxString role)
 {
     const Palette& pal = GetPalette(isDark);
-    int idcells=1;
+    //int idcells=1;
     if (role=="user") {
         wxString html=wxString::Format("<table width=\"100%\" bgcolor=\"%s\" border=\"0\" cellspacing=\"0\" cellpadding=\"6\"><tr><td id=\"cell0\"><pre>",pal.userBg)+escapeHtml(md,true)
                       +"</tr></td></pre></table>";

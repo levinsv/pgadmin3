@@ -203,11 +203,11 @@ bool dlgSelectDatabase::getValidConnectionString(wxString connStr, wxString &res
 	wxRegEx propertyExp;
 
 	// Remove white-spaces ahead the '="
-	bool res = propertyExp.Compile(wxT("(([ ]*[\t]*)+)="));
+	propertyExp.Compile(wxT("(([ ]*[\t]*)+)="));
 	propertyExp.ReplaceAll(&connStr, wxT("="));
 
 	// Remove white-spaces after the '="
-	res = propertyExp.Compile(wxT("=(([ ]*[\t]*)+)"));
+	propertyExp.Compile(wxT("=(([ ]*[\t]*)+)"));
 	propertyExp.ReplaceAll(&connStr, wxT("="));
 	wxArrayString tokens = wxStringTokenize(connStr, wxT("\t \n\r"));
 

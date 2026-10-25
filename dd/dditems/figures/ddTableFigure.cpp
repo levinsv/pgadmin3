@@ -479,7 +479,7 @@ void ddTableFigure::basicDrawSelected(wxBufferedDC &context, hdDrawingView *view
 
 	reapplySelAttributes(context, view); //reset attributes to default of figure because can be modified at Draw functions.
 	wxFont font = fontAttribute->font();
-	float t = font.GetPointSize();
+	//float t = font.GetPointSize();
 	int newSize = font.GetPointSize() * 0.7;
 	font.SetPointSize(newSize);
 	context.SetFont(font);
@@ -588,7 +588,7 @@ void ddTableFigure::calcInternalSubAreas(int posIdx)
 	hdRect db = basicDisplayBox.gethdRect(posIdx);
 
 	//*** titleRect
-	float t = font.GetPointSize();
+	//float t = font.GetPointSize();
 	int newSize = font.GetPointSize() * 0.7;
 	font.SetPointSize(newSize);
 	int colsTitleHeight = getHeightFontMetric(wxT("Columns"), font);
@@ -1173,7 +1173,7 @@ wxString ddTableFigure::generateAltersTable(pgConn *connection, wxString schemaN
 	wxString out;
 
 	OID oidTable = ddImportDBUtils::getTableOID(connection, schemaName, getTableName());
-	if(oidTable == -1)
+	if(oidTable == (OID)-1)
 	{
 		wxMessageBox(wxString::Format(_("Cannot build an ALTER TABLE statement for a non existing table (%s.%s)."),
 		                              schemaName.c_str(), getTableName().c_str()), _("Error when trying to get table OID"),  wxICON_ERROR);
@@ -1212,7 +1212,7 @@ wxString ddTableFigure::generateAltersTable(pgConn *connection, wxString schemaN
 
 	// Look for columns that exist in the database but not in the model
 	bool pkRemovedflag = false;
-	bool ukRemoved = false;
+	//bool ukRemoved = false;
 	stubColsHashMap::iterator it;
 	ddStubColumn *item;
 
@@ -1426,8 +1426,6 @@ wxString ddTableFigure::generateAltersTable(pgConn *connection, wxString schemaN
 
 			// Temporary conversion fix to datatype of designer should be improved in a future
 			wxString dataType = item->typeColumn->Name();
-			bool sameDatatype = true, sameScale = true, samePrecision = true;
-			int s = -1, p = -1;
 
 			// Model has now NULL constraint, so drop the NOT NULL constraint
 			if(column->isNotNull())
@@ -1576,11 +1574,11 @@ wxString ddTableFigure::generateAltersTable(pgConn *connection, wxString schemaN
 		if(oldIndex != wxNOT_FOUND)
 		{
 			stubColsHashMap::iterator itDelUkIdx;
-			ddStubColumn *itemDelUkIdx;
+			//ddStubColumn *itemDelUkIdx;
 			for (itDelUkIdx = dbTable->cols.begin(); itDelUkIdx != dbTable->cols.end(); ++itDelUkIdx)
 			{
 				wxString keyDelUkIdx = itDelUkIdx->first;
-				itemDelUkIdx = itDelUkIdx->second;
+				//itemDelUkIdx = itDelUkIdx->second;
 				if(item->uniqueKeyIndex == oldIndex)
 				{
 					item->uniqueKeyIndex = newIndex;
@@ -1638,7 +1636,7 @@ wxString ddTableFigure::generateAltersTable(pgConn *connection, wxString schemaN
 			ddStubColumn *itemCol;
 			for (itCol = dbTable->cols.begin(); itCol != dbTable->cols.end(); ++itCol)
 			{
-				bool isAtFigure = false;
+				//bool isAtFigure = false;
 				wxString colStubName = itCol->first;
 				itemCol = itCol->second;
 				if(itemCol->uniqueKeyIndex == i)

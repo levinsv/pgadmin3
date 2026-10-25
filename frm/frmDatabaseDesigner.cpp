@@ -489,7 +489,7 @@ void frmDatabaseDesigner::OnAddColumn(wxCommandEvent &event)
 
 void frmDatabaseDesigner::OnNewModel(wxCommandEvent &event)
 {
-	hdDrawingView *view = (hdDrawingView *) diagrams->GetPage(diagrams->GetSelection());
+	//hdDrawingView *view = (hdDrawingView *) diagrams->GetPage(diagrams->GetSelection());
 
 	if (changed)
 	{

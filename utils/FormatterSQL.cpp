@@ -32,7 +32,7 @@ int  FormatterSQL::GetIndexItemNextSqlPosition(int sqlPosition) {
     return items.size() - 1;
 };
 bool FormatterSQL::GetItem(int index, FSQL::view_item& item) {
-    if (index >= 0 && index < items.size()) {
+    if (index >= 0 && index < (int)items.size()) {
         item = items[index];
         return true;
     }
@@ -78,7 +78,7 @@ wxString FormatterSQL::GetListTable(const std::vector<complite_element> &list) {
     int s = 0;
     wxString r = "";
     complite_element el;
-    while (s < list.size()) {
+    while (s < (int)list.size()) {
         el = list[s++];
         r += wxString::Format("[ %s,%s] %s\n", el.table, el.alias, el.columnList);
     }
@@ -93,7 +93,7 @@ int FormatterSQL::GetTableListBeforePosition(int positem, wxArrayString& listtab
     int s = 0;
     complite_element* el;
     int left_id = -1;
-    while (s < listTable.size()) {
+    while (s < (int)listTable.size()) {
         el = &listTable[s++];
         //r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
         bool bet = el->startIndex <= positem && el->endIndex >= positem;
@@ -148,7 +148,7 @@ iteration_remove_dublicate:
     int k = 0;
     tablename.clear();
     nc--;
-    while (nc > 0 && k < listTable.size()) {
+    while (nc > 0 && k < (int)listTable.size()) {
         complite_element* el = &listTable[k++];
         if (el->table.Lower() == tmp && el->columnList.Len() == 0) { // for table
             tablename[tmp] = k - 1;
@@ -173,7 +173,7 @@ iteration_remove_dublicate:
 iteration2:
     int s = 0;
     complite_element* el;
-    while (s < listTable.size()) {
+    while (s < (int)listTable.size()) {
         el = &listTable[s++];
         //r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
         if (el->table != '@' && el->table.Lower() == t) {
@@ -202,7 +202,7 @@ iteration2:
         wxArrayString ar = wxSplit(el->columnList, ',');
         wxArrayString rez;
         wxString ff;
-        for (int j = 0; j < ar.GetCount(); j++) {
+        for (int j = 0; j < (int)ar.GetCount(); j++) {
             ff = ar[j].AfterLast('.');
             if (astreplace || ff.Lower().StartsWith(f)) rez.Add(ff);
         }
@@ -221,10 +221,10 @@ void FormatterSQL::_addfunc(const view_item *vi) {
 
 }
 wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
-    int len_items = items.size();
-    int n_element = startIndex;
+    //int len_items = items.size();
+    //int n_element = startIndex;
     int found_index = startIndex;
-    int start_select_list;
+    //int start_select_list;
     int indexlastID;
     union Byte zone { 0 };
     wxString lastname;
@@ -237,7 +237,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     wxString lastkeyword;
     bool isfunction = false;
     bool isskipnext = false;
-    bool isinsert = false;
+//    bool isinsert = false;
     el.columnList = ""; el.alias = ""; el.table = ""; el.level = level;
     if (level == 0) {
         listTable.clear();
@@ -264,7 +264,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                 el.columnList = ""; el.alias = ""; el.table = "";
             }
             if (vi->txt.Lower() == "select") {
-                zone.b.select_list = 1; zone.b.with = 0; start_select_list = found_index + 1;
+                zone.b.select_list = 1; zone.b.with = 0;
                 isfunction = false; isskipnext=false;
                 zone.b.skip = 0;
                 cols.Clear();
@@ -609,7 +609,7 @@ std::vector<complite_element> FormatterSQL::ParsePLpgsql(){
         // извлечем информацию о таблицах и функциях
         BuildAutoComplite(0,0);
         // проверим определения рекурсивных таблиц (они используются ДО определения)
-        for(int i=0;i<listTable.size();i++) {
+        for(int i=0;i<(int)listTable.size();i++) {
             wxString a=listTable[i].alias.Lower();
             if (listTable[i].table == "@" && a.Length()>0 && listTable[i].columnList.Length()>0) 
             {
@@ -618,11 +618,11 @@ std::vector<complite_element> FormatterSQL::ParsePLpgsql(){
                 }
             }
         }
-        for(int i=0;i<listTable.size();i++) {
+        for(int i=0;i<(int)listTable.size();i++) {
             wxString t=listTable[i].table;
             bool isColList=listTable[i].columnList.Length()>0;
             // Удалим из функций синонимы таблиц
-            for(int j=0;j<listFunction.size();j++) {
+            for(int j=0;j<(int)listFunction.size();j++) {
                 if (listTable[i].alias==listFunction[j].table)
                     if (t!="@" || isColList ) listFunction[j].table="";
             }
@@ -661,7 +661,7 @@ std::vector<complite_element> FormatterSQL::ParsePLpgsql(){
             }
         }
         // add functions
-        for(int j=0;j<listFunction.size();j++) {
+        for(int j=0;j<(int)listFunction.size();j++) {
                 if (listFunction[j].table.Len()>0) {
                         complite_element it;
                         wxString fn=listFunction[j].table;
@@ -739,11 +739,11 @@ int FormatterSQL::ParseSql(int flags) {
     wxChar c;
     while (!ex) {
         c = '\0';
-        if (i < sql.length()) c = sql[i++];
+        if (i < (int)sql.length()) c = sql[i++];
         else ex = true;
 
         wxChar c2(0);
-        if (i < sql.length()) c2 = sql[i];
+        if (i < (int)sql.length()) c2 = sql[i];
         if (iscomment > 0) {
             if (ex) {
                 iscomment = 0;
@@ -853,7 +853,7 @@ int FormatterSQL::ParseSql(int flags) {
                 int k = i;
                 while (c2 == '\n') {
                     // verify string const multiline
-                    if (i < sql.length()) c2 = sql[i++]; else break;
+                    if (i < (int)sql.length()) c2 = sql[i++]; else break;
                 }
                 if (c2 == '\'' && i > k) continue;     // multiline string const
                 // end literal
@@ -896,7 +896,7 @@ int FormatterSQL::ParseSql(int flags) {
                     if (wxIsdigit(c2)) {
                         // bind arg test
                         while (wxIsdigit(c2)) {
-                            if (i < sql.length()) c2 = sql[i++]; else break;
+                            if (i < (int)sql.length()) c2 = sql[i++]; else break;
                         }
                         vi.txt = sql.substr(k, i - k-1);
                         vi.type = bindarg;
@@ -952,7 +952,7 @@ int FormatterSQL::ParseSql(int flags) {
             i++;
             cons = c;
             cons.Append(c2);
-            if (i < sql.length()) c = sql[i++];
+            if (i < (int)sql.length()) c = sql[i++];
             qt = c;
             cons.Append(c);
             continue;
@@ -986,11 +986,10 @@ int FormatterSQL::ParseSql(int flags) {
         }
 
         //numeric
-        if (c == '.' && (wxIsdigit(c2)) || wxIsdigit(c)) {
+        if ((c == '.' && (wxIsdigit(c2))) || wxIsdigit(c)) {
             wxString tmp = sql.substr(i - 1, 30);
             bool matches = regnumeric.Matches(tmp, 0);
             if (matches) {
-
                 vi.txt = regnumeric.GetMatch(tmp, 0);
                 int l = vi.txt.Len();
                 vi.type = numeric;
@@ -1001,7 +1000,7 @@ int FormatterSQL::ParseSql(int flags) {
         // spaces
         int k = i - 1;
         while (c == ' ' || c == '\t') {
-            if (i < sql.length()) c = sql[i++]; else { i++;  break; }
+            if (i < (int)sql.length()) c = sql[i++]; else { i++;  break; }
         }
         if ((i - 1) > k) {
             if (items.size() != 0 && items[items.size() - 1].type == spaces) {
@@ -1028,7 +1027,7 @@ int FormatterSQL::ParseSql(int flags) {
                 if (tmp.compare(0, xmlEnt.len, xmlEnt.name) == 0
                     )
                 {
-                    if (pos + xmlEnt.len < sql.length()) c2 = sql[pos + xmlEnt.len]; else break;
+                    if (pos + xmlEnt.len < (int)sql.length()) c2 = sql[pos + xmlEnt.len]; else break;
                     if (wxIsalpha(c2) || c2 == '_' || c2 == '$' || wxIsxdigit(c2)) continue;
                     break;
                 }
@@ -1144,7 +1143,7 @@ int FormatterSQL::ParseSql(int flags) {
         if ((c==':') && ((c2 >= 'a' && c2 <= 'z') || ((c2 >= 'A' && c2 <= 'Z')))) {
             k = i - 1;
             while (wxIsalpha(c2) || c2 == '_') {
-                if (i < sql.length()) c2 = sql[i++]; else { i++; break; };
+                if (i < (int)sql.length()) c2 = sql[i++]; else { i++; break; };
             }
             vi.txt = sql.substr(k, i - k - 1);
             vi.type = bindarg;
@@ -1178,7 +1177,7 @@ int FormatterSQL::ParseSql(int flags) {
                 }
             }
             else { i--; break; };
-            if (i < sql.length()) c = sql[i++]; else break;
+            if (i < (int)sql.length()) c = sql[i++]; else break;
         }
         if (!sepa.IsEmpty()) {
             // i=i - (i == sql.length() ? 0: 0);
@@ -1332,7 +1331,7 @@ wxSize FormatterSQL::best_sizeAndDraw(wxDC& dc, wxPoint& pos, view_item& vi, int
 /// <returns>индекс найденого элемента или -1 дошли до конца списка. ВАЖНО: в переменной <c>index</c> будет содержаться найденное значение.</returns>
 int FormatterSQL::next_item_no_space(int& index, int direction) {
     bool f = true;
-    while (index >= 0 && index < items.size()) {
+    while (index >= 0 && index < (int)items.size()) {
         if (items[index].type != spaces) {
             f = false;
             break;
@@ -1391,7 +1390,7 @@ int FormatterSQL::check_bracket(int index) {
 wxSize FormatterSQL::max_width_size(int index) {
     int e_idx = index;
     int s_idx = items[e_idx].endlevel;
-    int max_w = 0;
+    //int max_w = 0;
     wxSize sz(0, 0);
     if (s_idx != -1) {
         if (s_idx > e_idx) {
@@ -1420,11 +1419,11 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
     int xstart = Xpos;
     int padd = flag & isCASE ? 0 : pad;
     bool iswith = false;
-    bool empty_line = true;
+    //bool empty_line = true;
     neededNewLine.x = -1;
     neededNewLine.y = -1;
     bool isOneNL = false;
-    while (s < items.size()) {
+    while (s < (int)items.size()) {
         view_item* vi = &items[s++];
         if (vi->type == unknown) continue;
         int fl = vi->flags;
@@ -1560,7 +1559,7 @@ wxPoint FormatterSQL::align_level(int start_i, int level, int Xpos, int Ypos, in
                 fl = none;
             if (flag & newLineComma && vi->type == separation && vi->txt[0] == ',') {
                 neededNewLine = wxPoint(xstart + padd, Ypos + maxYheightLine);
-                if (s < items.size() && items[s].type == spaces) items[s].type = unknown; // disable next space
+                if (s < (int)items.size() && items[s].type == spaces) items[s].type = unknown; // disable next space
             }
             else if (fl & new_line_align_next) {
                 if (neededNewLine == wxPoint(-1, -1)) {
@@ -1611,7 +1610,7 @@ void FormatterSQL::Formating(wxDC& dc, wxRect re, bool isTest) {
     wxPoint p(rect.x + 1, 0);
     // calc size items
     for (auto& vv : items) {
-        wxSize sz = best_sizeAndDraw(dc, p, vv, 0);
+        best_sizeAndDraw(dc, p, vv, 0);
 
     }
     // 

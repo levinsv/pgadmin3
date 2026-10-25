@@ -122,7 +122,7 @@ void gqbDatabase::createSchemas(gqbBrowser *tablesBrowser, wxTreeItemId parentNo
 				continue;
 			}
 
-			int tableImage = GQB_IMG_TABLE, viewImage = GQB_IMG_VIEW;
+			//int viewImage = GQB_IMG_VIEW;
 			gqbSchema *schema;
 
 			if (MetaType == GQB_CATALOG)
@@ -135,8 +135,8 @@ void gqbDatabase::createSchemas(gqbBrowser *tablesBrowser, wxTreeItemId parentNo
 
 				if(name != wxT("pg_catalog") && name != wxT("pgagent"))
 				{
-					tableImage = GQB_IMG_CATALOG_OBJ;
-					viewImage = GQB_IMG_CATALOG_OBJ;
+					//tableImage = GQB_IMG_CATALOG_OBJ;
+					//viewImage = GQB_IMG_CATALOG_OBJ;
 				}
 			}
 			else

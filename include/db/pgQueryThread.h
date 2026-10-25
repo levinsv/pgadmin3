@@ -266,24 +266,24 @@ private:
 	pgConn            *m_conn;
 	// Execution cancelled?
 	bool               m_cancelled;
-	// Raise events even when cancelled the execution
-	bool               m_eventOnCancellation;
 	// Does this thread support multiple queries
 	bool               m_multiQueries;
 	// Use EDB callable statement (if available and require)
 	bool               m_useCallable;
-	// Is executing a query
-	bool               m_executing;
-	// Queries are being accessed at this time
-	wxMutex            m_queriesLock;
-	// When one thread is accesing messages, other should not be able to access it
-	wxCriticalSection  m_criticalSection;
 	// Event Handler
 	wxEvtHandler      *m_caller;
 	// Database server notice-processor
 	PQnoticeProcessor  m_processor;
 	// Notice Handler
 	void              *m_noticeHandler;
+	// Raise events even when cancelled the execution
+	bool               m_eventOnCancellation;
+	// Queries are being accessed at this time
+	wxMutex            m_queriesLock;
+	// When one thread is accesing messages, other should not be able to access it
+	wxCriticalSection  m_criticalSection;
+	// Is executing a query
+	bool               m_executing;
 
 };
 

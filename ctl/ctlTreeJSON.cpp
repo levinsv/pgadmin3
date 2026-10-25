@@ -454,7 +454,7 @@ wxJSONValue ctlTreeJSON::copyjson(wxJSONValue& src) {
 	}
 	else if (src.IsObject()) {
 		wxArrayString arr = src.GetMemberNames();
-		for (int j = 0; j < arr.Count(); ++j) {
+		for (int j = 0; j < (int)arr.Count(); ++j) {
 			v[arr[j]] = copyjson(src[arr[j]]);
 		}
 	}
@@ -646,7 +646,7 @@ void ctlTreeJSON::LoadInTree(wxJSONValue& jval, const wxTreeItemId& idParent) {
 				wxString key;
 			};
 			std::vector<ss> ord;
-			for (int i = 0; i < arr.Count(); ++i) {
+			for (int i = 0; i < (int)arr.Count(); ++i) {
 				const wxJSONValue& jv = jval.Get(arr[i], def);
 				if (jv.IsArray()) ord.push_back({ 5000,arr[i] });
 				else if (jv.IsObject())  ord.push_back({ 4000,arr[i] });
@@ -703,7 +703,7 @@ wxTreeItemId ctlTreeJSON::MergeJson(const wxTreeItemId& item, wxJSONValue json) 
 			std::map<wxString,int> uniq_name;
 			// sort
 			wxJSONValue def;
-			for (int i = 0; i < arr.Count(); ++i) {
+			for (int i = 0; i < (int)arr.Count(); ++i) {
 				uniq_name[arr[i]]=0;
 			}
 			do
@@ -776,11 +776,10 @@ void ctlTreeJSON::InitMy() {
 }
 void ctlTreeJSON::Save() {
 	if (m_change) {
-		wxTreeItemId item = m_root, child;
+		wxTreeItemId child;
 		wxTreeItemIdValue cookie, cookie2;
 		wxJSONValue v(wxJSONTYPE_OBJECT);
 		wxString itemtext;
-		int i = 0;
 		child = GetFirstChild(m_root, cookie);
 		while (child.IsOk())
 		{

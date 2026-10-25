@@ -153,6 +153,9 @@ private:
 // others from pgAdming gqb
 class wxDDGrid: public wxGrid
 {
+private:
+	wxGridSelection *m_selTemp;
+
 public:
 	wxDDGrid(wxWindow *parent, wxWindowID id);
 	void ComboBoxEvent(wxGridEvent &event);
@@ -181,8 +184,6 @@ public:
 	{
 		keepFit = fit_style;
 	}
-private:
-	wxGridSelection *m_selTemp;
 };
 
 class ReportGridPage : public wxWizardPage

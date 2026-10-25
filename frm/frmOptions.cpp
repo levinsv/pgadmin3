@@ -382,7 +382,7 @@ frmOptions::frmOptions(frmMain *parent)
 	if (wxDirExists(p)) paths.Add(p);
 	p=defPath+sepPath+"themes";
 	if (wxDirExists(p)) paths.Add(p); // default themes
-	for(int c=0;c<paths.Count();c++)
+	for(int c=0;c<(int)paths.Count();c++)
 	{
 		wxDir jDir(paths[c]);
 		if (!jDir.IsOpened())
@@ -435,11 +435,10 @@ frmOptions::frmOptions(frmMain *parent)
 	wxJSONValue &jroot =settings->jsoncfg;
 	if (!jroot.IsNull()) {
 		wxArrayString arr = jroot.GetMemberNames();
-			for (int i = 0; i < arr.Count(); ++i) {
+			for (int i = 0; i < (int)arr.Count(); ++i) {
 				wxJSONValue def(wxJSONTYPE_NULL);
 				wxJSONValue& jv = jroot.Item(arr[i]);
 				if (!jv.IsNull()) {
-					
 					if (arr[i]=="ctlSQLBox") {
 						wxJSONValue o(wxJSONTYPE_OBJECT);
 						wxString c=jv["bookmarkcolor"].AsString();

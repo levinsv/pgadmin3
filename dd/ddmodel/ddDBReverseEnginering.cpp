@@ -170,7 +170,7 @@ OID ddImportDBUtils::getSchemaOID(pgConn *connection, wxString schemaName)
 		delete schemas;
 	}
 
-	if(times > 1 || schemaOID == -1)
+	if(times > 1 || schemaOID == (OID)-1)
 	{
 		wxMessageBox(_("Schema not found"), _("getting table OID"),  wxICON_ERROR | wxOK);
 		return -1;
@@ -211,7 +211,7 @@ OID ddImportDBUtils::getTableOID(pgConn *connection, wxString schemaName, wxStri
 		delete tables;
 	}
 
-	if(times > 1 || tableOID == -1)
+	if(times > 1 || tableOID == (OID)-1)
 	{
 		wxMessageBox(_("Table not found"), _("getting table OID"),  wxICON_ERROR | wxOK);
 		return -1;
@@ -540,7 +540,7 @@ void ddImportDBUtils::getAllRelationships(pgConn *connection, stubTablesHashMap 
 					if(destTabFigure != NULL && sourceTabFigure != NULL)
 					{
 
-						int ukindex = -1; //Only Supporting foreign keys from PK right now when importing model
+						//int ukindex = -1; //Only Supporting foreign keys from PK right now when importing model
 						wxString RelationshipName = foreignKeys->GetVal(wxT("conname"));
 
 						wxString onUpd = foreignKeys->GetVal(wxT("confupdtype"));
@@ -752,7 +752,7 @@ void ddImportDBUtils::getAllRelationships(pgConn *connection, stubTablesHashMap 
 
 							//number of columns in uk used by relationship is bigger or lesser than number of columns
 							//in destination table used by relationship as fk dest(dest fk columnn), then is not 1:1
-							if(numberColsInUk != destFkCols.Count())
+							if(numberColsInUk != (int)destFkCols.Count())
 								oneToMany = true;
 						}
 
@@ -827,7 +827,7 @@ bool ddImportDBUtils::existsFk(pgConn *connection, OID destTableOid, wxString sc
 {
 	wxString sql;
 	OID sourceOID = getTableOID(connection, schemaName, sourceTableName);
-	if(sourceOID == -1 )
+	if(sourceOID == (OID)-1 )
 	{
 		return false;
 	}
@@ -1009,7 +1009,7 @@ bool ddImportDBUtils::isModelSameDbFk(pgConn *connection, OID destTableOid, wxSt
 	}
 
 	//Extracting relationship metadata information from DB relationship
-	int ukindex = -1; //Only Supporting foreign keys from PK right now when importing model
+	//int ukindex = -1; //Only Supporting foreign keys from PK right now when importing model
 	wxString RelationshipName;
 	actionKind onUpdate;
 	actionKind onDelete;
@@ -1230,7 +1230,7 @@ bool ddImportDBUtils::isModelSameDbFk(pgConn *connection, OID destTableOid, wxSt
 
 				//number of columns in uk used by relationship is bigger or lesser than number of columns
 				//in destination table used by relationship as fk dest(dest fk columnn), then is not 1:1
-				if(numberColsInUk != destFkCols.Count())
+				if(numberColsInUk != (int)destFkCols.Count())
 					oneToMany = true;
 			}
 

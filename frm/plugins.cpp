@@ -45,7 +45,7 @@ void frmMain::LoadPluginUtilities()
 	std::map<wxString,wxString> uniq_title;
 	if (wxDirExists(p)) paths.Add(p);
 	paths.Add(pluginsDir);
-	for(int c=0;c<paths.Count();c++)
+	for(int c=0;c<(int)paths.Count();c++)
 	{
 		wxDir iniDir(paths[c]);
 		if (!iniDir.IsOpened())
@@ -343,7 +343,6 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 						wxString path = wxFileName::GetHomeDir() + sepPath + ".config" + sepPath + "far2l"+ sepPath + "plugins"+ sepPath + "NetRocks";
 						if (wxDirExists(path)) {
 							if (winMain) {
-								wxMenu *m=winMain->GetPluginsMenu();
 								ctlTree *tree=winMain->GetBrowser();
 								wxString name=tree->GetItemText(srv->GetId()).BeforeFirst('(').Trim();;
 								//winMain->GetCurrentNodePath
@@ -382,7 +381,7 @@ wxWindow *pluginUtilityFactory::StartDialog(frmMain *form, pgObject *obj)
 											nw.Append('\n');
 											if (token.Length()==0) break;
 										}
-										wxFontEncoding encoding = wxFONTENCODING_SYSTEM;
+										//wxFontEncoding encoding = wxFONTENCODING_SYSTEM;
 										wxUtfFile file;
 										rez+=nw;
 										//file.Open(path, wxFile::write, wxS_DEFAULT, encoding);
@@ -514,6 +513,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 	if (obj && applies_to.Count() > 0)
 	{
 		if (applies_to.Index(wxString(obj->GetFactory()->GetTypeName()).Lower()) == wxNOT_FOUND)
+		{
 			if (applies_to.Index("puttyforward") == wxNOT_FOUND) {
 				if (applies_to.Index("far2l") == wxNOT_FOUND) {
 					return false;
@@ -554,7 +554,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 					wxString host=obj->GetName();
 					wxString sport=NumToStr((long)srv->GetPort());
 					wxString f ;
-					bool isfound=false;
+					//bool isfound=false;
 					title="[puttyforward]";
 					if (host.CmpNoCase("localhost") == 0 || host == "127.0.0.1") {
 #ifdef __WXMSW__
@@ -580,7 +580,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 									// found putty config
 									title = dirName;
 									if (winMain) m->SetLabel(id, title);
-									isfound = true;
+									//isfound = true;
 									srv->SetPuttyTunnel(this);
 									delete dirKey;
 									delete pgKey;
@@ -619,7 +619,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 													// found putty config
 													title = filename;
 													if (winMain) m->SetLabel(id, title);
-													isfound = true;
+													//isfound = true;
 													srv->SetPuttyTunnel(this);
 													if (!winMain) return false;
 													return true;
@@ -637,6 +637,7 @@ bool pluginUtilityFactory::CheckEnable(pgObject *obj)
 				}
 				return false;
 			}
+		}
 	}
 
 	// If we don't need a database, we're always OK.

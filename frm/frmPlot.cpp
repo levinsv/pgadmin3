@@ -149,7 +149,7 @@ frmPlot::frmPlot(frmQuery* parent, const wxString& _title) : pgFrame(parent, _ti
 
 	SetMenuBar(menu_bar);
 //	CreateStatusBar(1);
-	mpLayer* l;
+	//mpLayer* l;
 
 	m_plot = new mpWindow(this, -1, wxPoint(0, 0), wxSize(100, 100), wxSUNKEN_BORDER);
     
@@ -230,7 +230,7 @@ void frmPlot::AddSeries(const wxString legend, const std::vector<double>& x, con
         break;
          //= new wxColour(cc.name);
     }
-    if (indexColor >= WXSIZEOF(colors)) cc.name = L"#000000";
+    if (indexColor >= (int)WXSIZEOF(colors)) cc.name = L"#000000";
     vectorLayer->SetDrawOutsideMargins(false);
     vectorLayer->ShowSimbol(true);
     if (vectorLayer->IsLegendBar()) {
@@ -252,11 +252,7 @@ void frmPlot::AddSeries(const wxString legend, const std::vector<double>& x, con
 }
 void frmPlot::OnKEY_DOWN(wxKeyEvent& event) {
     //void OnScrollThumbTrack(wxScrollWinEvent & event);
-    bool modctrl;
-    if ((event.GetModifiers() & wxMOD_CONTROL) == wxMOD_CONTROL) {
-        modctrl = true;
-    }
-    else modctrl = false;
+   
     int go = 0;
     int orient = wxHORIZONTAL;
     if (event.GetKeyCode() == WXK_DOWN) {
@@ -310,7 +306,7 @@ void frmPlot::OnAlignXAxis(wxCommandEvent& WXUNUSED(event))
 {
     axesPos[0] = (int)(axesPos[0] + 1) % 5;
     mpScaleX* xaxis = ((mpScaleX*)(m_plot->GetLayer(0)));
-    mpScaleY* yaxis = ((mpScaleY*)(m_plot->GetLayer(1)));
+    //mpScaleY* yaxis = ((mpScaleY*)(m_plot->GetLayer(1)));
     if (axesPos[0] == 0) {
         xaxis->SetAlign(mpALIGN_BORDER_BOTTOM);
         m_plot->SetMarginTop(0);
@@ -346,7 +342,7 @@ void frmPlot::OnAlignXAxis(wxCommandEvent& WXUNUSED(event))
 void frmPlot::OnAlignYAxis(wxCommandEvent& WXUNUSED(event))
 {
     axesPos[1] = (int)(axesPos[1] + 1) % 5;
-    mpScaleX* xaxis = ((mpScaleX*)(m_plot->GetLayer(0)));
+    //mpScaleX* xaxis = ((mpScaleX*)(m_plot->GetLayer(0)));
     mpScaleY* yaxis = ((mpScaleY*)(m_plot->GetLayer(1)));
     if (axesPos[1] == 0) {
         //((mpScaleY*)(m_plot->GetLayer(1)))->SetAlign(mpALIGN_BORDER_LEFT);

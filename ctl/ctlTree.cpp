@@ -37,7 +37,6 @@ wxTreeItemId ctlTree::FindItem(const wxTreeItemId &idParent, const wxString &pre
 	// pressing it) but we shouldn't jump to the next one if the user is
 	// continuing to type as otherwise he might easily skip the item he wanted
 	wxTreeItemId id = idParent;
-	int le=prefix.length();
 	if ( prefix.length() == 1 )
 	{
 		wxCookieType cookie;
@@ -392,7 +391,7 @@ void ctlTree::OnChar(wxKeyEvent &event)
 						groupitem =GetNextChild(GetRootItem(), groupcookie);
 					}
 					if (openservers.size()>0) {
-						if (idx>=0 && idx<openservers.size()) {
+						if (idx>=0 && idx<(int)openservers.size()) {
 							currid=openservers[idx];
 							SelectItem(currid);
 							EnsureVisible(currid);

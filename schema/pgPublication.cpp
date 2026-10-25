@@ -113,7 +113,7 @@ wxString pgPublication::GetSql(ctlTree *browser)
 						{
 							acc = "TABLE ";
 							wxArrayString atabs=wxSplit(listtab, ',');
-							for (int i = 0; i < atabs.Count(); i++) {
+							for (int i = 0; i < (int)atabs.Count(); i++) {
 								wxString fullname = atabs[i];
 								if (i > 0 ) acc += "\n           ,";
 								acc += fullname;

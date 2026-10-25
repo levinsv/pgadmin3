@@ -72,7 +72,7 @@ dlgSelectConnection::dlgSelectConnection(wxWindow *parent, frmMain *form) :
 		cbUsername->SetValue(settings->Read(wxT("QuickConnect/username"), wxEmptyString));
 		cbRolename->SetValue(settings->Read(wxT("QuickConnect/rolename"), wxEmptyString));
 	} else {
-		wxTreeItemIdValue foldercookie, servercookie;
+		wxTreeItemIdValue foldercookie;
 		wxTreeItemId folderitem, serveritem;
 		ctlTree *browser = mainForm->GetBrowser();
 		folderitem = browser->GetFirstChild(browser->GetRootItem(), foldercookie);
@@ -164,11 +164,12 @@ void dlgSelectConnection::OnChangeServer(wxCommandEvent &ev)
 					
 			}
 
-			if (cbDatabase->GetCount())
+			if (cbDatabase->GetCount()) {
 				if (item2>=0)
 					{cbDatabase->SetSelection(item2);}
 				else 
 					{cbDatabase->SetSelection(item);}
+			}
 
 			pgSetIterator set2(remoteServer->GetConnection(),
 			                   wxT("SELECT DISTINCT usename\n")
@@ -435,13 +436,12 @@ bool dlgSelectConnection::BuildServerCombo(pgConn *conn) {
 }
 int dlgSelectConnection::Go(pgConn *conn, wxBitmapComboBox *cb)
 {
-	bool foundServer = false;
 	cbConnection = cb;
 	currconn=conn;
 	wxString grpname=settings->Read(wxT("QuickConnect/group"), wxEmptyString);
 	int pos=cbGroup->FindString(grpname);
 	cbGroup->SetSelection(pos);
-	foundServer = BuildServerCombo(conn);
+	BuildServerCombo(conn);
 
 	return ShowModal();
 }

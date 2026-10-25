@@ -54,7 +54,7 @@ region: \"Timeout:PgSleep\", #6ce4c6;\n\
 		wxString c = l.AfterFirst('#').BeforeFirst(';');
 		unsigned long tmp=0;
 		wxSscanf(c, "%lx", &tmp);
-		tmp = (tmp >> 16) & 0xFF | (tmp & 0x00FF00) | (tmp & 0xFF) << 16;
+		tmp = (tmp >> 16) & 0xFF | (tmp & 0x00FF00) | ((tmp & 0xFF) << 16);
 		wait_idx.emplace(w, tmp);
 		wxJSONValue e(wxJSONType::wxJSONTYPE_OBJECT);
 		wxColour cc3;
@@ -295,7 +295,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 		wxString w_name = kv.first;
 		int w_id = kv.second;
 		//wait_id_name.emplace(w_id, w_name);
-		bool enable = true;
+		//bool enable = true;
 		wxString grp_name = w_name.BeforeFirst(':');
 		if (grp_name.IsEmpty()) grp_name = w_name;
 		int cl = wait_class(grp_name);
@@ -331,7 +331,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 				}
 				isDis = l[0] == '-';
 				if (isDis) l = l.substr(1);
-				isGrp = l.find(':') == -1;
+				isGrp = l.find(':') == wxString::npos;
 				if (w_name == l) {
 					if (isDis) {
 						filter_map[w_id] = w_id; //disable in Grp
@@ -386,7 +386,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 		if (wait_id == -2) n = '-' + n;
 		nameGroup.Add(n);
 		// individual wait
-		for (size_t j = 0; j < idx_grp; j++)
+		for (size_t j = 0; j < (size_t)idx_grp; j++)
 		{
 			int wait_id = filter_map[j];
 			n = wait_id_name[j];
@@ -394,7 +394,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 			if (grp_name.IsEmpty()) grp_name = n;
 			if (grp_name != g) continue;
 			if (!n.AfterFirst(':').IsEmpty()) n = n.AfterFirst(':');
-			if (wait_id == j) n = "--" + n; else n = "  " + n;
+			if (wait_id == (int)j) n = "--" + n; else n = "  " + n;
 			nameGroup.Add(n);
 			clr[j] = GetColorByWaitName(wait_id_name[j]);
 		}
@@ -415,7 +415,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 	xAxisValue.clear();
 	//for (size_t i = 0; i < maxS.size(); i++) maxS[i] = 0;
 	long long  maxsum = 0;
-	int minsum = 0;
+	//int minsum = 0;
 	int nGrp = needCountGroup;
 	while (idx >= 0) {
 		sa = smp[idx--];
@@ -427,7 +427,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 			wxDateTime t(l);
 			xAxisValue.push_back(t);
 			std::vector<int> itog(summary.size());
-			int ni = idx_grp;
+			//int ni = idx_grp;
 			int Ymax = 0;
 			for (size_t i = 0; i < itog.size(); i++)
 			{
@@ -436,7 +436,7 @@ int WaitSample::GetGroupingData(int timeEnd, int needCountGroup, int groupInterv
 				if (wait_id < 0) { itog[i] = wait_id; continue; }
 				int a = summary[i];
 				itog[i] = a;
-				if (i >= idx_grp) Ymax += a;
+				if ((int)i >= idx_grp) Ymax += a;
 				//if (minsum > a) minsum = a;
 			}
 			if (maxsum < Ymax) maxsum = Ymax;
@@ -525,7 +525,7 @@ void WaitSample::LoadFileSamples() {
 				//smp
 					//wxString w_name = tk.GetNextToken();
 					//wxString w_id = tk2.GetNextToken();
-				int tmp = 0;
+				//int tmp = 0;
 				Sample sa;
 				if (wxSscanf(l, "%d %d %d %d %lld %d %d", &sa.btime, &sa.etime, &sa.wait_id, &sa.pid, &sa.qid, &sa.btype, &sa.samples) != 7) {
 					wxLogError("Invalid count parameters '%s'.", l);
@@ -557,9 +557,7 @@ void WaitSample::LoadFileSamples() {
 					unsigned long tmp;
 					wxSscanf(b_id, "%ld", &tmp);
 					int i = GetBackendTypeId(b_name);
-					if (i != tmp) {
-
-					}
+					//if (i != tmp) {	}
 				}
 				nl++;
 				continue;

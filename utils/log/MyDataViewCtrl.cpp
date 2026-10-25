@@ -51,7 +51,7 @@ void MyDataViewCtrl::OnTimer(wxTimerEvent& event) {
         }
         linenumber = 0;
     }
-    if (logadd.GetCount() > linenumber) {
+    if ((int)logadd.GetCount() > linenumber) {
         StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
         //m->Prepend(logadd[linenumber++]);
         AddRow(logadd[linenumber++]);
@@ -65,7 +65,7 @@ void MyDataViewCtrl::setSettingString(wxString setstr) {
     wxString s;
     wxStringTokenizer tokenizer(setstr, ";");
 
-    for (int i = 0; i < GetColumnCount(); i++) {
+    for (int i = 0; i < (int)GetColumnCount(); i++) {
         if (!tokenizer.HasMoreTokens()) break;
         wxString token = tokenizer.GetNextToken();
         wxDataViewColumn* vc = GetColumn(i);
@@ -78,7 +78,7 @@ void MyDataViewCtrl::setSettingString(wxString setstr) {
 
 wxString MyDataViewCtrl::getSettingString() {
     wxString s;
-    for (int i = 0; i < GetColumnCount(); i++) {
+    for (int i = 0; i < (int)GetColumnCount(); i++) {
         wxDataViewColumn* vc = GetColumn(i);
         int width = vc->GetWidth();
         if (!s.IsEmpty()) s = s + ";";
@@ -185,7 +185,7 @@ void MyDataViewCtrl::ClearAllFilter(bool no_apply) {
     bool clear = false;
     wxArrayInt fCol;
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
-    for (int j = 0; j < GetColumnCount(); j++) {
+    for (int j = 0; j < (int)GetColumnCount(); j++) {
         col = j;
         clear = false;
         colt = 0;
@@ -288,15 +288,13 @@ void MyDataViewCtrl::AddFilterIgnore(wxString Fname) {
     int colt = 0;
     int col = 0;
     bool all = false;
-    bool clear = false;
     wxArrayInt fCol;
     StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
     Storage* st = m->getStorage();
     wxString text;
     
-    for (int j = 0; j < GetColumnCount(); j++) {
+    for (int j = 0; j < (int)GetColumnCount(); j++) {
         col = j;
-        clear = false;
         colt = 0;
         while (colt != -1) {
             colt = m->testFilter(col, colt);
@@ -425,7 +423,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_COLUMN_HEADER_CLICK(wxDataViewEvent& event) 
     if (event.GetColumn() == StorageModel::Col_User)
     {
     }
-    const int rowChanged = m->GetRow(event.GetItem());
+    //const int rowChanged = m->GetRow(event.GetItem());
     wxMenu menu;
     //menu.SetTitle(event.GetDataViewColumn()->GetTitle());
     int i = 1;
@@ -493,7 +491,6 @@ void MyDataViewCtrl::OnKEY_UP(wxKeyEvent& event) {
         go = -1;
     }
     bool reverse = false;
-    int currrow = -1;
     wxDataViewItem item;
     //find next state != current state
     if ((event.GetModifiers() & wxMOD_ALT) == wxMOD_ALT) {
@@ -508,7 +505,7 @@ void MyDataViewCtrl::OnKEY_UP(wxKeyEvent& event) {
 
 
         StorageModel* m = dynamic_cast<StorageModel*>(GetModel());
-        Storage* sta = m->getStorage();
+        //Storage* sta = m->getStorage();
         wxVariant v, t;
 
         int r = m->GetRow(item);
@@ -553,12 +550,9 @@ void MyDataViewCtrl::OnKEY_DOWN(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_UP) {
         go = -1;
     }
-    bool reverse = false;
-    int currrow = -1;
     wxDataViewItem item;
     //find next state != current state
     if ((event.GetModifiers() & wxMOD_ALT) == wxMOD_ALT) {
-        reverse = true;
         item = this->GetCurrentItem();
     }
     //find next state == current state
@@ -588,9 +582,9 @@ void MyDataViewCtrl::OnMouseMove(wxMouseEvent& event) {
     wxString position;
     //position = wxString::Format("x=%d y=%d", logPos.x, logPos.y);
     //wxLogMessage("Mouse pos %s", position);
+    #ifdef WIN32
     int dy = 0;
     wxSize sz;
-    #ifdef WIN32
     wxHeaderCtrl* const header = GenericGetHeader();
     if (header) {
         sz = header->GetSize();

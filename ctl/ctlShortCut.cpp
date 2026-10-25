@@ -8,16 +8,16 @@ ctlShortCut::ctlShortCut(frmMain* main,wxWindow* parent, wxWindowID id, const wx
     int style = wxCB_SIMPLE| wxTE_PROCESS_ENTER;
     long maxWidth = 0;
     wxClientDC dc(frm);
-    for (int i = 0; i<frm->shortcut.Count(); i++) {
+    for (int i = 0; i<(int)frm->shortcut.Count(); i++) {
         wxString t = viewText(frm->shortcut[i]);
-        int w, h,n1=0,n2=0;
+        int w, h;
         dc.GetTextExtent(t, &w, &h);
         if (w > maxWidth) maxWidth = w;        
     } 
     // check servers list
-    for (int i = 0; i<frm->servers_find_list.Count(); i++) {
+    for (int i = 0; i<(int)frm->servers_find_list.Count(); i++) {
         wxString t = viewText(frm->servers_find_list[i]);
-        int w, h,n1=0,n2=0;
+        int w, h;
         dc.GetTextExtent(t, &w, &h);
         if (w > maxWidth) maxWidth = w;        
     }
@@ -89,7 +89,7 @@ wxString ctlShortCut::viewText(wxString& s) {
 wxArrayString ctlShortCut::BuildList(wxString& find, bool full) {
     wxArrayString rez;
     if (find.Length()==0) return frm->shortcut;
-    for (int i = 0; i<frm->shortcut.Count(); i++) {
+    for (int i = 0; i<(int)frm->shortcut.Count(); i++) {
         wxString t = viewText(frm->shortcut[i]);
         if (t.Find(find) != wxNOT_FOUND) {
             if (full)
@@ -102,7 +102,7 @@ wxArrayString ctlShortCut::BuildList(wxString& find, bool full) {
         }
     }
     // check servers list
-    for (int i = 0; i<frm->servers_find_list.Count(); i++) {
+    for (int i = 0; i<(int)frm->servers_find_list.Count(); i++) {
         wxString t = viewText(frm->servers_find_list[i]);
         if (t.Find(find) != wxNOT_FOUND) {
             //wxString t2=frm->servers_find_list[i].BeforeFirst('(').Trim();
@@ -212,7 +212,7 @@ dlgShortCut::dlgShortCut(frmMain* parent, wxWindowID id, wxPoint pos, const wxSi
     wxString curparh=frm->GetNodePath(item);
     curparh = "";
     cb->SetText(curparh, true);
-    wxTextCtrl *c=cb->GetTextControl();
+    //wxTextCtrl *c=cb->GetTextControl();
     
     cb->Bind(wxEVT_KEY_DOWN, &dlgShortCut::OnKEY_DOWN, this);
    // Bind(wxEVT_CHAR_HOOK, &dlgShortCut::OnCharHook, this);

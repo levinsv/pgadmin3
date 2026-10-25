@@ -185,7 +185,6 @@ std::deque<LineFilter> Storage::getFilter(wxString FilterName) {
 }
 int Storage::getFilterNames(wxArrayString& arr) {
     std::deque<LineFilter> rez;
-    bool add = false;
     int i = 0;
     for (auto fl : filterload) {
 
@@ -355,7 +354,7 @@ bool Storage::ApplyFilter(int row) {
         MyHashToRow::iterator it;
         for (it = hashKeyToRow.begin(); it != hashKeyToRow.end(); ++it)
         {
-            int keyhash = it->first, lastrow = it->second;
+            int lastrow = it->second;
             // do something useful with key and value
             if (detailGroup != -1) {
                 if (detailGroup == lastrow)
@@ -379,7 +378,7 @@ bool Storage::ApplyFilter(int row) {
     if (frows.size() > 0) {
         // набор фильтра изменился перепроверим отфильтрованные строки ещё раз
         std::deque<int> tmp;
-        for (int i = 0; i < frows.size(); i++) {
+        for (int i = 0; i < (int)frows.size(); i++) {
             if (CompareFilterLine(i, true)) {
 
                 tmp.push_back(frows[i]);
@@ -393,7 +392,7 @@ bool Storage::ApplyFilter(int row) {
     else
     {
         // набор фильтроывнных строк пустой проверим все строки на соответствие фильтру
-        for (int i = 0; i < storage.size(); i++) {
+        for (int i = 0; i < (int)storage.size(); i++) {
             if (CompareFilterLine(i, false)) {
                 frows.push_back(i);
                 f = true;
@@ -513,7 +512,7 @@ wxString replace_bind_parameters(const wxString& values_param, const wxString& t
     wxString nstr;
     int n = 0;
     wxArrayString arS;
-    for (int j = idx + 1; j < values_param.Len(); j++) {
+    for (int j = idx + 1; j < (int)values_param.Len(); j++) {
         wxChar c = values_param[j];
         if (mode == FIND_DOLLS) {
             if (c == '$') mode = NUM_PARAMETER;
@@ -541,7 +540,7 @@ wxString replace_bind_parameters(const wxString& values_param, const wxString& t
                 nstr.Append(c);
                 continue;
             }
-            if (((j + 1) < values_param.Len()) && values_param[j + 1] == '\'') {
+            if (((j + 1) < (int)values_param.Len()) && values_param[j + 1] == '\'') {
                 j++;
                 nstr.Append(c);
                 nstr.Append(c);

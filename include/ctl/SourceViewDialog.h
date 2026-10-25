@@ -142,7 +142,7 @@ public:
             aDiff = *it;
             tex = aDiff.text;
             nstart = 0;
-            while (nstart < tex.length()) {
+            while (nstart < (int)tex.length()) {
                 pos = tex.find('\n', nstart);
                 if (pos == -1) { t.assign(tex, nstart, tex.length()); nstart = tex.length(); }
                 else { t.assign(tex, nstart, pos - nstart); nstart = pos; }
@@ -410,11 +410,9 @@ public:
                 t->SetCurrentPos(pos - 1);
                 int start = pos - 1;
                 prev_line = l;
-                bool f = false;
                 // find end fragment
                 while (pos<t->GetLength()) { 
                     if (t->IndicatorAllOnFor(pos++) == 0) {
-                        f = true;
                         break;
                     }
                 }

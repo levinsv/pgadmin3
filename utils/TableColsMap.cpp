@@ -4,8 +4,9 @@ Table::Table(const wxString &tablename) {
     make_name(tablename);
 }
 void Table::make_name(const wxString& tablename) {
+    //make_identifier()
     if (tablename.length() > 0) {
-        size_t pospoint = tablename.Find('.');
+        int pospoint = tablename.Find('.');
         size_t pos = 0;
         std::vector<wxString> names;
         while (pos < tablename.length()) {

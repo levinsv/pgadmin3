@@ -2519,7 +2519,7 @@ void wxShape::Select(bool select)
 			wxNode *node = m_children.GetFirst();
 			while (node)
 			{
-				wxShape *child = (wxShape *)node->GetData();
+				//wxShape *child = (wxShape *)node->GetData();
 				node = node->GetNext();
 			}
 		}

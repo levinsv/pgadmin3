@@ -27,7 +27,7 @@ wxString FunctionPGHelper::getHelpString(wxString fnd, bool isPart)
             int l = fnd.Len();
             wxString b;
             for (const auto& e : body) {
-                if (e.first.Len() > l && e.first.StartsWith(fnd)) {
+                if ((int)e.first.Len() > l && e.first.StartsWith(fnd)) {
                     list.push_back(e.first);
                     b = e.second;
                 }
@@ -108,7 +108,7 @@ order by objname;
             ,es,en,es,en,a);
             pgSet *res = dblast->ExecuteSet(sql);
             wxString txt,ns,on,kind,args,def,oid;
-            bool isfunc=false;
+            //bool isfunc=false;
             int c=0;
             while (!res->Eof())
             {
@@ -121,8 +121,7 @@ order by objname;
                 wxString link=ns+"."+on;
                 if (kind=="ff" || kind=="pp") {
                     link+="("+args+")";
-                    isfunc=true;
-                } else isfunc=false;
+                };
                 txt += wxString::Format("<a href=\"%s\">%s</a><br>", link, link);
                 c++;
                 res->MoveNext();
@@ -178,7 +177,7 @@ order by objname;
                                                         wxTreeItemId schemasId;
                                                         if (coll) schemasId=coll->GetId();
                                                         if (schemasId) {
-                                                                pgObject *obj2 = browser->GetObject(item);
+                                                                //pgObject *obj2 = browser->GetObject(item);
                                                                 //obj2->expandedKids
                                                                 wxCookieType cookie4;
                                                                 item = browser->GetFirstChild(schemasId, cookie4);
@@ -252,7 +251,7 @@ order by objname;
                     std::vector<FSQL::complite_element> listobj=f.ParsePLpgsql();
                     ctlSQLBox* box = new ctlSQLBox((wxWindow*) winMain, CTL_SQLQUERY, wxDefaultPosition, wxSize(0, 0), wxTE_MULTILINE | wxTE_RICH2);
                     box->SetText(def);
-                    int l = def.Length();
+                    //int l = def.Length();
                     box->Colourise(0, box->GetLength());
                     //bg = box->SetSQLBoxColourBackground(false).GetAsString(wxC2S_CSS_SYNTAX);
                     html = box->TextToHtml(0, box->GetLength(),false,listobj);

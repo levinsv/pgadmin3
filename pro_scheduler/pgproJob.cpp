@@ -237,8 +237,8 @@ pgObject *pgproJobFactory::CreateObjects(pgCollection *collection, ctlTree *brow
 	                  wxT(" ") + restriction;
 
 	if (!collection->GetConnection()->IsSuperuser()) {
-		size_t a=sql.Replace(wxT("get_log()"),wxT("get_user_log()"));
-		a=sql.Replace(wxT("get_cron()"),wxT("get_user_cron()"));
+		sql.Replace(wxT("get_log()"),wxT("get_user_log()"));
+		sql.Replace(wxT("get_cron()"),wxT("get_user_cron()"));
 	}
 
 	pgSet *jobs = collection->GetConnection()->ExecuteSet(sql);

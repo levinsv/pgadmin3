@@ -307,7 +307,7 @@ void frmMain::OnStatSelChanged(wxListEvent& event)
 {
 	if (statistics->GetSelectedItemCount() == 1)
 	{
-		int key = event.GetKeyCode();
+		//int key = event.GetKeyCode();
 		wxTreeItemId item = browser->GetSelection();
 		if (item)
 		{
@@ -334,7 +334,7 @@ void frmMain::OnStatSelChanged(wxListEvent& event)
 					wxString typen = ff->GetTypeName();
 					fn = oo->GetName();
 					bool isChilds = typen == wxT("Tables") || typen == wxT("Partitions");
-					if (typen == wxT("Table")|| typen == wxT("TABLE") && ((((pgTable*)oo)->GetIsPartitioned()))) isChilds = true;
+					if ((typen == wxT("Table")|| typen == wxT("TABLE")) && ((((pgTable*)oo)->GetIsPartitioned()))) isChilds = true;
 					if (fn == table) {
 						break;
 					}
@@ -627,7 +627,7 @@ void frmMain::execSelChange(wxTreeItemId item, bool currentNode)
 
 void frmMain::setDisplay(pgObject *data, ctlListView *props, ctlSQLBox *sqlbox, bool showtree)
 {
-	pgServer *server = 0;
+	//pgServer *server = 0;
 
 
 	bool showTree = false;
@@ -637,7 +637,7 @@ void frmMain::setDisplay(pgObject *data, ctlListView *props, ctlSQLBox *sqlbox, 
 	{
 		if (factory == &serverFactory)
 		{
-			server = (pgServer *)data;
+			//server = (pgServer *)data;
 
 			data->ShowTree(this, browser, props, sqlbox);
 			showTree = false;

@@ -543,7 +543,7 @@ void  gqbColsPopUp::OnPopUpTreeDoubleClick(wxTreeEvent &event)
 	if(colsTree)
 	{
 		wxTreeItemId itemId = event.GetItem();
-		wxTreeItemId itemIdParent =  colsTree->GetItemParent(itemId);
+		//wxTreeItemId itemIdParent =  colsTree->GetItemParent(itemId);
 		if(!colsTree->ItemHasChildren(itemId) && (colsTree->GetRootItem() != itemId))
 		{
 			this->usedGrid->SetCellValue(_row, _col, this->getEditText());

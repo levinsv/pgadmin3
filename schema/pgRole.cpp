@@ -195,12 +195,12 @@ wxString pgRole::GetOptStr(wxString& rolename) {
 	if (opt==rolename) return wxEmptyString;
 	wxString str;
 	wxString delim = "";
-	if (opt.Index('A') != wxNOT_FOUND) str += "ADMIN OPTION";
+	if (opt.Index('A') != wxString::npos) str += "ADMIN OPTION";
 	if (!str.IsEmpty()) delim = ", ";
-	if (opt.find("I") != wxNOT_FOUND) str +=delim+ "INHERIT true";
-	if (opt.find("i") != wxNOT_FOUND) str += delim + "INHERIT false";
+	if (opt.Find("I") != wxNOT_FOUND) str +=delim+ "INHERIT true";
+	if (opt.Find("i") != wxNOT_FOUND) str += delim + "INHERIT false";
 	if (!str.IsEmpty()) delim = ", ";
-	if (opt.Index('s') != wxNOT_FOUND) str += delim + "SET false";
+	if (opt.Index('s') != wxString::npos) str += delim + "SET false";
 	if (!str.IsEmpty()) str = " WITH "+str;
 	return str;
 }
@@ -383,7 +383,7 @@ wxString pgRole::GetSql(ctlTree *browser)
 		for (index = 0 ; index < rolesIn.GetCount() ; index++)
 		{
 			wxString role = rolesIn.Item(index);
-			bool admin = false;
+			//bool admin = false;
 			wxString opt = GetOptStr(role);
 			if (role.AfterLast('(')!=role)
 			{

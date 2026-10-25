@@ -739,7 +739,7 @@ void dbgController::ResultNewBreakpointWait(pgQueryResultEvent &_ev)
 	{
 		if (qry->ReturnCode() == PGRES_TUPLES_OK)
 		{
-			pgSet *set = _ev.GetQuery()->ResultSet();
+			//pgSet *set = _ev.GetQuery()->ResultSet();
 			m_frm->EnableToolsAndMenus(false);
 
 			m_dbgThread->AddQuery(
@@ -941,8 +941,8 @@ void dbgController::ResultTargetReady(pgQueryResultEvent &_ev)
 	// running or not exists
 	if (m_dbgThread && m_dbgThread->IsRunning())
 	{
-		bool goAhead = false;
-		goAhead = (qry->ReturnCode() == PGRES_TUPLES_OK);
+		//bool goAhead = false;
+		//goAhead = (qry->ReturnCode() == PGRES_TUPLES_OK);
 		pgSet *set = qry->ResultSet();
 
 		// Save the current running target pid

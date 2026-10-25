@@ -101,7 +101,6 @@ int dlgProJob::Go(bool modal)
 		txtCron->SetValue(t2);
 		chkSameTran->SetValue(job->GetSameTransaction());
 		
-		int pos = 0;
 		pgSetIterator cmds(connection, wxT("select unnest(commands) from schedule.get_cron() c where c.id=")+NumToStr(job->GetRecId()));
 		wxString src;
 			while (cmds.RowsLeft())
@@ -233,10 +232,11 @@ wxString dlgProJob::StrAttribute(const wxString &name,const wxString &value)
 }
 void dlgProJob::append(wxString& str, const wxString& delimiter, const wxString& what)
 {
-	if (!what.IsNull())
+	if (!what.IsNull()) {
 		if(str.IsNull()) {str +=  what;}
 			else
 				{str += delimiter + what;}
+	}
 }
 wxString dlgProJob::GetSql()
 {
@@ -245,10 +245,11 @@ wxString dlgProJob::GetSql()
 	if (job)
 	{
 		// edit mode
-		if (chkEnabled->GetValue() != job->GetEnabled())
+		if (chkEnabled->GetValue() != job->GetEnabled()) {
 			if (chkEnabled->GetValue()) {sql = wxT("select schedule.activate_job(") + NumToStr(job->GetRecId()) + wxT(");\n");}
 			else
 				{sql = wxT("select schedule.deactivate_job(") + NumToStr(job->GetRecId()) + wxT(");\n");}
+		}
 
 		
 		wxString att;
@@ -264,7 +265,7 @@ wxString dlgProJob::GetSql()
 			wxString tmp;
 			fillarray(a, txtSqlBox->GetText());
 			if (a.GetCount() > 0) {
-				for (int i = 0; i < a.GetCount(); i++) append(tmp, ",\n", "\"" + a[i] + "\"");
+				for (int i = 0; i < (int)a.GetCount(); i++) append(tmp, ",\n", "\"" + a[i] + "\"");
 				tmp = "[" + tmp + "]";
 			}
 			else tmp = "";

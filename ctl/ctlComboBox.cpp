@@ -200,12 +200,12 @@ int ctlComboBox::GuessSelection(wxCommandEvent &ev)
 	{
 		long pos = GetInsertionPoint();
 
-		long sel, count = GetCount();
+		long sel=-1, count = GetCount();
 		int len = str.Length();
 #ifdef __WXGTK__
 		int sel_element = GetSelection();
 		if (sel_element >= 0) {
-			return sel;
+			return sel_element;
 		}
 #endif		
 		for (sel = 0 ; sel < count ; sel++)

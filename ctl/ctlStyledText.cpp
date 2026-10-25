@@ -77,13 +77,11 @@ void ctlStyledText::OnPositionStc(wxStyledTextEvent& event) {
 
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
-	wxChar nextch = GetCharAt(pos);
 	int st = GetStyleAt(pos - 1);
 	int match;
 	// Line numbers
 	// Ensure we don't recurse through any paint handlers on Mac
 	// Roll back through the doc and highlight any unmatched braces
-	int tmp = pos;
 
 	while ((pos--) >= 0)
 	{
@@ -117,15 +115,15 @@ void ctlStyledText::setRegExphighlight(bool enable) {
 ///////////////////////////// RegExpParser
 
 void RegExpParser::init() {
-	for (int i = 0; i < sizeof(rulemap) / sizeof(rulemap[0]); i++) rulemap[i] = -1;
-	for (int i = 0; i < sizeof(rules) / sizeof(rules[0]); i++) {
+	for (size_t i = 0; i < sizeof(rulemap) / sizeof(rulemap[0]); i++) rulemap[i] = -1;
+	for (size_t i = 0; i < sizeof(rules) / sizeof(rules[0]); i++) {
 		if (ISCHECKTYPE(i, rule_type::start_rule)) {
 			wxASSERT_MSG(rules[i].ruledef >= 0, "rule < 0 this bad");
 			rulemap[rules[i].ruledef] = i;
 		}
 	}
 	// check all refernce
-	for (int i = 0; i < sizeof(rules) / sizeof(rules[0]); i++) {
+	for (size_t i = 0; i < sizeof(rules) / sizeof(rules[0]); i++) {
 		if (rules[i].ruleref > 0) {
 			wxASSERT_MSG(rulemap[rules[i].ruleref] >= 0, wxString::Format("rule %d not define", rules[i].ruleref));
 		}
@@ -156,7 +154,7 @@ void RegExpParser::SetStyleControl(wxStyledTextCtrl* ctrl) {
 	}
 	//((ctlStyledText *)ctrl)->setDecorate();
 	bool isdark=isDark() ;
-	for (int i = 0; i < sizeof(stylemap) / sizeof(stylemap[0]); i++) stylemap[i] = -1;
+	for (size_t i = 0; i < sizeof(stylemap) / sizeof(stylemap[0]); i++) stylemap[i] = -1;
 	wxColour bgdef = ctrl->GetBackgroundColour();
 	wxColour fgdef = ctrl->GetForegroundColour();
 	if (isdark) {
@@ -207,9 +205,8 @@ void RegExpParser::SetStyleControl(wxStyledTextCtrl* ctrl) {
 	stylemap[defrule::subroutine_reference] = 7;
 	
 	//wxLogNull logNo;
-	int count = 0;
 	int userstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
-	for (int i = 0; i < sizeof(stylemap) / sizeof(stylemap[0]); i++) {
+	for (size_t i = 0; i < sizeof(stylemap) / sizeof(stylemap[0]); i++) {
 		if (stylemap[i] != -1) {
 			int k = stylemap[i];
 			stylemap[i] += userstyle;
@@ -225,7 +222,7 @@ void RegExpParser::StyledTextControl(wxStyledTextCtrl* ctrl) {
 	if (marker.size() == 0) {
 		marker.push_back(styletextmarker{ 0,maxPos + 1,maxPos + 2 });
 	}
-	int userstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
+	//int userstyle = wxSTC_STYLE_LASTPREDEFINED + 1;
 	for (auto m : marker) {
 		if (m.rule >= 0) {
 			int style = stylemap[m.rule];

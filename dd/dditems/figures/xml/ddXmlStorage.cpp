@@ -1224,6 +1224,7 @@ ddColumnFigure *ddXmlStorage::getColumn(xmlTextReaderPtr reader, ddTableFigure *
 
 		return new ddColumnFigure(columnName, colOwner, (ddColumnOptionType)option, generateFkName, isPk, columnType, precision, scale, ukindex, NULL, NULL);
 	}
+	wxASSERT(tmp >= 0);
 	return NULL;   //found /COLUMNS node
 }
 
@@ -1614,7 +1615,7 @@ ddRelationshipItem *ddXmlStorage::getRelationshipItem(xmlTextReaderPtr reader, d
 	ddColumnFigure *sourceCol = source->getColByName(sourceColName);
 	ddColumnFigure *destinationCol = destination->getColByName(fkColName);
 	item->initRelationshipItemValues(itemOwner, destination, autoGenFk, destinationCol, sourceCol, initialColName);
-
+	wxASSERT(tmp>=0);
 	return item;
 
 }

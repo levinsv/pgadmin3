@@ -191,7 +191,7 @@ void ChatClient::Rollback()
 
 wxString ChatClient::GetHtmlAll() {
     wxString all;
-    for (int i=0;i<m_history.size();i++) {
+    for (int i=0;i<(int)m_history.size();i++) {
         if (m_history[i].role!="system") {
             if (!all.IsEmpty()) all+="<br>";
             all+=m_history[i].html;
@@ -215,7 +215,7 @@ void ChatClient::OnRequestData(wxWebRequestEvent& event)
     // Накапливаем сырые байты: порция может разрезать юникодный
     // символ посередине, поэтому в wxString конвертируем только в конце
     //m_buffer.AppendData(event.GetDataBuffer(), event.GetDataSize());
-    int l=event.GetDataSize();
+    //int l=event.GetDataSize();
 
 }
 

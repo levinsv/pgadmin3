@@ -170,8 +170,8 @@ wxString ctlListView::GetTextLong(long row, long col)
 	GetItem(item);
 	wxString v = item.GetText();
 	if (storelongstring) {
-		int len = v.Length();
-		if (len == 200 && row >= 0 && col == 0 && row < longstring.size()) {
+		auto len = v.Length();
+		if (len == 200 && row >= 0 && col == 0 && (size_t)row < longstring.size()) {
 			return  longstring[row];
 		}
 	}

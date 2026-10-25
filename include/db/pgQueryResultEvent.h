@@ -54,9 +54,9 @@ public:
 	};
 
 private:
+	unsigned long m_thrdId;
 	pgBatchQuery  *m_query;
 	// Thread Id (pgQueryThread)
-	unsigned long m_thrdId;
 };
 
 typedef void (wxEvtHandler::*pgQueryResultEventFunc)(pgQueryResultEvent &);

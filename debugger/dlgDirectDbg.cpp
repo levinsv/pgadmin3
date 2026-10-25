@@ -349,7 +349,7 @@ void dlgDirectDbg::LoadSettings()
 	{
 		settings->Read(wxT("Debugger/Proc/initialize_package_constructor"), &initPkgCon, true);
 
-		chkPkgInit->SetValue(&initPkgCon && target->GetPkgInitOid() != 0L);
+		chkPkgInit->SetValue(initPkgCon && target->GetPkgInitOid() != 0L);
 		chkPkgInit->Enable(target->GetPkgInitOid() != 0L);
 	}
 
@@ -590,7 +590,7 @@ void dlgDirectDbg::OnClickGridLabel(wxGridEvent &_ev)
 	}
 	else if (strLabel == wxT("-"))
 	{
-		dbgArgInfo *arg = NULL;
+		//dbgArgInfo *arg = NULL;
 		grdParams->DeleteRows(row, 1, false);
 	}
 	else
@@ -598,8 +598,7 @@ void dlgDirectDbg::OnClickGridLabel(wxGridEvent &_ev)
 
 	// Update the row labels
 	ctlGridCellBoolEditor *editor = NULL;
-	dbgArgInfo *arg = NULL,
-	            *prev = NULL;
+	dbgArgInfo *arg = NULL;
 	wxString strName;
 
 	int totalRows = grdParams->GetNumberRows(),
@@ -835,7 +834,6 @@ void dbgArgValueEvaluator::NoticeHandler(void *, const char *)
 
 void *dbgArgValueEvaluator::Entry()
 {
-	bool argNull, nullVal, useDef;
 	wxString strVal, strValExpr;
 	dbgArgInfo *prev = NULL,
 	            *arg = NULL;
@@ -847,7 +845,7 @@ void *dbgArgValueEvaluator::Entry()
 
 	m_conn->RegisterNoticeProcessor(dbgArgValueEvaluator::NoticeHandler, NULL);
 
-	for (int row = 0, idx = 0, arrCnt = 1, arr_idx_bound = 0;
+	for (int row = 0, idx = 0, arr_idx_bound = 0;
 	        row < grd->GetNumberRows() && !m_cancelled; row++)
 	{
 		ctlGridCellBoolEditor *editor =
@@ -926,9 +924,6 @@ void *dbgArgValueEvaluator::Entry()
 		else if (prev != arg)
 		{
 			idx++;
-			argNull = false;
-			nullVal = false;
-			useDef  = false;
 
 			strValExpr = wxEmptyString;
 		}

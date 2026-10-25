@@ -1531,7 +1531,7 @@ void wxShape::OnSizingEndDragLeft(wxControlPoint *pt, double WXUNUSED(x), double
 	// we'll be accessing garbage.
 	wxShape *theObject = this;
 	wxShapeCanvas *theCanvas = m_canvas;
-	bool eraseIt = pt->m_eraseObject;
+	//bool eraseIt = pt->m_eraseObject;
 
 	if (theObject->GetCentreResize())
 		theObject->Move(theObject->GetX(), theObject->GetY());

@@ -695,9 +695,9 @@ bool pgAdmin3::OnInit()
 			if (!conn)
 				return false;
 
-				wxString txt = conn->GetName();
-				frmStatus* fq = new frmStatus(NULL, txt, conn);
-				fq->Go();
+			wxString txt = conn->GetName();
+			frmStatus* fq = new frmStatus(NULL, txt, conn);
+			fq->Go();
 
 		}
 

@@ -401,7 +401,6 @@ void ctlSQLBox::OnDiff(wxCommandEvent& ev) {
 				return;
 		}
 		sql_2 = GetSelectedText();
-		int s,e;
 		if (sql_2.IsEmpty())
 		{
 			int curPos = GetCurrentPos();
@@ -771,7 +770,6 @@ void ctlSQLBox::Colourise(int start, int end)
 		m_hint_words.clear();
 		wxString s = GetText();
 		int pos = start;
-		int pend = -1;
 		int endPos = end;
 		int hword = pos;
 		wxChar ch;
@@ -808,7 +806,7 @@ void ctlSQLBox::Colourise(int start, int end)
 			if (hword >= 0) {
 				wxString w = GetTextRange(hword, pos);
 				if (w.length() > 1 && !wxIsdigit(w[0])) {
-					auto [iter, has_been_inserted] = m_hint_words.insert(w);
+					m_hint_words.insert(w);
 				}
 			}
 			hword = -1;
@@ -930,7 +928,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 			showpos = PositionRelative(pos, -s.length());
 			if (isAddDict && hint.IsEmpty()) {
 				if (s.length() > 1 && !wxIsdigit(s[0])) {
-					auto [iter, has_been_inserted] = m_hint_words.insert(s);
+					m_hint_words.insert(s);
 				}
 
 			}
@@ -1031,7 +1029,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 						calltip=f_name +wxT("(")+m_def->Item(idx)+wxT(")");
 						ct_hl=calltip.Find(wxT(","));
 						if (ct_hl==wxNOT_FOUND) ct_hl=l;
-						for (int jj=idx+1;jj<m_name->Count();jj++) {
+						for (size_t jj=idx+1;jj<m_name->Count();jj++) {
 							if (m_name->Item(jj)== f_name) {
 								calltip+=wxT("\n")+f_name +wxT("(")+m_def->Item(jj)+wxT(")");
 							} else break;
@@ -1063,7 +1061,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 						{
 							int pos=ct_hl+direction;
 							int a=0;
-							while ( (pos<calltip.Len())&&(pos>0)) {
+							while ( (pos<(int)calltip.Len())&&(pos>0)) {
 								c=calltip[pos].GetValue();
 								if ((c==',')||(c=='\n')) {
 									if (direction==1) break;
@@ -1080,7 +1078,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 								pos=ct_hl;
 							} else
 							{
-							if (pos==wxNOT_FOUND||(pos==calltip.length())) pos=ct_hl;
+							if (pos==wxNOT_FOUND||(pos==(int)calltip.length())) pos=ct_hl;
 							}
 							CallTipSetHighlight(prev,pos);
 
@@ -1195,7 +1193,6 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 		if(line != wxEmptyString)
 		{
 			while ((x < max) &&(line[x].GetValue() == '\t' || line[x].GetValue() == ' ')) {
-				wxChar ccc=line[x];
 				indent += line[x++];
 			}
 		}
@@ -1550,7 +1547,6 @@ std::pair<int,int> ctlSQLBox::SelectQuery(int startposition)
 	struct result { int start; int end; };
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
-	wxChar nextch = GetCharAt(pos);
 	int st = GetStyleAt(pos - 1);
 	int endPos = GetLength();
 	int pend=endPos;
@@ -1689,7 +1685,6 @@ void ctlSQLBox::OnPositionStc(wxStyledTextEvent &event)
 {
 	int pos = GetCurrentPos();
 	wxChar ch = GetCharAt(pos - 1);
-	wxChar nextch = GetCharAt(pos);
 	int st = GetStyleAt(pos - 1);
 	int match;
 	// Line numbers
@@ -1878,7 +1873,6 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 		bgAddColor="#ffff00";
 		bgRemoveColor="#ebb1c4";
 	}
-	int endp = end;
 	int startp = start;
 	wxString prevColor = wxEmptyString;
 	wxString tColor;
@@ -1897,7 +1891,6 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	str.Alloc(lenstr*2);
 	str = wxString::Format("<div style=\"font-family: %s; font-size: %spt;background-color:%s \"><span>", fontName, sz,bgColortext);
 	int k = 0;
-	int l = 1;
 	int indic=9;
 	wxString newline = "<br>";
 	if (isAddNewLine) newline = L"\u2936<br>";
@@ -1994,9 +1987,9 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 				if (newlineadd) {
 					size_t p44=0,p45=0;
 					wxString searchStr = "<br>";
-						p44=lstr.Find('<',true);
-						if (p44!=-1) {
-							p45=p44;
+						int tmp46=lstr.Find('<',true);
+						if (tmp46>=0) {
+							p45=tmp46;
 							p44++;
 						}
 					wxString lleft=lstr.Left(p45+4);
@@ -2018,7 +2011,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 					continue; // link not ready
 			}
 			IndexObj++;
-			if (listobj.size()>IndexObj) { pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table; lenobj=obj.Len();}
+			if ((int)listobj.size()>IndexObj) { pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table; lenobj=obj.Len();}
 			else pos=999999999;
 
 		}
@@ -2066,7 +2059,6 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 	//wxString what = GetCurLine().Left(pos - PositionFromLine(GetCurrentLine()));
 	wxString what = GetTextRange(PositionFromLine(GetCurrentLine()),pos);
 	int spaceidx = what.Find(' ', true);
-	int spacecharidx=spaceidx;
 	int poshome=PositionFromLine(GetCurrentLine());
 	int posspc=PositionRelative(poshome,spaceidx);
 	if (spaceidx != -1) {
@@ -2085,7 +2077,6 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 
 		}
 		wxString lastexp=GetTextRange(PositionFromLine(GetCurrentLine()),posspc);
-		spacecharidx=lastexp.Length();
 		spaceidx=posspc-poshome;
 	}
 	char *tab_ret;
@@ -2140,7 +2131,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 						if (vi.srcpos != -1) break;
 					};
 				}
-				else if (vi.type == FSQL::identifier && !CHKFLAG(extflag, TableColsMap::Flag::NOT_ADD_FIRST_SPACE && leftexp.IsEmpty())) {
+				else if (vi.type == FSQL::identifier && !CHKFLAG(extflag, TableColsMap::Flag::NOT_ADD_FIRST_SPACE) && leftexp.IsEmpty()) {
 					field = vi.txt;
 				}
 				else if (vi.type == FSQL::keyword || !leftexp.IsEmpty()) {
@@ -2333,7 +2324,7 @@ void ctlSQLBox::OnAutoComplete(wxCommandEvent &rev)
 			while ( k>=0&&m_name->Item(k).StartsWith(f_name) ) k--;
 			k++;
 			wxString prev;
-			while ( (k<m_name->GetCount())&&m_name->Item(k).StartsWith(f_name) )
+			while ( (k<(int)m_name->GetCount())&&m_name->Item(k).StartsWith(f_name) )
 				{
 					if (prev!=m_name->Item(k)) wxRet+=m_name->Item(k)+wxT("\t");
 					prev=m_name->Item(k);

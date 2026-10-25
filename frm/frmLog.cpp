@@ -134,7 +134,7 @@ void frmLog::OnTextChange(wxCommandEvent& event) {
     wxString text = t->GetValue();
     int count = 1;
     if (wxSscanf(text, "%d", &count) > 0) {
-        bool isOk=DBthread->SetLimitFiles(count);
+        DBthread->SetLimitFiles(count);
         OnExtendedLog(event);
     };
 }
@@ -187,7 +187,7 @@ void frmLog::OnSendMail(wxCommandEvent& event) {
             if (l.StartsWith("<tr>")) {
                 wxString le;
                 wxString r;
-                for (int i = 0; i < a.Count(); i++) {
+                for (int i = 0; i < (int)a.Count(); i++) {
                     templat = l;
                     le = escapeHtml(a[i++],false);
                     r = escapeHtml(a[i],false);
@@ -966,7 +966,7 @@ void MywxAuiDefaultTabArt::DrawTab(wxDC& dc,
     }
 
     // draw close button if necessary
-    int close_button_width = 0;
+    //int close_button_width = 0;
 
     wxString draw_text = caption;
 

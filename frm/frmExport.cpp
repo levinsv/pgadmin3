@@ -182,7 +182,6 @@ void frmExport::OnHelp(wxCommandEvent &ev)
 void frmExport::OnChange(wxCommandEvent &ev)
 {
 	cbQuoteChar->Enable(rbQuoteStrings->GetValue() || rbQuoteAll->GetValue());
-	bool ischk = chkXlsCopy->GetValue(); 
 	if (ev.GetEventObject()==chkXlsCopy ) {
 		if (chkCopy->IsEnabled()) chkCopy->SetValue(!chkXlsCopy->GetValue());	
 	}
@@ -305,7 +304,6 @@ bool frmExport::ExportXls(ctlSQLResult *grid)
 	int colCount, rowCount;
 	int col;
 	wxString line;
-	long skipped = 0;
 	wxWX2MBbuf buf;
 	colCount = grid->GetNumberCols();
 	rowCount = grid->NumRows();

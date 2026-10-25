@@ -236,14 +236,12 @@ void dlgTextSearchConfiguration::OnChange(wxCommandEvent &ev)
 
 void dlgTextSearchConfiguration::OnChangeCbToken(wxCommandEvent &ev)
 {
-	bool found = false;
 
 	for (int pos = 0 ; pos < lstTokens->GetItemCount() ; pos++)
 	{
 		if (lstTokens->GetText(pos).IsSameAs(cbToken->GetValue(), false))
 		{
 			lstTokens->Select(pos);
-			found = true;
 			break;
 		}
 	}
