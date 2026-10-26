@@ -183,7 +183,7 @@ queryMacroItem *queryMacroList::FindMacro(int id)
 }
 queryMacroItem *queryMacroList::GetItem(int i)
 {
-	if (i < macros.GetCount()) {
+	if (i < (int)macros.GetCount()) {
 		return macros.Item(i);
 	}
 	return NULL;

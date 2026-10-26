@@ -894,7 +894,7 @@ void ctlSQLBox::OnKeyDown(wxKeyEvent &event)
 	pos = GetCurrentPos();
 	wxString s;
 	wxString hint;
-	int showpos;
+	int showpos=0;
 	if (settings->GetUseHintWords()) {
 		if (homewordpos >= 0 && homewordpos != pos && !rep) {
 			bool isAddDict = false;
@@ -1900,7 +1900,7 @@ wxString ctlSQLBox::TextToHtml(int start, int end,bool isAddNewLine, const std::
 	int IndexObj=0;
 	int pos=999999999;
 	wxString obj;
-	int lenobj;
+	int lenobj=0;
 	if (listobj.size()>0) {
 		pos=listobj[IndexObj].startIndex; obj=listobj[IndexObj].table;lenobj=obj.Len();
 		if (GetSimpleMode()) indic=listobj[IndexObj].level;

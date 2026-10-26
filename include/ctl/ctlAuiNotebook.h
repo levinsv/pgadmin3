@@ -27,7 +27,7 @@ public:
 		wxAuiNotebook(parent, id, pos, size, style) { }
 	int DoModifySelection(size_t n, bool events) wxOVERRIDE
 	{
-		if (n == m_curPage)
+		if (n == (size_t)m_curPage)
 		{
 			SetFocus();
 			return m_curPage;

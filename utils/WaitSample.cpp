@@ -54,7 +54,7 @@ region: \"Timeout:PgSleep\", #6ce4c6;\n\
 		wxString c = l.AfterFirst('#').BeforeFirst(';');
 		unsigned long tmp=0;
 		wxSscanf(c, "%lx", &tmp);
-		tmp = (tmp >> 16) & 0xFF | (tmp & 0x00FF00) | ((tmp & 0xFF) << 16);
+		tmp = ((tmp >> 16) & 0xFF) | (tmp & 0x00FF00) | ((tmp & 0xFF) << 16);
 		wait_idx.emplace(w, tmp);
 		wxJSONValue e(wxJSONType::wxJSONTYPE_OBJECT);
 		wxColour cc3;
@@ -108,7 +108,7 @@ region: \"Timeout:PgSleep\", #6ce4c6;\n\
 			wxString c= e["color"].AsString();
 			unsigned long tmp;
 			wxSscanf(c, "#%lx", &tmp);
-			tmp = (tmp >> 16) & 0xFF | (tmp & 0x00FF00) | (tmp & 0xFF) << 16;
+			tmp = ((tmp >> 16) & 0xFF) | (tmp & 0x00FF00) | ((tmp & 0xFF) << 16);
 			wxColour cc(tmp);
 			if (!cc.IsOk()) cc = *wxBLACK;
 			//wxSscanf(c, "%lx", &tmp);
@@ -556,7 +556,7 @@ void WaitSample::LoadFileSamples() {
 					}
 					unsigned long tmp;
 					wxSscanf(b_id, "%ld", &tmp);
-					int i = GetBackendTypeId(b_name);
+					GetBackendTypeId(b_name);
 					//if (i != tmp) {	}
 				}
 				nl++;

@@ -1151,7 +1151,7 @@ wxArrayString pgObject::GetProviderLabelArray()
 	wxArrayString providersArray, labelsArray, seclabelsArray;
 	wxString currentChar;
 	wxString tmp;
-	bool wrappedInQuotes, antislash;
+	bool wrappedInQuotes=false, antislash=false;
 
 	if (labels.IsEmpty())
 		return seclabelsArray;

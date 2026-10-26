@@ -132,7 +132,7 @@ public:
 		MyHashToRow::iterator it;
 		for (it = hashKeyToCount.begin(); it != hashKeyToCount.end(); ++it)
 		{
-			int keyhash = it->first, lastrow = it->second;
+			//int keyhash = it->first, lastrow = it->second;
 			// do something useful with key and value
 			it->second = 0;
 		}

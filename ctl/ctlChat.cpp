@@ -241,7 +241,7 @@ SetSizer(mainSizer);
                 wxHtmlCell *c;
                 c=cell;
                 wxHtmlCell *ce=NULL;
-                wxHtmlCell *start;
+                wxHtmlCell *start=NULL;
                 // `inline` 
                 if (cell->GetParent() ) start=cell->GetParent()->GetFirstChild();
                 while (start) {

@@ -120,7 +120,7 @@ public:
 		return btype[backend_id];
 	};
 	wxString GetBackendTypeNameShort(int backend_id) {
-		return backend_id>=btypeshort.size() ? GetBackendTypeName(backend_id): btypeshort[backend_id];
+		return backend_id>=(int)btypeshort.size() ? GetBackendTypeName(backend_id): btypeshort[backend_id];
 	};
 	/// <summary>
 	/// Получение индекса цвета по полному имени ожидания

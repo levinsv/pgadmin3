@@ -225,7 +225,7 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
     //int n_element = startIndex;
     int found_index = startIndex;
     //int start_select_list;
-    int indexlastID;
+    int indexlastID=0;
     union Byte zone { 0 };
     wxString lastname;
     wxString query_cols_list;

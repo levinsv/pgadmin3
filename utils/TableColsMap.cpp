@@ -4,54 +4,11 @@ Table::Table(const wxString &tablename) {
     make_name(tablename);
 }
 void Table::make_name(const wxString& tablename) {
-    //make_identifier()
+    wxString s,n;
     if (tablename.length() > 0) {
-        int pospoint = tablename.Find('.');
-        size_t pos = 0;
-        std::vector<wxString> names;
-        while (pos < tablename.length()) {
-            size_t posstart = tablename.find('"',pos);
-            size_t posend = -1;
-            if (posstart>=0) posend=tablename.find('"', posstart + 1);
-            wxString tmp2;
-            if (pospoint != -1 && pospoint < posstart) posstart = -1;
-            if (posstart != -1 && posend != -1)  {
-                tmp2 = tablename.substr(pos + 1, posend - pos - 1);
-
-                names.push_back(tmp2);
-                pos = posend+1;
-                if (pos == pospoint) {
-                    //"schema".table || "schema"."table"
-                    pos++;
-                    pospoint = -1;
-                    continue;
-                }
-                else {
-                    // "schema"
-                    continue;
-                }
-            }
-            else {
-                if (pospoint != -1) {
-                    // scema.table || scema."table"
-                    tmp2 = tablename.substr(pos, pospoint - pos);
-                    names.push_back(tmp2.MakeLower());
-                    pos = pospoint + 1;
-                    pospoint = -1;
-                }
-                else {
-                    tmp2 = tablename.substr(pos);
-                    names.push_back(tmp2.MakeLower());
-                    pos = tablename.length();
-                }
-            }
-            
-        }
-        if (names.size() > 0) {
-            int pp = 0;
-            if (names.size() == 2) schema = names[pp++];
-            name = names[pp];
-        }
+        make_identifier(tablename,s,n,true);
+        if (s.Len() > 0 ) schema = s;
+        name = n;
     }
 }
 void TableColsMap::Clear() {
@@ -139,11 +96,11 @@ wxString TableColsMap::AddTableList(pgConn* dbconn, const wxArrayString& tables,
         bool isadd = false;
         bool isexp = !leftexp.IsEmpty();
         std::unordered_set<wxString> full;
-        for (int i = 0; i < all_maps.size(); i++) {
+        for (int i = 0; i < (int)all_maps.size(); i++) {
             //Table* r = all_tables[i];
             int position = i + 1;
-            if (CHKFLAG(flag, TableColsMap::Flag::ALL_LEFT_TO_RIGHT) && ((i+1)!= all_maps.size())) position = all_maps.size() - 1; // only right table
-            for (int j = position; j < all_maps.size(); j++) {
+            if (CHKFLAG(flag, TableColsMap::Flag::ALL_LEFT_TO_RIGHT) && ((i+1)!= (int)all_maps.size())) position = all_maps.size() - 1; // only right table
+            for (int j = position; j < (int)all_maps.size(); j++) {
                 wxString tmp= MapTableToTable(all_maps[i], all_maps[j],flag,leftexp);
                 if (tmp.length() > 0) {
                     if (tmp.Find('\t') == -1) {
@@ -155,7 +112,7 @@ wxString TableColsMap::AddTableList(pgConn* dbconn, const wxArrayString& tables,
                     }
                     else {
                         wxArrayString tmp2 = wxSplit(tmp,'\t');
-                        for (int k = 0; k < tmp2.GetCount();k++) {
+                        for (int k = 0; k < (int)tmp2.GetCount();k++) {
                             aar.Add(tmp2[k]);
                         }
                     }
@@ -312,7 +269,7 @@ Table *TableColsMap::GetTableByName(const wxString& sch, const wxString& tname) 
     for (auto& e : oids) {
         Table* t = e.second;
         if (t->GetName() == tname) {
-            if (!sch.IsEmpty() && t->GetSchema() == sch
+            if ((!sch.IsEmpty() && (t->GetSchema() == sch))
                 || sch.IsEmpty()) {
                 return t;
             }
@@ -436,7 +393,7 @@ select cv.oid,cv.relname,cv.relnamespace::regnamespace, cv.relkind, a.attnum,a.a
     pgSet* dataSet1 = db->ExecuteSet(sql);
     if (dataSet1)
     {
-        Table* t;
+        Table* t=NULL;
         wxString prevoid;
         while (!dataSet1->Eof())
         {
@@ -446,7 +403,7 @@ select cv.oid,cv.relname,cv.relnamespace::regnamespace, cv.relkind, a.attnum,a.a
             wxString tn = dataSet1->GetVal(wxT("relname"));
             wxString kind = dataSet1->GetVal(wxT("relkind"));
             wxString ncol= dataSet1->GetVal(wxT("attnum"));
-            int num= (int)StrToLong(ncol);
+            //int num= (int)StrToLong(ncol);
             wxString colname = dataSet1->GetVal(wxT("attname"));
             if (kind != "v") {
                 if (prevoid != oid) {
@@ -524,7 +481,7 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
                     fk.parent = t;
                     Table* tf = NULL;
                     fk.child = NULL;
-                    for (int k = 0; k < ar.GetCount(); k++) {
+                    for (int k = 0; k < (int)ar.GetCount(); k++) {
                         int i = (int)StrToLong(ar[k]);
                         fk.colsp.push_back(i);
                         if (flag_pk) {
@@ -586,7 +543,7 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
         std::set<fk_full_struct> transit;
         int lvl = 0;
         for (auto e: all_fk_index) {
-            tab_col_struct fnd=e.second;
+            //tab_col_struct fnd=e.second;
             search_link(e.first, e.second,transit,lvl);
         }
         for (auto &e : transit) {
@@ -602,7 +559,7 @@ and rel.oid in ()" + onlyoid+") order by oid,foid";
 tab_col_struct TableColsMap::search_link(tab_col_struct start, tab_col_struct chknode, std::set<fk_full_struct> &traz, int level) {
     //tab_col_struct fnd = e.second;
     if (start.t == chknode.t || level>10) return { NULL,1 };
-    fk_full_struct full_search = { start,chknode };
+    //fk_full_struct full_search = { start,chknode };
     for (auto itr = all_fk_index.find(chknode); itr != all_fk_index.end(); itr++) {
         if (itr->first.t != chknode.t || itr->first.column != chknode.column) {
             //wxTrap();

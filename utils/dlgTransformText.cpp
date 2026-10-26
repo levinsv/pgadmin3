@@ -202,7 +202,7 @@ void dlgTransformText::LoadOptions() {
 		,"#c4e8ac","#f7d6a6","#c7c7fc","#f1cdfd","#ffc6be"
 		,"#cae7d6" ,"#c4e7ab" ,"#f4d7a5" ,"#c7c8fe","#f2cffd"
 		,"#ffc4bd", "#c7e7d4" };
-	for (int k = 0; k < sizeof(clrgroup) / sizeof(clrgroup[0]); k++) {
+	for (int k = 0; (unsigned long)k < sizeof(clrgroup) / sizeof(clrgroup[0]); k++) {
 		//wxJSONValue grp(wxJSONType::wxJSONTYPE_OBJECT);
 		//grp["number"] = k;
 		//grp["color"] = clrgroup[k];
@@ -243,7 +243,7 @@ void dlgTransformText::LoadOptions() {
 	bgerror = wxColour(opt["bgErrorColor"].AsString());
 	lastconf = opt["configurations"][name];
 	wxArrayString ar = opt["configurations"].GetMemberNames();
-	for (int i = 0; i < ar.Count(); i++) {
+	for (int i = 0; i < (int)ar.Count(); i++) {
 		wxString s;
 		wxJSONValue cf= opt["configurations"][ar[i]];
 		wxString s2;
@@ -277,7 +277,7 @@ void dlgTransformText::LoadOptions() {
 
 int str_to_int(const wxString& s) {
 	int ii = INT_MAX;
-	int scanned = wxSscanf(s, "%d", &ii);
+	wxSscanf(s, "%d", &ii);
 	return ii;
 }
 void dlgTransformText::CheckLimits() {
@@ -308,7 +308,7 @@ std::vector<dlgTransformText::replace_opt> dlgTransformText::BuildString(const w
 	bool isback = false;
 	wxString a;
 	wxString e;
-	for (int i = 0; i < repstr.length(); i++) {
+	for (int i = 0; i < (int)repstr.length(); i++) {
 		wxChar c = repstr[i];
 		if (c == '\n'|| c=='\r') continue;
 		if (!isback && c == '\\') {
@@ -365,11 +365,12 @@ void dlgTransformText::AppendTextControl(ctlStyledText* ctrl, const wxString app
 	bool isLimit = limitLine <= 0 || limitChar <= 0;
 	if (ctrl == srcText) {
 		// control limit
-		if (isnewline)
+		if (isnewline) {
 			if (limitLine > 0)
 				limitLine--;
 			else
 				isLimit = true;
+		}
 		if (limitChar > 0)
 			limitChar -= appendtext.length();
 		else
@@ -629,7 +630,7 @@ wxString dlgTransformText::ReplaceFormatting(
 	wxString replstr;
 	int ci=currindex;
 	size_t sf = start_frame;
-	while (position<st.size()) {
+	while (position<(int)st.size()) {
 		auto& j = st[position++];
 		wxString s;
 		if (j.isGroup && j.nGroup >= 0 && j.nGroup < maxgroup) {
@@ -753,8 +754,8 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 		int tmp_limitLine = limitLine;
 		while (regfld.Matches(tmp)) {
 			size_t start, len;
-			int lastBytePosition = srcText->GetLastPosition();
-			int lastCharPosition = srcText->GetTextLength();
+			//int lastBytePosition = srcText->GetLastPosition();
+			//int lastCharPosition = srcText->GetTextLength();
 			regfld.GetMatch(&start, &len, 0);
 			if (len == 0) break;
 			cntMathes++;
@@ -821,9 +822,9 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 					for (int idx = 0; idx < currentIdx; idx++) {
 						interval ii = m[idx];
 						int nextinterval = ii.start + ii.len;
-						if (nextinterval < start1 || ii.len == 0) continue;		// предудущие интервалы
+						if (nextinterval < (int)start1 || ii.len == 0) continue;		// предудущие интервалы
 						//nextinterval < start1 + len1 &&
-						if (nextinterval < start1 + len1) {
+						if (nextinterval < (int) (start1 + len1)) {
 							if (currentIdx - 1 != idx) continue; // только в конеч добавляем.
 							//следующие интеравлы, добавим сюда наш новый интервал
 
@@ -847,7 +848,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 							shiftcount--; oldleftidx = -1; newcenter = idx; oldrightidx--;
 						}; // левая часть полностью замещается, стыковака к левой границе
 
-						if (nextinterval == start1 + len1) {
+						if (nextinterval ==(int) (start1 + len1)) {
 							oldrightidx = -1; newcenter = idx + 1;
 							shiftcount--; // правая часть не нужна стыкова к правой границе
 							// сдвиг на shiftcount элементов
@@ -874,7 +875,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 				
 				for (auto& ii : m) {
 					if (--currentIdx < 0) break;
-					if (sstart + ii.start + ii.len > maxchar) break;
+					if (sstart + (int)ii.start + (int)ii.len > maxchar) break;
 					int CharPos = srcText->PositionRelative(0, sstart+ii.start);
 					if (CharPos == 0 && sstart>1000) {
 						//wxTrap();
@@ -899,7 +900,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 				maxchar = trgText->GetTextLength();
 				for (auto& ii : m2) {
 					if (--currentIdx < 0) break;
-					if (start2 + ii.start + ii.len > maxchar) break;
+					if (start2 + (int)ii.start + (int)ii.len > maxchar) break;
 					int CharPos = trgText->PositionRelative(start2,  ii.start);
 					if (CharPos < start2 ) {
 						//wxTrap();
@@ -910,7 +911,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 					int CharPosEnd = trgText->PositionRelative(CharPos, ii.len);
 					trgText->SetStyling(CharPosEnd - CharPos, ii.style + regstyle);
 					// colorize wxString trgFieldReg = trgField->GetText();
-					if (ii.style < colorizetrgField.size() && colorizetrgField[ii.style]==-1) {
+					if (ii.style < (int)colorizetrgField.size() && colorizetrgField[ii.style]==-1) {
 						colorizetrgField[ii.style] = ii.style;
 					}
 				}
@@ -937,7 +938,7 @@ void dlgTransformText::TransformText(const wxRegEx &regfld) {
 		int srcl = src.length();
 		m_msg->SetLabelText(wxString::Format("Lines %d Char %d Matches %d", cntLines, srcl, cntMathes));
 		// colorize wxString trgFieldReg = trgField->GetText();
-		int pp = -1;
+		//int pp = -1;
 		for (auto &stl: colorizetrgField) {
 			if (stl == -1) continue;
 			for (auto& j : repArray) {

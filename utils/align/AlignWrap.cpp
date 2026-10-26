@@ -50,7 +50,7 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 	nline.push_back(list.size() - 1);
 	if (CHKCFGPARAM(cfg, ONLY_SINGLE_SPACE)) {
 		wxString a;
-		for (int j = 0; j < list.size() - 1; j++) {
+		for (int j = 0; j < (int)list.size() - 1; j++) {
 			if (list[j].rs > 1) list[j].rs = 1;
 		}
 
@@ -64,7 +64,7 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 		{
 			int index_u = nline[l - 1L];
 			int index_c = nline[l];
-			int CountItemU = index_c - index_u;
+			//int CountItemU = index_c - index_u;
 			int maxIdxU = index_c;
 			int maxIdxC = nline[l + 1L];
 
@@ -144,7 +144,7 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 					list[(size_t)index_c - 1].br = true;
 					size_t id = (nline.size() - nrow - 1);
 
-					if (nline[id] != index_c)
+					if ((int)nline[id] != index_c)
 						nline.insert(nline.end() - nrow - 1, index_c);
 					else nrow--;
 				}
@@ -159,9 +159,9 @@ wxString AlignWrap::build(wxString& strsrc, int config,wxString linesep)
 		}
 	}
 	wxString a;
-	for (int j = 0; j < nline.size() - 1; j++) {
+	for (int j = 0; j < (int)nline.size() - 1; j++) {
 		int d = 1;
-		if (j == nline.size() - 2) d = 0;
+		if (j == (int)nline.size() - 2) d = 0;
 		a+=range_print(nline[j], nline[j + 1] - d);
 	}
 	//range_print(nline[0], nline[1L]-1);
@@ -173,7 +173,7 @@ void AlignWrap::Resize(int idx,int newSize) {
 	int pr = idx;
 	while (pr>=0) {
 	Item &i=list[pr];
-	int oldsz = i.getMaxSize();
+	//int oldsz = i.getMaxSize();
 	pr = i.getParent();
 	i.setMaxSize(newSize);
 	//if (pr>=0) Resize(pr,newSize);
@@ -207,7 +207,7 @@ wxString AlignWrap::range_print(int s, int e) {
 int AlignWrap::find(int s,int e, Item &k) {
 
 	std::vector<Item>::iterator it;
-	if (e >= list.size()) e = list.size() - 1;
+	if (e >= (int)list.size()) e = list.size() - 1;
 	for (int j = s; j <= e; j++) {
 		if (list[j] == k) {
 			return j;
@@ -223,16 +223,16 @@ Item AlignWrap::parseItem(int& pos, bool& breakline) {
 	int len = str.Length();
 	int l = 0;
 	int sp = 0;
-	int spl = 0;
-	int spbe = 0;
+//	int spl = 0;
+//	int spbe = 0;
 	int type;
 	int comment = 0;
 	while (true) {
-		spl = chkspace(p, breakline);
+		chkspace(p, breakline);
 		if (breakline) {
 			// empty line ignore
 			breakline = false;
-			spl = 0;
+			//spl = 0;
 			continue;
 		}
 		pos = p;
@@ -362,16 +362,16 @@ theend:
 		return i;
 }
 int AlignWrap::chkspace(int &pos, bool& br) {
-	wxChar c,prev='\0';
+	wxChar c;
 	int nl = parserows;
 	int l = 0;
-	bool endline = false;
-	while (pos < str.Length()) {
+	//bool endline = false;
+	while (pos < (int)str.Length()) {
 		c = str[pos++];
 		if (c == '\n' || c == '\r') {
 			if (c=='\r' && str[pos] == '\n') {
 				// windows
-				endline = true;
+				//endline = true;
 				pos++;
 			}
 			parserows++;

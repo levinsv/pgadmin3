@@ -333,7 +333,7 @@ bool Storage::ApplyFilter(int row) {
         if (detailGroup != -1) return false;
         if (IsGroupFilter()) {
             // подменить в фильтре строк на новую 
-            for (int i = 0; i < frows.size(); i++) {
+            for (int i = 0; i < (int)frows.size(); i++) {
                 // тут потенциальная проблема производительности
                 if (frows[i] != prevRow) continue;
                 frows[i] = row;

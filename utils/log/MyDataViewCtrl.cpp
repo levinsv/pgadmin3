@@ -430,7 +430,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_COLUMN_HEADER_CLICK(wxDataViewEvent& event) 
     int colt = m->testFilter(col, 0);
     if (colt >= 0) {
         wxMenu* menus = new wxMenu();
-        menus->SetClientData((void*)col);
+        menus->SetClientData((void*)(long)col);
         Storage* stor = m->getStorage();
         menus->Append(101 + i++, "Clear All");
         wxString expr;
@@ -473,7 +473,7 @@ void MyDataViewCtrl::OnEVT_DATAVIEW_COLUMN_HEADER_CLICK(wxDataViewEvent& event) 
     //    menu.Append(i++, str);
     //}
 
-    menu.SetClientData((void*)col);
+    menu.SetClientData((void*)(long)col);
     this->PopupMenu(&menu);
     event.Skip(false);
     return;

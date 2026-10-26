@@ -79,8 +79,8 @@ public:
         wxString s = m_value, t;
         wxStringTokenizer tk(s, sepListWait, wxTOKEN_DEFAULT);
 
-        bool isDis = true;
-        bool isGrp = true;
+        //bool isDis = true;
+        //bool isGrp = true;
         int f = 0;
         float itog = 0;
         int widt = orig.width - 20;
@@ -212,7 +212,7 @@ public:
     }
     key3 GetRowValue(long row) {
         key3 r{};
-        if (row >= 0 && row < k.size()) {
+        if (row >= 0 && row < (long)k.size()) {
             r = k[row];
         }
         return r;
@@ -252,7 +252,7 @@ public:
                 wxString h;
                 if (total != 0) {
                     wxString x = wxString::Format("all %ld", (long)itog * period);
-                    for (int i = 0; i < map_sum_all.size(); i++) {
+                    for (int i = 0; i < (int)map_sum_all.size(); i++) {
                         int wait_index = map_sum_all[i];
                         if (v[wait_index] == 0) continue;
                         float w_sum = (v[wait_index] / (float)total);
@@ -586,9 +586,9 @@ public:
             wxString position;
             //position = wxString::Format("x=%d y=%d", logPos.x, logPos.y);
             //wxLogMessage("Mouse pos %s", position);
+#ifdef WIN32
             int dy = 0;
             wxSize sz;
-#ifdef WIN32
             wxHeaderCtrl* const header = GenericGetHeader();
             if (header) {
                 sz = header->GetSize();

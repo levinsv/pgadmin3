@@ -210,9 +210,9 @@ public:
      */
     void CalcTime() {
         //g->GetTable()->SetRowLabelValue(row-1,s);
-        double sum = 0;
+        //double sum = 0;
         double total = 1;
-        for (int i = 0; i < run.Count(); i++) {
+        for (int i = 0; i < (int)run.Count(); i++) {
             double t = run[i];
             if (i == 0) {
                 total = abs(t);

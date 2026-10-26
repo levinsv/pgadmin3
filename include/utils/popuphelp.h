@@ -62,7 +62,7 @@ public:
                 if (p.x > 50) { p.x = p.x - 50; sz.x += 50; }
             SetSize(p.x, p.y, sz.x, sz.y, wxSIZE_USE_EXISTING);
             Layout();
-            wxSize newsz = GetSize();
+            //wxSize newsz = GetSize();
             //std::cout << sz.GetWidth() << "," << sz.GetHeight() << " new: " << newsz.GetWidth() << "," << newsz.GetHeight() << std::endl;
         }
         if (event.GetKeyCode() == WXK_PAGEDOWN) htmlWindow->ScrollPages(1);

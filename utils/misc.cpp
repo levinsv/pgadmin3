@@ -1572,7 +1572,7 @@ void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, 
         if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
         if (oldp == p) p.x = p.x + 20;
         m_Popup->Move(p);
-        wxRect r = m_Popup->GetScreenRect();
+        //wxRect r = m_Popup->GetScreenRect();
         m_Popup->Popup();
     }
 	//m_Popup->SetFocus();
