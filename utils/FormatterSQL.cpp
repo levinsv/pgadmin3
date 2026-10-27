@@ -89,15 +89,28 @@ wxString FormatterSQL::GetListTable(int cursorPos) {
     if (cursorPos==0) return GetListTable(listTable);
     else return GetListTable(listFunction);
 }
+/**
+ * @brief Получение списка таблиц слева от курсора
+ * Подзапросы игнорируются.
+ * @param positem позиция в items соответсвующая курсору
+ * @param listtable - Возращаемые имена таблиц
+ * @param listalias - Синонимы
+ * @return int - количество таблиц
+ */
 int FormatterSQL::GetTableListBeforePosition(int positem, wxArrayString& listtable, wxArrayString& listalias) {
     int s = 0;
     complite_element* el;
     int left_id = -1;
+    int level = -1;
     while (s < (int)listTable.size()) {
         el = &listTable[s++];
         //r += wxString::Format("[ %s,%s] %s\n", el->table, el->alias, el->columnList);
+        
         bool bet = el->startIndex <= positem && el->endIndex >= positem;
         if (el->startIndex > positem) { s--; break; }
+        // skip with tables
+        if (el->table == '@') continue;
+        level = el->level;
         if (bet ) {
             if (left_id != -1 && (el->endIndex - el->startIndex) >= (&listTable[left_id].endIndex - &listTable[left_id].startIndex)) continue;
             left_id=s-1;
@@ -107,17 +120,19 @@ int FormatterSQL::GetTableListBeforePosition(int positem, wxArrayString& listtab
     if (s > 0) {
         s = s - 1;
         if (left_id != -1) s = left_id;
-        int level = -1;
         while (s >= 0) {
             el = &listTable[s--];
-            if (level == -1) level = el->level;
+            //if (level == -1) level = el->level;
             if (el->table != '@') {
                 if (level > el->level) break;
                 if (level < el->level) continue;
                 listtable.Add(el->table);
                 listalias.Add(el->alias);
                 c++;
-            }
+            } else 
+                // end list table
+                if (c>0 && (level > el->level)) 
+                    break;
         }
     }
     return c;
@@ -256,7 +271,8 @@ wxString FormatterSQL::BuildAutoComplite(int startIndex, int level) {
                     if (!lastname.IsEmpty())cols.Add(lastname);
                 }
                 zone.b.from = 1; zone.b.select_list = 0;
-                objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = ""; el.level = level; el.startIndex = found_index;
+                objName.Clear(); isfunction = false; isskipnext = false; el.columnList = ""; el.alias = ""; el.table = ""; el.level = level;
+                el.startIndex = found_index+1; // next element
             }
             if (vi->txt.Lower() == "with") {
                 zone.b.with = 1; zone.b.skip = 1;

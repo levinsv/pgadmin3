@@ -4,6 +4,58 @@
 #include "utils/align/AlignWrap.h"
 #include "utils/misc.h"
 #include <iostream>
+TEST_CASE( "Auto Complite", "[complite]" ) {
+		wxString sql;
+auto test_inner = [&]() {
+		int cursorPos=sql.Find('|');
+		REQUIRE(cursorPos>=0);
+		sql.Replace("|","",true);
+		FSQL::FormatterSQL f(sql);
+		int r = f.ParseSql(0);
+		REQUIRE(r==0);
+		f.BuildAutoComplite(0, 0);
+		int ItemPos=f.GetIndexItemNextSqlPosition(cursorPos);
+		ItemPos=f.next_item_no_space(ItemPos,-1);
+		REQUIRE(ItemPos>=0);
+		wxArrayString tn, an;
+		int ccc=f.GetTableListBeforePosition(ItemPos,tn,an);
+		wxString rez=wxJoin(an,',');
+        return rez;
+    };
+	SECTION( "Выбор таблиц простой запрос" ) {
+		sql=R"(
+		select * from tab1 t1,tab2 t2 where|
+)";
+		CHECK(test_inner()=="t2,t1");
+	}
+	SECTION( "Выбор таблиц простой запрос c таблицей за курсором" ) {
+		sql=R"(
+		select * from tab1 t1,tab2 t2|,tab3 t3
+)";
+		CHECK(test_inner()=="t2,t1");
+	}
+	SECTION( "Выбор таблиц простой запрос без таблиц" ) {
+		sql=R"(
+		select * from| tab1 t1,tab2 t2,tab3 t3
+)";
+		CHECK(test_inner()=="");
+	}
+	SECTION( "Выбор таблиц внутри with" ) {
+		sql=R"(with w as (
+		select * from tab1 t1,tab2 t2 where|
+
+	) select * from w w1,(select * from tnest TN) nest_t,tab3 t3)";
+		CHECK(test_inner()=="t2,t1");
+	}
+	SECTION( "Выбор таблиц при наличии подзапроса" ) {
+		sql=R"(with w as (
+		select * from tab1 t1,tab2 t2 where
+
+	) select * from w w1,(select * from tnest TN) nest_t,tab3 t3 where|)";
+		CHECK(test_inner()=="t3,w1");
+	}
+
+}
 ////////// make_identifier
 TEST_CASE( "Parse Identifier", "[ident]" ) {
 std::vector<wxString> names = {"\"Scheme\".Lower_Table","\"T\"","\"S\".\"T\"","S.t","T",L"S.\"Таб\""};
