@@ -74,6 +74,7 @@ file(GLOB_RECURSE SOURCES
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(RPATH ".")
 	list(APPEND CMAKE_BUILD_RPATH ${RPATH})
+	add_compile_definitions(_DEBUG DEBUG)
 endif()
 add_library( ${PROJECT_NAME}_lib STATIC ${SOURCES} )
 add_executable(${PROJECT_NAME} pgAdmin3.cpp )
