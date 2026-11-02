@@ -157,7 +157,8 @@ order by objname;
                                 {
                                     pgServer *server = (pgServer *)browser->GetItemData(serveritem);
                                     if (server != NULL && server->IsCreatedBy(serverFactory)) {
-                                        if (server->GetIdentifier()==idf ) {
+                                        if (server->GetConnected() && server->GetIdentifier()==idf ) {
+                                            //if (server->GetDatabase() && server->GetDatabase()->GetConnection()) {
                                             if (server->connection()) {
                                                 // is open connect
                                                 //wxTreeItemId serveritemc1 = browser->GetFirstChild(folderitem, servercookie);
