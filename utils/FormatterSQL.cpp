@@ -1,6 +1,10 @@
 #include "pgAdmin3.h"
 #include "wx/regex.h"
 #include <stack>
+extern "C"
+{
+#include "parser/keywords.h"
+}
 using namespace FSQL;
 wxString FormatterSQL::printParseArray() {
     int i = 0;
@@ -1217,12 +1221,14 @@ int FormatterSQL::ParseSql(int flags) {
                     #ifdef _DEBUG
                     //wxTrap();
                     int lastidx=items.size()-1;
-                    int st=items[lastidx].srcpos;
-                    wxString textlast=items[lastidx].txt;
-                    st=st+textlast.length();
-                    if (st>=0) {
-                            wxString b=sql.substr(st,100);
-                            wxMessageBox(wxString::Format("Bad sql syntax : %s",b));
+                    if (lastidx>=0) { 
+                        int st=items[lastidx].srcpos;
+                        wxString textlast=items[lastidx].txt;
+                        st=st+textlast.length();
+                        if (st>=0) {
+                                wxString b=sql.substr(st,100);
+                                wxMessageBox(wxString::Format("Bad sql syntax : %s",b));
+                        }
                     }
                     #endif
         errorposition=i;
@@ -1338,6 +1344,71 @@ wxSize FormatterSQL::best_sizeAndDraw(wxDC& dc, wxPoint& pos, view_item& vi, int
     }
 
     return sz;
+}
+void FormatterSQL::initcolors()
+{
+    if (colors.size()==0) {
+        
+        wxString fg=settings->GetSQLBoxColourForeground();
+        wxString keyword=settings->GetSQLBoxColour(5);
+        wxString literal=settings->GetSQLBoxColour(6);
+        wxString doubleqoute=settings->GetSQLBoxColour(7);
+        wxString numeric=settings->GetSQLBoxColour(4);
+        wxString comment=settings->GetSQLBoxColour(1);
+        wxString oper=settings->GetSQLBoxColour(10);
+        wxString name=settings->GetSQLBoxColour(11);
+        if (fg.IsEmpty()) fg=wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT).GetAsString(wxC2S_HTML_SYNTAX);
+
+        colors.push_back("");
+        colors.push_back("");
+        colors.push_back((keyword));
+        colors.push_back((literal));
+         colors.push_back((oper));
+         colors.push_back((oper));
+         colors.push_back((doubleqoute));
+         colors.push_back((name));
+         colors.push_back((numeric));
+         colors.push_back((oper)); //bindarg
+         colors.push_back((comment)); //comment
+    }
+}
+wxString FormatterSQL::toHtml()
+{
+    initcolors();
+    int sp_idx=-1;
+    wxString html;
+     for (const auto& item : items) {
+            if (item.srcpos==-1) continue;
+            wxString t;
+            if (sp_idx>=0) {
+                t.Append(' ',item.srcpos-sp_idx);
+                sp_idx=-1;
+            }
+            if (item.type==spaces) {
+                    sp_idx=item.srcpos;
+                    continue;
+                }
+                else
+                    t.Append(item.txt);
+            wxString escapedTxt = escapeHtml(t,true);
+            int ii=item.type;
+            wxString c;
+            if (item.type==name) {
+                wxString value=item.txt;
+                const ScanKeyword *sk = ScanKeywordLookup(value.ToAscii());
+                if (sk) ii=keyword;
+            }
+            
+            //if (!sk)
+		            
+
+            if (ii<(int)colors.size()) c=colors[ii];
+            if (c.IsEmpty()) 
+                    html << escapedTxt;
+                else
+                    html << "<span style=\"color: " << c << ";\">" << escapedTxt << "</span>";
+     }
+     return html;
 }
 /// <summary>
 ///  Получение индекса следующего или предудущего элемента списка отличного от <c>space</c>

@@ -180,6 +180,7 @@ namespace FSQL {
         bool GetItem(int index, FSQL::view_item& item);
         view_item GetLastItem();
         int next_item_no_space(int& index, int direction = 1);
+        wxString toHtml();
     private:
         wxString get_list_columns(int startindex, union FSQL::Byte zone);
         void _addfunc(const view_item *vi);
@@ -187,7 +188,7 @@ namespace FSQL {
         wxPoint align_level(int start_i, int level, int Xpos, int Ypos, int flag);
         int check_bracket(int index);
         int get_prev_value(int indx, wxString keyword);
-        
+        void initcolors();
         wxSize max_width_size(int index); // index bracet
         wxSize best_sizeAndDraw(wxDC& dc, wxPoint& pos, FSQL::view_item& vi, int mode);
         int maxYheightLine = 0;
@@ -202,6 +203,7 @@ namespace FSQL {
         std::vector<FSQL::view_item> items;
         std::vector<FSQL::complite_element> listTable; // перечень таблиц синонимов, подзапросов и функций с колонками
         std::vector<FSQL::complite_element> listFunction; // перечень функций используемых в запросе
+        std::vector<wxString> colors;
         //int recurse(int level);
     };
 }
