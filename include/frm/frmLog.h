@@ -30,8 +30,8 @@
 #include "log/MyDataViewCtrl.h"
 #include <wx/thread.h>
 
-static wxMutex s_mutexDBReading;
-static wxSemaphore s_goRead(0,1);
+extern wxMutex s_mutexDBReading;
+extern wxSemaphore s_goRead;
 class RemoteConn2
 {
 public:

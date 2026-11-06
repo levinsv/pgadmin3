@@ -13,6 +13,16 @@
 #include <wx/stdpaths.h>
 
 // Globals
+const short SERVER_MIN_VERSION_N = 0x0804;
+const wxString SERVER_MIN_VERSION_T = wxT("8.4");
+const short SERVER_MAX_VERSION_N = 0x1400;
+const wxString SERVER_MAX_VERSION_T = wxT("20");
+// Supported Greenplum Database and Greenplum HAWQ minimum and maximum values.
+const short GP_MIN_VERSION_N = 0x0802;
+const wxString GP_MIN_VERSION_T = wxT("8.2");
+const short GP_MAX_VERSION_N = 0x0803;
+const wxString GP_MAX_VERSION_T = wxT("8.3");
+
 frmMain *winMain = 0;
 wxThread *updateThread = 0;
 bool iswayland=false;

@@ -31,6 +31,8 @@
 #include <wx/msw/ole/automtn.h>
 #endif
 
+wxMutex s_mutexDBReading;
+wxSemaphore s_goRead(0,1);
 
 WX_DEFINE_OBJARRAY(RemoteConnArray2);
 
