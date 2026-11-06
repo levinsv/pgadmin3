@@ -157,7 +157,7 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     SetDefaultRenderer(new  CursorCellRenderer(thousandsWidthSeparator,cl5));
     //SetUseNativeColLabels(true);
     //UseNativeColHeader(true);
-    SetCellHighlightColour(wxColor(0, 0, 0));
+    SetCellHighlightColour(GetForegroundColour());
 #ifdef __WXGTK__
     wxColour selbg = GetSelectionBackground();
     wxColour cbg = GetBackgroundColour();
