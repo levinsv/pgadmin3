@@ -271,11 +271,16 @@ order by objname;
 wxString FunctionPGHelper::getSqlCommandHelp(wxString fnd) {
         wxUniChar sep = wxFileName::GetPathSeparator();
         fnd.Replace(" ", "");
-        wxString f = wxFindFirstFile(path + sep + "sql-" + fnd + "*.html");
-        if (f.empty()) {
-            fnd.Replace("_", "-");
-            f = wxFindFirstFile(path + sep + "view-" + fnd + "*.html");
-            if (f.empty()) f = wxFindFirstFile(path + sep + "catalog-" + fnd + "*.html");
+        wxString f;
+        if (path.IsEmpty() || !wxDirExists(path))  {
+
+        } else {
+            f = wxFindFirstFile(path + sep + "sql-" + fnd + "*.html");
+            if (f.empty()) {
+                fnd.Replace("_", "-");
+                f = wxFindFirstFile(path + sep + "view-" + fnd + "*.html");
+                if (f.empty()) f = wxFindFirstFile(path + sep + "catalog-" + fnd + "*.html");
+            }
         }
         wxString last, txt;
 
@@ -314,7 +319,7 @@ wxString FunctionPGHelper::getHelpFile(wxString filename) {
         wxString a;
         int p=filename.Find('#');
         if (p>0) {a=filename.substr(p+1); filename=filename.BeforeFirst('#');}
-
+        if (path.IsEmpty() || !wxDirExists(path)) return wxEmptyString;
         wxString tempDir = path + wxFileName::GetPathSeparator() + filename;
         an.clear();
         filecontext=wxEmptyString;
@@ -406,6 +411,10 @@ void FunctionPGHelper::loadfile() {
         wxString tempDir = path + "_func.txt";
         if (!wxFileExists(tempDir) ) {
             wxMessageBox(_("To use the contextual help for PostgreSQL functions:\n1. You need to place a file '_extract_func_help.pl' to the directory containing the html help files.\n2. Run it and get the file '_func.txt'.\n3. Specify the path in the pgadmin3 settings to the html help."), _("Warning"));
+            isload = true;
+            return;
+        }
+        if (!wxDirExists(path)) {
             isload = true;
             return;
         }
