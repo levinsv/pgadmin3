@@ -1679,6 +1679,7 @@ void pgDatabaseObject::DisplayStatistics(ctlListView *statistics, const wxString
 						wxString str = statistics->GetItemText(i, 1);
 						wxLongLong l = StrToLongLong(str);
 						wxString h = NumToStrHuman(l);
+						if (lt == i && h.IsEmpty()) h=str;
 						if (h.IsEmpty()) continue;
 						int nspc = (vmax - a[i] + widhspace) / wspc;
 						if (lt == i) {
