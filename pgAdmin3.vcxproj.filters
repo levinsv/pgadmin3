@@ -4645,7 +4645,7 @@
     </png2c>
     <png2c Include="include\images\ex_finalize_aggregate.png" />
     <png2c Include="include\images\ex_partial_aggregate.png" />
-    <png2c Include="include\images\warning_amber_48dp.png">
+    <png2c Include="include\images\warning_amber_36dp.png">
       <Filter>include\images</Filter>
     </png2c>
     <png2c Include="include\images\mode_autocommit.png">
