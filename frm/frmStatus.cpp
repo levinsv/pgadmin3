@@ -51,7 +51,7 @@
 #include "images/down.pngc"
 #include "images/up.pngc"
 #include "images/server_status.pngc"
-#include "images/warning_amber_48dp.pngc"
+#include "images/warning_amber_36dp.pngc"
 
 #include <algorithm>
 #include "utils/FunctionPGHelper.h"
@@ -433,7 +433,7 @@ frmStatus::frmStatus(frmMain *form, const wxString &_title, pgConn *conn) : pgFr
     toolBar->AddTool(MNU_ROLLBACK, wxEmptyString, GetBundleSVG(delete_png_bmp, "drop.svg", FromDIP(wxSize(32, 32))), _("Rollback transaction"), wxITEM_NORMAL);
     toolBar->AddSeparator();
     toolBar->AddTool(MNU_CLEAR_FILTER_SERVER_STATUS, wxEmptyString, GetBundleSVG(sortfilterclear_png_bmp, "sortfilterclear.svg", FromDIP(wxSize(32, 32))), _("Clear filter"), wxITEM_NORMAL);
-    toolBar->AddTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, wxEmptyString, GetBundleSVG(warning_amber_48dp_png_bmp, "warning_amber_48dp.svg", FromDIP(wxSize(32, 32))), _("Highlight items only"), wxITEM_NORMAL);
+    toolBar->AddTool(MNU_SET_FILTER_HIGHLIGHT_STATUS, wxEmptyString, GetBundleSVG(warning_amber_36dp_png_bmp, "warning_amber_36dp.svg", FromDIP(wxSize(32, 32))), _("Highlight items only"), wxITEM_NORMAL);
     toolBar->AddSeparator();
     cbLogfiles = new wxComboBox(toolBar, CTL_LOGCBO, wxT(""), wxDefaultPosition, wxDefaultSize, 0, NULL,
                                 wxCB_READONLY | wxCB_DROPDOWN);
@@ -2309,7 +2309,7 @@ void * ExecuteThread::Entry() {
             SQL_exec sq;
             SQL_exec *ppp;
             {
-                wxCriticalSectionLocker lock(gs_critsect);
+                wxCriticalSectionLocker lock( theParent->gs_critsect);
                 ppp=arr_point+index;
                 sq.conn=ppp->conn;
                 sq.query=ppp->query;
@@ -2318,7 +2318,7 @@ void * ExecuteThread::Entry() {
             }
             pgSet *dataSet1 = NULL;
             {
-                wxCriticalSectionLocker lock(thread_execute);
+                wxCriticalSectionLocker lock(theParent->thread_execute);
                 dataSet1 = sq.conn->ExecuteSet(sq.query,false);
                 if (TestDestroy()) {
                     if (dataSet1) delete dataSet1;
@@ -2327,7 +2327,7 @@ void * ExecuteThread::Entry() {
             }
             
             {
-                wxCriticalSectionLocker lock(gs_critsect);
+                wxCriticalSectionLocker lock(theParent->gs_critsect);
                 ppp->end=wxGetLocalTimeMillis().GetValue();
                 ppp->result=dataSet1;
                 ppp->isExecute=false;

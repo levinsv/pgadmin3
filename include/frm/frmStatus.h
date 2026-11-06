@@ -55,8 +55,6 @@ enum
 #endif
 
 
-static wxCriticalSection gs_critsect;
-static wxCriticalSection thread_execute;
 
 typedef struct SQL_exec {
     pgConn *conn=NULL;
@@ -70,19 +68,21 @@ typedef struct SQL_exec {
 
 // Class declarations
 //static wxSemaphore s_CloseLog(0, 1);
+class frmStatus;
 class ExecuteThread : public wxThread
 {
 public:
     //~ReadLogThread();
-    ExecuteThread(wxWindow* p, wxMessageQueue<int> *queue, SQL_exec *arr_ptr)
+    ExecuteThread(frmStatus* p, wxMessageQueue<int> *queue, SQL_exec *arr_ptr)
     {
         theParent=p;
         q=queue;
         arr_point=arr_ptr;
     }
    virtual void* Entry();
-private:   
-wxWindow *theParent;
+private:
+
+frmStatus *theParent;
 wxMessageQueue<int> *q;
 //SQL_exec array_exec[4];
 SQL_exec *arr_point;
@@ -178,6 +178,8 @@ public:
     void Go();
     bool getTextSqlbyQid(long long qid);
     ReadLogThread* logThread = NULL;
+    wxCriticalSection gs_critsect;
+    wxCriticalSection thread_execute;
 void OnRefreshStatusTimer_After();
 private:
     wxAuiManager manager;
