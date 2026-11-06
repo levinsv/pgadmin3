@@ -1,4 +1,16 @@
 ## Master (current development)
+### 2026-11-06: Исправления ошибок в ui и оптимизация кода
+- check exists path for pghelp option
+  Проверка пути при вызове контекстной справки.
+- HighlightColour correct for dark mode in wxGrid.
+- Always display the row count marker
+  Маркер для "Live Tuples" всегда отображается.
+- Optimization frmStatus
+  Переменные критических секций перенесены в класс frmStatus, что должно повысить надежность при работе
+  с несколькими окнами "Статус сервера".
+- change size warning_amber icon for "Статус сервера"
+- optimization code
+
 ### 2026-11-02: fix: context help for db objects, autocomplite correct
 - При наличии нескольких одинаковых соединений в дереве объектов не корректно отрабатывал поиск
 открытого соединения для получения информации объектах БД.

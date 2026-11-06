@@ -59,7 +59,7 @@ ctlChat::ctlChat(wxWindow *parent, frmQuery *frm):
         auto* topSizer = new wxBoxSizer(wxVERTICAL);
         //topSizer->Add(new wxStaticText(topPanel, wxID_ANY, L"Чат:"),0, wxALL, 3);
         m_html = new wxHtmlWindow(topPanel, wxID_ANY);
-        m_html->SetBackgroundColour(parent->GetBackgroundColour());
+        m_html->SetBackgroundColour(GetBackgroundColour());
         //wxColour(GetPalette(isDark()).pageBg);
 
         topSizer->Add(m_html, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 3);
@@ -388,7 +388,8 @@ SetSizer(mainSizer);
     {
         if (!m_client->ClearHistory())
             return;                   // запрос активен — не трогаем
-        m_html->SetPage("");
+        wxString txtcl=GetBackgroundColour().GetAsString(wxC2S_HTML_SYNTAX);
+        m_html->SetPage(wxString::Format("<html><body bgcolor=\"%s\"></body></html>",txtcl));
         m_textHistory.clear();
         m_histPos = -1;
         m_draft.clear();
