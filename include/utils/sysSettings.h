@@ -242,6 +242,17 @@ public:
 		Read(wxT("Export/Unicode"), &b, true);
 		return b;
 	}
+	void SetGQBtool(const bool newval)
+	{
+		WriteBool(wxT("GQBtool"), newval);
+	}
+
+	bool GetGQBtool() const
+	{
+		bool b;
+		Read(wxT("GQBtool"), &b, true);
+		return b;
+	}
 	void SetExportUnicode(const bool newval)
 	{
 		WriteBool(wxT("Export/Unicode"), newval);

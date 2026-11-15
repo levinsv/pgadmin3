@@ -125,6 +125,7 @@ public:
 private:
 	frmMain *mainForm;
 	wxAuiManager manager;
+	wxAuiToolBar *toolBar;
 	ctlSQLBox *sqlQuery;
 	ctlAuiNotebook *outputPane;
 	wxString outputPaneInfo;
