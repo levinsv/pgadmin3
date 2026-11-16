@@ -232,12 +232,12 @@ public:
                                      // create columns
                                      //left
                     tableline += L"<tr><td class=\"diff_next\" onclick=\"c(this)\"></td>";
-                    tableline += modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">" + ncur_l + "</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">" + ncur_l + "</td>";
-                    tableline += L"<td class=\"lineContent\"><pre>" + t_cur_l + "</pre></td>";
+                    tableline += modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">" + ncur_l + L"</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">" + ncur_l + L"</td>";
+                    tableline += L"<td class=\"lineContent\"><pre>" + t_cur_l + L"</pre></td>";
                     // right
                     tableline += L"<td class=\"diff_next\" onclick=\"c(this)\"></td>";
-                    tableline += modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">" + ncur_r + "</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">" + ncur_r + "</td>";
-                    tableline += L"<td class=\"lineContent\"><pre>" + t_cur_r + "</pre></td>";
+                    tableline += modify ? L"<td class=\"has_difference\" onclick=\"d(this)\">" + ncur_r + L"</td>" : L"<td class=\"diff_header\" onclick=\"d(this)\">" + ncur_r + L"</td>";
+                    tableline += L"<td class=\"lineContent\"><pre>" + t_cur_r + L"</pre></td>";
                     tableline += L"</tr>";
 
                     if (aDiff.operation == 0) {

@@ -51,7 +51,6 @@ void ExplainCanvas::Clear()
 void ExplainCanvas::SetExplainString(const wxString &str)
 {
 	// filtred block  never executed
-	wxString rez=wxT("");
 	wxString flt=wxT("");
 	wxStringTokenizer tmpstr(str, wxT("\n"));
 	int p=-1;
@@ -186,7 +185,7 @@ void ExplainCanvas::SetExplainString(const wxString &str)
 	int xoffs = (int)(rootShape->GetWidth() * 3);
 	int yoffs = (int)(rootShape->GetHeight() * 5 / 4);
 
-	wxNode *current = GetDiagram()->GetShapeList()->GetFirst();
+	auto current = GetDiagram()->GetShapeList()->GetFirst();
 	while (current)
 	{
 		ExplainShape *s = (ExplainShape *)current->GetData();
@@ -239,7 +238,21 @@ void ExplainCanvas::SetExplainString(const wxString &str)
 
 void ExplainCanvas::OnMouseWhell(wxMouseEvent& ev)
 {
+#if !wxCHECK_VERSION(3,3,0)
 	HandleOnMouseWheel(ev);
+#else
+ if (ev.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
+    {
+		int a=ev.GetWheelRotation()>0 ? -1: 1;
+		wxSize v=GetTargetSize();
+		int x,y=1;
+		GetScrollPixelsPerUnit(&x,&y);
+		v.y=v.y/y;
+		Scroll( wxDefaultCoord, GetViewStart().y+v.y*a );
+        return;                 
+    }
+	ev.Skip();
+#endif
 }
 void ExplainCanvas::OnMouseMotion(wxMouseEvent &ev)
 {

@@ -26,7 +26,7 @@ public:
     }
     void SetTimerClose(int ms) { m_interval = ms; }
     int GetTimerClose() { return m_interval; }
-    void Add(const wxString& key, const wxString& v) { body.emplace(key, v); }
+    void Add(const wxString& key, const wxString& v) { body.emplace(key, v); };
     wxString getHelpString(wxString fnd, bool isPart = true) ;
     // Загружаем файл и формируем якоря
     wxString getHelpFile(wxString filename);

@@ -87,6 +87,7 @@ enum
 #endif
 
 #define FLAG_MAX_LINE 9999999999
+#if !wxCHECK_VERSION(3,3,0)
 class MywxAuiDefaultTabArt : public wxAuiDefaultTabArt
 {
 public:
@@ -111,7 +112,7 @@ public:
         int* x_extent)  wxOVERRIDE;
 
 };
-
+#endif
 class MyThread : public wxThread
 {
     typedef struct info_files {
@@ -135,7 +136,7 @@ public:
             //logfileLength.Add(0);
             //len.Add(0);
             RemoteConn2* po = (RemoteConn2*)&conArray[i];
-            wxString db = po->conn->GetDbname();
+            //wxString db = po->conn->GetDbname();
             m_conArray.Add(po);
             
         }

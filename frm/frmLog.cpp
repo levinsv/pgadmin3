@@ -709,6 +709,7 @@ void frmLog::seticon(bool errflag) {
 
     SetIcon(ico);
 }
+#if !wxCHECK_VERSION(3,3,0)
 wxSize MywxAuiDefaultTabArt::GetTabSize(wxDC& dc,
     wxWindow* wnd,
     const wxString& caption,
@@ -1037,6 +1038,7 @@ void MywxAuiDefaultTabArt::DrawTab(wxDC& dc,
     dc.DestroyClippingRegion();
 
 }
+#endif
 frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(NULL, _title)
 {
 
@@ -1057,7 +1059,9 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
 
     m_notebook = new wxAuiNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize,0 );
     m_notebook->SetFont(settings->GetSystemFont());
+#if !wxCHECK_VERSION(3,3,0)    
     MywxAuiDefaultTabArt* art = new MywxAuiDefaultTabArt();
+#endif
     wxPanel* testPanel = new wxPanel(m_notebook, wxID_ANY);
     //BuildDataViewCtrl(testPanel, Page_Test);
     my_view = new MyDataViewCtrl(testPanel, wxID_ANY, wxDefaultPosition,
@@ -1224,7 +1228,9 @@ frmLog::frmLog(frmMain *form, const wxString &_title, pgServer *srv) : pgFrame(N
     
     settingPanel->SetSizerAndFit(zeroPanelSz2);
     m_notebook->AddPage(settingPanel, "Settings");
+#if !wxCHECK_VERSION(3,3,0)
     m_notebook->SetArtProvider(art);
+#endif
     //m_notebook->SetSelectedFont(settings->GetSystemFont());
     //m_notebook->SetNormalFont(settings->GetSystemFont());
     

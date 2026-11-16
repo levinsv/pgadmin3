@@ -211,7 +211,6 @@ public:
             posScreen = wxPoint(0, 0);
             sizeScreen = wxGetDisplaySize();
         }
-        wxSize top_new(top_sz);
 
         if (xx > sizeScreen.x) xx = sizeScreen.x - 120;
         if (yy > sizeScreen.y) yy = sizeScreen.y - 120;
@@ -257,7 +256,6 @@ public:
 	Bind(wxEVT_CHAR_HOOK, &popuphelp::keyProcessing,this);
     htmlWindow->Bind(wxEVT_RIGHT_DOWN, [&](wxMouseEvent& event) {});
     htmlWindow->Bind(wxEVT_RIGHT_UP, [&](wxMouseEvent& event) {
-        wxString name;
         wxLongLong e = wxGetLocalTimeMillis();
         if (e - startTimeWin < 150)
             return;

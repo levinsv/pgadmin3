@@ -76,7 +76,7 @@ public:
         fn.SetPointSize(fn.GetPointSize() - 1);
         wxDCFontChanger nfont(*dc, fn);
 
-        wxString s = m_value, t;
+        wxString s = m_value;
         wxStringTokenizer tk(s, sepListWait, wxTOKEN_DEFAULT);
 
         //bool isDis = true;
@@ -104,7 +104,6 @@ public:
             }
             if (f > 0) {
                 float tmp;
-                wxString w;
                 long cl;
                 l = l.AfterFirst(' ');
                 wxSscanf(l, "%ld %f", &cl, &tmp);
@@ -258,7 +257,6 @@ public:
                         float w_sum = (v[wait_index] / (float)total);
                         float sek = ((period * v[wait_index]) / 1000.0);
                         wxString w_name = ws->GetName(wait_index, WAIT_NAME);
-                        wxString w_grp = ws->GetName(wait_index, WAIT_GRP);
                         wxString full = ws->GetName(wait_index, WAIT_FULL);
                         long clr = ws->GetColorByWaitName(full);
                         wxString pr = wxString::Format("%s %ld %.3f", w_name, clr, w_sum);
@@ -583,7 +581,6 @@ public:
             //wxPoint logPos(event.GetLogicalPosition(dc));
             //wxPoint mc= GetMainWindow()->ScreenToClient(event.GetPosition());
             wxPoint mc = event.GetPosition();
-            wxString position;
             //position = wxString::Format("x=%d y=%d", logPos.x, logPos.y);
             //wxLogMessage("Mouse pos %s", position);
 #ifdef WIN32
