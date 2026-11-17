@@ -4676,8 +4676,8 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
                 // 
                 wxString key = "content";
                 wxPoint p = m;
-                p.x = p.x + 5;
-                p.y = p.y + 5;
+                auto tp=GetTipPlacement(logList,lastmousewin);
+                p=tp.mouse;
                 PreviewHtml v;
                 wxString tt = v.Preview(s, fmtpreview::CSV);
                 s = tt;
@@ -4694,32 +4694,9 @@ void frmStatus::OnTimerHintLog(wxTimerEvent& event)
                 if (m_Popup && m_Popup->IsValid()) {
                     //m_PopupHelp->UpdateWindowUI(true);
                     wxSize top_sz = m_Popup->GetSizePopup();
-                    wxPoint posScreen;
-                    wxSize sizeScreen;
-                    const int displayNum = wxDisplay::GetFromPoint(p);
-                    if (displayNum != wxNOT_FOUND)
-                    {
-                        const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
-                        posScreen = rectScreen.GetPosition();
-                        sizeScreen = rectScreen.GetSize();
-                    }
-                    else // outside of any display?
-                    {
-                        // just use the primary one then
-                        posScreen = wxPoint(0, 0);
-                        sizeScreen = wxGetDisplaySize();
-                    }
-                    wxSize top_new(top_sz);
-                    wxPoint oldp(p);
-                    if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;
-                    if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
-                    if (oldp == p) p.x = p.x + 20;
+                    p=FitTooltip(tp.mouse, top_sz, tp.bounds);
                     m_Popup->Move(p);
-                    //wxRect r = m_Popup->GetScreenRect();
-                    //m_PopupHelp->Position(p, wxSize(0, 17));
                     m_Popup->Popup();
-                    //wxPopupTransientWindow
-                    
                 }
 
             }
@@ -4737,6 +4714,7 @@ void frmStatus::OnMoveMouseLog(wxMouseEvent& event)
 //	logListPopupMenu = nav->GetPopupMenu();
     wxPoint mp = event.GetPosition();
     lastmouse = wxGetMousePosition();
+    lastmousewin =event.GetPosition();
     int flags = wxLIST_HITTEST_ONITEMLABEL;
     long item=logList->HitTest(mp,flags);
     //logList->PopupMenu(logListPopupMenu, event.GetPoint());
@@ -4759,6 +4737,7 @@ void frmStatus::OnRightClickLogGrid(wxListEvent& event)
 {
     delayHitLog->Stop();
     lastmouse = wxGetMousePosition();
+    lastmousewin = event.GetPoint();
     wxTimerEvent tm(*refreshUITimer);
     //logList->GetItem();
     //int flags = wxLIST_HITTEST_ONITEMLABEL;

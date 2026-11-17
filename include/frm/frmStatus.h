@@ -261,7 +261,7 @@ private:
     int statusColWidth[12], lockColWidth[10], xactColWidth[5], querystateColWidth[5];
     popuphelp* m_Popup = NULL;
     long lastlogitem = -1, lastlogitemShow=-1;
-    wxPoint lastmouse;
+    wxPoint lastmouse,lastmousewin;
 
     int cboToRate();
     wxString rateToCboString(int rate);

@@ -1548,6 +1548,92 @@ wxColour AddColorComponent(const wxColour &src, int delta) {
 	b= b<0 ? 0: b;
 	return wxColour(r,g,b);
 }
+TipPlacement GetTipPlacement(wxWindow* eventWin, const wxPoint& mouseInWidget)
+{
+    TipPlacement tp;
+    tp.mouse = eventWin->ClientToScreen(mouseInWidget); // Wayland: TLW-координаты
+
+    if (iswayland)
+    {
+        wxWindow *w=eventWin;
+        while (w && !w->IsTopLevel())
+        w = w->GetParent();
+        wxTopLevelWindow* tlw = wxDynamicCast(w, wxTopLevelWindow);
+        tp.bounds = wxRect(tlw->GetClientSize()); // курсор гарантированно внутри
+    }
+    else // X11, MSW и т.д.: настоящие экранные координаты
+    {
+        int idx = wxDisplay::GetFromPoint(tp.mouse);
+        if (idx == wxNOT_FOUND)
+            idx = wxDisplay::GetFromWindow(eventWin);
+        if (idx == wxNOT_FOUND)
+            idx = 0;
+        tp.bounds = wxDisplay(idx).GetClientArea();
+    }
+    return tp;
+}
+// Определяет позицию окна подсказки так, чтобы оно целиком поместилось
+// в bounds и не перекрывало сам курсор.
+// mouse      — курсор в координатах того же пространства, что и bounds;
+// tipSize    — размер окна подсказки;
+// bounds     — доступная область (экран-монитор или клиентская область TLW);
+// offset     — отступ от курсора в «прямом» положении (справа-снизу).
+wxPoint FitTooltip(const wxPoint& mouse,
+                   const wxSize& tipSize,
+                   const wxRect& bounds,
+                   const wxPoint& offset)
+{
+    wxPoint pos = mouse + offset;
+
+    // --- Флип по горизонтали ---
+    // Тултип вылезает справа — пробуем показать слева от курсора,
+    // но только если слева он помещается лучше, чем справа после клампа.
+    const bool overflowsRight = pos.x + tipSize.x > bounds.GetRight();
+    const bool fitsLeft       = mouse.x - offset.x - tipSize.x >= bounds.GetLeft();
+
+    if (overflowsRight && fitsLeft)
+    {
+        // слева от курсора: правый край тултипа на расстоянии offset от курсора
+        pos.x = mouse.x - tipSize.x - offset.x;
+    }
+    else if (overflowsRight)
+    {
+        // слева тоже не влезает — прижимаем к правому краю области
+        pos.x = bounds.GetRight() - tipSize.x;
+    }
+
+    // --- Флип по вертикали (аналогично) ---
+    const bool overflowsBottom = pos.y + tipSize.y > bounds.GetBottom();
+    const bool fitsTop         = mouse.y - offset.y - tipSize.y >= bounds.GetTop();
+
+    if (overflowsBottom && fitsTop)
+    {
+        pos.y = mouse.y - tipSize.y - offset.y;
+    }
+    else if (overflowsBottom)
+    {
+        pos.y = bounds.GetBottom() - tipSize.y;
+    }
+
+    // --- Страховочный кламп ---
+    // Случаи, когда тултип шире/выше всей области либо курсор у самого
+    // левого/верхнего края: просто не даём выйти за границы.
+    if (pos.x < bounds.GetLeft())
+        pos.x = bounds.GetLeft();
+    if (pos.y < bounds.GetTop())
+        pos.y = bounds.GetTop();
+
+    // Если тултип вообще не влезает в область — хотя бы не даём
+    // ему выехать за правый/нижний край (частично обрежется).
+    if (pos.x + tipSize.x > bounds.GetRight())
+        pos.x = bounds.GetRight() - tipSize.x;
+    if (pos.y + tipSize.y > bounds.GetBottom())
+        pos.y = bounds.GetBottom() - tipSize.y;
+
+    return pos;
+}
+
+
 //show help window
 void showHelpHtml(wxWindow *parent, const wxString &htmlHelp,wxPoint screenPos, wxSize size) {
     FunctionPGHelper fh(htmlHelp);

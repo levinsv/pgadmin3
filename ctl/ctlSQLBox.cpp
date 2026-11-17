@@ -696,7 +696,8 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	fh=GetFunctionPGHelper();
 	int pos = GetCurrentPos();
 	if (!fh->isValid()) return;
-	wxPoint p =  ClientToScreen( PointFromPosition(pos));
+	auto tp=GetTipPlacement(this,PointFromPosition(pos));
+	wxPoint p = tp.mouse;
 	wxString current = GetSelectedText();
 	wxString key = "";
 	fh->setDbConn(m_database);
@@ -718,27 +719,10 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 			for (int i = tmp.Len()-1; i >=0; i--) key+=tmp[i];
 	}
 	delete 	m_PopupHelp;
-	// screen size
-		wxPoint posScreen;
-		wxSize sizeScreen;
-		const int displayNum = wxDisplay::GetFromPoint(p);
-		if (displayNum != wxNOT_FOUND)
-		{
-			const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
-			posScreen = rectScreen.GetPosition();
-			sizeScreen = rectScreen.GetSize();
-		}
-		else // outside of any display?
-		{
-			// just use the primary one then
-			posScreen = wxPoint(0, 0);
-			sizeScreen = wxGetDisplaySize();
-		}
-
 	wxSize rr(450, 370);
 	bool bigtext=key.Len() > MAX_TEXT_LEN_COLORIZE;
 	if (bigtext) {
-		rr.x=(int) sizeScreen.x*0.8;rr.y=sizeScreen.y*0.7;
+		rr.x=(int) tp.bounds.GetWidth()*0.8;rr.y=(int)tp.bounds.GetHeight() *0.7;
 	}
 	m_PopupHelp = new popuphelp(this, key, fh,p,rr);
 	if (m_PopupHelp && m_PopupHelp->IsValid() && rr != m_PopupHelp->GetSizePopup() && !bigtext) {
@@ -751,11 +735,7 @@ void ctlSQLBox::OnFuncHelp(wxCommandEvent& ev) {
 	if (m_PopupHelp && m_PopupHelp->IsValid()) {
 		//m_PopupHelp->UpdateWindowUI(true);
 		wxSize top_sz=m_PopupHelp->GetSizePopup();
-		wxSize top_new(top_sz);
-		wxPoint oldp(p);
-		if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;
-		if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
-		if (oldp==p) p.x = p.x + 20;
+		p=FitTooltip(tp.mouse, top_sz, tp.bounds);
 		m_PopupHelp->Move(p);
 		//m_PopupHelp->Position(p, wxSize(0, 17));
 		m_PopupHelp->Popup();

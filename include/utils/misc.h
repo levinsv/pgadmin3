@@ -289,6 +289,16 @@ wxColour AddColorComponent(const wxColour &src, int delta);
 wxString getTextParameter(const wxString section, const wxString namepar);
 bool isPortOpen(const wxString& host, int port , int timeout_ms);
 FunctionPGHelper* GetFunctionPGHelper();
+struct TipPlacement
+{
+    wxPoint mouse;   // позиция курсора в пространстве клампинга
+    wxRect  bounds;  // область, внутри которой надо уместить тултип
+};
+TipPlacement GetTipPlacement(wxWindow* eventWin, const wxPoint& mouseInWidget);
+wxPoint FitTooltip(const wxPoint& mouse,
+                   const wxSize& tipSize,
+                   const wxRect& bounds,
+                   const wxPoint& offset = wxPoint(16, 20));
 
 #endif
 

@@ -159,13 +159,10 @@ ctlSQLGrid::ctlSQLGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     //UseNativeColHeader(true);
     SetCellHighlightColour(GetForegroundColour());
 #ifdef __WXGTK__
-    wxColour selbg = GetSelectionBackground();
+    //wxColour selbg = GetSelectionBackground();
     wxColour cbg = GetBackgroundColour();
     wxColour labbg = GetLabelBackgroundColour();
-    wxString t1 = selbg.GetAsString();
-    wxString t2 = labbg.GetAsString();
     wxColour cline = GetGridLineColour();
-    wxString t3 = cline.GetAsString();
     if (labbg.GetRGB() == cline.GetRGB()) {
         int min = wxMin(labbg.GetBlue(), labbg.GetGreen());
         min = wxMin(min, labbg.GetRed());
@@ -976,7 +973,8 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
    // wxMessageBox("omshowpopup "+event.GetString(), "msg");
     wxString s = event.GetString();
     wxPoint p = rpos;
-    wxPoint p1(rpos);
+    auto tp = GetTipPlacement(this,p);
+    p=tp.mouse;
     wxString bg;
     wxColour bgColor = settings->GetSQLBoxColourBackground();
     if (settings->GetSQLBoxUseSystemBackground())
@@ -1025,27 +1023,10 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
         s = tt;
     }
     delete 	m_Popup;
-	// screen size
-		wxPoint posScreen;
-		wxSize sizeScreen;
-		const int displayNum = wxDisplay::GetFromPoint(p);
-		if (displayNum != wxNOT_FOUND)
-		{
-			const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
-			posScreen = rectScreen.GetPosition();
-			sizeScreen = rectScreen.GetSize();
-		}
-		else // outside of any display?
-		{
-			// just use the primary one then
-			posScreen = wxPoint(0, 0);
-			sizeScreen = wxGetDisplaySize();
-		}
-
     wxSize rr(350, 70);
 	
 	if (bigtext) {
-		rr.x=(int) sizeScreen.x*0.8;rr.y=sizeScreen.y*0.7;
+		rr.x=(int) tp.bounds.GetWidth()*0.8;rr.y=(int)tp.bounds.GetHeight() *0.7;
 	}
     FunctionPGHelper fh(s);
     wxString key = "content";
@@ -1060,20 +1041,9 @@ void ctlSQLGrid::OnShowPopup(wxThreadEvent& event) {
     if (m_Popup && m_Popup->IsValid()) {
         //m_PopupHelp->UpdateWindowUI(true);
         wxSize top_sz = m_Popup->GetSizePopup();
-        wxSize top_new(top_sz);
-        wxPoint oldp(p);
-        if (p.x + top_new.x > sizeScreen.x) p.x = sizeScreen.x - top_new.x - 20;
-        if (p.y + top_new.y > sizeScreen.y) p.y = sizeScreen.y - top_new.y - 20;
-        if (oldp == p) p.x = p.x + 20;
+        p=FitTooltip(tp.mouse, top_sz, tp.bounds);
         m_Popup->Move(p);
-        wxRect r = m_Popup->GetScreenRect();
-        if (r.Contains(p1)) {
-            //wxMouseEvent mv(wxEVT_MOTION,);
-            //wxGetMousePosition();
-        }
-        //m_PopupHelp->Position(p, wxSize(0, 17));
         m_Popup->Popup();
-        //wxPopupTransientWindow
     }
 
 }
@@ -1085,7 +1055,7 @@ void ctlSQLGrid::OnCellRightClick(wxGridEvent& event)
     if (row != -1 && col != -1) {
         rrow = row;
         rcol = col;
-        rpos = ClientToScreen(event.GetPosition());
+        rpos = event.GetPosition();
         wxThreadEvent e(wxEVT_THREAD);
         //e.SetString(s);
         e.SetString(GetCellValue(row, col));
@@ -1100,7 +1070,7 @@ void ctlSQLGrid::OnCellRightClick(wxGridEvent& event)
         col = rcol;
         p = rpos;
     }
-    wxString s = GetCellValue(row, col);
+    //wxString s = GetCellValue(row, col);
 }
 void ctlSQLGrid::OnLabelClick(wxGridEvent& event)
 {
@@ -1394,7 +1364,6 @@ void ctlSQLGrid::SetRowGroup(int row) { };
 bool ctlSQLGrid::FullArrayCollapseRowsPlan(bool clear)
 {
     //wxString colKey = wxString::Format(wxT("%d:"), col) + GetColLabelValue(col);
-    wxString text;
     //for(int row = 0; row < GetNumberRows(); ++row) 
 
     if (grp) { delete grp; }
