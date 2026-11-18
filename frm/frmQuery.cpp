@@ -2009,7 +2009,7 @@ void frmQuery::updateMenu(bool allowUpdateModelSize)
 
 	toolBar->EnableTool(MNU_FIND, canFind);
 	editMenu->Enable(MNU_FIND, canFind);
-
+	toolBar->Refresh();
 	favouritesMenu->Enable(MNU_FAVOURITES_ADD, canAddFavourite);
 	favouritesMenu->Enable(MNU_FAVOURITES_INJECT, canAddFavourite); // these two use the same criteria
 	favouritesMenu->Enable(MNU_FAVOURITES_MANAGE, canManageFavourite);

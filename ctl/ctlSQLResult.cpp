@@ -107,7 +107,7 @@ bool ctlSQLResult::IsColText(int col)
 	switch (colTypClasses.Item(col))
 	{
 		case PGTYPCLASS_NUMERIC:
-		case PGTYPCLASS_BOOL:
+		//case PGTYPCLASS_BOOL:
 			return false;
 	}
 
