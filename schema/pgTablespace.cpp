@@ -303,13 +303,19 @@ pgObject *pgTablespaceFactory::CreateObjects(pgCollection *collection, ctlTree *
 	pgTablespace *tablespace = 0;
 
 	pgSet *tablespaces;
+	bool hasSecLabel = collection->GetConnection()->HasFeature(FEATURE_SH_SECLABEL);
+	wxString seclabel="";
+	if (hasSecLabel) {
+            seclabel=wxT(",(SELECT array_agg(label) FROM pg_shseclabel sl1 WHERE sl1.objoid=ts.oid) AS labels, ")
+            		 wxT("(SELECT array_agg(provider) FROM pg_shseclabel sl2 WHERE sl2.objoid=ts.oid) AS providers ");
+	}
+
 	if (collection->GetConnection()->BackendMinimumVersion(9, 2))
 		tablespaces = collection->GetServer()->ExecuteSet(
 		                  wxT("SELECT ts.oid, spcname, pg_catalog.pg_tablespace_location(ts.oid) AS spclocation, spcoptions, ")
 		                  wxT("pg_get_userbyid(spcowner) as spcuser, spcacl, ")
-		                  wxT("pg_catalog.shobj_description(oid, 'pg_tablespace') AS description, ")
-		                  wxT("(SELECT array_agg(label) FROM pg_shseclabel sl1 WHERE sl1.objoid=ts.oid) AS labels, ")
-		                  wxT("(SELECT array_agg(provider) FROM pg_shseclabel sl2 WHERE sl2.objoid=ts.oid) AS providers ")
+		                  wxT("pg_catalog.shobj_description(oid, 'pg_tablespace') AS description ")
+						  +seclabel+
 		                  wxT("FROM pg_tablespace ts\n")
 		                  + restriction + wxT(" ORDER BY spcname"));
 	else if (collection->GetConnection()->BackendMinimumVersion(8, 5))
@@ -344,7 +350,7 @@ pgObject *pgTablespaceFactory::CreateObjects(pgCollection *collection, ctlTree *
 				if (!str.IsEmpty())
 					FillArray(tablespace->GetVariables(), str.Mid(1, str.Length() - 2));
 			}
-			if (collection->GetConnection()->BackendMinimumVersion(9, 2))
+			if (collection->GetConnection()->BackendMinimumVersion(9, 2)&& hasSecLabel)
 			{
 				tablespace->iSetProviders(tablespaces->GetVal(wxT("providers")));
 				tablespace->iSetLabels(tablespaces->GetVal(wxT("labels")));

@@ -787,7 +787,7 @@ pgObject *pgRoleBaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 	wxString query;
 
 	wxString tabname;
-
+	bool hasSecLabel = collection->GetConnection()->HasFeature(FEATURE_SH_SECLABEL);
 	if (collection->GetServer()->HasPrivilege(wxT("table"), wxT("pg_authid"), wxT("SELECT")))
 		tabname = wxT("pg_authid");
 	else
@@ -799,7 +799,7 @@ pgObject *pgRoleBaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 		query = wxT("SELECT tab.oid, tab.*, pg_catalog.shobj_description(tab.oid, 'pg_authid') AS description");
 		if (collection->GetServer()->GetConnection()->GetIsGreenplum())
 			query += wxT(", (SELECT rsqname FROM pg_resqueue WHERE pg_resqueue.oid = rolresqueue) AS rsqname");
-		if (collection->GetServer()->GetConnection()->BackendMinimumVersion(9, 2))
+		if (collection->GetServer()->GetConnection()->BackendMinimumVersion(9, 2)&& hasSecLabel)
 		{
 			query += wxT(",\n(SELECT array_agg(label) FROM pg_shseclabel sl1 WHERE sl1.objoid=tab.oid) AS labels")
 			         wxT(",\n(SELECT array_agg(provider) FROM pg_shseclabel sl2 WHERE sl2.objoid=tab.oid) AS providers");
@@ -857,7 +857,7 @@ pgObject *pgRoleBaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 				role->iSetRolQueueName(roles->GetVal(wxT("rsqname")));
 			}
 
-			if (collection->GetServer()->GetConnection()->BackendMinimumVersion(9, 2))
+			if (collection->GetServer()->GetConnection()->BackendMinimumVersion(9, 2)&& hasSecLabel)
 			{
 				role->iSetProviders(roles->GetVal(wxT("providers")));
 				role->iSetLabels(roles->GetVal(wxT("labels")));

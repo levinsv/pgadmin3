@@ -558,6 +558,8 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 		    wxT("   AND nspname IN ('pg_catalog', 'public','profile')")
 		    wxT(" union all select current_setting('log_destination'),555,null,null,null")
 			wxT(" union all select current_setting('log_filename'),777,null,null,null")
+			wxT(" union all select has_table_privilege('pg_shdescription','select')::text,888,null,null,null")
+			wxT(" union all select has_table_privilege('pg_shseclabel','select')::text,999,null,null,null")			
 		    wxT(" union all select setting,666,null,null,null from pg_settings s where s.name='track_commit_timestamp'");
 
 		pgSet *set = ExecuteSet(sql);
@@ -599,6 +601,10 @@ bool pgConn::HasFeature(int featureNo, bool forceCheck)
 					features[FEATURE_TRACK_COMMIT_TS] = true;
 				else if (pronargs == 777)
 					log_filename = set->GetVal(wxT("proname"));
+				else if (proname =="true" && pronargs == 888)
+					features[FEATURE_SH_DESCRIPTION]=true;
+				else if (proname =="true" && pronargs == 999)
+					features[FEATURE_SH_SECLABEL]=true;
 				
 				set->MoveNext();
 			}
@@ -812,6 +818,7 @@ bool pgConn::ExecuteVoid(const wxString &sql, bool reportError)
 	if (lastResultStatus != PGRES_TUPLES_OK &&
 	        lastResultStatus != PGRES_COMMAND_OK)
 	{
+		if (wxGetKeyState(WXK_SHIFT)) reportError=false;		
 		LogError(!reportError);
 		PQclear(qryRes);
 		return false;
@@ -844,6 +851,7 @@ wxString pgConn::ExecuteScalar(const wxString &sql, bool reportError)
 		// Check for errors
 		if (lastResultStatus != PGRES_TUPLES_OK && lastResultStatus != PGRES_COMMAND_OK)
 		{
+			if (wxGetKeyState(WXK_SHIFT)) reportError=false;
 			LogError(!reportError);
 			PQclear(qryRes);
 			return wxEmptyString;
@@ -883,7 +891,7 @@ pgSet *pgConn::ExecuteSet(const wxString &sql, bool reportError)
 
 		lastResultStatus = PQresultStatus(qryRes);
 		SetLastResultError(qryRes);
-
+		if (wxGetKeyState(WXK_SHIFT)) reportError=false;
 		if (lastResultStatus == PGRES_TUPLES_OK || lastResultStatus == PGRES_COMMAND_OK)
 		{
 			pgSet *set = new pgSet(qryRes, this, *conv, needColQuoting);

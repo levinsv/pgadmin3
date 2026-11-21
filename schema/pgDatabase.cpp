@@ -825,6 +825,8 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 	pgSet *databases;
 
 	wxString datcollate, datctype, datconnlimit, seclabelsql;
+	bool hasDesc = collection->GetConnection()->HasFeature(FEATURE_SH_DESCRIPTION);
+	bool hasSecLabel = collection->GetConnection()->HasFeature(FEATURE_SH_SECLABEL);
 
 	if (collection->GetConnection()->BackendMinimumVersion(8, 1))
 	{
@@ -835,10 +837,12 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 		datctype = wxT(", db.datctype as ctype");
 		datcollate = wxT(", db.datcollate as collate");
 	}
-	if (collection->GetConnection()->BackendMinimumVersion(9, 2))
+	if (collection->GetConnection()->BackendMinimumVersion(9, 2) && hasSecLabel)
 	{
 		seclabelsql = wxT(",\n(SELECT array_agg(label) FROM pg_shseclabel sl1 WHERE sl1.objoid=db.oid) AS labels")
 		              wxT(",\n(SELECT array_agg(provider) FROM pg_shseclabel sl2 WHERE sl2.objoid=db.oid) AS providers");
+	} else {
+		seclabelsql = wxT(",\n ''  AS labels,''  AS providers");
 	}
 
 	wxString restr = restriction;
@@ -856,15 +860,15 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 	if (collection->GetConnection()->BackendMinimumVersion(9, 0))
 	{
 		databases = collection->GetServer()->ExecuteSet(
-		                wxT("SELECT db.oid, datname, db.dattablespace AS spcoid, spcname, datallowconn, datacl, ")
+		                wxString(wxT("SELECT db.oid, datname, db.dattablespace AS spcoid, spcname, datallowconn, datacl, ")
 		                wxT("pg_encoding_to_char(encoding) AS serverencoding, pg_get_userbyid(datdba) AS datowner,")
 		                wxT("has_database_privilege(db.oid, 'CREATE') as cancreate, \n")
-		                wxT("current_setting('default_tablespace') AS default_tablespace, \n")
-		                wxT("descr.description\n") +
-		                datconnlimit + datcollate + datctype + seclabelsql +
+		                wxT("current_setting('default_tablespace') AS default_tablespace, \n"))
+		                + wxString( hasDesc ? wxT("descr.description\n"):wxT("'permission denied' description\n"))
+		                + datconnlimit + datcollate + datctype + seclabelsql +
 		                wxT("  FROM pg_database db\n")
 		                wxT("  LEFT OUTER JOIN pg_tablespace ta ON db.dattablespace=ta.OID\n")
-		                wxT("  LEFT OUTER JOIN pg_shdescription descr ON (db.oid=descr.objoid AND descr.classoid='pg_database'::regclass)\n")
+		                + (hasDesc ? wxT("  LEFT OUTER JOIN pg_shdescription descr ON (db.oid=descr.objoid AND descr.classoid='pg_database'::regclass)\n"): wxT(""))
 		                + restr +
 		                wxT(" ORDER BY datname"));
 	}
@@ -940,7 +944,7 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
 				database->iSetSchemaRestriction(value);
 			}
 
-			if (collection->GetConnection()->BackendMinimumVersion(9, 2))
+			if (collection->GetConnection()->BackendMinimumVersion(9, 2)&& hasSecLabel)
 			{
 				database->iSetProviders(databases->GetVal(wxT("providers")));
 				database->iSetLabels(databases->GetVal(wxT("labels")));
