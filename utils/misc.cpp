@@ -1594,12 +1594,12 @@ wxPoint FitTooltip(const wxPoint& mouse,
     if (overflowsRight && fitsLeft)
     {
         // слева от курсора: правый край тултипа на расстоянии offset от курсора
-        pos.x = mouse.x - tipSize.x - offset.x;
+        pos.x = mouse.x - tipSize.x - offset.x - 2;
     }
     else if (overflowsRight)
     {
         // слева тоже не влезает — прижимаем к правому краю области
-        pos.x = bounds.GetRight() - tipSize.x;
+        pos.x = bounds.GetRight() - tipSize.x - 2;
     }
 
     // --- Флип по вертикали (аналогично) ---

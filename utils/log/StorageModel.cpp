@@ -37,6 +37,7 @@ public:
     int row;
     int countRows = 0;
     wxColour quoteselcolor;
+    wxColour greencolor;
     // This renderer can be either activatable or editable, for demonstration
     // purposes. In real programs, you should select whether the user should be
     // able to activate or edit the cell and it doesn't make sense to switch
@@ -53,19 +54,20 @@ public:
 #else
         textColour = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
 #endif // __WXGTK__
-        if (ContrastColorBlackOrWhite(textColour) == "#000000") {
+        if (ContrastColorBlackOrWhite(textColour) == wxString("#000000")) {
             quoteselcolor = wxColour(wxString("#7f7f7f"));
+            greencolor = wxColour(wxString("#599c1a"));
         }
-        else quoteselcolor = *wxYELLOW;
+        else {
+            quoteselcolor = *wxYELLOW;
+            greencolor = wxColour(wxString("#2bff00"));
+        }
     }
 
     virtual bool Render(wxRect rect, wxDC* dc, int state) wxOVERRIDE
     {
         //dc->SetBrush( *wxLIGHT_GREY_BRUSH );
-        if (state & wxDATAVIEW_CELL_SELECTED)
-            dc->SetBrush(quoteselcolor);
-        else
-            dc->SetBrush(*wxYELLOW_BRUSH);
+        dc->SetBrush(quoteselcolor);
         dc->SetPen(*wxTRANSPARENT_PEN);
         rect.Deflate(2);
         wxRect orig = rect;
@@ -126,7 +128,7 @@ public:
         if (!ex) RenderText(t, x, rect, dc, state);
 
         if (countRows > 0 && col == StorageModel::cols::Col_Host) {
-            dc->SetBrush(*wxGREEN_BRUSH);
+            dc->SetBrush(greencolor);
             wxString str = wxString::Format("%d", countRows);
             wxSize sz = dc->GetTextExtent(str);
             sz.SetWidth(sz.GetX() + 3);

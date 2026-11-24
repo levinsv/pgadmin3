@@ -102,7 +102,7 @@ SECTION( "Выравнивание ALL_LINES|FIRST_LINE" ) {
 (8000000,E'namechild\ttabsep'          ,177 ,333 );)",wxConvUTF8);
                         CHECK(rez!=exp);
                         CHECK(rez.ToStdWstring().length()>0);
-                        CAPTURE(str,rez,exp,lineEnd);
+                        //CAPTURE(str,rez,exp,lineEnd);
 }
 }
 

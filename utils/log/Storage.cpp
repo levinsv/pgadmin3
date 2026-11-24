@@ -86,7 +86,7 @@ void Storage::Reset() {
     wxString tempDir = dataDir + wxFileName::GetPathSeparator();
 
     wxString f = tempDir + "filter_load.txt";
-    if (wxFileExists(f)) {
+    if (wxFileExists(f) && !wxGetKeyState(WXK_SHIFT)) {
         wxString str;
         wxUtfFile file(f, wxFile::read, wxFONTENCODING_UTF8);
         if (file.IsOpened()) {
