@@ -101,8 +101,18 @@ wxString pgPublication::GetSql(ctlTree *browser)
 		      + wxT("-- DROP PUBLICATION ") + GetQuotedIdentifier() + wxT(";")
 		      + wxT("\n\n CREATE PUBLICATION ") + GetName();
 
-		if (GetIsAll()) {
-						sql += wxT("\n  FOR ALL TABLES");
+		if (GetIsAll()||GetIsSEQ()) {
+				sql += wxT("\n  FOR ");
+				bool sep=false;
+				if (GetIsAll()) {
+						sql += wxT("ALL TABLES");
+						if (!GetTablesEXStr().IsEmpty()) sql += L" EXCEPT (" + GetTablesEXStr()+L")";
+						sep=true;
+				}
+				if (GetIsSEQ()) {
+					if (sep) sql+=", ";
+					sql += wxT("ALL SEQUENCES");
+				}
 			}
 		else
 			{
@@ -132,9 +142,9 @@ wxString pgPublication::GetSql(ctlTree *browser)
 						}
 			     sql += wxT("") + acc;
 			}
-		if (GetIsIns()&&GetIsUpd()&&GetIsDel()&&!GetIsViaRoot())
+		if (GetIsIns()&&GetIsUpd()&&GetIsDel()&&!GetIsViaRoot()&&GetGenCol().IsEmpty())
 			{
-
+					// all option defaults
 			}
 		else
 			{
@@ -144,6 +154,10 @@ wxString pgPublication::GetSql(ctlTree *browser)
 				if (GetIsViaRoot() && (GetDatabase()->BackendMinimumVersion(13, 0))) {
 					if (!opts.IsEmpty()) opts += ",";
 					opts += "publish_via_partition_root = on";
+				}
+				if (!GetGenCol().IsEmpty() && (GetDatabase()->BackendMinimumVersion(19, 0))) {
+					if (!opts.IsEmpty()) opts += ",";
+					opts += "publish_generated_columns = "+GetGenCol();
 				}
 				if (!opts.IsEmpty()) opts += ")";
 				sql += opts;
@@ -189,7 +203,29 @@ pgObject *pgPublicationFactory::CreateObjects(pgCollection *collection, ctlTree 
 {
 	wxString sql;
 	pgPublication *publication = 0;
-	if (collection->GetDatabase()->BackendMinimumVersion(15, 0)) {
+	if (collection->GetDatabase()->BackendMinimumVersion(19, 0)) {
+		sql = R"(with rel as (
+SELECT pr.prpubid,pr.prexcept, quote_ident(n.nspname)|| '.'||quote_ident(c.relname) fulltable, pg_get_expr(pr.prqual, c.oid) rowfilter, (CASE WHEN pr.prattrs IS NOT NULL THEN
+     pg_catalog.array_to_string(      ARRAY(SELECT attname
+              FROM
+                pg_catalog.generate_series(0, pg_catalog.array_upper(pr.prattrs::pg_catalog.int2[], 1)) s,
+                pg_catalog.pg_attribute
+        WHERE attrelid = c.oid AND attnum = prattrs[s]), ', ')
+       ELSE NULL END) cols
+FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid 
+     JOIN pg_catalog.pg_publication_rel pr ON c.oid = pr.prrelid 
+), shs as (
+select pn.pnpubid,string_agg(pn.pnnspid::regnamespace::text,',') slist from  pg_catalog.pg_publication_namespace pn group by pn.pnpubid
+)
+select p.oid,p.pubname,pt.fulltable,pg_get_userbyid(p.pubowner) AS owner, p.puballtables,p.puballsequences, p.pubinsert, p.pubupdate, p.pubdelete, obj_description(p.oid,'pg_publication') AS comment,
+p.pubviaroot,pt.rowfilter,pt.cols,pt.prexcept,pn.slist,(CASE pubgencols
+    WHEN 'n' THEN ''
+    WHEN 's' THEN 'stored'
+   END) AS gencols
+ from pg_publication p 
+              LEFT JOIN rel pt ON pt.prpubid = p.oid
+              LEFT JOIN shs pn ON p.oid = pn.pnpubid )";
+	} else 	if (collection->GetDatabase()->BackendMinimumVersion(15, 0)) {
 		sql = R"(with rel as (
 SELECT pr.prpubid,quote_ident(n.nspname)|| '.'||quote_ident(c.relname) fulltable, pg_get_expr(pr.prqual, c.oid) rowfilter, (CASE WHEN pr.prattrs IS NOT NULL THEN
      pg_catalog.array_to_string(      ARRAY(SELECT attname
@@ -242,14 +278,19 @@ select p.oid,p.pubname,pt.fulltable,pg_get_userbyid(p.pubowner) AS owner, p.puba
 		wxString prevpubname;
 		wxString currpubname;
 		wxString listtables;
+		wxString listtablesEX;
+		wxString colgen;
+		bool pg19=(collection->GetDatabase()->BackendMinimumVersion(19, 0));
 		while (!publications->Eof())
 		{
 			currpubname = publications->GetVal(wxT("pubname"));
+			
 			if (currpubname != prevpubname) {
 				if (browser && publication && currpubname != prevpubname) browser->AppendObject(collection, publication);
 				prevpubname = currpubname;
 				if (publication && !listtables.IsEmpty() ) publication->iSetTablesStr(listtables);
-				listtables = "";
+				if (publication && !listtablesEX.IsEmpty() ) publication->iSetTablesEXStr(listtablesEX);
+				listtables = "";listtablesEX="";
 				publication = NULL;
 
 			}
@@ -262,28 +303,35 @@ select p.oid,p.pubname,pt.fulltable,pg_get_userbyid(p.pubowner) AS owner, p.puba
 				publication->iSetOid(publications->GetOid(wxT("oid")));
 				publication->iSetOwner(publications->GetVal(wxT("owner")));
 				publication->iSetIsAll(publications->GetBool(wxT("puballtables")));
+				if (pg19) publication->iSetIsSEQ(publications->GetBool(wxT("puballsequences")));
 				publication->iSetIsIns(publications->GetBool(wxT("pubinsert")));
 				publication->iSetIsUpd(publications->GetBool(wxT("pubupdate")));
 				publication->iSetIsDel(publications->GetBool(wxT("pubdelete")));
 				//publication->iSetVersion(publications->GetVal(wxT("extversion")));
 				publication->iSetComment(publications->GetVal(wxT("comment")));
 				publication->iSetIsViaRoot(publications->GetBool(wxT("pubviaroot")));
-
+				if (pg19) publication->iSetGenCol(publications->GetVal(wxT("gencols")));
 				publication->iSetSchemasList(publications->GetVal(wxT("slist")));
 			}
 			wxString attnames = publications->GetVal("cols");
 			wxString rowfilter = publications->GetVal("rowfilter");
 			wxString fulltable = publications->GetVal(wxT("fulltable"));
 			if (!fulltable.IsEmpty()) {
-				if (!listtables.IsEmpty()) listtables += ",";
-				listtables += fulltable;
-				publication->iAppendTable(fulltable, attnames);
-				publication->iAppendTableFilter(fulltable, rowfilter);
+				if (!publications->GetBool("prexcept")) {
+					if (!listtables.IsEmpty()) listtables += ",";
+					listtables += fulltable;
+					publication->iAppendTable(fulltable, attnames);
+					publication->iAppendTableFilter(fulltable, rowfilter);
+				} else {
+					if (!listtablesEX.IsEmpty()) listtablesEX += ",";
+					listtablesEX += fulltable;
+				}
 			}
 			publications->MoveNext();
 			if (publications->Eof()) {
 				prevpubname = "";
 				publication->iSetTablesStr(listtables);
+				publication->iSetTablesEXStr(listtablesEX);
 			}
 			if (browser)
 			{

@@ -99,12 +99,14 @@ wxString pgSubscription::GetSql(ctlTree *browser)
 	{
 		sql = wxT("-- Subscription: ") + GetQuotedIdentifier() + wxT("\n\n")
 		      + wxT("-- DROP SUBSCRIPTION ") + GetQuotedIdentifier() + wxT(";")
-		      + wxT("\n\n CREATE SUBSCRIPTION ") + GetName()+wxT("\n")
-			  + wxT("                       CONNECTION  E") + qtConnString(GetConnInfo())+wxT("\n")
-			  + wxT("                       PUBLICATION ") + GetPubStr()+wxT("");
-		sql += wxT("\n  WITH (") + GetStrOper() + wxT(")");
-
-		sql += wxT(";\n");
+		      + wxT("\n\n CREATE SUBSCRIPTION ") + GetName()+wxT("\n");
+	if (!GetServerName().IsEmpty())
+		sql+=L"  SERVER " +(GetServerName())+wxT("\n");
+	if (!GetConnInfo().IsEmpty())
+			  sql+=wxT("  CONNECTION  E") + qtConnString(GetConnInfo())+wxT("\n");
+	sql+=wxT("  PUBLICATION ") + GetPubStr()+wxT("");
+	sql += wxT("\n  WITH (") + GetStrOper() + wxT(")");
+	sql += wxT(";\n");
 	}
 	return sql;
 }
@@ -148,9 +150,15 @@ pgObject *pgSubscriptionFactory::CreateObjects(pgCollection *collection, ctlTree
 	bool superu = collection->GetServer()->GetSuperUser();
 	//wxString dbname=collection->GetDatabase()->GetConnection()->GetDbOid;
 	OID db=collection->GetDatabase()->GetConnection()->GetDbOid();
+	if (collection->GetDatabase()->BackendMinimumVersion(19, 0)) {
+		sql = wxT("select  s.oid,s.subname,pg_get_userbyid(s.subowner) AS \"owner\",(select srvname from pg_foreign_server f where f.oid=subserver) srvname, s.subenabled,s.subconninfo,s.subslotname,s.subsynccommit,s.subpublications,obj_description(s.oid,'pg_subscription') as comment  from pg_subscription s where s.subdbid=" )
+		  +NumToStr(db)+ wxT("\n")
+	      + restriction + wxT("\n");
+	} else {
 	sql = wxT("select  oid,subname,pg_get_userbyid(subowner) AS \"owner\",subenabled,subconninfo,subslotname,subsynccommit,subpublications,obj_description(oid,'pg_subscription') as comment from pg_subscription  where subdbid=")
 		  +NumToStr(db)+ wxT("\n")
 	      + restriction + wxT("\n");
+	}
 	if (superu) {
 		pgSet* subscriptions = collection->GetDatabase()->ExecuteSet(sql);
 
@@ -174,6 +182,9 @@ pgObject *pgSubscriptionFactory::CreateObjects(pgCollection *collection, ctlTree
 				subscription->iSetIsEnabled(subscriptions->GetBool(wxT("subenabled")));
 				subscription->iSetIsSyncCommit(subscriptions->GetVal(wxT("subsynccommit")));
 				subscription->iSetComment(subscriptions->GetVal(wxT("comment")));
+
+				if (collection->GetDatabase()->BackendMinimumVersion(19, 0))
+					subscription->iSetServerName(subscriptions->GetVal(wxT("srvname")));
 
 				if (browser)
 				{

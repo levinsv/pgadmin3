@@ -36,6 +36,14 @@ public:
 	{
 		return true;
 	}
+	wxString GetTablesEXStr() const
+	{
+		return tablesEX;
+	}
+	void iSetTablesEXStr(const wxString &s)
+	{
+		tablesEX = s;
+	}
 
 	wxString GetTablesStr() const
 	{
@@ -60,6 +68,14 @@ public:
 	void iSetVersion(const wxString &s)
 	{
 		version = s;
+	}
+	bool GetIsSEQ() const
+	{
+		return allseq;
+	}
+	void iSetIsSEQ(const bool b)
+	{
+		allseq = b;
 	}
 	bool GetIsAll() const
 	{
@@ -88,6 +104,14 @@ public:
 	bool GetIsDel() const
 	{
 		return del;
+	}
+	wxString GetGenCol() const
+	{
+		return gencol;
+	}
+	void iSetGenCol(wxString b)
+	{
+		gencol = b;
 	}
 	bool GetIsViaRoot() const
 	{
@@ -159,8 +183,8 @@ public:
 	}
 
 private:
-	wxString tables, schemas, version;
-	bool all,ins,upd,del, publish_via_partition_root;
+	wxString tables, tablesEX, schemas, version, gencol;
+	bool all,ins,upd,del, publish_via_partition_root,allseq;
 	std::map<wxString, wxString> tablesdetail;
 };
 

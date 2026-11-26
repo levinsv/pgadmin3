@@ -49,6 +49,13 @@ public:
 	{
 		return conninfo;
 	}
+	void iSetServerName(const wxString &s) {
+		servername = s;
+	}
+	wxString GetServerName() const
+	{
+		return servername;
+	}
 	void iSetSlotName(const wxString &s) {
 		slotname = s;
 	}
@@ -107,7 +114,7 @@ public:
 	}
 
 private:
-	wxString conninfo,publications,slotname,subname,subsynccommit;
+	wxString conninfo,publications,slotname,subname,subsynccommit,servername;
 	bool enabled;
 };
 
