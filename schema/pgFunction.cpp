@@ -473,6 +473,8 @@ wxString pgProcedure::GetSql(ctlTree *browser)
 		      + wxT("\n\nCREATE OR REPLACE PROCEDURE ") + qtName;
 
 		sql += wxT("\n  LANGUAGE ") + GetLanguage() + wxT("\n ");
+		if (GetSecureDefiner())
+				sql += wxT(" SECURITY DEFINER\n");
 		sql += wxT(" AS ");
 	    sql += qtDbStringDollar(GetSource());
 		sql += wxT(";\n\n");

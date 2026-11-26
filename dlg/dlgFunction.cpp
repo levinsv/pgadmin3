@@ -977,12 +977,12 @@ wxString dlgFunction::GetSql()
 			sql += qtDbStringDollar(txtSqlBox->GetText());
 			sql = sql.Trim(true);
 			sql += wxT("\nLANGUAGE ") + cbLanguage->GetValue();
+			if (chkSecureDefiner->GetValue())
+				sql += wxT(" SECURITY DEFINER\n");
 			if (!sql.EndsWith(wxT(";")))
 				sql += wxT(";\n");
 			else
 				sql += wxT("\n");
-   			
-
 		}
 		else
 		{
