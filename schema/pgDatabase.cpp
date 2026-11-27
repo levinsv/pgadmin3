@@ -325,7 +325,7 @@ void pgDatabase::ShowStatistics(frmMain *form, ctlListView *statistics)
 			       wxT(", tup_deleted AS ") + qtIdent(_("Tuples Deleted"));
 
 		if (connection()->BackendMinimumVersion(9, 1))
-			sql += wxT(", stats_reset AS ") + qtIdent(_("Last statistics reset")) +
+			sql += wxT(", db.stats_reset AS ") + qtIdent(_("Last statistics reset")) +
 			       wxT(", slave.confl_tablespace AS ") + qtIdent(_("Tablespace conflicts")) +
 			       wxT(", slave.confl_lock AS ") + qtIdent(_("Lock conflicts")) +
 			       wxT(", slave.confl_snapshot AS ") + qtIdent(_("Snapshot conflicts")) +
